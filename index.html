@@ -258,6 +258,17 @@
 
   .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
 
+  .file-zone {
+    display: flex; align-items: center; gap: 12px;
+    background: rgba(6,10,22,0.7); border: 1px dashed var(--line); border-radius: 10px;
+    padding: 10px 13px; cursor: pointer; transition: border-color 0.18s;
+  }
+  .file-zone:hover { border-color: var(--line-strong); }
+  .file-zone input[type=file] { display: none; }
+  .file-zone-name { font-size: 13px; color: var(--muted); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file-zone.has-file { border-color: rgba(52,227,255,0.35); }
+  .file-zone.has-file .file-zone-name { color: var(--cyan); }
+
   ::selection { background: rgba(52,227,255,0.28); }
   :focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; border-radius: 4px; }
 
@@ -375,7 +386,15 @@
       <p class="sub" id="p-sub">Nový subweb do tématu.</p>
       <div class="field"><label for="p-name">Název</label><input id="p-name" type="text" placeholder="název projektu"></div>
       <div class="field"><label for="p-desc">Popis</label><textarea id="p-desc" placeholder="k čemu projekt je"></textarea></div>
-      <div class="field"><label for="p-url">Odkaz</label><input id="p-url" type="text" placeholder="./slozka/index.html nebo https://…"></div>
+      <div class="field"><label for="p-url">Odkaz <span style="color:var(--muted-2);font-weight:400">(nepovinné pokud nahráváš soubor)</span></label><input id="p-url" type="text" placeholder="./slozka/index.html nebo https://…"></div>
+      <div class="field">
+        <label>HTML soubor <span style="color:var(--muted-2);font-weight:400">(přepíše odkaz)</span></label>
+        <label class="file-zone" id="file-zone" for="p-file">
+          <span class="btn btn-sm" style="pointer-events:none;flex-shrink:0">Vybrat soubor</span>
+          <span class="file-zone-name" id="file-zone-name">žádný soubor</span>
+          <input type="file" id="p-file" accept=".html,.htm">
+        </label>
+      </div>
       <div class="field"><label for="p-tags">Tagy</label><input id="p-tags" type="text" placeholder="oddělené čárkou: AI, hra, CZ"></div>
       <div class="field"><label for="p-stav">Stav</label>
         <select id="p-stav">
@@ -453,12 +472,15 @@ let DECK = load();
 if (!DECK) { DECK = JSON.parse(JSON.stringify(SEED)); save(); }
 let editMode = false;
 const uid = () => 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+let blobUrls = new Map();
 
 /* ── Render ────────────────────────────────────────── */
 const deckEl = document.getElementById('deck');
 const navEl  = document.getElementById('nav-chips');
 
 function render() {
+  blobUrls.forEach(u => URL.revokeObjectURL(u));
+  blobUrls.clear();
   deckEl.innerHTML = '';
   navEl.innerHTML = '';
   let totalProjects = 0;
@@ -504,7 +526,12 @@ function render() {
       topic.projekty.forEach((p, pi) => {
         const wrap = document.createElement('div');
         wrap.className = 'card-wrap';
-        const href = p.odkaz || '#';
+        let href = p.odkaz || '#';
+        if (p.html) {
+          const blob = new Blob([p.html], { type: 'text/html' });
+          href = URL.createObjectURL(blob);
+          blobUrls.set(ti + '_' + pi, href);
+        }
         const ext = href !== '#' ? ' target="_blank" rel="noopener"' : '';
         const idxStr = String(pi + 1).padStart(2, '0');
         const tagsHtml = (p.tagy || []).map(t => '<span class="tag">' + esc(t) + '</span>').join('');
@@ -640,26 +667,53 @@ document.getElementById('t-save').addEventListener('click', () => {
 
 /* ── Nový web ──────────────────────────────────────── */
 let projTopicIndex = null;
+let projHtmlContent = null;
+let projHtmlName = null;
+
+document.getElementById('p-file').addEventListener('change', function () {
+  const f = this.files[0];
+  const zone = document.getElementById('file-zone');
+  const label = document.getElementById('file-zone-name');
+  if (!f) { projHtmlContent = null; projHtmlName = null; label.textContent = 'žádný soubor'; zone.classList.remove('has-file'); return; }
+  const reader = new FileReader();
+  reader.onload = () => {
+    projHtmlContent = reader.result;
+    projHtmlName = f.name;
+    label.textContent = f.name;
+    zone.classList.add('has-file');
+  };
+  reader.readAsText(f);
+});
+
 function openProjectModal(ti) {
   projTopicIndex = ti;
+  projHtmlContent = null; projHtmlName = null;
   document.getElementById('p-sub').textContent = 'Nový subweb do tématu „' + DECK[ti].nazev + '".';
   ['p-name','p-desc','p-url','p-tags'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('p-stav').value = 'live';
   document.getElementById('p-err').textContent = '';
+  document.getElementById('p-file').value = '';
+  document.getElementById('file-zone-name').textContent = 'žádný soubor';
+  document.getElementById('file-zone').classList.remove('has-file');
   open('ov-project');
   setTimeout(() => document.getElementById('p-name').focus(), 50);
 }
 document.getElementById('p-save').addEventListener('click', () => {
   const name = document.getElementById('p-name').value.trim();
   if (!name) { document.getElementById('p-err').textContent = 'Zadej název webu.'; return; }
+  if (!projHtmlContent && !document.getElementById('p-url').value.trim()) {
+    document.getElementById('p-err').textContent = 'Zadej odkaz nebo nahraj HTML soubor.'; return;
+  }
   const tags = document.getElementById('p-tags').value.split(',').map(t => t.trim()).filter(Boolean);
-  DECK[projTopicIndex].projekty.push({
+  const proj = {
     nazev: name,
     popis: document.getElementById('p-desc').value.trim(),
     odkaz: document.getElementById('p-url').value.trim() || '#',
     tagy: tags,
     stav: document.getElementById('p-stav').value
-  });
+  };
+  if (projHtmlContent) { proj.html = projHtmlContent; proj.htmlName = projHtmlName; }
+  DECK[projTopicIndex].projekty.push(proj);
   save(); close('ov-project'); render();
 });
 
