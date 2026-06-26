@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Vibe Code // Deck</title>
+
+<!--
+  ╔══════════════════════════════════════════════════════════════╗
+  ║  VIBE CODE DECK — interaktivní rozcestník                     ║
+  ║  • Klikni na „Nové téma" → zadej heslo → vytvoř téma.         ║
+  ║  • Po odemčení můžeš do témat přidávat weby a mazat položky.  ║
+  ║  • Vše se ukládá do tvého prohlížeče (localStorage).          ║
+  ║  • Heslo nastavíš v proměnné PIN ve <script> níže.            ║
+  ╚══════════════════════════════════════════════════════════════╝
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --void:        #060912;
+    --void-2:      #0a0f1f;
+    --panel:       rgba(16, 22, 42, 0.55);
+    --panel-hover: rgba(22, 30, 56, 0.78);
+    --line:        rgba(120, 165, 255, 0.13);
+    --line-strong: rgba(120, 165, 255, 0.34);
+    --text:        #e9edfb;
+    --muted:       #8893b8;
+    --muted-2:     #586089;
+    --cyan:        #34e3ff;
+    --violet:      #9b6bff;
+    --magenta:     #e85cff;
+    --amber:       #ffb648;
+    --green:       #54f0b8;
+    --danger:      #ff7a8a;
+    --plasma:      linear-gradient(110deg, var(--cyan), var(--violet) 55%, var(--magenta));
+    --r:           14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: "Inter", system-ui, sans-serif;
+    background: var(--void);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Ambientní pozadí ─────────────────────────────── */
+  #stars { position: fixed; inset: 0; z-index: 0; }
+  .ambient {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(900px 500px at 78% -8%, rgba(155, 107, 255, 0.20), transparent 60%),
+      radial-gradient(800px 480px at 12% 4%, rgba(52, 227, 255, 0.16), transparent 62%),
+      linear-gradient(180deg, var(--void), var(--void-2) 40%, var(--void));
+  }
+  .grid {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.4;
+    background-image:
+      linear-gradient(rgba(120,165,255,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(120,165,255,0.05) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, #000 35%, transparent 80%);
+    -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, #000 35%, transparent 80%);
+  }
+
+  .wrap { position: relative; z-index: 2; max-width: 1120px; margin: 0 auto; padding: 0 24px 96px; }
+
+  /* ── Status lišta ─────────────────────────────────── */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted-2); padding: 18px 0; border-bottom: 1px solid var(--line);
+  }
+  .topbar .brand { display: flex; align-items: center; gap: 10px; color: var(--muted); }
+  .dot-live { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 2.4s infinite; }
+  .dot-live.edit { background: var(--amber); }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(84,240,184,0.55); }
+    70% { box-shadow: 0 0 0 7px rgba(84,240,184,0); }
+    100% { box-shadow: 0 0 0 0 rgba(84,240,184,0); }
+  }
+  .topbar .meta { display: flex; gap: 22px; }
+  .topbar .meta span b { color: var(--cyan); font-weight: 500; }
+
+  /* ── Hero ─────────────────────────────────────────── */
+  header.hero { padding: 64px 0 52px; }
+  .eyebrow {
+    font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: 0.4em;
+    text-transform: uppercase; color: var(--cyan);
+    display: inline-flex; align-items: center; gap: 12px; margin-bottom: 22px;
+  }
+  .eyebrow::before { content: ""; width: 34px; height: 1px; background: linear-gradient(90deg, var(--cyan), transparent); }
+  h1 { font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: clamp(40px, 8vw, 84px); line-height: 0.98; letter-spacing: -0.02em; }
+  h1 .slash { background: var(--plasma); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .lede { max-width: 560px; margin-top: 22px; font-size: 17px; color: var(--muted); }
+  .lede b { color: var(--text); font-weight: 500; }
+
+  /* ── Ovládací řádek ───────────────────────────────── */
+  .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-top: 40px; }
+  .search { position: relative; flex: 1 1 240px; min-width: 200px; }
+  .search svg { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); opacity: 0.5; }
+  .search input {
+    width: 100%; background: var(--panel); border: 1px solid var(--line); border-radius: 100px;
+    color: var(--text); font-family: "JetBrains Mono", monospace; font-size: 13px;
+    padding: 13px 18px 13px 44px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; backdrop-filter: blur(8px);
+  }
+  .search input::placeholder { color: var(--muted-2); }
+  .search input:focus { border-color: var(--line-strong); box-shadow: 0 0 0 3px rgba(52,227,255,0.10); }
+
+  .nav-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: 0.05em;
+    color: var(--muted); text-decoration: none; padding: 9px 15px; border: 1px solid var(--line);
+    border-radius: 100px; background: var(--panel); transition: all 0.18s; backdrop-filter: blur(8px);
+  }
+  .chip:hover, .chip:focus-visible { color: var(--text); border-color: var(--line-strong); transform: translateY(-1px); }
+  .chip b { color: var(--cyan); font-weight: 500; }
+
+  /* ── Tlačítka ─────────────────────────────────────── */
+  .btn {
+    font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: 0.06em;
+    color: var(--text); background: var(--panel); border: 1px solid var(--line);
+    border-radius: 100px; padding: 10px 16px; cursor: pointer; transition: all 0.18s;
+    display: inline-flex; align-items: center; gap: 8px; backdrop-filter: blur(8px); white-space: nowrap;
+  }
+  .btn:hover, .btn:focus-visible { border-color: var(--line-strong); transform: translateY(-1px); }
+  .btn-primary { background: var(--plasma); color: #06101f; border: none; font-weight: 700; }
+  .btn-primary:hover { filter: brightness(1.08); }
+  .btn-danger { color: var(--danger); border-color: rgba(255,122,138,0.28); }
+  .btn-danger:hover { border-color: var(--danger); background: rgba(255,122,138,0.08); }
+  .btn-sm { padding: 7px 12px; font-size: 11px; }
+  .icon-btn {
+    width: 32px; height: 32px; padding: 0; display: grid; place-items: center; border-radius: 9px;
+    background: var(--panel); border: 1px solid var(--line); color: var(--muted); cursor: pointer; transition: all 0.18s;
+  }
+  .icon-btn:hover { color: var(--danger); border-color: rgba(255,122,138,0.4); }
+
+  /* ── Sekce Témata ─────────────────────────────────── */
+  .section-head { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin: 76px 0 30px; }
+  .section-head h2 { font-family: "Space Grotesk", sans-serif; font-size: 28px; font-weight: 600; letter-spacing: -0.01em; }
+  .section-head .rule { flex: 1; min-width: 30px; height: 1px; background: var(--line); }
+  .section-head .count { font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--muted-2); letter-spacing: 0.1em; }
+
+  .edit-tools { display: none; gap: 8px; }
+  body.editing .edit-tools { display: inline-flex; }
+
+  /* ── Téma ─────────────────────────────────────────── */
+  .topic { margin-bottom: 56px; scroll-margin-top: 28px; }
+  .topic-head { display: flex; align-items: center; gap: 16px; padding-bottom: 18px; border-bottom: 1px solid var(--line); margin-bottom: 24px; }
+  .topic-icon { width: 42px; height: 42px; flex: none; display: grid; place-items: center; border: 1px solid var(--line-strong); border-radius: 11px; background: var(--panel); color: var(--cyan); }
+  .topic-titles h3 { font-family: "Space Grotesk", sans-serif; font-size: 21px; font-weight: 600; }
+  .topic-titles p { color: var(--muted-2); font-size: 13px; margin-top: 2px; }
+  .topic-actions { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .topic-tag { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted-2); border: 1px solid var(--line); padding: 6px 12px; border-radius: 100px; }
+  .topic-edit { display: none; gap: 8px; }
+  body.editing .topic-edit { display: inline-flex; }
+
+  /* ── Mřížka projektů ──────────────────────────────── */
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .card-wrap { position: relative; display: flex; }
+
+  /* ── Launch karta ─────────────────────────────────── */
+  .card {
+    position: relative; display: flex; flex-direction: column; flex: 1;
+    background: var(--panel); border: 1px solid var(--line); border-radius: var(--r);
+    padding: 22px; text-decoration: none; color: inherit; overflow: hidden;
+    transition: transform 0.22s ease, border-color 0.22s, background 0.22s; backdrop-filter: blur(10px);
+  }
+  .card::before {
+    content: ""; position: absolute; inset: 0; background: var(--plasma); opacity: 0; transition: opacity 0.3s;
+    mask: linear-gradient(180deg, rgba(0,0,0,0.18), transparent 45%);
+    -webkit-mask: linear-gradient(180deg, rgba(0,0,0,0.18), transparent 45%);
+  }
+  .card .bracket { position: absolute; width: 13px; height: 13px; border-color: var(--line-strong); border-style: solid; border-width: 0; opacity: 0; transition: opacity 0.25s; }
+  .card .b-tl { top: 12px; left: 12px; border-top-width: 1.5px; border-left-width: 1.5px; }
+  .card .b-br { bottom: 12px; right: 12px; border-bottom-width: 1.5px; border-right-width: 1.5px; }
+  .card:hover, .card:focus-visible { transform: translateY(-4px); border-color: var(--line-strong); background: var(--panel-hover); }
+  .card:hover::before, .card:focus-visible::before { opacity: 0.10; }
+  .card:hover .bracket, .card:focus-visible .bracket { opacity: 1; }
+
+  .card-top { display: flex; align-items: center; gap: 9px; margin-bottom: 16px; }
+  .stat { display: inline-flex; align-items: center; gap: 7px; font-family: "JetBrains Mono", monospace; font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted-2); }
+  .stat i { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+  .stat.live i { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .stat.wip i { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
+  .stat.idea i { background: var(--muted-2); }
+  .card .idx { margin-left: auto; font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--muted-2); }
+  .card h4 { font-family: "Space Grotesk", sans-serif; font-size: 19px; font-weight: 600; letter-spacing: -0.01em; position: relative; z-index: 1; word-break: break-word; }
+  .card .desc { font-size: 13.5px; color: var(--muted); margin-top: 8px; flex: 1; position: relative; z-index: 1; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; position: relative; z-index: 1; }
+  .tag { font-family: "JetBrains Mono", monospace; font-size: 10.5px; letter-spacing: 0.04em; color: var(--muted); background: rgba(120,165,255,0.07); border: 1px solid var(--line); padding: 4px 9px; border-radius: 6px; }
+  .card-go { display: flex; align-items: center; justify-content: space-between; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cyan); position: relative; z-index: 1; }
+  .card.is-idea .card-go { color: var(--muted-2); }
+  .card-go svg { transition: transform 0.2s; }
+  .card:hover .card-go svg { transform: translate(3px, -3px); }
+
+  .card-del { display: none; position: absolute; top: 10px; right: 10px; z-index: 5; width: 26px; height: 26px; border-radius: 8px; border: 1px solid rgba(255,122,138,0.3); background: rgba(10,15,30,0.85); color: var(--danger); cursor: pointer; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+  .card-del:hover { background: rgba(255,122,138,0.15); }
+  body.editing .card-del { display: flex; }
+
+  .topic-empty { font-family: "JetBrains Mono", monospace; font-size: 12.5px; color: var(--muted-2); border: 1px dashed var(--line); border-radius: var(--r); padding: 26px; text-align: center; }
+
+  /* ── Add téma dlaždice ────────────────────────────── */
+  .add-topic { display: none; }
+  body.editing .add-topic { display: block; }
+  .add-topic-btn {
+    width: 100%; font-family: "JetBrains Mono", monospace; font-size: 13px; letter-spacing: 0.08em;
+    color: var(--muted); background: transparent; border: 1px dashed var(--line-strong); border-radius: var(--r);
+    padding: 26px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px;
+  }
+  .add-topic-btn:hover { color: var(--text); border-color: var(--cyan); background: rgba(52,227,255,0.04); }
+
+  .empty { display: none; text-align: center; padding: 70px 20px; font-family: "JetBrains Mono", monospace; color: var(--muted-2); border: 1px dashed var(--line); border-radius: var(--r); }
+  .empty b { color: var(--text); }
+
+  footer { margin-top: 80px; padding-top: 26px; border-top: 1px solid var(--line); font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted-2); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+
+  /* ── Modální okna ─────────────────────────────────── */
+  .overlay { position: fixed; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center; padding: 20px; background: rgba(4,7,14,0.72); backdrop-filter: blur(6px); }
+  .overlay.open { display: flex; }
+  .modal {
+    width: 100%; max-width: 460px; background: linear-gradient(180deg, rgba(18,24,46,0.96), rgba(12,17,33,0.96));
+    border: 1px solid var(--line-strong); border-radius: 18px; padding: 28px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(120,165,255,0.05);
+    animation: pop 0.22s ease; max-height: 90vh; overflow-y: auto;
+  }
+  @keyframes pop { from { transform: translateY(14px) scale(0.98); opacity: 0; } to { transform: none; opacity: 1; } }
+  .modal.shake { animation: shake 0.4s; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-7px)} 40%,80%{transform:translateX(7px)} }
+  .modal h3 { font-family: "Space Grotesk", sans-serif; font-size: 22px; font-weight: 600; }
+  .modal .sub { color: var(--muted); font-size: 13.5px; margin-top: 6px; margin-bottom: 22px; }
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 7px; }
+  .field input, .field textarea, .field select {
+    width: 100%; background: rgba(6,10,22,0.7); border: 1px solid var(--line); border-radius: 10px;
+    color: var(--text); font-family: "Inter", sans-serif; font-size: 14px; padding: 11px 13px; outline: none; transition: border-color 0.18s, box-shadow 0.18s;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--line-strong); box-shadow: 0 0 0 3px rgba(52,227,255,0.10); }
+  .field textarea { resize: vertical; min-height: 64px; }
+  .field select { appearance: none; cursor: pointer; }
+  .pin-input { text-align: center; letter-spacing: 0.6em; font-family: "JetBrains Mono", monospace; font-size: 22px; }
+  .err { color: var(--danger); font-family: "JetBrains Mono", monospace; font-size: 12px; min-height: 16px; margin-top: 4px; }
+
+  .icon-picker { display: flex; flex-wrap: wrap; gap: 8px; }
+  .icon-opt { width: 44px; height: 44px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 10px; background: rgba(6,10,22,0.7); color: var(--muted); cursor: pointer; transition: all 0.16s; }
+  .icon-opt:hover { color: var(--text); border-color: var(--line-strong); }
+  .icon-opt.sel { color: var(--cyan); border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(52,227,255,0.12); }
+
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+
+  ::selection { background: rgba(52,227,255,0.28); }
+  :focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; border-radius: 4px; }
+
+  @media (max-width: 640px) {
+    .wrap { padding: 0 18px 72px; }
+    .topbar .meta { gap: 14px; }
+    .topbar .meta span:not(#m-clock) { display: none; }
+    header.hero { padding: 44px 0 36px; }
+    .section-head { margin-top: 56px; }
+    .topic-tag { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; scroll-behavior: auto; } }
+</style>
+</head>
+
+<body>
+  <canvas id="stars"></canvas>
+  <div class="ambient"></div>
+  <div class="grid"></div>
+
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand"><span class="dot-live" id="status-dot"></span> <span id="status-text">Systém online</span></div>
+      <div class="meta">
+        <span>Témat <b id="m-topics">0</b></span>
+        <span>Projektů <b id="m-projects">0</b></span>
+        <span id="m-clock">--:--:--</span>
+      </div>
+    </div>
+
+    <header class="hero">
+      <span class="eyebrow">Osobní testovací prostředí</span>
+      <h1>Vibe Code <span class="slash">// Deck</span></h1>
+      <p class="lede">
+        Soukromý rozcestník pro testování mých <b>vibe-coded výtvorů</b>.
+        Vyber téma a spusť modul — nebo si přidej vlastní.
+      </p>
+      <div class="controls">
+        <div class="search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input id="search" type="text" placeholder="hledat projekt nebo tag…" aria-label="Hledat projekt" autocomplete="off">
+        </div>
+        <nav class="nav-chips" id="nav-chips" aria-label="Rozcestník témat"></nav>
+      </div>
+    </header>
+
+    <div class="section-head">
+      <h2>Témata</h2>
+      <div class="rule"></div>
+      <span class="count" id="section-count"></span>
+      <button class="btn btn-sm" id="btn-manage">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 11V7a5 5 0 0 1 10 0v4"/><rect x="4" y="11" width="16" height="10" rx="2"/></svg>
+        <span id="manage-label">Spravovat</span>
+      </button>
+      <span class="edit-tools">
+        <button class="btn btn-sm" id="btn-export">Export</button>
+        <button class="btn btn-sm" id="btn-import">Import</button>
+      </span>
+    </div>
+
+    <main id="deck"></main>
+
+    <div class="add-topic">
+      <button class="add-topic-btn" id="btn-add-topic">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Nové téma
+      </button>
+    </div>
+
+    <div class="empty" id="empty">Žádný modul neodpovídá dotazu „<b id="empty-q"></b>". Zkus jiný výraz.</div>
+
+    <footer>
+      <span>Vibe Code Deck · lokální build</span>
+      <span id="f-stamp"></span>
+    </footer>
+  </div>
+
+  <!-- ── HESLO ─────────────────────────────────────── -->
+  <div class="overlay" id="ov-pin">
+    <div class="modal" id="pin-modal">
+      <h3>Odemknout správu</h3>
+      <p class="sub">Zadej heslo pro přidávání a úpravu témat.</p>
+      <div class="field">
+        <label for="pin">Heslo</label>
+        <input class="pin-input" id="pin" type="password" inputmode="numeric" maxlength="12" autocomplete="off" placeholder="••••">
+        <div class="err" id="pin-err"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn" data-close>Zrušit</button>
+        <button class="btn btn-primary" id="pin-ok">Odemknout</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── NOVÉ TÉMA ─────────────────────────────────── -->
+  <div class="overlay" id="ov-topic">
+    <div class="modal">
+      <h3>Nové téma</h3>
+      <p class="sub">Skupina, pod kterou budeš řadit jednotlivé weby.</p>
+      <div class="field"><label for="t-name">Název</label><input id="t-name" type="text" placeholder="např. Hry, Nástroje, Experimenty"></div>
+      <div class="field"><label for="t-desc">Popis</label><input id="t-desc" type="text" placeholder="krátký popisek (nepovinné)"></div>
+      <div class="field"><label>Ikona</label><div class="icon-picker" id="t-icons"></div></div>
+      <div class="err" id="t-err"></div>
+      <div class="modal-actions">
+        <button class="btn" data-close>Zrušit</button>
+        <button class="btn btn-primary" id="t-save">Vytvořit téma</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── NOVÝ WEB ──────────────────────────────────── -->
+  <div class="overlay" id="ov-project">
+    <div class="modal">
+      <h3>Přidat web</h3>
+      <p class="sub" id="p-sub">Nový subweb do tématu.</p>
+      <div class="field"><label for="p-name">Název</label><input id="p-name" type="text" placeholder="název projektu"></div>
+      <div class="field"><label for="p-desc">Popis</label><textarea id="p-desc" placeholder="k čemu projekt je"></textarea></div>
+      <div class="field"><label for="p-url">Odkaz</label><input id="p-url" type="text" placeholder="./slozka/index.html nebo https://…"></div>
+      <div class="field"><label for="p-tags">Tagy</label><input id="p-tags" type="text" placeholder="oddělené čárkou: AI, hra, CZ"></div>
+      <div class="field"><label for="p-stav">Stav</label>
+        <select id="p-stav">
+          <option value="live">online — hotové a spustitelné</option>
+          <option value="wip">ve vývoji — rozpracované</option>
+          <option value="idea">v plánu — zatím jen nápad</option>
+        </select>
+      </div>
+      <div class="err" id="p-err"></div>
+      <div class="modal-actions">
+        <button class="btn" data-close>Zrušit</button>
+        <button class="btn btn-primary" id="p-save">Přidat web</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── POTVRZENÍ ─────────────────────────────────── -->
+  <div class="overlay" id="ov-confirm">
+    <div class="modal" style="max-width:420px">
+      <h3 id="c-title">Opravdu smazat?</h3>
+      <p class="sub" id="c-msg"></p>
+      <div class="modal-actions">
+        <button class="btn" data-close>Zrušit</button>
+        <button class="btn btn-danger" id="c-ok">Smazat</button>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="import-file" accept="application/json" style="display:none">
+
+<script>
+/* ══════════════════════════════════════════════════════
+   NASTAVENÍ
+   ══════════════════════════════════════════════════════ */
+const PIN = "1111";              // heslo pro odemčení správy
+const KEY = "vibe-deck-v1";      // klíč v úložišti prohlížeče
+
+/* ── Ikony ─────────────────────────────────────────── */
+const ICONS = {
+  play:   '<polygon points="6 4 20 12 6 20 6 4"/>',
+  wrench: '<path d="M14.7 6.3a4 4 0 0 0-5 5L4 17v3h3l5.7-5.7a4 4 0 0 0 5-5l-2.8 2.8-2.1-2.1z"/>',
+  flask:  '<path d="M9 3h6M10 3v6l-5 8a2 2 0 0 0 1.7 3h10.6a2 2 0 0 0 1.7-3l-5-8V3"/><path d="M7 14h10"/>',
+  bolt:   '<path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/>',
+  globe:  '<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18z"/>',
+  code:   '<path d="m8 6-5 6 5 6M16 6l5 6-5 6"/>',
+  grid:   '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+  star:   '<polygon points="12 3 14.5 9 21 9.5 16 14 17.5 20.5 12 17 6.5 20.5 8 14 3 9.5 9.5 9"/>'
+};
+const icon = (name) =>
+  '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">' +
+  (ICONS[name] || ICONS.star) + '</svg>';
+const STAV = { live: "online", wip: "ve vývoji", idea: "v plánu" };
+
+/* ── Výchozí obsah (použije se při prvním spuštění) ── */
+const SEED = [
+  { id: "hry", nazev: "Hry", popis: "Interaktivní výtvory na hraní a procvičování", ikona: "play",
+    projekty: [
+      { nazev: "Klasifikátor", popis: "Hra na téma AI — třiď pojmy do správných kategorií.", odkaz: "#", tagy: ["AI","kvíz","CZ"], stav: "live" },
+      { nazev: "Rychlopočty", popis: "Trenažér počítání z hlavy s volitelnými operacemi a úrovněmi.", odkaz: "#", tagy: ["matematika","trénink","CZ"], stav: "live" }
+    ] }
+];
+
+/* ── Úložiště (s nouzovým in-memory fallbackem) ────── */
+let memStore = null;
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(DECK)); }
+  catch (e) { memStore = JSON.parse(JSON.stringify(DECK)); }
+}
+function load() {
+  try { const r = localStorage.getItem(KEY); return r ? JSON.parse(r) : null; }
+  catch (e) { return memStore; }
+}
+
+let DECK = load();
+if (!DECK) { DECK = JSON.parse(JSON.stringify(SEED)); save(); }
+let editMode = false;
+const uid = () => 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+
+/* ── Render ────────────────────────────────────────── */
+const deckEl = document.getElementById('deck');
+const navEl  = document.getElementById('nav-chips');
+
+function render() {
+  deckEl.innerHTML = '';
+  navEl.innerHTML = '';
+  let totalProjects = 0;
+
+  DECK.forEach((topic, ti) => {
+    totalProjects += topic.projekty.length;
+
+    const chip = document.createElement('a');
+    chip.className = 'chip';
+    chip.href = '#' + topic.id;
+    chip.innerHTML = esc(topic.nazev) + ' <b>' + topic.projekty.length + '</b>';
+    navEl.appendChild(chip);
+
+    const sec = document.createElement('section');
+    sec.className = 'topic';
+    sec.id = topic.id;
+
+    const head = document.createElement('div');
+    head.className = 'topic-head';
+    head.innerHTML =
+      '<div class="topic-icon">' + icon(topic.ikona) + '</div>' +
+      '<div class="topic-titles"><h3>' + esc(topic.nazev) + '</h3>' +
+        (topic.popis ? '<p>' + esc(topic.popis) + '</p>' : '') + '</div>' +
+      '<div class="topic-actions">' +
+        '<span class="topic-tag">' + topic.projekty.length + ' modulů</span>' +
+        '<span class="topic-edit">' +
+          '<button class="btn btn-sm" data-add="' + ti + '">+ web</button>' +
+          '<button class="icon-btn" data-deltopic="' + ti + '" title="Smazat téma" aria-label="Smazat téma">' +
+            '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>' +
+          '</button>' +
+        '</span>' +
+      '</div>';
+    sec.appendChild(head);
+
+    if (topic.projekty.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'topic-empty';
+      empty.textContent = 'Zatím žádné weby. Odemkni správu a přidej první.';
+      sec.appendChild(empty);
+    } else {
+      const grid = document.createElement('div');
+      grid.className = 'cards';
+      topic.projekty.forEach((p, pi) => {
+        const wrap = document.createElement('div');
+        wrap.className = 'card-wrap';
+        const href = p.odkaz || '#';
+        const ext = href !== '#' ? ' target="_blank" rel="noopener"' : '';
+        const idxStr = String(pi + 1).padStart(2, '0');
+        const tagsHtml = (p.tagy || []).map(t => '<span class="tag">' + esc(t) + '</span>').join('');
+        wrap.innerHTML =
+          '<a class="card' + (p.stav === 'idea' ? ' is-idea' : '') + '" href="' + esc(href) + '"' + ext + '>' +
+            '<span class="bracket b-tl"></span><span class="bracket b-br"></span>' +
+            '<div class="card-top"><span class="stat ' + p.stav + '"><i></i>' + (STAV[p.stav] || p.stav) + '</span><span class="idx">' + idxStr + '</span></div>' +
+            '<h4>' + esc(p.nazev) + '</h4>' +
+            (p.popis ? '<p class="desc">' + esc(p.popis) + '</p>' : '<p class="desc"></p>') +
+            (tagsHtml ? '<div class="tags">' + tagsHtml + '</div>' : '') +
+            '<div class="card-go"><span>' + (p.stav === 'idea' ? 'Připravuje se' : 'Spustit modul') + '</span>' +
+            '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg></div>' +
+          '</a>' +
+          '<button class="card-del" data-delproj="' + ti + ':' + pi + '" title="Smazat web" aria-label="Smazat web">' +
+            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>' +
+          '</button>';
+        grid.appendChild(wrap);
+      });
+      sec.appendChild(grid);
+    }
+    deckEl.appendChild(sec);
+  });
+
+  document.getElementById('m-topics').textContent = DECK.length;
+  document.getElementById('m-projects').textContent = totalProjects;
+  document.getElementById('section-count').textContent = DECK.length + ' / ' + totalProjects + ' projektů';
+  applySearch();
+}
+
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ── Vyhledávání ───────────────────────────────────── */
+const searchEl = document.getElementById('search');
+const emptyEl  = document.getElementById('empty');
+const emptyQ   = document.getElementById('empty-q');
+function applySearch() {
+  const q = searchEl.value.trim().toLowerCase();
+  let anyVisible = false;
+  document.querySelectorAll('.topic').forEach(sec => {
+    let topicVisible = false;
+    sec.querySelectorAll('.card-wrap').forEach(w => {
+      const txt = w.textContent.toLowerCase();
+      const match = !q || txt.includes(q);
+      w.style.display = match ? '' : 'none';
+      if (match) topicVisible = true;
+    });
+    const hasCards = sec.querySelector('.card-wrap');
+    sec.style.display = (!q || topicVisible) ? '' : (hasCards ? 'none' : '');
+    if (topicVisible || !hasCards) anyVisible = true;
+  });
+  emptyEl.style.display = (q && !anyVisible) ? 'block' : 'none';
+  emptyQ.textContent = searchEl.value.trim();
+}
+searchEl.addEventListener('input', applySearch);
+
+/* ── Modály ────────────────────────────────────────── */
+function open(id) { document.getElementById(id).classList.add('open'); }
+function close(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', e => e.target.closest('.overlay').classList.remove('open')));
+document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); }));
+document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.overlay.open').forEach(o => o.classList.remove('open')); });
+
+/* ── Heslo / edit mode ─────────────────────────────── */
+let pendingAfterUnlock = null;
+const pinInput = document.getElementById('pin');
+const pinErr = document.getElementById('pin-err');
+
+function requireUnlock(after) {
+  if (editMode) { if (after) after(); return; }
+  pendingAfterUnlock = after || null;
+  pinInput.value = ''; pinErr.textContent = '';
+  open('ov-pin');
+  setTimeout(() => pinInput.focus(), 50);
+}
+function tryUnlock() {
+  if (pinInput.value === PIN) {
+    editMode = true;
+    document.body.classList.add('editing');
+    document.getElementById('manage-label').textContent = 'Zamknout';
+    document.getElementById('status-dot').classList.add('edit');
+    document.getElementById('status-text').textContent = 'Režim úprav';
+    close('ov-pin');
+    const a = pendingAfterUnlock; pendingAfterUnlock = null; if (a) a();
+  } else {
+    pinErr.textContent = 'Nesprávné heslo.';
+    const m = document.getElementById('pin-modal');
+    m.classList.remove('shake'); void m.offsetWidth; m.classList.add('shake');
+    pinInput.value = ''; pinInput.focus();
+  }
+}
+document.getElementById('pin-ok').addEventListener('click', tryUnlock);
+pinInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryUnlock(); });
+
+document.getElementById('btn-manage').addEventListener('click', () => {
+  if (editMode) {
+    editMode = false;
+    document.body.classList.remove('editing');
+    document.getElementById('manage-label').textContent = 'Spravovat';
+    document.getElementById('status-dot').classList.remove('edit');
+    document.getElementById('status-text').textContent = 'Systém online';
+  } else {
+    requireUnlock(null);
+  }
+});
+
+/* ── Nové téma ─────────────────────────────────────── */
+let pickedIcon = 'play';
+const iconWrap = document.getElementById('t-icons');
+Object.keys(ICONS).forEach(name => {
+  const b = document.createElement('button');
+  b.className = 'icon-opt' + (name === pickedIcon ? ' sel' : '');
+  b.type = 'button'; b.dataset.icon = name; b.innerHTML = icon(name);
+  b.addEventListener('click', () => { pickedIcon = name; iconWrap.querySelectorAll('.icon-opt').forEach(x => x.classList.toggle('sel', x.dataset.icon === name)); });
+  iconWrap.appendChild(b);
+});
+
+document.getElementById('btn-add-topic').addEventListener('click', () => requireUnlock(openTopicModal));
+function openTopicModal() {
+  document.getElementById('t-name').value = '';
+  document.getElementById('t-desc').value = '';
+  document.getElementById('t-err').textContent = '';
+  pickedIcon = 'play';
+  iconWrap.querySelectorAll('.icon-opt').forEach(x => x.classList.toggle('sel', x.dataset.icon === 'play'));
+  open('ov-topic');
+  setTimeout(() => document.getElementById('t-name').focus(), 50);
+}
+document.getElementById('t-save').addEventListener('click', () => {
+  const name = document.getElementById('t-name').value.trim();
+  if (!name) { document.getElementById('t-err').textContent = 'Zadej název tématu.'; return; }
+  DECK.push({ id: uid(), nazev: name, popis: document.getElementById('t-desc').value.trim(), ikona: pickedIcon, projekty: [] });
+  save(); close('ov-topic'); render();
+});
+
+/* ── Nový web ──────────────────────────────────────── */
+let projTopicIndex = null;
+function openProjectModal(ti) {
+  projTopicIndex = ti;
+  document.getElementById('p-sub').textContent = 'Nový subweb do tématu „' + DECK[ti].nazev + '".';
+  ['p-name','p-desc','p-url','p-tags'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('p-stav').value = 'live';
+  document.getElementById('p-err').textContent = '';
+  open('ov-project');
+  setTimeout(() => document.getElementById('p-name').focus(), 50);
+}
+document.getElementById('p-save').addEventListener('click', () => {
+  const name = document.getElementById('p-name').value.trim();
+  if (!name) { document.getElementById('p-err').textContent = 'Zadej název webu.'; return; }
+  const tags = document.getElementById('p-tags').value.split(',').map(t => t.trim()).filter(Boolean);
+  DECK[projTopicIndex].projekty.push({
+    nazev: name,
+    popis: document.getElementById('p-desc').value.trim(),
+    odkaz: document.getElementById('p-url').value.trim() || '#',
+    tagy: tags,
+    stav: document.getElementById('p-stav').value
+  });
+  save(); close('ov-project'); render();
+});
+
+/* ── Mazání s potvrzením ───────────────────────────── */
+let confirmAction = null;
+function openConfirm(title, msg, action) {
+  document.getElementById('c-title').textContent = title;
+  document.getElementById('c-msg').textContent = msg;
+  confirmAction = action;
+  open('ov-confirm');
+}
+document.getElementById('c-ok').addEventListener('click', () => { if (confirmAction) confirmAction(); confirmAction = null; close('ov-confirm'); });
+
+/* ── Delegované akce v decku ───────────────────────── */
+deckEl.addEventListener('click', e => {
+  const add = e.target.closest('[data-add]');
+  if (add) { openProjectModal(+add.dataset.add); return; }
+
+  const delT = e.target.closest('[data-deltopic]');
+  if (delT) {
+    const ti = +delT.dataset.deltopic; const t = DECK[ti];
+    openConfirm('Smazat téma?', 'Smaže se „' + t.nazev + '" včetně ' + t.projekty.length + ' webů. Akci nelze vrátit.', () => { DECK.splice(ti, 1); save(); render(); });
+    return;
+  }
+  const delP = e.target.closest('[data-delproj]');
+  if (delP) {
+    e.preventDefault();
+    const [ti, pi] = delP.dataset.delproj.split(':').map(Number);
+    const p = DECK[ti].projekty[pi];
+    openConfirm('Smazat web?', 'Smaže se „' + p.nazev + '". Akci nelze vrátit.', () => { DECK[ti].projekty.splice(pi, 1); save(); render(); });
+  }
+});
+
+/* ── Export / Import ───────────────────────────────── */
+document.getElementById('btn-export').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(DECK, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'vibe-deck-zaloha.json';
+  a.click(); URL.revokeObjectURL(a.href);
+});
+const importFile = document.getElementById('import-file');
+document.getElementById('btn-import').addEventListener('click', () => importFile.click());
+importFile.addEventListener('change', () => {
+  const f = importFile.files[0]; if (!f) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      if (!Array.isArray(data)) throw 0;
+      openConfirm('Nahradit obsah?', 'Importovaná záloha přepíše aktuální témata. Pokračovat?', () => { DECK = data; save(); render(); });
+    } catch (e) { openConfirm('Chyba importu', 'Soubor nelze načíst jako platnou zálohu.', () => {}); }
+    importFile.value = '';
+  };
+  reader.readAsText(f);
+});
+
+/* ── Hodiny + razítko ──────────────────────────────── */
+const clockEl = document.getElementById('m-clock');
+function tick() { const d = new Date(), p = n => String(n).padStart(2, '0'); clockEl.textContent = p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds()); }
+tick(); setInterval(tick, 1000);
+document.getElementById('f-stamp').textContent = new Date().toLocaleDateString('cs-CZ', { day:'2-digit', month:'2-digit', year:'numeric' });
+
+/* ── Hvězdné pozadí ────────────────────────────────── */
+(function starfield() {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const cv = document.getElementById('stars'), ctx = cv.getContext('2d');
+  let w, h, stars;
+  function resize() {
+    w = cv.width = window.innerWidth; h = cv.height = window.innerHeight;
+    const count = Math.min(140, Math.floor(w * h / 14000));
+    stars = Array.from({ length: count }, () => ({ x: Math.random()*w, y: Math.random()*h, z: Math.random()*0.8+0.2, tw: Math.random()*Math.PI*2 }));
+  }
+  function frame() {
+    ctx.clearRect(0, 0, w, h);
+    for (const s of stars) {
+      s.tw += 0.02; s.y += s.z * 0.10;
+      if (s.y > h) { s.y = 0; s.x = Math.random()*w; }
+      const a = 0.35 + Math.sin(s.tw) * 0.3;
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.z*1.1, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(150,195,255,' + (a*s.z) + ')'; ctx.fill();
+    }
+    requestAnimationFrame(frame);
+  }
+  resize(); window.addEventListener('resize', resize);
+  if (reduce) { for (const s of stars) { ctx.beginPath(); ctx.arc(s.x, s.y, s.z*1.1, 0, Math.PI*2); ctx.fillStyle = 'rgba(150,195,255,' + (0.4*s.z) + ')'; ctx.fill(); } }
+  else frame();
+})();
+
+render();
+</script>
+</body>
+</html>
