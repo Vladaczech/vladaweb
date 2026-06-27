@@ -91,9 +91,6 @@
   .btn.primary:disabled{opacity:.45;cursor:default;background:var(--accent)}
   .btn.ghost{background:none}
   .btn.grow{flex:1}
-  .btn.ai{border-color:rgba(138,92,246,.4);color:#c4b5fd}
-  .btn.ai:hover{border-color:rgba(138,92,246,.7);background:rgba(138,92,246,.08)}
-  .btn.ai.active{border-color:rgba(138,92,246,.7);background:rgba(138,92,246,.12)}
   .status{font-size:11.5px;color:var(--muted);margin-top:9px;display:flex;align-items:center;gap:6px;min-height:16px}
   .dot{width:7px;height:7px;border-radius:50%;background:var(--muted-dim);flex:none}
   .dot.ok{background:var(--ok)}
@@ -200,33 +197,6 @@
   ::-webkit-scrollbar-thumb{background:#2a323a;border-radius:6px;border:2px solid var(--bg)}
   ::-webkit-scrollbar-thumb:hover{background:#39434c}
 
-  /* ---------- AI assistant ---------- */
-  .ai-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
-  .ai-chip{
-    background:none;border:1px solid var(--line);border-radius:20px;
-    color:var(--muted);font-size:12px;padding:5px 12px;cursor:pointer;
-    font-family:var(--sans);transition:.15s;
-  }
-  .ai-chip:hover{color:var(--text);border-color:rgba(138,92,246,.5);background:rgba(138,92,246,.06)}
-  .ai-result{
-    background:var(--sidebar);border:1px solid var(--line);border-radius:10px;
-    padding:14px 16px;font-family:var(--mono);font-size:12.5px;line-height:1.65;
-    color:var(--text);white-space:pre-wrap;word-break:break-word;
-    max-height:260px;overflow-y:auto;margin-top:14px;
-    min-height:48px;
-  }
-  .ai-result.streaming::after{content:'|';color:rgba(138,92,246,.8);animation:blink .65s step-end infinite}
-  .ai-ctx{
-    background:var(--sidebar);border:1px solid var(--line);border-radius:8px;
-    padding:10px 12px;font-family:var(--mono);font-size:12px;line-height:1.5;
-    color:var(--muted);max-height:72px;overflow:hidden;margin-bottom:16px;
-    position:relative;
-  }
-  .ai-ctx::after{content:"";position:absolute;bottom:0;left:0;right:0;height:24px;background:linear-gradient(transparent,var(--sidebar))}
-  @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
-  .ai-spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(138,92,246,.3);border-top-color:rgba(138,92,246,.9);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
-  @keyframes spin{to{transform:rotate(360deg)}}
-
   /* ---------- Command palette ---------- */
   .pal-ov{
     position:fixed;inset:0;background:rgba(8,10,12,.72);backdrop-filter:blur(4px);
@@ -271,9 +241,7 @@
     .topbar{flex-wrap:wrap;padding:10px 14px;gap:8px}
     .topbar .menu-btn{order:0}
     .topbar .crumbs{order:1;flex:1}
-    .topbar #aiBtn{order:2;padding:8px 10px}
-    .topbar #aiBtn .btn-label{display:none}
-    .topbar #addPrompt{order:3;padding:8px 10px;min-width:0}
+    .topbar #addPrompt{order:2;padding:8px 10px;min-width:0}
     .topbar #addPrompt .btn-label{display:none}
     .search{order:4;flex:1 1 100%}
     .search input{width:100% !important}
@@ -338,10 +306,6 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
         <input type="text" id="searchInput" placeholder="Hledat v promptech...">
       </div>
-      <button class="btn ai" id="aiBtn" title="AI asistent (Claude)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/></svg>
-        <span class="btn-label">AI asistent</span>
-      </button>
       <button class="btn" id="addPrompt">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
         <span class="btn-label">Nový prompt</span>
@@ -385,13 +349,12 @@ const LS = {
   get(k){try{return localStorage.getItem(k)}catch(e){return null}},
   set(k,v){try{localStorage.setItem(k,v)}catch(e){}},
 };
-const K_CACHE='promptbox.cache', K_CFG='promptbox.config', K_TOK='promptbox.token', K_CLAUDE='promptbox.claude';
+const K_CACHE='promptbox.cache', K_CFG='promptbox.config', K_TOK='promptbox.token';
 
 /* ============ stav ============ */
 let state = { themes: [] };
 let config = { owner:'vladaczech', repo:'vladaweb', path:'prompts.json', branch:'main' };
 let token = '';
-let claudeKey = '';
 let remoteSha = null;
 let dirty = false;
 let activeTheme = null;
@@ -400,7 +363,6 @@ let search = '';
 (function init(){
   try{ const c=LS.get(K_CFG); if(c) config={...config,...JSON.parse(c)}; }catch(e){}
   token = LS.get(K_TOK) || '';
-  claudeKey = LS.get(K_CLAUDE) || '';
   try{ const d=LS.get(K_CACHE); if(d){ const p=JSON.parse(d); if(p&&Array.isArray(p.themes)) state=p; } }catch(e){}
   if(state.themes[0]) activeTheme = state.themes[0].id;
 })();
@@ -429,7 +391,6 @@ function extractVars(body){
 
 const COPY_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
 const CHECK_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
-const AI_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/></svg>';
 
 function fillVarsModal(body, vars){
   openModal(`
@@ -465,166 +426,6 @@ function fillVarsModal(body, vars){
   document.querySelectorAll('.fv-inp').forEach(el=>{
     el.addEventListener('keydown',e=>{ if(e.key==='Enter') doFill(); });
   });
-}
-
-/* ============ Claude API ============ */
-let aiAbort = null;
-
-async function callClaudeStream(userMsg, system, onChunk){
-  if(!claudeKey) throw new Error('Chybí API klíč Anthropic. Nastav ho v Nastavení.');
-  if(aiAbort) aiAbort.abort();
-  aiAbort = new AbortController();
-  const res = await fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
-    signal: aiAbort.signal,
-    headers:{
-      'Content-Type':'application/json',
-      'x-api-key': claudeKey,
-      'anthropic-version':'2023-06-01',
-      'anthropic-dangerous-direct-browser-access':'true'
-    },
-    body: JSON.stringify({
-      model:'claude-sonnet-4-6',
-      max_tokens:2048,
-      stream:true,
-      system,
-      messages:[{role:'user',content:userMsg}]
-    })
-  });
-  if(!res.ok){
-    const e=await res.json().catch(()=>({}));
-    throw new Error(e.error?.message||'HTTP '+res.status);
-  }
-  const reader=res.body.getReader();
-  const dec=new TextDecoder();
-  let buf='', full='';
-  while(true){
-    const{done,value}=await reader.read();
-    if(done) break;
-    buf+=dec.decode(value,{stream:true});
-    const lines=buf.split('\n');
-    buf=lines.pop();
-    for(const line of lines){
-      if(!line.startsWith('data: ')) continue;
-      const json=line.slice(6).trim();
-      if(!json||json==='[DONE]') continue;
-      try{
-        const ev=JSON.parse(json);
-        if(ev.type==='content_block_delta'&&ev.delta?.type==='text_delta'){
-          full+=ev.delta.text;
-          onChunk(full);
-        }
-      }catch{}
-    }
-  }
-  aiAbort=null;
-  return full;
-}
-
-/* ============ AI modal ============ */
-/* opts: { contextBody, promptId, themeId } */
-function aiModal(opts){
-  opts=opts||{};
-  if(!claudeKey){
-    toast('Nastav API klíč Claude v Nastavení','warn');
-    settingsModal();
-    return;
-  }
-  const hasCtx=!!(opts.contextBody&&opts.contextBody.trim());
-  openModal(`
-    <div class="modal">
-      <div class="mhead">
-        <span class="eyebrow">Anthropic Claude</span>
-        <h3>AI asistent</h3>
-        <button class="icon-btn x" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
-      </div>
-      <div class="mbody">
-        ${hasCtx?`
-          <div style="margin-bottom:16px">
-            <div class="lbl" style="margin-bottom:6px;display:block">Aktuální prompt (kontext)</div>
-            <div class="ai-ctx">${esc(opts.contextBody)}</div>
-          </div>`:''}
-        <label class="fld" style="margin-bottom:10px">
-          <span class="lbl">Zadání</span>
-          <textarea class="textarea" id="aiTask" style="min-height:82px" placeholder="Co má Claude vytvořit nebo jak vylepšit prompt? Cmd/Ctrl+Enter odešle."></textarea>
-        </label>
-        <div class="ai-chips">
-          ${hasCtx?'<button class="ai-chip" data-chip="Vylepši tento prompt — udělej ho přesnější, jasnější a efektivnější.">Vylepši prompt</button>':''}
-          ${hasCtx?'<button class="ai-chip" data-chip="Přidej do tohoto promptu proměnné ve formátu {{nazev_promenne}} pro části, které by měl uživatel vyplnit.">Přidej proměnné</button>':''}
-          ${hasCtx?'<button class="ai-chip" data-chip="Zkrať a zhutni tento prompt, zachovej jeho smysl.">Zkrať</button>':''}
-          <button class="ai-chip" data-chip="Napiš systémový prompt pro AI asistenta specializovaného na:">Systémový prompt</button>
-          <button class="ai-chip" data-chip="Napiš prompt pro analýzu a shrnutí textu s proměnnou {{text}}.">Shrnutí textu</button>
-        </div>
-        <div id="aiResultWrap" style="display:none">
-          <div class="lbl" style="display:block;margin-bottom:6px">Výsledek</div>
-          <pre class="ai-result" id="aiResult"></pre>
-        </div>
-      </div>
-      <div class="mfoot">
-        <button class="btn ghost left" id="aiUse" style="display:none">Vložit do editoru</button>
-        <button class="btn ghost" data-close>Zavřít</button>
-        <button class="btn ai" id="aiGen" style="border-color:rgba(138,92,246,.6);color:#c4b5fd">
-          ${AI_SVG} Vygenerovat
-        </button>
-      </div>
-    </div>`);
-  setTimeout(()=>$('#aiTask')?.focus(),50);
-
-  /* quick chips */
-  document.querySelectorAll('.ai-chip').forEach(btn=>{
-    btn.addEventListener('click',()=>{ const ta=$('#aiTask'); if(ta) ta.value=btn.dataset.chip; ta.focus(); });
-  });
-
-  let lastResult='';
-
-  const doGenerate=async()=>{
-    const task=$('#aiTask').value.trim();
-    if(!task){ $('#aiTask').focus(); return; }
-    const genBtn=$('#aiGen'), wrap=$('#aiResultWrap'), result=$('#aiResult'), useBtn=$('#aiUse');
-    genBtn.disabled=true;
-    genBtn.innerHTML='<span class="ai-spin"></span>Generuji...';
-    wrap.style.display='block';
-    result.textContent='';
-    result.classList.add('streaming');
-    useBtn.style.display='none';
-    lastResult='';
-
-    const system=`Jsi expert na psaní promptů pro velké jazykové modely.
-Pravidla:
-- Odpovídej POUZE samotným promptem. Žádné vysvětlování, žádný úvod, žádné uvozovky.
-- Proměnné piš jako {{nazev_promenne}} (česky, snake_case).
-- Piš česky, pokud uživatel nespecifikuje jinak.`;
-    const userMsg=hasCtx
-      ? `Aktuální prompt:\n\n${opts.contextBody}\n\n---\n\nZadání: ${task}`
-      : `Zadání: ${task}`;
-
-    try{
-      await callClaudeStream(userMsg,system,partial=>{
-        lastResult=partial;
-        const el=$('#aiResult'); if(el) el.textContent=partial;
-      });
-      const r=$('#aiResult'); if(r) r.classList.remove('streaming');
-      const u=$('#aiUse'); if(u) u.style.display='';
-    }catch(e){
-      if(e.name==='AbortError') return;
-      const r=$('#aiResult');
-      if(r){ r.classList.remove('streaming'); r.textContent='Chyba: '+e.message; }
-    }finally{
-      const g=$('#aiGen');
-      if(g){ g.disabled=false; g.innerHTML=AI_SVG+' Vygenerovat'; }
-    }
-  };
-
-  $('#aiGen').onclick=doGenerate;
-  $('#aiTask').addEventListener('keydown',e=>{
-    if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){ e.preventDefault(); doGenerate(); }
-  });
-
-  $('#aiUse').onclick=()=>{
-    if(opts.themeId) activeTheme=opts.themeId;
-    closeModal();
-    promptEditModal(opts.promptId||null,{body:lastResult});
-  };
 }
 
 /* ============ status + toast ============ */
@@ -753,12 +554,10 @@ async function copyText(text){
 
 /* ============ modály ============ */
 function openModal(html){
-  if(aiAbort){ aiAbort.abort(); aiAbort=null; }
   $('#modalSlot').innerHTML=html;
   $('#overlay').classList.add('show');
 }
 function closeModal(){
-  if(aiAbort){ aiAbort.abort(); aiAbort=null; }
   $('#overlay').classList.remove('show');
   $('#modalSlot').innerHTML='';
 }
@@ -815,7 +614,6 @@ function deleteThemeModal(id){
 }
 
 /* --- prompt: vytvořit / upravit --- */
-/* defaults = { body, title } – předvyplnění (např. z AI asistenta) */
 function promptEditModal(promptId, defaults){
   if(!activeTheme){ toast('Nejdřív vyber nebo vytvoř téma','warn'); return; }
   const theme=themeById(activeTheme);
@@ -835,7 +633,6 @@ function promptEditModal(promptId, defaults){
       </div>
       <div class="mfoot">
         ${p?'<button class="btn ghost left" id="pDelete" style="color:var(--danger)">Smazat</button>':''}
-        <button class="btn ai" id="pAI" title="Otevřít AI asistenta s tímto promptem">${AI_SVG} AI</button>
         <button class="btn ghost" data-close>Zrušit</button>
         <button class="btn primary" id="pSave">${p?'Uložit změny':'Přidat prompt'}</button>
       </div>
@@ -851,12 +648,6 @@ function promptEditModal(promptId, defaults){
   };
   bodyEl.addEventListener('input',updateHint);
   updateHint();
-
-  /* AI asistent z editoru – použije aktuální obsah textarey jako kontext */
-  $('#pAI').onclick=()=>{
-    const body=$('#pBody').value;
-    aiModal({contextBody:body, promptId:p?.id, themeId:activeTheme});
-  };
 
   $('#pSave').onclick=()=>{
     const title=$('#pTitle').value.trim();
@@ -886,7 +677,6 @@ function viewPromptModal(promptId, themeId){
       </div>
       <div class="mfoot">
         <button class="btn ghost left" id="pvEdit">Upravit</button>
-        <button class="btn ai" id="pvAI" title="Otevřít AI asistenta s tímto promptem">${AI_SVG} AI</button>
         <button class="btn ghost" data-close>Zavřít</button>
         <button class="btn primary" id="pvCopy">${COPY_SVG} Kopírovat prompt</button>
       </div>
@@ -903,9 +693,6 @@ function viewPromptModal(promptId, themeId){
   $('#pvEdit').onclick=()=>{
     if(themeId) activeTheme=themeId;
     closeModal(); promptEditModal(p.id);
-  };
-  $('#pvAI').onclick=()=>{
-    aiModal({contextBody:p.body, promptId:p.id, themeId:themeId||activeTheme});
   };
 }
 
@@ -927,11 +714,6 @@ function settingsModal(){
         <div class="hint" style="margin-bottom:18px">
           Vytvoř <b>Fine-grained PAT</b> na <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/personal-access-tokens</a> → oprávnění <code>Contents: Read and write</code>.
         </div>
-        <label class="fld" style="margin-bottom:6px"><span class="lbl">Anthropic API klíč (Claude AI)</span>
-          <input class="input" id="cfgClaude" type="password" value="${esc(claudeKey)}" placeholder="sk-ant-..." autocomplete="off"></label>
-        <div class="hint">
-          Klíč zůstává <b>jen v tomto prohlížeči</b> a nikdy se neukládá do repozitáře. Získáš ho na <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a>.
-        </div>
       </div>
       <div class="mfoot">
         <button class="btn ghost left" id="cfgExport">Export JSON</button>
@@ -946,26 +728,16 @@ function settingsModal(){
     config.path=$('#cfgPath').value.trim()||'prompts.json';
     config.branch=$('#cfgBranch').value.trim()||'main';
     token=$('#cfgToken').value.trim();
-    claudeKey=$('#cfgClaude').value.trim();
     LS.set(K_CFG,JSON.stringify(config));
     LS.set(K_TOK,token);
-    LS.set(K_CLAUDE,claudeKey);
     remoteSha=null;
     closeModal(); toast('Nastavení uloženo'); renderStatus();
-    updateAiBtn();
   };
   $('#cfgExport').onclick=()=>{
     const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='prompts-zaloha.json';a.click();
     setTimeout(()=>URL.revokeObjectURL(a.href),1000);
   };
-}
-
-function updateAiBtn(){
-  const btn=$('#aiBtn');
-  if(!btn) return;
-  if(claudeKey){ btn.classList.add('active'); btn.title='AI asistent (Claude – aktivní)'; }
-  else{ btn.classList.remove('active'); btn.title='AI asistent (nastav API klíč v Nastavení)'; }
 }
 
 /* ============ GitHub API ============ */
@@ -1090,7 +862,6 @@ $('#paletteOv').addEventListener('mousedown',e=>{ if(e.target.id==='paletteOv') 
 /* ============ události ============ */
 $('#addTheme').onclick=()=>themeModal();
 $('#addPrompt').onclick=()=>promptEditModal();
-$('#aiBtn').onclick=()=>aiModal({});
 $('#settingsBtn').onclick=settingsModal;
 $('#saveBtn').onclick=push;
 $('#reloadBtn').onclick=()=>{ if(dirty&&!confirm('Máš neuložené změny, které se přepíšou verzí z GitHubu. Pokračovat?')) return; pull(false); };
@@ -1155,7 +926,6 @@ document.addEventListener('keydown',e=>{
 });
 
 /* ============ start ============ */
-updateAiBtn();
 renderAll();
 if(config.owner&&config.repo){ pull(true); }
 </script>
