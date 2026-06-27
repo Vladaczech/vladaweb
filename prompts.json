@@ -3,7 +3,15 @@
     {
       "id": "mqwi3we1thj4a",
       "name": "Práce",
-      "prompts": []
+      "prompts": [
+        {
+          "id": "mqwl7bhha3l49",
+          "title": "Zkouška.",
+          "body": "Zkouška\n",
+          "createdAt": 1782578481894,
+          "updatedAt": 1782578481894
+        }
+      ]
     },
     {
       "id": "mqwi418jaeewq",
