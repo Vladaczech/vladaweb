@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>RYCHLOPOČTY — bleskové počítání zpaměti</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0E1726;
+    --surface:#16223A;
+    --surface-2:#1E2E4C;
+    --line:#2A3A5C;
+    --text:#E2E8F0;
+    --muted:#7C8AA5;
+    --accent:#A78BFA;
+    --op-add:#34D399;
+    --op-sub:#38BDF8;
+    --op-mul:#FBBF24;
+    --op-div:#F472B6;
+    --ok:#34D399;
+    --bad:#F87171;
+    --display:"Space Grotesk", system-ui, sans-serif;
+    --mono:"JetBrains Mono", ui-monospace, monospace;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:var(--display);
+    background:
+      radial-gradient(1200px 600px at 50% -10%, rgba(167,139,250,.10), transparent 60%),
+      var(--bg);
+    color:var(--text);
+    display:flex;align-items:center;justify-content:center;
+    padding:16px;
+    -webkit-user-select:none;user-select:none;
+    overflow:hidden;
+  }
+
+  .app{
+    position:relative;width:100%;max-width:440px;
+    height:min(780px, 96vh);
+    background:linear-gradient(180deg, rgba(30,46,76,.55), rgba(22,34,58,.55));
+    border:1px solid var(--line);border-radius:22px;
+    box-shadow:0 30px 80px -20px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.04);
+    overflow:hidden;display:flex;flex-direction:column;
+  }
+  .net-bg{position:absolute;inset:0;opacity:.4;pointer-events:none}
+
+  /* ---------- HUD ---------- */
+  .hud{position:relative;z-index:3;padding:14px 16px 10px;border-bottom:1px solid var(--line);background:rgba(14,23,38,.35);backdrop-filter:blur(4px)}
+  .brand{display:flex;align-items:center;gap:9px;font-size:12px;letter-spacing:.26em;text-transform:uppercase;color:var(--muted)}
+  .brand .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent)}
+  .stats{margin-top:10px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+  .stat .k{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .stat .v{font-family:var(--mono);font-weight:700;font-size:18px;margin-top:2px}
+  .stat.pulse .v{animation:pop .3s ease}
+  @keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.25);color:var(--ok)}100%{transform:scale(1)}}
+
+  .meta-bar{margin-top:10px;display:flex;align-items:center;justify-content:space-between;gap:10px;background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.35);border-radius:12px;padding:7px 12px}
+  .meta-bar .label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#C4B5FD}
+  .lives{display:flex;gap:5px}
+  .pip{width:9px;height:9px;border-radius:50%;background:#3A2B4A;border:1px solid rgba(244,114,182,.4)}
+  .pip.on{background:var(--op-div);box-shadow:0 0 8px rgba(244,114,182,.7);border-color:transparent}
+
+  /* ---------- HRACÍ POLE ---------- */
+  .field{position:relative;flex:1;min-height:150px;overflow:hidden}
+  .track{position:absolute;left:50%;top:0;bottom:0;width:0;border-left:1px dashed rgba(124,138,165,.18);transform:translateX(-50%)}
+  .token{
+    position:absolute;left:50%;top:-80px;transform:translateX(-50%);
+    white-space:nowrap;
+    padding:16px 22px;border-radius:16px;
+    background:var(--surface-2);border:1px solid var(--line);
+    box-shadow:0 14px 34px -10px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.06);
+    font-family:var(--mono);font-weight:700;font-size:30px;letter-spacing:.02em;
+    will-change:top;
+  }
+  .token .op{margin:0 4px}
+  .token.gone{transition:top .2s ease-in, opacity .2s ease-in;opacity:0}
+
+  /* ---------- VSTUP ---------- */
+  .inputzone{position:relative;z-index:2;padding:6px 16px 14px}
+  .inputbar{
+    display:flex;align-items:center;justify-content:center;
+    min-height:54px;border-radius:13px;
+    background:var(--surface);border:1px solid var(--line);
+    font-family:var(--mono);font-weight:700;font-size:30px;letter-spacing:.06em;
+    margin-bottom:10px;transition:box-shadow .15s ease, background .15s ease, color .15s ease;
+  }
+  .inputbar.empty{color:var(--muted);font-weight:500;font-size:16px;letter-spacing:.1em}
+  .inputbar.ok{background:rgba(52,211,153,.16);box-shadow:0 0 0 2px rgba(52,211,153,.55) inset;color:var(--ok)}
+  .inputbar.bad{background:rgba(248,113,113,.16);box-shadow:0 0 0 2px rgba(248,113,113,.55) inset;color:var(--bad)}
+
+  .keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .key{
+    font-family:var(--mono);font-weight:700;font-size:22px;color:var(--text);
+    background:var(--surface);border:1px solid var(--line);border-radius:12px;
+    padding:14px 0;cursor:pointer;text-align:center;
+    transition:transform .08s ease, background .12s ease;
+  }
+  .key:hover{background:var(--surface-2)}
+  .key:active{transform:translateY(2px)}
+  .key.fn{color:var(--accent);font-size:18px}
+  .key.ok{background:linear-gradient(180deg,#C4B5FD,#A78BFA);color:#0E1726;font-size:18px;letter-spacing:.06em}
+  .key:focus-visible{outline:3px solid #DDD6FE;outline-offset:2px}
+
+  /* ---------- PŘEKRYVY ---------- */
+  .overlay{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;text-align:center;padding:26px 24px;overflow-y:auto;background:linear-gradient(180deg, rgba(14,23,38,.9), rgba(14,23,38,.97));backdrop-filter:blur(6px)}
+  .overlay.hidden{display:none}
+  .overlay .inner{margin:auto 0;width:100%}
+  .title{font-size:30px;font-weight:700;letter-spacing:.01em;line-height:1.05}
+  .title .hl{color:var(--accent)}
+  .subtitle{color:var(--muted);margin-top:10px;font-size:14px;max-width:320px;line-height:1.5;margin-left:auto;margin-right:auto}
+
+  .cfg{margin-top:18px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;max-width:340px;width:100%;margin-left:auto;margin-right:auto}
+  .cfg h4{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:9px}
+  .cfg h4:not(:first-child){margin-top:16px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{
+    font-family:var(--display);font-size:13px;font-weight:500;color:var(--muted);
+    background:var(--surface-2);border:1.5px solid var(--line);border-radius:10px;
+    padding:8px 12px;cursor:pointer;display:flex;align-items:center;gap:7px;
+    transition:border-color .15s ease, color .15s ease, background .15s ease;
+  }
+  .chip .mark{font-family:var(--mono);font-weight:700}
+  .chip[aria-pressed="true"]{color:var(--text);background:rgba(167,139,250,.12);border-color:var(--accent)}
+  .chip.add[aria-pressed="true"]{border-color:var(--op-add)} .chip.add .mark{color:var(--op-add)}
+  .chip.sub[aria-pressed="true"]{border-color:var(--op-sub)} .chip.sub .mark{color:var(--op-sub)}
+  .chip.mul[aria-pressed="true"]{border-color:var(--op-mul)} .chip.mul .mark{color:var(--op-mul)}
+  .chip.div[aria-pressed="true"]{border-color:var(--op-div)} .chip.div .mark{color:var(--op-div)}
+  .warn{color:var(--bad);font-size:12px;margin-top:10px;min-height:16px}
+
+  .btn{margin-top:20px;font-family:var(--display);font-weight:700;font-size:16px;letter-spacing:.04em;color:#0E1726;background:linear-gradient(180deg,#C4B5FD,#A78BFA);border:none;border-radius:13px;padding:14px 30px;cursor:pointer;box-shadow:0 12px 26px -8px rgba(167,139,250,.6);transition:transform .1s ease}
+  .btn:hover{transform:translateY(-1px)} .btn:active{transform:translateY(1px)}
+  .btn:focus-visible{outline:3px solid #DDD6FE;outline-offset:2px}
+
+  .result-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px;width:100%;max-width:340px;margin-left:auto;margin-right:auto}
+  .result-grid .r{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px}
+  .result-grid .r .k{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .result-grid .r .v{font-family:var(--mono);font-weight:700;font-size:24px;margin-top:3px}
+  .verdict{margin-top:16px;font-size:14px;color:var(--muted);min-height:20px;max-width:320px;margin-left:auto;margin-right:auto}
+
+  @media (prefers-reduced-motion: reduce){
+    .token,.token.gone{transition:none !important}
+    .stat.pulse .v{animation:none}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <svg class="net-bg" viewBox="0 0 440 780" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <g stroke="#2A3A5C" stroke-width="1" opacity="0.6">
+      <line x1="60" y1="120" x2="200" y2="240"/><line x1="60" y1="120" x2="200" y2="420"/>
+      <line x1="60" y1="320" x2="200" y2="240"/><line x1="60" y1="320" x2="200" y2="420"/>
+      <line x1="60" y1="520" x2="200" y2="420"/><line x1="200" y1="240" x2="380" y2="330"/>
+      <line x1="200" y1="420" x2="380" y2="330"/><line x1="200" y1="420" x2="380" y2="540"/>
+    </g>
+    <g fill="#1E2E4C" stroke="#2A3A5C">
+      <circle cx="60" cy="120" r="7"/><circle cx="60" cy="320" r="7"/><circle cx="60" cy="520" r="7"/>
+      <circle cx="200" cy="240" r="9"/><circle cx="200" cy="420" r="9"/>
+      <circle cx="380" cy="330" r="8"/><circle cx="380" cy="540" r="8"/>
+    </g>
+  </svg>
+
+  <!-- HUD -->
+  <div class="hud">
+    <div class="brand"><span class="dot"></span>Rychlopočty · trenažér</div>
+    <div class="stats">
+      <div class="stat" id="statScore"><div class="k">Skóre</div><div class="v" id="score">0</div></div>
+      <div class="stat"><div class="k">Přesnost</div><div class="v" id="acc">—</div></div>
+      <div class="stat"><div class="k">Série</div><div class="v" id="streak">0</div></div>
+    </div>
+    <div class="meta-bar">
+      <span class="label">Úroveň <span id="level">1</span></span>
+      <div class="lives" id="lives"></div>
+    </div>
+  </div>
+
+  <!-- POLE -->
+  <div class="field" id="field"><div class="track"></div></div>
+
+  <!-- VSTUP -->
+  <div class="inputzone">
+    <div class="inputbar empty" id="inputbar">zadej výsledek</div>
+    <div class="keypad" id="keypad">
+      <button class="key" data-k="1">1</button>
+      <button class="key" data-k="2">2</button>
+      <button class="key" data-k="3">3</button>
+      <button class="key" data-k="4">4</button>
+      <button class="key" data-k="5">5</button>
+      <button class="key" data-k="6">6</button>
+      <button class="key" data-k="7">7</button>
+      <button class="key" data-k="8">8</button>
+      <button class="key" data-k="9">9</button>
+      <button class="key fn" data-k="del">⌫</button>
+      <button class="key" data-k="0">0</button>
+      <button class="key ok" data-k="ok">OK</button>
+    </div>
+  </div>
+
+  <!-- ÚVOD -->
+  <div class="overlay" id="startScreen">
+    <div class="inner">
+      <div class="title">RYCHLO<span class="hl">POČTY</span></div>
+      <div class="subtitle">Počítej zpaměti rychleji, než příklad dopadne na dno. Vyber si operace a řády.</div>
+      <div class="cfg">
+        <h4>Operace</h4>
+        <div class="chips" id="opChips">
+          <div class="chip add" data-op="+" role="button" tabindex="0" aria-pressed="true"><span class="mark">+</span>Sčítání</div>
+          <div class="chip sub" data-op="-" role="button" tabindex="0" aria-pressed="true"><span class="mark">−</span>Odčítání</div>
+          <div class="chip mul" data-op="×" role="button" tabindex="0" aria-pressed="true"><span class="mark">×</span>Násobení</div>
+          <div class="chip div" data-op="÷" role="button" tabindex="0" aria-pressed="true"><span class="mark">÷</span>Dělení</div>
+        </div>
+        <h4>Řády</h4>
+        <div class="chips" id="magChips">
+          <div class="chip" data-mag="u" role="button" tabindex="0" aria-pressed="true">Jednotky</div>
+          <div class="chip" data-mag="d" role="button" tabindex="0" aria-pressed="true">Desítky</div>
+          <div class="chip" data-mag="s" role="button" tabindex="0" aria-pressed="true">Stovky</div>
+          <div class="chip" data-mag="t" role="button" tabindex="0" aria-pressed="true">Tisíce</div>
+        </div>
+        <div class="warn" id="warn"></div>
+      </div>
+      <button class="btn" id="startBtn">Spustit</button>
+    </div>
+  </div>
+
+  <!-- KONEC -->
+  <div class="overlay hidden" id="endScreen">
+    <div class="inner">
+      <div class="title">Konec <span class="hl">tréninku</span></div>
+      <div class="result-grid">
+        <div class="r"><div class="k">Skóre</div><div class="v" id="endScore">0</div></div>
+        <div class="r"><div class="k">Přesnost</div><div class="v" id="endAcc">0 %</div></div>
+        <div class="r"><div class="k">Úroveň</div><div class="v" id="endLevel">1</div></div>
+        <div class="r"><div class="k">Nejdelší série</div><div class="v" id="endStreak">0</div></div>
+      </div>
+      <div class="verdict" id="verdict"></div>
+      <button class="btn" id="restartBtn">Hrát znovu</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  const field = document.getElementById('field');
+  const inputbar = document.getElementById('inputbar');
+  const keypad = document.getElementById('keypad');
+  const scoreEl = document.getElementById('score');
+  const accEl = document.getElementById('acc');
+  const streakEl = document.getElementById('streak');
+  const levelEl = document.getElementById('level');
+  const livesEl = document.getElementById('lives');
+  const statScore = document.getElementById('statScore');
+  const startScreen = document.getElementById('startScreen');
+  const endScreen = document.getElementById('endScreen');
+  const startBtn = document.getElementById('startBtn');
+  const restartBtn = document.getElementById('restartBtn');
+  const warn = document.getElementById('warn');
+  const opChips = document.getElementById('opChips');
+  const magChips = document.getElementById('magChips');
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const MAX_LIVES = 5;
+  const RANGES = { u:[2,9], d:[10,99], s:[100,999], t:[1000,9999] };
+  const OP_COLOR = { '+':'var(--op-add)', '-':'var(--op-sub)', '×':'var(--op-mul)', '÷':'var(--op-div)' };
+
+  let selectedOps = new Set(['+','-','×','÷']);
+  let selectedMags = new Set(['u','d','s','t']);
+
+  let state = null;
+
+  function rint(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+  function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+  // ---- nastavení (chipy) ----
+  function bindChips(container, set, key){
+    container.addEventListener('click', (e)=>{
+      const chip = e.target.closest('.chip'); if(!chip) return;
+      toggleChip(chip, set, key);
+    });
+    container.addEventListener('keydown', (e)=>{
+      if(e.key==='Enter' || e.key===' '){
+        const chip = e.target.closest('.chip'); if(!chip) return;
+        e.preventDefault(); toggleChip(chip, set, key);
+      }
+    });
+  }
+  function toggleChip(chip, set, key){
+    const val = chip.dataset[key];
+    const on = chip.getAttribute('aria-pressed')==='true';
+    if(on){ set.delete(val); chip.setAttribute('aria-pressed','false'); }
+    else { set.add(val); chip.setAttribute('aria-pressed','true'); }
+    warn.textContent='';
+  }
+  bindChips(opChips, selectedOps, 'op');
+  bindChips(magChips, selectedMags, 'mag');
+
+  // ---- generování příkladu ----
+  function genProblem(){
+    const op = pick([...selectedOps]);
+    const mag = pick([...selectedMags]);
+    const [lo,hi] = RANGES[mag];
+    let a,b,ans,text;
+    if(op==='+'){ a=rint(lo,hi); b=rint(lo,hi); ans=a+b; text=`${a} + ${b}`; }
+    else if(op==='-'){ a=rint(lo,hi); b=rint(lo,hi); if(b>a){const t=a;a=b;b=t;} ans=a-b; text=`${a} − ${b}`; }
+    else if(op==='×'){ a=rint(lo,hi); b=rint(2,9); ans=a*b; text=`${a} × ${b}`; }
+    else { b=rint(2,9); const c=rint(lo,hi); a=b*c; ans=c; text=`${a} ÷ ${b}`; }
+    return { text, ans, op };
+  }
+
+  // ---- token ----
+  function spawnProblem(){
+    const p = genProblem();
+    const el = document.createElement('div');
+    el.className = 'token';
+    // obarvíme operátor
+    const html = p.text.replace(/([+\-−×÷])/, '<span class="op" style="color:'+OP_COLOR[p.op]+'">$1</span>');
+    el.innerHTML = html;
+    field.appendChild(el);
+
+    const digits = String(p.ans).length;
+    const duration = state.fallDuration + (digits-1)*550; // delší výsledky = víc času
+
+    state.problem = { el, ans:p.ans, op:p.op, resolved:false, spawnedAt:performance.now(), duration };
+    state.typed = '';
+    renderInput();
+  }
+
+  function loop(ts){
+    if(!state.running) return;
+    const p = state.problem;
+    if(p && !p.resolved){
+      const fieldH = field.clientHeight;
+      const progress = (ts - p.spawnedAt) / p.duration;
+      p.el.style.top = (-80 + progress*(fieldH+20)) + 'px';
+      if(progress >= 1){ resolve(null, true); }
+    }
+    state.rafId = requestAnimationFrame(loop);
+  }
+
+  // ---- vstup ----
+  function renderInput(){
+    if(state.typed===''){ inputbar.classList.add('empty'); inputbar.textContent='zadej výsledek'; }
+    else { inputbar.classList.remove('empty'); inputbar.textContent=state.typed; }
+  }
+  function addDigit(d){
+    if(!state.running || !state.problem || state.problem.resolved) return;
+    if(state.typed.length>=6) return;
+    if(state.typed==='' && d==='0') return;
+    state.typed += d; renderInput();
+  }
+  function delDigit(){
+    if(!state.running) return;
+    state.typed = state.typed.slice(0,-1); renderInput();
+  }
+  function submit(){
+    if(!state.running || !state.problem || state.problem.resolved) return;
+    if(state.typed==='') return;
+    resolve(parseInt(state.typed,10), false);
+  }
+
+  // ---- vyhodnocení ----
+  function resolve(answer, missed){
+    const p = state.problem;
+    if(!p || p.resolved) return;
+    p.resolved = true;
+    state.total++;
+
+    const correct = !missed && answer === p.ans;
+
+    if(correct){
+      state.correct++;
+      state.streak++;
+      if(state.streak > state.bestStreak) state.bestStreak = state.streak;
+      const pts = 10 + state.level*2 + Math.min(state.streak,10)*2;
+      state.score += pts;
+      state.correctThisLevel++;
+      flashInput(true);
+      statScore.classList.remove('pulse'); void statScore.offsetWidth; statScore.classList.add('pulse');
+    } else {
+      state.streak = 0;
+      state.integrity--;
+      flashInput(false, p.ans);
+    }
+
+    // odstranění tokenu
+    p.el.classList.add('gone');
+    p.el.style.top = (field.clientHeight + 40) + 'px';
+    const dead = p.el;
+    setTimeout(()=> dead.remove(), reduceMotion?0:220);
+
+    updateHUD();
+
+    if(state.integrity <= 0){ setTimeout(endGame, correct?0:500); return; }
+    if(state.correctThisLevel >= 8) levelUp();
+
+    state.problem = null;
+    const delay = correct ? (reduceMotion?40:140) : (reduceMotion?40:520);
+    setTimeout(()=>{ if(state.running && !state.problem) spawnProblem(); }, delay);
+  }
+
+  function flashInput(ok, correctAns){
+    inputbar.classList.remove('empty');
+    if(ok){
+      inputbar.classList.add('ok');
+      setTimeout(()=>{ inputbar.classList.remove('ok'); }, 200);
+    } else {
+      inputbar.classList.add('bad');
+      inputbar.textContent = (state.typed!=='' ? state.typed+'  →  ' : '') + correctAns;
+      setTimeout(()=>{ inputbar.classList.remove('bad'); }, 480);
+    }
+  }
+
+  function levelUp(){
+    state.level++;
+    state.correctThisLevel = 0;
+    state.fallDuration = Math.max(2400, state.fallDuration - 300);
+  }
+
+  // ---- HUD ----
+  function renderLives(){
+    livesEl.innerHTML='';
+    for(let i=0;i<MAX_LIVES;i++){
+      const pip=document.createElement('span');
+      pip.className='pip'+(i<state.integrity?' on':'');
+      livesEl.appendChild(pip);
+    }
+  }
+  function updateHUD(){
+    scoreEl.textContent = state.score;
+    streakEl.textContent = state.streak;
+    levelEl.textContent = state.level;
+    accEl.textContent = state.total ? Math.round(state.correct/state.total*100)+' %' : '—';
+    renderLives();
+  }
+
+  // ---- start / konec ----
+  function startGame(){
+    if(selectedOps.size===0){ warn.textContent='Vyber alespoň jednu operaci.'; return; }
+    if(selectedMags.size===0){ warn.textContent='Vyber alespoň jeden řád.'; return; }
+    if(state && state.rafId) cancelAnimationFrame(state.rafId);
+    if(state && state.problem && state.problem.el) state.problem.el.remove();
+
+    state = {
+      running:true, score:0, correct:0, total:0, level:1,
+      integrity:MAX_LIVES, fallDuration:6500,
+      streak:0, bestStreak:0, correctThisLevel:0,
+      problem:null, typed:'', rafId:null
+    };
+    startScreen.classList.add('hidden');
+    endScreen.classList.add('hidden');
+    inputbar.classList.remove('ok','bad');
+    updateHUD();
+    renderInput();
+    spawnProblem();
+    state.rafId = requestAnimationFrame(loop);
+  }
+
+  function endGame(){
+    state.running = false;
+    if(state.rafId) cancelAnimationFrame(state.rafId);
+    if(state.problem && state.problem.el) state.problem.el.remove();
+    state.problem = null;
+
+    const acc = state.total ? Math.round(state.correct/state.total*100) : 0;
+    document.getElementById('endScore').textContent = state.score;
+    document.getElementById('endAcc').textContent = acc+' %';
+    document.getElementById('endLevel').textContent = state.level;
+    document.getElementById('endStreak').textContent = state.bestStreak;
+
+    let verdict;
+    if(state.score>=600 && acc>=90) verdict='Bleskové tempo a skvělá přesnost. Hlava jako kalkulačka.';
+    else if(acc>=85) verdict='Pěkná přesnost. Příště zkus přidat rychlost.';
+    else if(acc>=65) verdict='Slušný základ. Zaměř se na řády, kde nejvíc chybuješ.';
+    else verdict='Zpomal a počítej pečlivěji, rychlost přijde sama.';
+    document.getElementById('verdict').textContent = verdict;
+
+    endScreen.classList.remove('hidden');
+  }
+
+  // ---- ovládání ----
+  keypad.addEventListener('click', (e)=>{
+    const k = e.target.closest('.key'); if(!k) return;
+    const v = k.dataset.k;
+    if(v==='del') delDigit();
+    else if(v==='ok') submit();
+    else addDigit(v);
+  });
+
+  document.addEventListener('keydown', (e)=>{
+    if(!state || !state.running) return;
+    if(e.key>='0' && e.key<='9'){ addDigit(e.key); }
+    else if(e.key==='Backspace'){ e.preventDefault(); delDigit(); }
+    else if(e.key==='Enter'){ e.preventDefault(); submit(); }
+  });
+
+  startBtn.addEventListener('click', startGame);
+  restartBtn.addEventListener('click', ()=>{ endScreen.classList.add('hidden'); startScreen.classList.remove('hidden'); });
+
+})();
+</script>
+</body>
+</html>
