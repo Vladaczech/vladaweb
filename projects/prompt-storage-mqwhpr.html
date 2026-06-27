@@ -43,16 +43,10 @@
     display:flex;flex-direction:column;min-height:0;
   }
   .brand{padding:18px 18px 14px;border-bottom:1px solid var(--line)}
-  .brand .eyebrow{
-    font-size:10px;letter-spacing:.18em;text-transform:uppercase;
-    color:var(--accent-dim);font-weight:600;
-  }
+  .brand .eyebrow{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent-dim);font-weight:600}
   .brand h1{margin:3px 0 0;font-size:17px;font-weight:600;letter-spacing:-.01em}
 
-  .themes-head{
-    display:flex;align-items:center;justify-content:space-between;
-    padding:14px 18px 8px;
-  }
+  .themes-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 8px}
   .themes-head span{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted-dim)}
   .icon-btn{
     background:none;border:1px solid var(--line);border-radius:7px;color:var(--muted);
@@ -74,10 +68,7 @@
     background:var(--accent);border-radius:0 3px 3px 0;
   }
   .theme .tname{flex:1;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .theme .count{
-    font-family:var(--mono);font-size:11px;color:var(--muted-dim);
-    background:rgba(255,255,255,.04);padding:1px 7px;border-radius:20px;
-  }
+  .theme .count{font-family:var(--mono);font-size:11px;color:var(--muted-dim);background:rgba(255,255,255,.04);padding:1px 7px;border-radius:20px}
   .theme-actions{display:none;gap:2px}
   .theme:hover .theme-actions,.theme.active .theme-actions{display:flex}
   .mini{background:none;border:none;color:var(--muted-dim);padding:2px;border-radius:5px;line-height:0}
@@ -100,10 +91,10 @@
   .btn.primary:disabled{opacity:.45;cursor:default;background:var(--accent)}
   .btn.ghost{background:none}
   .btn.grow{flex:1}
-  .status{
-    font-size:11.5px;color:var(--muted);margin-top:9px;display:flex;align-items:center;gap:6px;
-    min-height:16px;
-  }
+  .btn.ai{border-color:rgba(138,92,246,.4);color:#c4b5fd}
+  .btn.ai:hover{border-color:rgba(138,92,246,.7);background:rgba(138,92,246,.08)}
+  .btn.ai.active{border-color:rgba(138,92,246,.7);background:rgba(138,92,246,.12)}
+  .status{font-size:11.5px;color:var(--muted);margin-top:9px;display:flex;align-items:center;gap:6px;min-height:16px}
   .dot{width:7px;height:7px;border-radius:50%;background:var(--muted-dim);flex:none}
   .dot.ok{background:var(--ok)}
   .dot.warn{background:var(--accent)}
@@ -112,19 +103,14 @@
 
   /* ---------- Main ---------- */
   .main{display:flex;flex-direction:column;min-width:0}
-  .topbar{
-    display:flex;align-items:center;gap:14px;padding:16px 26px;
-    border-bottom:1px solid var(--line);
-  }
+  .topbar{display:flex;align-items:center;gap:10px;padding:16px 26px;border-bottom:1px solid var(--line)}
   .crumbs{flex:1;min-width:0}
   .crumbs .eyebrow{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted-dim)}
-  .crumbs h2{margin:2px 0 0;font-size:19px;font-weight:600;letter-spacing:-.01em;
-    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .crumbs h2{margin:2px 0 0;font-size:19px;font-weight:600;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .search{position:relative}
   .search input{
     background:var(--sidebar);border:1px solid var(--line);border-radius:8px;
-    color:var(--text);padding:8px 12px 8px 32px;font-size:13px;width:220px;font-family:var(--sans);
-    transition:.15s;
+    color:var(--text);padding:8px 12px 8px 32px;font-size:13px;width:220px;font-family:var(--sans);transition:.15s;
   }
   .search input:focus{outline:none;border-color:var(--accent-dim);width:260px}
   .search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--muted-dim)}
@@ -140,10 +126,7 @@
   .card:hover{border-color:var(--accent-dim);transform:translateY(-1px)}
   .card .ctitle{font-family:var(--mono);font-size:14px;font-weight:500;letter-spacing:-.01em}
   .card .ctheme{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-dim);margin-top:-4px}
-  .card .cprev{
-    font-size:12.5px;color:var(--muted);line-height:1.55;flex:1;
-    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
-  }
+  .card .cprev{font-size:12.5px;color:var(--muted);line-height:1.55;flex:1;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
   .card .cfoot{display:flex;align-items:center;justify-content:space-between;margin-top:2px}
   .card .cmeta{font-family:var(--mono);font-size:10.5px;color:var(--muted-dim)}
   .card-copy{
@@ -154,9 +137,7 @@
   .card-copy:hover{color:var(--text);border-color:var(--accent-dim)}
   .card-copy.done{color:var(--ok);border-color:var(--ok)}
 
-  .blank{
-    text-align:center;color:var(--muted-dim);padding:70px 20px;max-width:420px;margin:0 auto;
-  }
+  .blank{text-align:center;color:var(--muted-dim);padding:70px 20px;max-width:420px;margin:0 auto}
   .blank svg{width:40px;height:40px;opacity:.5;margin-bottom:14px}
   .blank h3{color:var(--muted);font-weight:500;margin:0 0 6px;font-size:15px}
   .blank p{margin:0 0 18px;font-size:13px;line-height:1.6}
@@ -178,11 +159,12 @@
   .mhead .eyebrow{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-dim);flex:1}
   .mhead h3{margin:0;font-size:16px;font-weight:600}
   .mbody{padding:18px 20px;overflow-y:auto}
-  .mfoot{padding:14px 20px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end}
+  .mfoot{padding:14px 20px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
   .mfoot .left{margin-right:auto}
 
   label.fld{display:block;margin-bottom:14px}
   label.fld .lbl{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  .lbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
   .input,.textarea,select.input{
     width:100%;background:var(--sidebar);border:1px solid var(--line);border-radius:8px;
     color:var(--text);padding:10px 12px;font-size:13px;font-family:var(--sans);transition:.15s;
@@ -218,6 +200,33 @@
   ::-webkit-scrollbar-thumb{background:#2a323a;border-radius:6px;border:2px solid var(--bg)}
   ::-webkit-scrollbar-thumb:hover{background:#39434c}
 
+  /* ---------- AI assistant ---------- */
+  .ai-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+  .ai-chip{
+    background:none;border:1px solid var(--line);border-radius:20px;
+    color:var(--muted);font-size:12px;padding:5px 12px;cursor:pointer;
+    font-family:var(--sans);transition:.15s;
+  }
+  .ai-chip:hover{color:var(--text);border-color:rgba(138,92,246,.5);background:rgba(138,92,246,.06)}
+  .ai-result{
+    background:var(--sidebar);border:1px solid var(--line);border-radius:10px;
+    padding:14px 16px;font-family:var(--mono);font-size:12.5px;line-height:1.65;
+    color:var(--text);white-space:pre-wrap;word-break:break-word;
+    max-height:260px;overflow-y:auto;margin-top:14px;
+    min-height:48px;
+  }
+  .ai-result.streaming::after{content:'|';color:rgba(138,92,246,.8);animation:blink .65s step-end infinite}
+  .ai-ctx{
+    background:var(--sidebar);border:1px solid var(--line);border-radius:8px;
+    padding:10px 12px;font-family:var(--mono);font-size:12px;line-height:1.5;
+    color:var(--muted);max-height:72px;overflow:hidden;margin-bottom:16px;
+    position:relative;
+  }
+  .ai-ctx::after{content:"";position:absolute;bottom:0;left:0;right:0;height:24px;background:linear-gradient(transparent,var(--sidebar))}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+  .ai-spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(138,92,246,.3);border-top-color:rgba(138,92,246,.9);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
   /* ---------- Command palette ---------- */
   .pal-ov{
     position:fixed;inset:0;background:rgba(8,10,12,.72);backdrop-filter:blur(4px);
@@ -230,34 +239,19 @@
     width:100%;max-width:580px;max-height:68vh;display:flex;flex-direction:column;overflow:hidden;
     box-shadow:0 32px 80px rgba(0,0,0,.6);
   }
-  .pal-search{
-    display:flex;align-items:center;gap:12px;padding:14px 18px;
-    border-bottom:1px solid var(--line);flex:none;
-  }
+  .pal-search{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line);flex:none}
   .pal-search svg{width:18px;height:18px;color:var(--muted);flex:none}
-  .pal-search input{
-    flex:1;background:none;border:none;color:var(--text);
-    font-size:15px;font-family:var(--sans);outline:none;
-  }
+  .pal-search input{flex:1;background:none;border:none;color:var(--text);font-size:15px;font-family:var(--sans);outline:none}
   .pal-search input::placeholder{color:var(--muted-dim)}
   .pal-list{overflow-y:auto;flex:1}
-  .pal-item{
-    display:flex;align-items:baseline;gap:10px;padding:10px 18px;cursor:pointer;
-    border-bottom:1px solid var(--line);transition:.08s;
-  }
+  .pal-item{display:flex;align-items:baseline;gap:10px;padding:10px 18px;cursor:pointer;border-bottom:1px solid var(--line);transition:.08s}
   .pal-item:last-child{border-bottom:none}
   .pal-item:hover,.pal-item.sel{background:var(--panel-2)}
   .pal-item .pi-title{font-family:var(--mono);font-size:13px;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .pal-item .pi-theme{font-size:10.5px;color:var(--muted-dim);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;flex:none}
   .pal-empty{padding:38px 20px;text-align:center;color:var(--muted-dim);font-size:13px}
-  .pal-foot{
-    border-top:1px solid var(--line);padding:8px 18px;display:flex;gap:14px;flex-wrap:wrap;
-    font-size:11px;color:var(--muted-dim);flex:none;
-  }
-  .pal-foot kbd{
-    font-family:var(--mono);background:var(--sidebar);border:1px solid var(--line);
-    border-radius:4px;padding:1px 5px;color:var(--muted);font-size:10px;
-  }
+  .pal-foot{border-top:1px solid var(--line);padding:8px 18px;display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted-dim);flex:none}
+  .pal-foot kbd{font-family:var(--mono);background:var(--sidebar);border:1px solid var(--line);border-radius:4px;padding:1px 5px;color:var(--muted);font-size:10px}
 
   /* ---------- FAB ---------- */
   .fab{display:none;position:fixed;bottom:22px;right:20px;width:52px;height:52px;border-radius:50%;background:var(--accent);color:#1a120a;border:none;align-items:center;justify-content:center;box-shadow:0 4px 24px rgba(0,0,0,.45);z-index:25;transition:.15s;cursor:pointer}
@@ -277,9 +271,11 @@
     .topbar{flex-wrap:wrap;padding:10px 14px;gap:8px}
     .topbar .menu-btn{order:0}
     .topbar .crumbs{order:1;flex:1}
-    .topbar #addPrompt{order:2;padding:8px 10px;min-width:0}
+    .topbar #aiBtn{order:2;padding:8px 10px}
+    .topbar #aiBtn .btn-label{display:none}
+    .topbar #addPrompt{order:3;padding:8px 10px;min-width:0}
     .topbar #addPrompt .btn-label{display:none}
-    .search{order:3;flex:1 1 100%}
+    .search{order:4;flex:1 1 100%}
     .search input{width:100% !important}
     .search input:focus{width:100% !important}
     .grid{grid-template-columns:1fr}
@@ -304,7 +300,6 @@
       <div class="eyebrow">Osobní</div>
       <h1>Knihovna promptů</h1>
     </div>
-
     <div class="themes-head">
       <span>Témata</span>
       <button class="icon-btn" id="addTheme" title="Nové téma">
@@ -312,7 +307,6 @@
       </button>
     </div>
     <div class="theme-list" id="themeList"></div>
-
     <div class="sidebar-foot">
       <div class="sync-row">
         <button class="btn primary grow" id="saveBtn" title="Uložit aktuální stav do GitHub repozitáře">
@@ -344,6 +338,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
         <input type="text" id="searchInput" placeholder="Hledat v promptech...">
       </div>
+      <button class="btn ai" id="aiBtn" title="AI asistent (Claude)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/></svg>
+        <span class="btn-label">AI asistent</span>
+      </button>
       <button class="btn" id="addPrompt">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
         <span class="btn-label">Nový prompt</span>
@@ -387,12 +385,13 @@ const LS = {
   get(k){try{return localStorage.getItem(k)}catch(e){return null}},
   set(k,v){try{localStorage.setItem(k,v)}catch(e){}},
 };
-const K_CACHE='promptbox.cache', K_CFG='promptbox.config', K_TOK='promptbox.token';
+const K_CACHE='promptbox.cache', K_CFG='promptbox.config', K_TOK='promptbox.token', K_CLAUDE='promptbox.claude';
 
 /* ============ stav ============ */
 let state = { themes: [] };
 let config = { owner:'vladaczech', repo:'vladaweb', path:'prompts.json', branch:'main' };
 let token = '';
+let claudeKey = '';
 let remoteSha = null;
 let dirty = false;
 let activeTheme = null;
@@ -401,6 +400,7 @@ let search = '';
 (function init(){
   try{ const c=LS.get(K_CFG); if(c) config={...config,...JSON.parse(c)}; }catch(e){}
   token = LS.get(K_TOK) || '';
+  claudeKey = LS.get(K_CLAUDE) || '';
   try{ const d=LS.get(K_CACHE); if(d){ const p=JSON.parse(d); if(p&&Array.isArray(p.themes)) state=p; } }catch(e){}
   if(state.themes[0]) activeTheme = state.themes[0].id;
 })();
@@ -422,13 +422,14 @@ function extractVars(body){
   const seen=new Set(), vars=[];
   for(const m of (body||'').matchAll(/\{\{\s*([^}]+?)\s*\}\}/g)){
     const n=m[1].trim();
-    if(n && !seen.has(n)){ seen.add(n); vars.push(n); }
+    if(n&&!seen.has(n)){ seen.add(n); vars.push(n); }
   }
   return vars;
 }
 
-const COPY_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
-const CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+const COPY_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+const CHECK_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+const AI_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/></svg>';
 
 function fillVarsModal(body, vars){
   openModal(`
@@ -447,32 +448,189 @@ function fillVarsModal(body, vars){
       </div>
       <div class="mfoot">
         <button class="btn ghost" data-close>Zrušit</button>
-        <button class="btn primary" id="fvCopy">
-          ${COPY_SVG} Zkopírovat
-        </button>
+        <button class="btn primary" id="fvCopy">${COPY_SVG} Zkopírovat</button>
       </div>
     </div>`);
-  setTimeout(()=>document.getElementById('fv-0')?.focus(), 50);
-  const doFill = async () => {
-    let text = body;
+  setTimeout(()=>document.getElementById('fv-0')?.focus(),50);
+  const doFill=async()=>{
+    let text=body;
     vars.forEach((v,i)=>{
-      const val = document.getElementById('fv-'+i)?.value ?? '';
-      text = text.replace(new RegExp('\\{\\{\\s*'+regEsc(v)+'\\s*\\}\\}','g'), val);
+      const val=document.getElementById('fv-'+i)?.value??'';
+      text=text.replace(new RegExp('\\{\\{\\s*'+regEsc(v)+'\\s*\\}\\}','g'),val);
     });
     if(await copyText(text)){ closeModal(); toast('Prompt zkopírován do schránky'); }
     else toast('Kopírování selhalo','err');
   };
-  document.getElementById('fvCopy').onclick = doFill;
+  document.getElementById('fvCopy').onclick=doFill;
   document.querySelectorAll('.fv-inp').forEach(el=>{
     el.addEventListener('keydown',e=>{ if(e.key==='Enter') doFill(); });
   });
 }
 
+/* ============ Claude API ============ */
+let aiAbort = null;
+
+async function callClaudeStream(userMsg, system, onChunk){
+  if(!claudeKey) throw new Error('Chybí API klíč Anthropic. Nastav ho v Nastavení.');
+  if(aiAbort) aiAbort.abort();
+  aiAbort = new AbortController();
+  const res = await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    signal: aiAbort.signal,
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key': claudeKey,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
+    body: JSON.stringify({
+      model:'claude-sonnet-4-6',
+      max_tokens:2048,
+      stream:true,
+      system,
+      messages:[{role:'user',content:userMsg}]
+    })
+  });
+  if(!res.ok){
+    const e=await res.json().catch(()=>({}));
+    throw new Error(e.error?.message||'HTTP '+res.status);
+  }
+  const reader=res.body.getReader();
+  const dec=new TextDecoder();
+  let buf='', full='';
+  while(true){
+    const{done,value}=await reader.read();
+    if(done) break;
+    buf+=dec.decode(value,{stream:true});
+    const lines=buf.split('\n');
+    buf=lines.pop();
+    for(const line of lines){
+      if(!line.startsWith('data: ')) continue;
+      const json=line.slice(6).trim();
+      if(!json||json==='[DONE]') continue;
+      try{
+        const ev=JSON.parse(json);
+        if(ev.type==='content_block_delta'&&ev.delta?.type==='text_delta'){
+          full+=ev.delta.text;
+          onChunk(full);
+        }
+      }catch{}
+    }
+  }
+  aiAbort=null;
+  return full;
+}
+
+/* ============ AI modal ============ */
+/* opts: { contextBody, promptId, themeId } */
+function aiModal(opts){
+  opts=opts||{};
+  if(!claudeKey){
+    toast('Nastav API klíč Claude v Nastavení','warn');
+    settingsModal();
+    return;
+  }
+  const hasCtx=!!(opts.contextBody&&opts.contextBody.trim());
+  openModal(`
+    <div class="modal">
+      <div class="mhead">
+        <span class="eyebrow">Anthropic Claude</span>
+        <h3>AI asistent</h3>
+        <button class="icon-btn x" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="mbody">
+        ${hasCtx?`
+          <div style="margin-bottom:16px">
+            <div class="lbl" style="margin-bottom:6px;display:block">Aktuální prompt (kontext)</div>
+            <div class="ai-ctx">${esc(opts.contextBody)}</div>
+          </div>`:''}
+        <label class="fld" style="margin-bottom:10px">
+          <span class="lbl">Zadání</span>
+          <textarea class="textarea" id="aiTask" style="min-height:82px" placeholder="Co má Claude vytvořit nebo jak vylepšit prompt? Cmd/Ctrl+Enter odešle."></textarea>
+        </label>
+        <div class="ai-chips">
+          ${hasCtx?'<button class="ai-chip" data-chip="Vylepši tento prompt — udělej ho přesnější, jasnější a efektivnější.">Vylepši prompt</button>':''}
+          ${hasCtx?'<button class="ai-chip" data-chip="Přidej do tohoto promptu proměnné ve formátu {{nazev_promenne}} pro části, které by měl uživatel vyplnit.">Přidej proměnné</button>':''}
+          ${hasCtx?'<button class="ai-chip" data-chip="Zkrať a zhutni tento prompt, zachovej jeho smysl.">Zkrať</button>':''}
+          <button class="ai-chip" data-chip="Napiš systémový prompt pro AI asistenta specializovaného na:">Systémový prompt</button>
+          <button class="ai-chip" data-chip="Napiš prompt pro analýzu a shrnutí textu s proměnnou {{text}}.">Shrnutí textu</button>
+        </div>
+        <div id="aiResultWrap" style="display:none">
+          <div class="lbl" style="display:block;margin-bottom:6px">Výsledek</div>
+          <pre class="ai-result" id="aiResult"></pre>
+        </div>
+      </div>
+      <div class="mfoot">
+        <button class="btn ghost left" id="aiUse" style="display:none">Vložit do editoru</button>
+        <button class="btn ghost" data-close>Zavřít</button>
+        <button class="btn ai" id="aiGen" style="border-color:rgba(138,92,246,.6);color:#c4b5fd">
+          ${AI_SVG} Vygenerovat
+        </button>
+      </div>
+    </div>`);
+  setTimeout(()=>$('#aiTask')?.focus(),50);
+
+  /* quick chips */
+  document.querySelectorAll('.ai-chip').forEach(btn=>{
+    btn.addEventListener('click',()=>{ const ta=$('#aiTask'); if(ta) ta.value=btn.dataset.chip; ta.focus(); });
+  });
+
+  let lastResult='';
+
+  const doGenerate=async()=>{
+    const task=$('#aiTask').value.trim();
+    if(!task){ $('#aiTask').focus(); return; }
+    const genBtn=$('#aiGen'), wrap=$('#aiResultWrap'), result=$('#aiResult'), useBtn=$('#aiUse');
+    genBtn.disabled=true;
+    genBtn.innerHTML='<span class="ai-spin"></span>Generuji...';
+    wrap.style.display='block';
+    result.textContent='';
+    result.classList.add('streaming');
+    useBtn.style.display='none';
+    lastResult='';
+
+    const system=`Jsi expert na psaní promptů pro velké jazykové modely.
+Pravidla:
+- Odpovídej POUZE samotným promptem. Žádné vysvětlování, žádný úvod, žádné uvozovky.
+- Proměnné piš jako {{nazev_promenne}} (česky, snake_case).
+- Piš česky, pokud uživatel nespecifikuje jinak.`;
+    const userMsg=hasCtx
+      ? `Aktuální prompt:\n\n${opts.contextBody}\n\n---\n\nZadání: ${task}`
+      : `Zadání: ${task}`;
+
+    try{
+      await callClaudeStream(userMsg,system,partial=>{
+        lastResult=partial;
+        const el=$('#aiResult'); if(el) el.textContent=partial;
+      });
+      const r=$('#aiResult'); if(r) r.classList.remove('streaming');
+      const u=$('#aiUse'); if(u) u.style.display='';
+    }catch(e){
+      if(e.name==='AbortError') return;
+      const r=$('#aiResult');
+      if(r){ r.classList.remove('streaming'); r.textContent='Chyba: '+e.message; }
+    }finally{
+      const g=$('#aiGen');
+      if(g){ g.disabled=false; g.innerHTML=AI_SVG+' Vygenerovat'; }
+    }
+  };
+
+  $('#aiGen').onclick=doGenerate;
+  $('#aiTask').addEventListener('keydown',e=>{
+    if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){ e.preventDefault(); doGenerate(); }
+  });
+
+  $('#aiUse').onclick=()=>{
+    if(opts.themeId) activeTheme=opts.themeId;
+    closeModal();
+    promptEditModal(opts.promptId||null,{body:lastResult});
+  };
+}
+
 /* ============ status + toast ============ */
 function setStatus(text,kind){
   $('#statusText').textContent=text;
-  const dot=$('#status .dot');
-  dot.className='dot'+(kind?(' '+kind):'');
+  $('#status .dot').className='dot'+(kind?' '+kind:'');
 }
 function renderStatus(){
   if(dirty) setStatus('Neuložené změny','dirty');
@@ -512,12 +670,13 @@ function renderThemes(){
 }
 
 /* ============ render: prompty ============ */
-function cardCopyBtn(pid, tid){ return `<button class="card-copy" data-copy="${pid}" data-tid="${tid}">${COPY_SVG} Kopírovat</button>`; }
+function cardCopyBtn(pid,tid){
+  return `<button class="card-copy" data-copy="${pid}" data-tid="${tid}">${COPY_SVG} Kopírovat</button>`;
+}
 
 function renderCanvas(){
   const canvas=$('#canvas');
 
-  /* ---------- globální hledání ---------- */
   if(search){
     const q=search.toLowerCase();
     const results=[];
@@ -546,7 +705,6 @@ function renderCanvas(){
     return;
   }
 
-  /* ---------- normální pohled na téma ---------- */
   const theme=themeById(activeTheme);
   if(!theme){
     $('#crumbEyebrow').textContent=state.themes.length?'Vyber téma vlevo':'Začni tady';
@@ -559,12 +717,11 @@ function renderCanvas(){
   }
   $('#crumbEyebrow').textContent='Téma';
   $('#crumbTitle').textContent=theme.name;
-  const prompts=theme.prompts||[];
-  if(!prompts.length){
+  if(!(theme.prompts||[]).length){
     canvas.innerHTML=blankState('Prázdné téma','Přidej první prompt tlačítkem „Nový prompt".');
     return;
   }
-  canvas.innerHTML=`<div class="grid">${prompts.map(p=>`
+  canvas.innerHTML=`<div class="grid">${(theme.prompts||[]).map(p=>`
     <div class="card" data-open="${p.id}" data-tid="${theme.id}">
       <div class="ctitle">${esc(p.title||'Bez názvu')}</div>
       <div class="cprev">${esc((p.body||'').slice(0,180))}</div>
@@ -595,8 +752,16 @@ async function copyText(text){
 }
 
 /* ============ modály ============ */
-function openModal(html){ $('#modalSlot').innerHTML=html; $('#overlay').classList.add('show'); }
-function closeModal(){ $('#overlay').classList.remove('show'); $('#modalSlot').innerHTML=''; }
+function openModal(html){
+  if(aiAbort){ aiAbort.abort(); aiAbort=null; }
+  $('#modalSlot').innerHTML=html;
+  $('#overlay').classList.add('show');
+}
+function closeModal(){
+  if(aiAbort){ aiAbort.abort(); aiAbort=null; }
+  $('#overlay').classList.remove('show');
+  $('#modalSlot').innerHTML='';
+}
 $('#overlay').addEventListener('mousedown',e=>{ if(e.target.id==='overlay') closeModal(); });
 
 /* --- téma: vytvořit / přejmenovat --- */
@@ -608,7 +773,7 @@ function themeModal(existing){
         <button class="icon-btn x" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
       <div class="mbody">
         <label class="fld"><span class="lbl">Název tématu</span>
-          <input class="input" id="themeName" value="${esc(t?t.name:'')}" placeholder="např. Práce / ADAS, Web, Osobní..." autofocus></label>
+          <input class="input" id="themeName" value="${esc(t?t.name:'')}" placeholder="např. Práce, Web, Osobní..." autofocus></label>
       </div>
       <div class="mfoot">
         <button class="btn ghost" data-close>Zrušit</button>
@@ -650,23 +815,27 @@ function deleteThemeModal(id){
 }
 
 /* --- prompt: vytvořit / upravit --- */
-function promptEditModal(promptId){
+/* defaults = { body, title } – předvyplnění (např. z AI asistenta) */
+function promptEditModal(promptId, defaults){
   if(!activeTheme){ toast('Nejdřív vyber nebo vytvoř téma','warn'); return; }
   const theme=themeById(activeTheme);
   const p=promptId?(theme.prompts||[]).find(x=>x.id===promptId):null;
+  const initTitle=defaults?.title!==undefined?defaults.title:(p?p.title:'');
+  const initBody=defaults?.body!==undefined?defaults.body:(p?p.body:'');
   openModal(`
     <div class="modal">
       <div class="mhead"><span class="eyebrow">${p?'Upravit prompt':'Nový prompt'} · ${esc(theme.name)}</span>
         <button class="icon-btn x" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
       <div class="mbody">
         <label class="fld"><span class="lbl">Název</span>
-          <input class="input" id="pTitle" value="${esc(p?p.title:'')}" placeholder="Krátký výstižný název"></label>
+          <input class="input" id="pTitle" value="${esc(initTitle)}" placeholder="Krátký výstižný název"></label>
         <label class="fld" style="margin-bottom:0"><span class="lbl">Text promptu</span>
-          <textarea class="textarea" id="pBody" placeholder="Sem vlož celý prompt... Proměnné zapíšeš jako {{nazev_promenne}}">${esc(p?p.body:'')}</textarea></label>
+          <textarea class="textarea" id="pBody" placeholder="Sem vlož celý prompt... Proměnné zapíšeš jako {{nazev_promenne}}">${esc(initBody)}</textarea></label>
         <div class="hint" id="varHint" style="display:none"></div>
       </div>
       <div class="mfoot">
         ${p?'<button class="btn ghost left" id="pDelete" style="color:var(--danger)">Smazat</button>':''}
+        <button class="btn ai" id="pAI" title="Otevřít AI asistenta s tímto promptem">${AI_SVG} AI</button>
         <button class="btn ghost" data-close>Zrušit</button>
         <button class="btn primary" id="pSave">${p?'Uložit změny':'Přidat prompt'}</button>
       </div>
@@ -683,6 +852,12 @@ function promptEditModal(promptId){
   bodyEl.addEventListener('input',updateHint);
   updateHint();
 
+  /* AI asistent z editoru – použije aktuální obsah textarey jako kontext */
+  $('#pAI').onclick=()=>{
+    const body=$('#pBody').value;
+    aiModal({contextBody:body, promptId:p?.id, themeId:activeTheme});
+  };
+
   $('#pSave').onclick=()=>{
     const title=$('#pTitle').value.trim();
     const body=$('#pBody').value;
@@ -698,7 +873,6 @@ function promptEditModal(promptId){
 }
 
 /* --- prompt: zobrazit + kopírovat --- */
-/* themeId je volitelný – použije se při volání z globálního hledání nebo palety */
 function viewPromptModal(promptId, themeId){
   const theme=themeById(themeId||activeTheme); if(!theme) return;
   const p=(theme.prompts||[]).find(x=>x.id===promptId); if(!p) return;
@@ -712,10 +886,9 @@ function viewPromptModal(promptId, themeId){
       </div>
       <div class="mfoot">
         <button class="btn ghost left" id="pvEdit">Upravit</button>
+        <button class="btn ai" id="pvAI" title="Otevřít AI asistenta s tímto promptem">${AI_SVG} AI</button>
         <button class="btn ghost" data-close>Zavřít</button>
-        <button class="btn primary" id="pvCopy">
-          ${COPY_SVG} Kopírovat prompt
-        </button>
+        <button class="btn primary" id="pvCopy">${COPY_SVG} Kopírovat prompt</button>
       </div>
     </div>`);
   $('#pvCopy').onclick=async()=>{
@@ -724,12 +897,15 @@ function viewPromptModal(promptId, themeId){
       if(await copyText(p.body)) toast('Prompt zkopírován do schránky');
       else toast('Kopírování selhalo','err');
     } else {
-      fillVarsModal(p.body,vars);   /* nahradí obsah modálu */
+      fillVarsModal(p.body,vars);
     }
   };
   $('#pvEdit').onclick=()=>{
     if(themeId) activeTheme=themeId;
     closeModal(); promptEditModal(p.id);
+  };
+  $('#pvAI').onclick=()=>{
+    aiModal({contextBody:p.body, promptId:p.id, themeId:themeId||activeTheme});
   };
 }
 
@@ -737,7 +913,7 @@ function viewPromptModal(promptId, themeId){
 function settingsModal(){
   openModal(`
     <div class="modal">
-      <div class="mhead"><span class="eyebrow">Nastavení · GitHub synchronizace</span>
+      <div class="mhead"><span class="eyebrow">Nastavení · Synchronizace</span>
         <button class="icon-btn x" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
       <div class="mbody">
         <div class="cfg-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:0 14px">
@@ -746,11 +922,15 @@ function settingsModal(){
           <label class="fld"><span class="lbl">Soubor s daty</span><input class="input" id="cfgPath" value="${esc(config.path)}" placeholder="prompts.json"></label>
           <label class="fld"><span class="lbl">Větev (branch)</span><input class="input" id="cfgBranch" value="${esc(config.branch)}" placeholder="main"></label>
         </div>
-        <label class="fld" style="margin-bottom:6px"><span class="lbl">GitHub token (Personal Access Token)</span>
+        <label class="fld"><span class="lbl">GitHub token (Personal Access Token)</span>
           <input class="input" id="cfgToken" type="password" value="${esc(token)}" placeholder="github_pat_..." autocomplete="off"></label>
+        <div class="hint" style="margin-bottom:18px">
+          Vytvoř <b>Fine-grained PAT</b> na <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/personal-access-tokens</a> → oprávnění <code>Contents: Read and write</code>.
+        </div>
+        <label class="fld" style="margin-bottom:6px"><span class="lbl">Anthropic API klíč (Claude AI)</span>
+          <input class="input" id="cfgClaude" type="password" value="${esc(claudeKey)}" placeholder="sk-ant-..." autocomplete="off"></label>
         <div class="hint">
-          Token zůstává <b>jen v tomto prohlížeči</b> (localStorage) a nikdy se nezapisuje do repozitáře. Na každém zařízení ho zadáš zvlášť.<br><br>
-          Vytvoř <b>Fine-grained PAT</b> na <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/personal-access-tokens</a> → přístup jen k repu <code>${esc(config.repo)}</code> → oprávnění <code>Contents: Read and write</code>.
+          Klíč zůstává <b>jen v tomto prohlížeči</b> a nikdy se neukládá do repozitáře. Získáš ho na <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a>.
         </div>
       </div>
       <div class="mfoot">
@@ -759,22 +939,33 @@ function settingsModal(){
         <button class="btn primary" id="cfgSave">Uložit nastavení</button>
       </div>
     </div>`);
+  setTimeout(()=>$('#cfgOwner')?.focus(),50);
   $('#cfgSave').onclick=()=>{
     config.owner=$('#cfgOwner').value.trim();
     config.repo=$('#cfgRepo').value.trim();
     config.path=$('#cfgPath').value.trim()||'prompts.json';
     config.branch=$('#cfgBranch').value.trim()||'main';
     token=$('#cfgToken').value.trim();
+    claudeKey=$('#cfgClaude').value.trim();
     LS.set(K_CFG,JSON.stringify(config));
     LS.set(K_TOK,token);
+    LS.set(K_CLAUDE,claudeKey);
     remoteSha=null;
     closeModal(); toast('Nastavení uloženo'); renderStatus();
+    updateAiBtn();
   };
   $('#cfgExport').onclick=()=>{
     const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='prompts-zaloha.json';a.click();
     setTimeout(()=>URL.revokeObjectURL(a.href),1000);
   };
+}
+
+function updateAiBtn(){
+  const btn=$('#aiBtn');
+  if(!btn) return;
+  if(claudeKey){ btn.classList.add('active'); btn.title='AI asistent (Claude – aktivní)'; }
+  else{ btn.classList.remove('active'); btn.title='AI asistent (nastav API klíč v Nastavení)'; }
 }
 
 /* ============ GitHub API ============ */
@@ -792,7 +983,7 @@ async function pull(silent){
     const res=await fetch(apiUrl()+'?ref='+encodeURIComponent(config.branch)+'&t='+Date.now(),{headers:ghHeaders()});
     if(res.status===404){ remoteSha=null; renderStatus(); if(!silent) toast('Soubor zatím neexistuje – vytvoří se při prvním uložení','warn'); return; }
     if(res.status===401||res.status===403){ renderStatus(); if(!silent){ toast('Token chybí nebo nemá oprávnění','err'); settingsModal(); } setStatus('Chyba ověření','err'); return; }
-    if(!res.ok){ throw new Error('HTTP '+res.status); }
+    if(!res.ok) throw new Error('HTTP '+res.status);
     const data=await res.json();
     const parsed=JSON.parse(b64ToUtf8(data.content));
     if(parsed&&Array.isArray(parsed.themes)){
@@ -813,11 +1004,7 @@ async function push(){
   const btn=$('#saveBtn'); btn.disabled=true;
   setStatus('Ukládám na GitHub...','warn');
   try{
-    const body={
-      message:'Aktualizace promptů · '+new Date().toLocaleString('cs-CZ'),
-      content:utf8ToB64(JSON.stringify(state,null,2)),
-      branch:config.branch
-    };
+    const body={message:'Aktualizace promptů · '+new Date().toLocaleString('cs-CZ'),content:utf8ToB64(JSON.stringify(state,null,2)),branch:config.branch};
     if(remoteSha) body.sha=remoteSha;
     let res=await fetch(apiUrl(),{method:'PUT',headers:{...ghHeaders(),'Content-Type':'application/json'},body:JSON.stringify(body)});
     if(res.status===409||(res.status===422&&!remoteSha)){
@@ -825,7 +1012,7 @@ async function push(){
       if(cur.ok){ const d=await cur.json(); body.sha=d.sha; remoteSha=d.sha;
         res=await fetch(apiUrl(),{method:'PUT',headers:{...ghHeaders(),'Content-Type':'application/json'},body:JSON.stringify(body)}); }
     }
-    if(res.status===401||res.status===403){ setStatus('Chyba ověření','err'); toast('Token nemá právo zapisovat (Contents: write)','err'); btn.disabled=false; return; }
+    if(res.status===401||res.status===403){ setStatus('Chyba ověření','err'); toast('Token nemá právo zapisovat','err'); btn.disabled=false; return; }
     if(!res.ok){ const t=await res.text(); throw new Error('HTTP '+res.status+' '+t.slice(0,120)); }
     const data=await res.json();
     remoteSha=data.content.sha; dirty=false; persistLocal(); renderStatus();
@@ -859,10 +1046,7 @@ function renderPaletteList(q){
   });
   const shown=palResults.slice(0,60);
   const list=$('#paletteList');
-  if(!shown.length){
-    list.innerHTML='<div class="pal-empty">Žádné prompty nenalezeny.</div>';
-    return;
-  }
+  if(!shown.length){ list.innerHTML='<div class="pal-empty">Žádné prompty nenalezeny.</div>'; return; }
   list.innerHTML=shown.map(({p,t},i)=>`
     <div class="pal-item${i===palIdx?' sel':''}" data-pi="${i}">
       <span class="pi-title">${esc(p.title||'Bez názvu')}</span>
@@ -877,7 +1061,6 @@ function palActivate(i){
 }
 
 $('#paletteInput').addEventListener('input',e=>{ palIdx=-1; renderPaletteList(e.target.value); });
-
 $('#paletteInput').addEventListener('keydown',e=>{
   const n=Math.min(palResults.length,60);
   if(e.key==='ArrowDown'){ e.preventDefault(); palActivate(palIdx<n-1?palIdx+1:0); return; }
@@ -896,19 +1079,18 @@ $('#paletteInput').addEventListener('keydown',e=>{
     }
   }
 });
-
 $('#paletteList').addEventListener('mousemove',e=>{ const it=e.target.closest('[data-pi]'); if(it) palActivate(+it.dataset.pi); });
 $('#paletteList').addEventListener('click',e=>{
   const it=e.target.closest('[data-pi]'); if(!it) return;
   const item=palResults[+it.dataset.pi]; if(!item) return;
-  closePalette();
-  viewPromptModal(item.p.id,item.t.id);
+  closePalette(); viewPromptModal(item.p.id,item.t.id);
 });
 $('#paletteOv').addEventListener('mousedown',e=>{ if(e.target.id==='paletteOv') closePalette(); });
 
 /* ============ události ============ */
 $('#addTheme').onclick=()=>themeModal();
 $('#addPrompt').onclick=()=>promptEditModal();
+$('#aiBtn').onclick=()=>aiModal({});
 $('#settingsBtn').onclick=settingsModal;
 $('#saveBtn').onclick=push;
 $('#reloadBtn').onclick=()=>{ if(dirty&&!confirm('Máš neuložené změny, které se přepíšou verzí z GitHubu. Pokračovat?')) return; pull(false); };
@@ -942,7 +1124,7 @@ $('#canvas').addEventListener('click',async e=>{
     return;
   }
   const card=e.target.closest('[data-open]');
-  if(card) viewPromptModal(card.dataset.open, card.dataset.tid);
+  if(card) viewPromptModal(card.dataset.open,card.dataset.tid);
 });
 
 document.addEventListener('click',e=>{ if(e.target.closest('[data-close]')) closeModal(); });
@@ -955,30 +1137,25 @@ $('#fabAdd').onclick=()=>promptEditModal();
 
 /* ============ klávesové zkratky ============ */
 document.addEventListener('keydown',e=>{
-  /* Escape – nejdřív zkontroluj paletu, pak hlavní overlay */
   if(e.key==='Escape'){
     if($('#paletteOv').classList.contains('show')){ closePalette(); return; }
-    closeModal();
-    return;
+    closeModal(); return;
   }
-  /* Cmd/Ctrl+K – paleta */
   if((e.metaKey||e.ctrlKey)&&e.key==='k'){
     e.preventDefault();
     if($('#paletteOv').classList.contains('show')){ closePalette(); return; }
-    openPalette();
-    return;
+    openPalette(); return;
   }
-  /* Globální zkratky – nesmí se spustit při psaní */
   const tag=(document.activeElement?.tagName||'').toUpperCase();
   const inField=tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT';
   const inModal=$('#overlay').classList.contains('show')||$('#paletteOv').classList.contains('show');
   if(inField||inModal) return;
-
   if(e.key==='n'){ e.preventDefault(); promptEditModal(); return; }
   if(e.key==='/'){ e.preventDefault(); $('#searchInput').focus(); return; }
 });
 
 /* ============ start ============ */
+updateAiBtn();
 renderAll();
 if(config.owner&&config.repo){ pull(true); }
 </script>
