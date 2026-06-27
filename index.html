@@ -319,6 +319,10 @@
       <h2>Témata</h2>
       <div class="rule"></div>
       <span class="count" id="section-count"></span>
+      <button class="btn btn-sm" id="btn-settings">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span id="gh-btn-label">GitHub</span>
+      </button>
       <button class="btn btn-sm" id="btn-manage">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 11V7a5 5 0 0 1 10 0v4"/><rect x="4" y="11" width="16" height="10" rx="2"/></svg>
         <span id="manage-label">Spravovat</span>
@@ -407,6 +411,32 @@
       <div class="modal-actions">
         <button class="btn" data-close>Zrušit</button>
         <button class="btn btn-primary" id="p-save">Přidat web</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── GITHUB NASTAVENÍ ─────────────────────────── -->
+  <div class="overlay" id="ov-settings">
+    <div class="modal">
+      <h3>GitHub nastavení</h3>
+      <p class="sub">Po propojení se uploaded HTML soubory automaticky ukládají do tvého repozitáře a jsou dostupné na všech zařízeních.</p>
+      <div class="field">
+        <label for="gh-token">Personal Access Token <span style="color:var(--muted-2)">(repo scope)</span></label>
+        <input id="gh-token" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="gh-owner">GitHub uživatel</label>
+        <input id="gh-owner" type="text" placeholder="Vladaczech">
+      </div>
+      <div class="field">
+        <label for="gh-repo">Název repozitáře</label>
+        <input id="gh-repo" type="text" placeholder="vladaweb">
+      </div>
+      <div class="err" id="gh-err"></div>
+      <div class="modal-actions">
+        <button class="btn btn-danger btn-sm" id="gh-clear" style="margin-right:auto">Odpojit</button>
+        <button class="btn" data-close>Zrušit</button>
+        <button class="btn btn-primary" id="gh-save">Uložit a ověřit</button>
       </div>
     </div>
   </div>
@@ -700,6 +730,71 @@ document.getElementById('t-save').addEventListener('click', () => {
   save(); close('ov-topic'); render();
 });
 
+/* ── GitHub API ────────────────────────────────────── */
+const GH_KEY = 'vibe-deck-gh';
+let ghCfg = JSON.parse(localStorage.getItem(GH_KEY) || 'null');
+
+function ghOk() { return !!(ghCfg && ghCfg.token && ghCfg.owner && ghCfg.repo); }
+function ghLabel() { document.getElementById('gh-btn-label').textContent = ghOk() ? '✓ GitHub' : 'GitHub'; }
+ghLabel();
+
+function toB64(str) { return btoa(unescape(encodeURIComponent(str))); }
+
+async function ghCommit(filename, html) {
+  const { token, owner, repo } = ghCfg;
+  const path = `projects/${filename}`;
+  const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+    method: 'PUT',
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: `Add: ${filename}`, content: toB64(html) })
+  });
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'GitHub API chyba'); }
+  return `./projects/${filename}`;
+}
+
+async function ghDel(url) {
+  if (!ghOk() || !url || !url.startsWith('./projects/')) return;
+  const { token, owner, repo } = ghCfg;
+  const path = url.slice(2);
+  const r = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, { headers: { 'Authorization': `Bearer ${token}` } });
+  if (!r.ok) return;
+  const { sha } = await r.json();
+  await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+    method: 'DELETE',
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: `Remove: ${path}`, sha })
+  });
+}
+
+function safeName(str) { return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'project'; }
+
+/* ── GitHub nastavení modal ─────────────────────────── */
+document.getElementById('btn-settings').addEventListener('click', () => {
+  const s = ghCfg || {};
+  document.getElementById('gh-token').value = s.token || '';
+  document.getElementById('gh-owner').value = s.owner || '';
+  document.getElementById('gh-repo').value = s.repo || '';
+  document.getElementById('gh-err').textContent = '';
+  open('ov-settings');
+});
+document.getElementById('gh-save').addEventListener('click', async () => {
+  const token = document.getElementById('gh-token').value.trim();
+  const owner = document.getElementById('gh-owner').value.trim();
+  const repo  = document.getElementById('gh-repo').value.trim();
+  if (!token || !owner || !repo) { document.getElementById('gh-err').textContent = 'Vyplň všechna pole.'; return; }
+  document.getElementById('gh-err').textContent = 'Ověřuji připojení…';
+  try {
+    const r = await fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers: { 'Authorization': `Bearer ${token}` } });
+    if (!r.ok) throw new Error('Repozitář nenalezen nebo neplatný token.');
+    ghCfg = { token, owner, repo };
+    localStorage.setItem(GH_KEY, JSON.stringify(ghCfg));
+    ghLabel(); close('ov-settings');
+  } catch (e) { document.getElementById('gh-err').textContent = e.message; }
+});
+document.getElementById('gh-clear').addEventListener('click', () => {
+  ghCfg = null; localStorage.removeItem(GH_KEY); ghLabel(); close('ov-settings');
+});
+
 /* ── Nový web ──────────────────────────────────────── */
 let projTopicIndex = null;
 let projHtmlContent = null;
@@ -733,7 +828,7 @@ function openProjectModal(ti) {
   open('ov-project');
   setTimeout(() => document.getElementById('p-name').focus(), 50);
 }
-document.getElementById('p-save').addEventListener('click', () => {
+document.getElementById('p-save').addEventListener('click', async () => {
   const name = document.getElementById('p-name').value.trim();
   if (!name) { document.getElementById('p-err').textContent = 'Zadej název webu.'; return; }
   if (!projHtmlContent && !document.getElementById('p-url').value.trim()) {
@@ -748,11 +843,18 @@ document.getElementById('p-save').addEventListener('click', () => {
     stav: document.getElementById('p-stav').value
   };
   if (projHtmlContent) {
-    const key = uid();
-    proj.htmlKey = key;
-    proj.html = projHtmlContent;
-    proj.htmlName = projHtmlName;
-    idbSet(key, projHtmlContent);
+    if (ghOk()) {
+      document.getElementById('p-err').textContent = 'Nahrávám na GitHub…';
+      try {
+        const filename = safeName(name) + '-' + uid().slice(1, 7) + '.html';
+        proj.odkaz = await ghCommit(filename, projHtmlContent);
+      } catch (e) { document.getElementById('p-err').textContent = 'GitHub: ' + e.message; return; }
+    } else {
+      const key = uid();
+      proj.htmlKey = key;
+      proj.html = projHtmlContent;
+      idbSet(key, projHtmlContent);
+    }
   }
   DECK[projTopicIndex].projekty.push(proj);
   save(); close('ov-project'); render();
@@ -776,7 +878,7 @@ deckEl.addEventListener('click', e => {
   const delT = e.target.closest('[data-deltopic]');
   if (delT) {
     const ti = +delT.dataset.deltopic; const t = DECK[ti];
-    openConfirm('Smazat téma?', 'Smaže se „' + t.nazev + '" včetně ' + t.projekty.length + ' webů. Akci nelze vrátit.', () => { t.projekty.forEach(p => idbDel(p.htmlKey)); DECK.splice(ti, 1); save(); render(); });
+    openConfirm('Smazat téma?', 'Smaže se „' + t.nazev + '" včetně ' + t.projekty.length + ' webů. Akci nelze vrátit.', () => { t.projekty.forEach(p => { idbDel(p.htmlKey); ghDel(p.odkaz); }); DECK.splice(ti, 1); save(); render(); });
     return;
   }
   const delP = e.target.closest('[data-delproj]');
@@ -784,7 +886,7 @@ deckEl.addEventListener('click', e => {
     e.preventDefault();
     const [ti, pi] = delP.dataset.delproj.split(':').map(Number);
     const p = DECK[ti].projekty[pi];
-    openConfirm('Smazat web?', 'Smaže se „' + p.nazev + '". Akci nelze vrátit.', () => { idbDel(p.htmlKey); DECK[ti].projekty.splice(pi, 1); save(); render(); });
+    openConfirm('Smazat web?', 'Smaže se „' + p.nazev + '". Akci nelze vrátit.', () => { idbDel(p.htmlKey); ghDel(p.odkaz); DECK[ti].projekty.splice(pi, 1); save(); render(); });
   }
 });
 
@@ -817,9 +919,16 @@ importFile.addEventListener('change', () => {
         for (const t of data) {
           for (const p of t.projekty) {
             if (p.html) {
-              const key = uid();
-              await idbSet(key, p.html);
-              p.htmlKey = key;
+              if (ghOk()) {
+                try {
+                  const filename = safeName(p.nazev) + '-' + uid().slice(1, 7) + '.html';
+                  p.odkaz = await ghCommit(filename, p.html);
+                } catch (_) {
+                  const key = uid(); await idbSet(key, p.html); p.htmlKey = key;
+                }
+              } else {
+                const key = uid(); await idbSet(key, p.html); p.htmlKey = key;
+              }
             }
           }
         }
