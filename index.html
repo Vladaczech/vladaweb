@@ -523,10 +523,10 @@ function idbDel(key) {
 /* ── Úložiště (s nouzovým in-memory fallbackem) ────── */
 let memStore = null;
 function save() {
-  // Strip html content — stored separately in IndexedDB
   const clean = DECK.map(t => ({ ...t, projekty: t.projekty.map(p => { const { html, ...rest } = p; return rest; }) }));
   try { localStorage.setItem(KEY, JSON.stringify(clean)); }
   catch (e) { memStore = JSON.parse(JSON.stringify(clean)); }
+  scheduleSyncDeck();
 }
 function load() {
   try { const r = localStorage.getItem(KEY); return r ? JSON.parse(r) : null; }
@@ -795,6 +795,71 @@ document.getElementById('gh-clear').addEventListener('click', () => {
   ghCfg = null; localStorage.removeItem(GH_KEY); ghLabel(); close('ov-settings');
 });
 
+/* ── GitHub deck sync ───────────────────────────────── */
+let deckSha = null;
+let syncTimer = null;
+
+function setStatus(text, editDot) {
+  document.getElementById('status-text').textContent = text;
+  if (editDot !== undefined) document.getElementById('status-dot').classList.toggle('edit', editDot);
+}
+
+async function ghSyncDeck() {
+  if (!ghOk()) return;
+  const { token, owner, repo } = ghCfg;
+  const clean = DECK.map(t => ({ ...t, projekty: t.projekty.map(p => { const { html, ...rest } = p; return rest; }) }));
+  const body = { message: 'Sync deck', content: toB64(JSON.stringify(clean)) };
+  if (deckSha) body.sha = deckSha;
+  setStatus('Synchronizuji…');
+  try {
+    const r = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/deck-data.json`, {
+      method: 'PUT',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (r.status === 409 || r.status === 422) {
+      // SHA conflict — refetch and retry
+      const fr = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/deck-data.json`, { headers: { 'Authorization': `Bearer ${token}` } });
+      if (fr.ok) { deckSha = (await fr.json()).sha; body.sha = deckSha; }
+      const r2 = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/deck-data.json`, {
+        method: 'PUT', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if (!r2.ok) throw new Error();
+      deckSha = (await r2.json()).content.sha;
+    } else if (!r.ok) { throw new Error(); }
+    else { deckSha = (await r.json()).content.sha; }
+    setStatus(editMode ? 'Režim úprav' : 'Systém online', editMode);
+  } catch {
+    setStatus('Chyba synchronizace');
+    setTimeout(() => setStatus(editMode ? 'Režim úprav' : 'Systém online', editMode), 3000);
+  }
+}
+
+function scheduleSyncDeck() {
+  if (!ghOk()) return;
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(ghSyncDeck, 800);
+}
+
+async function pollDeck() {
+  if (!ghOk()) return;
+  const { token, owner, repo } = ghCfg;
+  try {
+    const r = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/deck-data.json`, {
+      headers: { 'Authorization': `Bearer ${token}`, 'Cache-Control': 'no-cache' }
+    });
+    if (!r.ok) return;
+    const { content, sha } = await r.json();
+    if (sha === deckSha) return;
+    deckSha = sha;
+    const remote = JSON.parse(atob(content.replace(/\n/g, '')));
+    DECK = remote;
+    try { localStorage.setItem(KEY, JSON.stringify(remote)); } catch (_) {}
+    render();
+  } catch {}
+}
+
 /* ── Nový web ──────────────────────────────────────── */
 let projTopicIndex = null;
 let projHtmlContent = null;
@@ -972,15 +1037,31 @@ document.getElementById('f-stamp').textContent = new Date().toLocaleDateString('
   else frame();
 })();
 
-idbOpen()
-  .then(idbGetAll)
-  .then(map => {
+async function init() {
+  await idbOpen().catch(() => {});
+  if (ghOk()) {
+    const { token, owner, repo } = ghCfg;
+    try {
+      const r = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/deck-data.json`, {
+        headers: { 'Authorization': `Bearer ${token}`, 'Cache-Control': 'no-cache' }
+      });
+      if (r.ok) {
+        const { content, sha } = await r.json();
+        deckSha = sha;
+        DECK = JSON.parse(atob(content.replace(/\n/g, '')));
+        try { localStorage.setItem(KEY, JSON.stringify(DECK)); } catch (_) {}
+      }
+    } catch (_) {}
+    setInterval(pollDeck, 30000);
+  } else {
+    const map = await idbGetAll().catch(() => ({}));
     DECK.forEach(t => t.projekty.forEach(p => {
       if (p.htmlKey && map[p.htmlKey]) p.html = map[p.htmlKey];
     }));
-    render();
-  })
-  .catch(() => render());
+  }
+  render();
+}
+init();
 </script>
 </body>
 </html>
