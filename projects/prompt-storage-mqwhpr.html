@@ -139,6 +139,7 @@
   }
   .card:hover{border-color:var(--accent-dim);transform:translateY(-1px)}
   .card .ctitle{font-family:var(--mono);font-size:14px;font-weight:500;letter-spacing:-.01em}
+  .card .ctheme{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-dim);margin-top:-4px}
   .card .cprev{
     font-size:12.5px;color:var(--muted);line-height:1.55;flex:1;
     display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
@@ -217,23 +218,62 @@
   ::-webkit-scrollbar-thumb{background:#2a323a;border-radius:6px;border:2px solid var(--bg)}
   ::-webkit-scrollbar-thumb:hover{background:#39434c}
 
-  /* FAB */
+  /* ---------- Command palette ---------- */
+  .pal-ov{
+    position:fixed;inset:0;background:rgba(8,10,12,.72);backdrop-filter:blur(4px);
+    display:none;align-items:flex-start;justify-content:center;
+    padding:72px 24px 24px;z-index:60;
+  }
+  .pal-ov.show{display:flex;animation:fade .12s ease}
+  .palette{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    width:100%;max-width:580px;max-height:68vh;display:flex;flex-direction:column;overflow:hidden;
+    box-shadow:0 32px 80px rgba(0,0,0,.6);
+  }
+  .pal-search{
+    display:flex;align-items:center;gap:12px;padding:14px 18px;
+    border-bottom:1px solid var(--line);flex:none;
+  }
+  .pal-search svg{width:18px;height:18px;color:var(--muted);flex:none}
+  .pal-search input{
+    flex:1;background:none;border:none;color:var(--text);
+    font-size:15px;font-family:var(--sans);outline:none;
+  }
+  .pal-search input::placeholder{color:var(--muted-dim)}
+  .pal-list{overflow-y:auto;flex:1}
+  .pal-item{
+    display:flex;align-items:baseline;gap:10px;padding:10px 18px;cursor:pointer;
+    border-bottom:1px solid var(--line);transition:.08s;
+  }
+  .pal-item:last-child{border-bottom:none}
+  .pal-item:hover,.pal-item.sel{background:var(--panel-2)}
+  .pal-item .pi-title{font-family:var(--mono);font-size:13px;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pal-item .pi-theme{font-size:10.5px;color:var(--muted-dim);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;flex:none}
+  .pal-empty{padding:38px 20px;text-align:center;color:var(--muted-dim);font-size:13px}
+  .pal-foot{
+    border-top:1px solid var(--line);padding:8px 18px;display:flex;gap:14px;flex-wrap:wrap;
+    font-size:11px;color:var(--muted-dim);flex:none;
+  }
+  .pal-foot kbd{
+    font-family:var(--mono);background:var(--sidebar);border:1px solid var(--line);
+    border-radius:4px;padding:1px 5px;color:var(--muted);font-size:10px;
+  }
+
+  /* ---------- FAB ---------- */
   .fab{display:none;position:fixed;bottom:22px;right:20px;width:52px;height:52px;border-radius:50%;background:var(--accent);color:#1a120a;border:none;align-items:center;justify-content:center;box-shadow:0 4px 24px rgba(0,0,0,.45);z-index:25;transition:.15s;cursor:pointer}
   .fab:hover{background:#ecb87c;transform:scale(1.05)}
   .fab:active{transform:scale(.96)}
   .fab svg{width:22px;height:22px}
 
-  /* Sidebar backdrop */
+  /* ---------- Sidebar backdrop ---------- */
   .sidebar-backdrop{display:none;position:fixed;inset:0;z-index:29;background:rgba(0,0,0,.45);backdrop-filter:blur(1px)}
 
   @media (max-width:760px){
     .app{grid-template-columns:1fr}
-    /* Sidebar slides in as full-height sheet, 82vw wide */
     .sidebar{position:fixed;inset:0 18% 0 0;z-index:30;transform:translateX(-105%);transition:.22s;max-width:360px}
     .sidebar.open{transform:none;box-shadow:0 0 60px rgba(0,0,0,.6)}
     .sidebar.open~.sidebar-backdrop{display:block}
     .menu-btn{display:inline-flex !important}
-    /* Topbar: 2-row layout */
     .topbar{flex-wrap:wrap;padding:10px 14px;gap:8px}
     .topbar .menu-btn{order:0}
     .topbar .crumbs{order:1;flex:1}
@@ -242,17 +282,14 @@
     .search{order:3;flex:1 1 100%}
     .search input{width:100% !important}
     .search input:focus{width:100% !important}
-    /* Cards */
     .grid{grid-template-columns:1fr}
     .canvas{padding:14px 12px 84px}
-    /* Modal as bottom sheet */
     .overlay{padding:0;align-items:flex-end}
     .modal{border-radius:18px 18px 0 0;max-height:90vh;max-width:100vw;border-left:none;border-right:none;border-bottom:none}
-    /* Settings grid: 1 column */
+    .pal-ov{padding:0;align-items:flex-end}
+    .palette{border-radius:18px 18px 0 0;max-height:90vh;max-width:100vw;border-left:none;border-right:none;border-bottom:none}
     .cfg-grid{grid-template-columns:1fr !important}
-    /* FAB visible */
     .fab{display:flex}
-    /* Card copy button: bigger tap target */
     .card-copy{padding:8px 12px}
   }
   .menu-btn{display:none}
@@ -316,8 +353,25 @@
   </main>
 </div>
 
-<!-- generic overlay/modal -->
+<!-- main modal overlay -->
 <div class="overlay" id="overlay"><div id="modalSlot"></div></div>
+
+<!-- command palette -->
+<div class="pal-ov" id="paletteOv">
+  <div class="palette">
+    <div class="pal-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" id="paletteInput" placeholder="Hledat prompt..." autocomplete="off" spellcheck="false">
+    </div>
+    <div class="pal-list" id="paletteList"></div>
+    <div class="pal-foot">
+      <span><kbd>Enter</kbd> zkopírovat</span>
+      <span><kbd>Shift</kbd>+<kbd>Enter</kbd> otevřít</span>
+      <span><kbd>↑↓</kbd> navigovat</span>
+      <span><kbd>Esc</kbd> zavřít</span>
+    </div>
+  </div>
+</div>
 
 <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 <button class="fab" id="fabAdd" title="Nový prompt">
@@ -328,7 +382,7 @@
 
 <script>
 "use strict";
-/* ============ úložiště (bezpečné i v sandboxu) ============ */
+/* ============ úložiště ============ */
 const LS = {
   get(k){try{return localStorage.getItem(k)}catch(e){return null}},
   set(k,v){try{localStorage.setItem(k,v)}catch(e){}},
@@ -344,7 +398,6 @@ let dirty = false;
 let activeTheme = null;
 let search = '';
 
-/* načti uložené nastavení a cache */
 (function init(){
   try{ const c=LS.get(K_CFG); if(c) config={...config,...JSON.parse(c)}; }catch(e){}
   token = LS.get(K_TOK) || '';
@@ -356,43 +409,94 @@ let search = '';
 const $ = s => document.querySelector(s);
 const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const esc = s => (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const regEsc = s => s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
 function utf8ToB64(str){const b=new TextEncoder().encode(str);let s='';b.forEach(x=>s+=String.fromCharCode(x));return btoa(s);}
 function b64ToUtf8(b64){const bin=atob(b64.replace(/\s/g,''));const arr=Uint8Array.from(bin,c=>c.charCodeAt(0));return new TextDecoder().decode(arr);}
 
 function persistLocal(){ LS.set(K_CACHE, JSON.stringify(state)); }
 function markDirty(){ dirty=true; persistLocal(); renderStatus(); }
-
 function themeById(id){ return state.themes.find(t=>t.id===id); }
 
+/* ============ proměnné v promptech ============ */
+function extractVars(body){
+  const seen=new Set(), vars=[];
+  for(const m of (body||'').matchAll(/\{\{\s*([^}]+?)\s*\}\}/g)){
+    const n=m[1].trim();
+    if(n && !seen.has(n)){ seen.add(n); vars.push(n); }
+  }
+  return vars;
+}
+
+const COPY_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+const CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+
+function fillVarsModal(body, vars){
+  openModal(`
+    <div class="modal wide">
+      <div class="mhead">
+        <span class="eyebrow">Prompt</span>
+        <h3>Doplnit proměnné</h3>
+        <button class="icon-btn x" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="mbody">
+        ${vars.map((v,i)=>`
+          <label class="fld" style="margin-bottom:${i===vars.length-1?0:14}px">
+            <span class="lbl">${esc(v)}</span>
+            <input class="input fv-inp" id="fv-${i}" placeholder="${esc(v)}">
+          </label>`).join('')}
+      </div>
+      <div class="mfoot">
+        <button class="btn ghost" data-close>Zrušit</button>
+        <button class="btn primary" id="fvCopy">
+          ${COPY_SVG} Zkopírovat
+        </button>
+      </div>
+    </div>`);
+  setTimeout(()=>document.getElementById('fv-0')?.focus(), 50);
+  const doFill = async () => {
+    let text = body;
+    vars.forEach((v,i)=>{
+      const val = document.getElementById('fv-'+i)?.value ?? '';
+      text = text.replace(new RegExp('\\{\\{\\s*'+regEsc(v)+'\\s*\\}\\}','g'), val);
+    });
+    if(await copyText(text)){ closeModal(); toast('Prompt zkopírován do schránky'); }
+    else toast('Kopírování selhalo','err');
+  };
+  document.getElementById('fvCopy').onclick = doFill;
+  document.querySelectorAll('.fv-inp').forEach(el=>{
+    el.addEventListener('keydown',e=>{ if(e.key==='Enter') doFill(); });
+  });
+}
+
 /* ============ status + toast ============ */
-function setStatus(text, kind){
-  $('#statusText').textContent = text;
-  const dot = $('#status .dot');
-  dot.className = 'dot' + (kind?(' '+kind):'');
+function setStatus(text,kind){
+  $('#statusText').textContent=text;
+  const dot=$('#status .dot');
+  dot.className='dot'+(kind?(' '+kind):'');
 }
 function renderStatus(){
-  if(dirty) setStatus('Neuložené změny', 'dirty');
-  else if(remoteSha) setStatus('Synchronizováno', 'ok');
-  else setStatus('Lokálně (nesynced)', 'warn');
-  $('#saveBtn').disabled = false;
+  if(dirty) setStatus('Neuložené změny','dirty');
+  else if(remoteSha) setStatus('Synchronizováno','ok');
+  else setStatus('Lokálně (nesynced)','warn');
+  $('#saveBtn').disabled=false;
 }
 let toastTimer;
-function toast(msg, kind='ok'){
-  $('#toastText').textContent = msg;
-  $('#toast .dot').className = 'dot '+kind;
+function toast(msg,kind='ok'){
+  $('#toastText').textContent=msg;
+  $('#toast .dot').className='dot '+kind;
   $('#toast').classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(()=>$('#toast').classList.remove('show'), 2400);
+  toastTimer=setTimeout(()=>$('#toast').classList.remove('show'),2400);
 }
 
 /* ============ render: témata ============ */
 function renderThemes(){
-  const list = $('#themeList');
+  const list=$('#themeList');
   if(!state.themes.length){
-    list.innerHTML = '<div class="empty-themes">Zatím žádná témata.<br>Klikni na <b>+</b> a vytvoř první kategorii promptů.</div>';
+    list.innerHTML='<div class="empty-themes">Zatím žádná témata.<br>Klikni na <b>+</b> a vytvoř první kategorii promptů.</div>';
     return;
   }
-  list.innerHTML = state.themes.map(t=>`
+  list.innerHTML=state.themes.map(t=>`
     <div class="theme ${t.id===activeTheme?'active':''}" data-theme="${t.id}">
       <span class="tname">${esc(t.name)}</span>
       <div class="theme-actions">
@@ -404,55 +508,74 @@ function renderThemes(){
         </button>
       </div>
       <span class="count">${(t.prompts||[]).length}</span>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
 
 /* ============ render: prompty ============ */
+function cardCopyBtn(pid, tid){ return `<button class="card-copy" data-copy="${pid}" data-tid="${tid}">${COPY_SVG} Kopírovat</button>`; }
+
 function renderCanvas(){
-  const canvas = $('#canvas');
-  const theme = themeById(activeTheme);
+  const canvas=$('#canvas');
 
-  if(!theme){
-    $('#crumbEyebrow').textContent = state.themes.length ? 'Vyber téma vlevo' : 'Začni tady';
-    $('#crumbTitle').textContent = 'Knihovna promptů';
-    canvas.innerHTML = blankState(
-      state.themes.length ? 'Vyber téma' : 'Žádná témata',
-      state.themes.length ? 'Klikni na téma v levém panelu a uvidíš jeho prompty.'
-                          : 'Vytvoř první téma tlačítkem + a začni ukládat prompty.');
-    return;
-  }
-
-  $('#crumbEyebrow').textContent = 'Téma';
-  $('#crumbTitle').textContent = theme.name;
-
-  let prompts = theme.prompts || [];
+  /* ---------- globální hledání ---------- */
   if(search){
-    const q = search.toLowerCase();
-    prompts = prompts.filter(p => (p.title||'').toLowerCase().includes(q) || (p.body||'').toLowerCase().includes(q));
-  }
-
-  if(!prompts.length){
-    canvas.innerHTML = blankState(
-      search ? 'Nic nenalezeno' : 'Prázdné téma',
-      search ? 'Žádný prompt neodpovídá hledání.' : 'Přidej první prompt tlačítkem „Nový prompt".');
+    const q=search.toLowerCase();
+    const results=[];
+    state.themes.forEach(t=>{
+      (t.prompts||[]).forEach(p=>{
+        if((p.title||'').toLowerCase().includes(q)||(p.body||'').toLowerCase().includes(q))
+          results.push({p,t});
+      });
+    });
+    $('#crumbEyebrow').textContent=`Výsledky hledání – ${results.length} promptů`;
+    $('#crumbTitle').textContent=search;
+    if(!results.length){
+      canvas.innerHTML=blankState('Nic nenalezeno','Žádný prompt neodpovídá hledání ve všech tématech.');
+      return;
+    }
+    canvas.innerHTML=`<div class="grid">${results.map(({p,t})=>`
+      <div class="card" data-open="${p.id}" data-tid="${t.id}">
+        <div class="ctitle">${esc(p.title||'Bez názvu')}</div>
+        <div class="ctheme">${esc(t.name)}</div>
+        <div class="cprev">${esc((p.body||'').slice(0,180))}</div>
+        <div class="cfoot">
+          <span class="cmeta">${(p.body||'').length} zn.</span>
+          ${cardCopyBtn(p.id,t.id)}
+        </div>
+      </div>`).join('')}</div>`;
     return;
   }
 
-  canvas.innerHTML = `<div class="grid">${prompts.map(p=>`
-    <div class="card" data-open="${p.id}">
+  /* ---------- normální pohled na téma ---------- */
+  const theme=themeById(activeTheme);
+  if(!theme){
+    $('#crumbEyebrow').textContent=state.themes.length?'Vyber téma vlevo':'Začni tady';
+    $('#crumbTitle').textContent='Knihovna promptů';
+    canvas.innerHTML=blankState(
+      state.themes.length?'Vyber téma':'Žádná témata',
+      state.themes.length?'Klikni na téma v levém panelu a uvidíš jeho prompty.'
+                        :'Vytvoř první téma tlačítkem + a začni ukládat prompty.');
+    return;
+  }
+  $('#crumbEyebrow').textContent='Téma';
+  $('#crumbTitle').textContent=theme.name;
+  const prompts=theme.prompts||[];
+  if(!prompts.length){
+    canvas.innerHTML=blankState('Prázdné téma','Přidej první prompt tlačítkem „Nový prompt".');
+    return;
+  }
+  canvas.innerHTML=`<div class="grid">${prompts.map(p=>`
+    <div class="card" data-open="${p.id}" data-tid="${theme.id}">
       <div class="ctitle">${esc(p.title||'Bez názvu')}</div>
       <div class="cprev">${esc((p.body||'').slice(0,180))}</div>
       <div class="cfoot">
         <span class="cmeta">${(p.body||'').length} zn.</span>
-        <button class="card-copy" data-copy="${p.id}">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-          Kopírovat
-        </button>
+        ${cardCopyBtn(p.id,theme.id)}
       </div>
     </div>`).join('')}</div>`;
 }
-function blankState(title, text){
+
+function blankState(title,text){
   return `<div class="blank">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
     <h3>${esc(title)}</h3><p>${esc(text)}</p></div>`;
@@ -472,14 +595,13 @@ async function copyText(text){
 }
 
 /* ============ modály ============ */
-function openModal(html){ $('#modalSlot').innerHTML = html; $('#overlay').classList.add('show'); }
+function openModal(html){ $('#modalSlot').innerHTML=html; $('#overlay').classList.add('show'); }
 function closeModal(){ $('#overlay').classList.remove('show'); $('#modalSlot').innerHTML=''; }
-$('#overlay').addEventListener('mousedown', e=>{ if(e.target.id==='overlay') closeModal(); });
-document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+$('#overlay').addEventListener('mousedown',e=>{ if(e.target.id==='overlay') closeModal(); });
 
 /* --- téma: vytvořit / přejmenovat --- */
 function themeModal(existing){
-  const t = existing ? themeById(existing) : null;
+  const t=existing?themeById(existing):null;
   openModal(`
     <div class="modal wide">
       <div class="mhead"><span class="eyebrow">${t?'Upravit':'Nové'} téma</span>
@@ -498,11 +620,11 @@ function themeModal(existing){
     const name=$('#themeName').value.trim();
     if(!name){ $('#themeName').focus(); return; }
     if(t){ t.name=name; }
-    else { const nt={id:uid(),name,prompts:[]}; state.themes.push(nt); activeTheme=nt.id; }
+    else{ const nt={id:uid(),name,prompts:[]}; state.themes.push(nt); activeTheme=nt.id; }
     markDirty(); renderAll(); closeModal();
   };
   $('#themeSave').onclick=save;
-  $('#themeName').addEventListener('keydown',e=>{if(e.key==='Enter')save();});
+  $('#themeName').addEventListener('keydown',e=>{ if(e.key==='Enter') save(); });
 }
 
 /* --- téma: smazat --- */
@@ -531,7 +653,7 @@ function deleteThemeModal(id){
 function promptEditModal(promptId){
   if(!activeTheme){ toast('Nejdřív vyber nebo vytvoř téma','warn'); return; }
   const theme=themeById(activeTheme);
-  const p = promptId ? (theme.prompts||[]).find(x=>x.id===promptId) : null;
+  const p=promptId?(theme.prompts||[]).find(x=>x.id===promptId):null;
   openModal(`
     <div class="modal">
       <div class="mhead"><span class="eyebrow">${p?'Upravit prompt':'Nový prompt'} · ${esc(theme.name)}</span>
@@ -540,7 +662,8 @@ function promptEditModal(promptId){
         <label class="fld"><span class="lbl">Název</span>
           <input class="input" id="pTitle" value="${esc(p?p.title:'')}" placeholder="Krátký výstižný název"></label>
         <label class="fld" style="margin-bottom:0"><span class="lbl">Text promptu</span>
-          <textarea class="textarea" id="pBody" placeholder="Sem vlož celý prompt...">${esc(p?p.body:'')}</textarea></label>
+          <textarea class="textarea" id="pBody" placeholder="Sem vlož celý prompt... Proměnné zapíšeš jako {{nazev_promenne}}">${esc(p?p.body:'')}</textarea></label>
+        <div class="hint" id="varHint" style="display:none"></div>
       </div>
       <div class="mfoot">
         ${p?'<button class="btn ghost left" id="pDelete" style="color:var(--danger)">Smazat</button>':''}
@@ -549,12 +672,23 @@ function promptEditModal(promptId){
       </div>
     </div>`);
   setTimeout(()=>$('#pTitle')?.focus(),50);
+
+  /* živý přehled proměnných */
+  const bodyEl=$('#pBody'), hintEl=$('#varHint');
+  const updateHint=()=>{
+    const vars=extractVars(bodyEl.value);
+    if(vars.length){ hintEl.style.display=''; hintEl.textContent='Proměnné: '+vars.join(', '); }
+    else hintEl.style.display='none';
+  };
+  bodyEl.addEventListener('input',updateHint);
+  updateHint();
+
   $('#pSave').onclick=()=>{
     const title=$('#pTitle').value.trim();
     const body=$('#pBody').value;
-    if(!title && !body.trim()){ $('#pTitle').focus(); return; }
+    if(!title&&!body.trim()){ $('#pTitle').focus(); return; }
     if(p){ p.title=title||'Bez názvu'; p.body=body; p.updatedAt=Date.now(); }
-    else { theme.prompts=theme.prompts||[]; theme.prompts.unshift({id:uid(),title:title||'Bez názvu',body,createdAt:Date.now(),updatedAt:Date.now()}); }
+    else{ theme.prompts=theme.prompts||[]; theme.prompts.unshift({id:uid(),title:title||'Bez názvu',body,createdAt:Date.now(),updatedAt:Date.now()}); }
     markDirty(); renderAll(); closeModal();
   };
   if(p) $('#pDelete').onclick=()=>{
@@ -564,8 +698,9 @@ function promptEditModal(promptId){
 }
 
 /* --- prompt: zobrazit + kopírovat --- */
-function viewPromptModal(promptId){
-  const theme=themeById(activeTheme); if(!theme) return;
+/* themeId je volitelný – použije se při volání z globálního hledání nebo palety */
+function viewPromptModal(promptId, themeId){
+  const theme=themeById(themeId||activeTheme); if(!theme) return;
   const p=(theme.prompts||[]).find(x=>x.id===promptId); if(!p) return;
   openModal(`
     <div class="modal">
@@ -573,22 +708,29 @@ function viewPromptModal(promptId){
         <button class="icon-btn x" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
       <div class="mbody">
         <h3 style="margin:0 0 12px;font-family:var(--mono);font-size:16px;font-weight:500">${esc(p.title)}</h3>
-        <div class="pview" id="pviewText">${esc(p.body)}</div>
+        <div class="pview">${esc(p.body)}</div>
       </div>
       <div class="mfoot">
         <button class="btn ghost left" id="pvEdit">Upravit</button>
         <button class="btn ghost" data-close>Zavřít</button>
         <button class="btn primary" id="pvCopy">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-          Kopírovat prompt
+          ${COPY_SVG} Kopírovat prompt
         </button>
       </div>
     </div>`);
   $('#pvCopy').onclick=async()=>{
-    if(await copyText(p.body)){ toast('Prompt zkopírován do schránky'); }
-    else toast('Kopírování selhalo','err');
+    const vars=extractVars(p.body);
+    if(!vars.length){
+      if(await copyText(p.body)) toast('Prompt zkopírován do schránky');
+      else toast('Kopírování selhalo','err');
+    } else {
+      fillVarsModal(p.body,vars);   /* nahradí obsah modálu */
+    }
   };
-  $('#pvEdit').onclick=()=>{ closeModal(); promptEditModal(p.id); };
+  $('#pvEdit').onclick=()=>{
+    if(themeId) activeTheme=themeId;
+    closeModal(); promptEditModal(p.id);
+  };
 }
 
 /* --- nastavení synchronizace --- */
@@ -623,8 +765,8 @@ function settingsModal(){
     config.path=$('#cfgPath').value.trim()||'prompts.json';
     config.branch=$('#cfgBranch').value.trim()||'main';
     token=$('#cfgToken').value.trim();
-    LS.set(K_CFG, JSON.stringify(config));
-    LS.set(K_TOK, token);
+    LS.set(K_CFG,JSON.stringify(config));
+    LS.set(K_TOK,token);
     remoteSha=null;
     closeModal(); toast('Nastavení uloženo'); renderStatus();
   };
@@ -647,16 +789,9 @@ async function pull(silent){
   if(!config.owner||!config.repo){ if(!silent) toast('Nejdřív vyplň nastavení (owner/repo)','warn'); settingsModal(); return; }
   setStatus('Načítám z GitHubu...','warn');
   try{
-    const res=await fetch(apiUrl()+'?ref='+encodeURIComponent(config.branch)+'&t='+Date.now(), {headers:ghHeaders()});
-    if(res.status===404){
-      remoteSha=null; renderStatus();
-      if(!silent) toast('Soubor zatím neexistuje – vytvoří se při prvním uložení','warn');
-      return;
-    }
-    if(res.status===401||res.status===403){
-      renderStatus(); if(!silent){ toast('Token chybí nebo nemá oprávnění','err'); settingsModal(); }
-      setStatus('Chyba ověření','err'); return;
-    }
+    const res=await fetch(apiUrl()+'?ref='+encodeURIComponent(config.branch)+'&t='+Date.now(),{headers:ghHeaders()});
+    if(res.status===404){ remoteSha=null; renderStatus(); if(!silent) toast('Soubor zatím neexistuje – vytvoří se při prvním uložení','warn'); return; }
+    if(res.status===401||res.status===403){ renderStatus(); if(!silent){ toast('Token chybí nebo nemá oprávnění','err'); settingsModal(); } setStatus('Chyba ověření','err'); return; }
     if(!res.ok){ throw new Error('HTTP '+res.status); }
     const data=await res.json();
     const parsed=JSON.parse(b64ToUtf8(data.content));
@@ -684,14 +819,11 @@ async function push(){
       branch:config.branch
     };
     if(remoteSha) body.sha=remoteSha;
-    let res=await fetch(apiUrl(), {method:'PUT',headers:{...ghHeaders(),'Content-Type':'application/json'},body:JSON.stringify(body)});
-
-    if(res.status===409 || (res.status===422 && !remoteSha)){
-      // konflikt SHA / soubor mezitím vznikl – dotáhni aktuální sha a zkus jednou znovu
-      const cur=await fetch(apiUrl()+'?ref='+encodeURIComponent(config.branch)+'&t='+Date.now(), {headers:ghHeaders()});
+    let res=await fetch(apiUrl(),{method:'PUT',headers:{...ghHeaders(),'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(res.status===409||(res.status===422&&!remoteSha)){
+      const cur=await fetch(apiUrl()+'?ref='+encodeURIComponent(config.branch)+'&t='+Date.now(),{headers:ghHeaders()});
       if(cur.ok){ const d=await cur.json(); body.sha=d.sha; remoteSha=d.sha;
-        res=await fetch(apiUrl(), {method:'PUT',headers:{...ghHeaders(),'Content-Type':'application/json'},body:JSON.stringify(body)});
-      }
+        res=await fetch(apiUrl(),{method:'PUT',headers:{...ghHeaders(),'Content-Type':'application/json'},body:JSON.stringify(body)}); }
     }
     if(res.status===401||res.status===403){ setStatus('Chyba ověření','err'); toast('Token nemá právo zapisovat (Contents: write)','err'); btn.disabled=false; return; }
     if(!res.ok){ const t=await res.text(); throw new Error('HTTP '+res.status+' '+t.slice(0,120)); }
@@ -703,45 +835,152 @@ async function push(){
   }finally{ btn.disabled=false; }
 }
 
+/* ============ Command palette ============ */
+let palResults=[], palIdx=-1;
+
+function openPalette(){
+  if($('#overlay').classList.contains('show')) return;
+  palResults=[]; palIdx=-1;
+  $('#paletteInput').value='';
+  renderPaletteList('');
+  $('#paletteOv').classList.add('show');
+  setTimeout(()=>$('#paletteInput').focus(),30);
+}
+function closePalette(){ $('#paletteOv').classList.remove('show'); }
+
+function renderPaletteList(q){
+  palResults=[];
+  const ql=q.toLowerCase().trim();
+  state.themes.forEach(t=>{
+    (t.prompts||[]).forEach(p=>{
+      if(!ql||(p.title||'').toLowerCase().includes(ql)||(p.body||'').toLowerCase().includes(ql))
+        palResults.push({p,t});
+    });
+  });
+  const shown=palResults.slice(0,60);
+  const list=$('#paletteList');
+  if(!shown.length){
+    list.innerHTML='<div class="pal-empty">Žádné prompty nenalezeny.</div>';
+    return;
+  }
+  list.innerHTML=shown.map(({p,t},i)=>`
+    <div class="pal-item${i===palIdx?' sel':''}" data-pi="${i}">
+      <span class="pi-title">${esc(p.title||'Bez názvu')}</span>
+      <span class="pi-theme">${esc(t.name)}</span>
+    </div>`).join('');
+}
+
+function palActivate(i){
+  palIdx=i;
+  document.querySelectorAll('.pal-item').forEach((el,j)=>el.classList.toggle('sel',j===i));
+  document.querySelector('.pal-item.sel')?.scrollIntoView({block:'nearest'});
+}
+
+$('#paletteInput').addEventListener('input',e=>{ palIdx=-1; renderPaletteList(e.target.value); });
+
+$('#paletteInput').addEventListener('keydown',e=>{
+  const n=Math.min(palResults.length,60);
+  if(e.key==='ArrowDown'){ e.preventDefault(); palActivate(palIdx<n-1?palIdx+1:0); return; }
+  if(e.key==='ArrowUp'){ e.preventDefault(); palActivate(palIdx>0?palIdx-1:n-1); return; }
+  if(e.key==='Enter'){
+    e.preventDefault();
+    const idx=palIdx>=0?palIdx:0;
+    const item=palResults[idx]; if(!item) return;
+    closePalette();
+    if(e.shiftKey){
+      viewPromptModal(item.p.id,item.t.id);
+    } else {
+      const vars=extractVars(item.p.body);
+      if(vars.length){ fillVarsModal(item.p.body,vars); }
+      else copyText(item.p.body).then(ok=>{ if(ok) toast('Prompt zkopírován do schránky'); else toast('Kopírování selhalo','err'); });
+    }
+  }
+});
+
+$('#paletteList').addEventListener('mousemove',e=>{ const it=e.target.closest('[data-pi]'); if(it) palActivate(+it.dataset.pi); });
+$('#paletteList').addEventListener('click',e=>{
+  const it=e.target.closest('[data-pi]'); if(!it) return;
+  const item=palResults[+it.dataset.pi]; if(!item) return;
+  closePalette();
+  viewPromptModal(item.p.id,item.t.id);
+});
+$('#paletteOv').addEventListener('mousedown',e=>{ if(e.target.id==='paletteOv') closePalette(); });
+
 /* ============ události ============ */
 $('#addTheme').onclick=()=>themeModal();
 $('#addPrompt').onclick=()=>promptEditModal();
 $('#settingsBtn').onclick=settingsModal;
 $('#saveBtn').onclick=push;
-$('#reloadBtn').onclick=()=>{ if(dirty && !confirm('Máš neuložené změny, které se přepíšou verzí z GitHubu. Pokračovat?')) return; pull(false); };
-
+$('#reloadBtn').onclick=()=>{ if(dirty&&!confirm('Máš neuložené změny, které se přepíšou verzí z GitHubu. Pokračovat?')) return; pull(false); };
 $('#searchInput').addEventListener('input',e=>{ search=e.target.value; renderCanvas(); });
 
 $('#themeList').addEventListener('click',e=>{
   const ed=e.target.closest('[data-edit-theme]'); if(ed){ themeModal(ed.dataset.editTheme); return; }
   const del=e.target.closest('[data-del-theme]'); if(del){ deleteThemeModal(del.dataset.delTheme); return; }
-  const th=e.target.closest('[data-theme]'); if(th){ activeTheme=th.dataset.theme; search=''; $('#searchInput').value=''; renderAll(); if(window.innerWidth<=760) closeSidebar(); }
+  const th=e.target.closest('[data-theme]');
+  if(th){ activeTheme=th.dataset.theme; search=''; $('#searchInput').value=''; renderAll(); if(window.innerWidth<=760) closeSidebar(); }
 });
 
 $('#canvas').addEventListener('click',async e=>{
   const cp=e.target.closest('[data-copy]');
   if(cp){
     e.stopPropagation();
-    const theme=themeById(activeTheme); const p=(theme?.prompts||[]).find(x=>x.id===cp.dataset.copy);
-    if(p && await copyText(p.body)){
-      cp.classList.add('done'); cp.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Zkopírováno';
-      setTimeout(()=>{ cp.classList.remove('done'); cp.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Kopírovat'; },1400);
+    const tid=cp.dataset.tid||activeTheme;
+    const theme=themeById(tid);
+    const p=(theme?.prompts||[]).find(x=>x.id===cp.dataset.copy);
+    if(!p) return;
+    const vars=extractVars(p.body);
+    if(!vars.length){
+      if(await copyText(p.body)){
+        cp.classList.add('done');
+        cp.innerHTML=CHECK_SVG+' Zkopírováno';
+        setTimeout(()=>{ cp.classList.remove('done'); cp.innerHTML=COPY_SVG+' Kopírovat'; },1400);
+      }
+    } else {
+      fillVarsModal(p.body,vars);
     }
     return;
   }
-  const card=e.target.closest('[data-open]'); if(card) viewPromptModal(card.dataset.open);
+  const card=e.target.closest('[data-open]');
+  if(card) viewPromptModal(card.dataset.open, card.dataset.tid);
 });
 
 document.addEventListener('click',e=>{ if(e.target.closest('[data-close]')) closeModal(); });
+
 function openSidebar(){ $('#sidebar').classList.add('open'); }
 function closeSidebar(){ $('#sidebar').classList.remove('open'); }
 $('#menuBtn').onclick=()=>$('#sidebar').classList.toggle('open');
 $('#sidebarBackdrop').onclick=closeSidebar;
 $('#fabAdd').onclick=()=>promptEditModal();
 
+/* ============ klávesové zkratky ============ */
+document.addEventListener('keydown',e=>{
+  /* Escape – nejdřív zkontroluj paletu, pak hlavní overlay */
+  if(e.key==='Escape'){
+    if($('#paletteOv').classList.contains('show')){ closePalette(); return; }
+    closeModal();
+    return;
+  }
+  /* Cmd/Ctrl+K – paleta */
+  if((e.metaKey||e.ctrlKey)&&e.key==='k'){
+    e.preventDefault();
+    if($('#paletteOv').classList.contains('show')){ closePalette(); return; }
+    openPalette();
+    return;
+  }
+  /* Globální zkratky – nesmí se spustit při psaní */
+  const tag=(document.activeElement?.tagName||'').toUpperCase();
+  const inField=tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT';
+  const inModal=$('#overlay').classList.contains('show')||$('#paletteOv').classList.contains('show');
+  if(inField||inModal) return;
+
+  if(e.key==='n'){ e.preventDefault(); promptEditModal(); return; }
+  if(e.key==='/'){ e.preventDefault(); $('#searchInput').focus(); return; }
+});
+
 /* ============ start ============ */
 renderAll();
-if(config.owner && config.repo){ pull(true); }   // tiché načtení aktuální verze při startu
+if(config.owner&&config.repo){ pull(true); }
 </script>
 </body>
 </html>
