@@ -218,10 +218,6 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>
         <span data-i="dl">Stáhnout .md</span>
       </button>
-      <button class="btn" id="refine" title="Nechá Claude prompt vyladit (funguje v Claude.ai)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15l-1.9-4.1L5.5 9l4.6-1.4z"/></svg>
-        <span data-i="refine">Vyladit s Claude</span>
-      </button>
       <span class="count" id="count">0 slov</span>
     </div>
   </section>
@@ -238,10 +234,8 @@ const I = {
     p_blank:"Prázdná stavba", p_adas:"ADAS Copilot agent", p_web:"Webový nástroj", p_research:"Výzkumná rešerše",
     intro:"Vyplň kroky zleva. Vpravo se v reálném čase skládá hotový prompt — připravený ke zkopírování nebo stažení. Žádný krok není povinný; vynechané se do výstupu nepřidají.",
     assembled:"Sestavený prompt", livetxt:"živé skládání",
-    copy:"Kopírovat", dl:"Stáhnout .md", refine:"Vyladit s Claude",
-    words:"slov", copied:"Zkopírováno do schránky", refining:"Claude ladí prompt…",
-    refdone:"Vyladěno Claudem", reverted:"Zpět na sestavený", revert:"Zpět",
-    reffail:"Ladění tady neběží — zkopíruj prompt do Claude.ai",
+    copy:"Kopírovat", dl:"Stáhnout .md",
+    words:"slov", copied:"Zkopírováno do schránky",
     empty:"Začni vyplňovat kroky a prompt se objeví tady.",
     fmt:{prose:"souvislý text",markdown:"Markdown",json:"JSON",bullets:"odrážky",code:"blok kódu",table:"tabulka"},
     H:{role:"ROLE A EXPERTÍZA",obj:"CÍL",dom:"DOMÉNA A KONTEXT",fmt:"FORMÁT VÝSTUPU",con:"OMEZENÍ A PRAVIDLA",ex:"PŘÍKLADY",ref:"OŠETŘENÍ HRAN A ZPŘESNĚNÍ",fmtline:"Odpověz ve formátu:"},
@@ -274,10 +268,8 @@ const I = {
     p_blank:"Blank build", p_adas:"ADAS Copilot agent", p_web:"Web tool", p_research:"Research brief",
     intro:"Fill the steps on the left. A finished prompt assembles on the right in real time — ready to copy or download. No step is required; skipped ones are left out of the output.",
     assembled:"Assembled prompt", livetxt:"live assembly",
-    copy:"Copy", dl:"Download .md", refine:"Refine with Claude",
-    words:"words", copied:"Copied to clipboard", refining:"Claude is refining…",
-    refdone:"Refined by Claude", reverted:"Back to assembled", revert:"Revert",
-    reffail:"Refine doesn't run here — copy the prompt into Claude.ai",
+    copy:"Copy", dl:"Download .md",
+    words:"words", copied:"Copied to clipboard",
     empty:"Start filling the steps and the prompt appears here.",
     fmt:{prose:"prose",markdown:"Markdown",json:"JSON",bullets:"bulleted list",code:"code block",table:"table"},
     H:{role:"ROLE & EXPERTISE",obj:"OBJECTIVE",dom:"DOMAIN & CONTEXT",fmt:"OUTPUT FORMAT",con:"CONSTRAINTS & RULES",ex:"EXAMPLES",ref:"EDGE CASES & REFINEMENT",fmtline:"Respond in this format:"},
@@ -340,7 +332,6 @@ const PRESETS = {
 
 /* ---------------- state ---------------- */
 let lang = "cs";
-let refined = null;        // holds Claude-refined text when present
 const state = { obj:"", dom:"", persona:"", format:"markdown",
                 constraints:"", examples:[], refine:"" };
 
@@ -390,10 +381,10 @@ function renderSteps(){
   // wire inputs
   console_el.querySelectorAll("[data-key]").forEach(el=>{
     el.addEventListener("input",e=>{
-      const k=e.target.dataset.key; state[k]=e.target.value; refined=null; update();
+      const k=e.target.dataset.key; state[k]=e.target.value; update();
     });
     el.addEventListener("change",e=>{
-      const k=e.target.dataset.key; state[k]=e.target.value; refined=null; update();
+      const k=e.target.dataset.key; state[k]=e.target.value; update();
     });
   });
   const addBtn = $("#addEx");
@@ -417,12 +408,12 @@ function renderExamples(){
   list.querySelectorAll("[data-ex]").forEach(el=>{
     el.addEventListener("input",e=>{
       const i=+e.target.dataset.i, f=e.target.dataset.ex;
-      state.examples[i][f]=e.target.value; refined=null; update();
+      state.examples[i][f]=e.target.value; update();
     });
   });
   list.querySelectorAll("[data-del]").forEach(b=>{
     b.addEventListener("click",e=>{
-      state.examples.splice(+e.target.dataset.del,1); renderExamples(); refined=null; update();
+      state.examples.splice(+e.target.dataset.del,1); renderExamples(); update();
     });
   });
 }
@@ -491,18 +482,16 @@ function update(){
   });
   // output
   const out=$("#out");
-  const text = refined!=null ? refined : assemble();
+  const text = assemble();
   if(!text){
     out.innerHTML=`<span class="empty">${I[lang].empty}</span>`;
     $("#count").textContent=`0 ${I[lang].words}`;
   } else {
-    out.innerHTML = refined!=null ? colorize(text) : colorize(text);
+    out.innerHTML = colorize(text);
     const w=text.trim().split(/\s+/).filter(Boolean).length;
     $("#count").textContent=`${w} ${I[lang].words}`;
   }
 }
-
-function currentText(){ return refined!=null ? refined : assemble(); }
 
 /* ---------------- actions ---------------- */
 function toast(msg){
@@ -510,43 +499,17 @@ function toast(msg){
   clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove("show"),1900);
 }
 $("#copy").addEventListener("click",async()=>{
-  const t=currentText(); if(!t) return;
+  const t=assemble(); if(!t) return;
   try{ await navigator.clipboard.writeText(t); toast(I[lang].copied); }
   catch{ const ta=document.createElement("textarea"); ta.value=t; document.body.appendChild(ta);
     ta.select(); document.execCommand("copy"); ta.remove(); toast(I[lang].copied); }
 });
 $("#dl").addEventListener("click",()=>{
-  const t=currentText(); if(!t) return;
+  const t=assemble(); if(!t) return;
   const blob=new Blob([t],{type:"text/markdown"});
   const a=document.createElement("a");
   a.href=URL.createObjectURL(blob); a.download="prompt.md"; a.click();
   URL.revokeObjectURL(a.href);
-});
-
-/* refine with Claude — works inside Claude.ai artifact runtime; graceful fallback elsewhere */
-const refineBtn=$("#refine");
-refineBtn.addEventListener("click",async()=>{
-  if(refined!=null){ refined=null; update(); toast(I[lang].reverted); refineBtn.querySelector("span").setAttribute("data-i","refine"); refineBtn.querySelector("span").textContent=I[lang].refine; return; }
-  const base=assemble(); if(!base){ return; }
-  const span=refineBtn.querySelector("span"); const old=span.textContent;
-  span.textContent=I[lang].refining; refineBtn.disabled=true;
-  try{
-    const r=await fetch("https://api.anthropic.com/v1/messages",{
-      method:"POST", headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({
-        model:"claude-sonnet-4-6", max_tokens:1000,
-        messages:[{role:"user",content:
-          `You are an elite prompt engineer. Improve the prompt below for clarity, specificity, and model performance, preserving its intent and language. Return ONLY the improved prompt, no preamble.\n\n---\n${base}`}]
-      })
-    });
-    const data=await r.json();
-    const txt=(data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("\n").trim();
-    if(!txt) throw new Error("empty");
-    refined=txt; update(); toast(I[lang].refdone);
-    span.textContent=I[lang].revert;
-  }catch(e){
-    toast(I[lang].reffail); span.textContent=old;
-  }finally{ refineBtn.disabled=false; }
 });
 
 /* preset + language */
@@ -555,7 +518,7 @@ $("#preset").addEventListener("change",e=>{
   state.obj=p.obj||""; state.dom=p.dom||""; state.persona=p.persona||"";
   state.format=p.format||"markdown"; state.constraints=p.constraints||"";
   state.examples=(p.examples||[]).map(x=>({in:x.in||"",out:x.out||""}));
-  state.refine=p.refine||""; refined=null;
+  state.refine=p.refine||"";
   renderSteps(); update();
 });
 
