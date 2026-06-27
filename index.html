@@ -739,6 +739,7 @@ function ghLabel() { document.getElementById('gh-btn-label').textContent = ghOk(
 ghLabel();
 
 function toB64(str) { return btoa(unescape(encodeURIComponent(str))); }
+function fromB64(str) { return decodeURIComponent(escape(atob(str.replace(/\n/g, '')))); }
 
 async function ghCommit(filename, html) {
   const { token, owner, repo } = ghCfg;
@@ -772,9 +773,9 @@ function safeName(str) { return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').re
 document.getElementById('btn-settings').addEventListener('click', () => {
   const s = ghCfg || {};
   document.getElementById('gh-token').value = s.token || '';
-  document.getElementById('gh-owner').value = s.owner || '';
-  document.getElementById('gh-repo').value = s.repo || '';
-  document.getElementById('gh-err').textContent = '';
+  document.getElementById('gh-owner').value = s.owner || 'Vladaczech';
+  document.getElementById('gh-repo').value = s.repo || 'vladaweb';
+  document.getElementById('gh-err').textContent = ghOk() ? '✓ Připojeno' : '';
   open('ov-settings');
 });
 document.getElementById('gh-save').addEventListener('click', async () => {
@@ -788,7 +789,10 @@ document.getElementById('gh-save').addEventListener('click', async () => {
     if (!r.ok) throw new Error('Repozitář nenalezen nebo neplatný token.');
     ghCfg = { token, owner, repo };
     localStorage.setItem(GH_KEY, JSON.stringify(ghCfg));
-    ghLabel(); close('ov-settings');
+    ghLabel();
+    document.getElementById('gh-err').textContent = 'Synchronizuji deck…';
+    await ghSyncDeck();
+    close('ov-settings');
   } catch (e) { document.getElementById('gh-err').textContent = e.message; }
 });
 document.getElementById('gh-clear').addEventListener('click', () => {
@@ -844,18 +848,11 @@ function scheduleSyncDeck() {
 
 async function pollDeck() {
   if (!ghOk()) return;
-  const { token, owner, repo } = ghCfg;
   try {
-    const r = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/deck-data.json`, {
-      headers: { 'Authorization': `Bearer ${token}`, 'Cache-Control': 'no-cache' }
-    });
-    if (!r.ok) return;
-    const { content, sha } = await r.json();
-    if (sha === deckSha) return;
-    deckSha = sha;
-    const remote = JSON.parse(atob(content.replace(/\n/g, '')));
-    DECK = remote;
-    try { localStorage.setItem(KEY, JSON.stringify(remote)); } catch (_) {}
+    const data = await fetchDeckFromGH();
+    if (!data || JSON.stringify(data) === JSON.stringify(DECK)) return;
+    DECK = data;
+    try { localStorage.setItem(KEY, JSON.stringify(DECK)); } catch (_) {}
     render();
   } catch {}
 }
@@ -1037,21 +1034,36 @@ document.getElementById('f-stamp').textContent = new Date().toLocaleDateString('
   else frame();
 })();
 
+async function fetchDeckFromGH() {
+  const { token, owner, repo } = ghCfg;
+  const r = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/deck-data.json`, {
+    headers: { 'Authorization': `Bearer ${token}`, 'Cache-Control': 'no-cache' }
+  });
+  if (r.status === 404) return null;
+  if (!r.ok) throw new Error('GitHub API: ' + r.status);
+  const { content, sha } = await r.json();
+  deckSha = sha;
+  return JSON.parse(fromB64(content));
+}
+
 async function init() {
   await idbOpen().catch(() => {});
   if (ghOk()) {
-    const { token, owner, repo } = ghCfg;
+    setStatus('Načítám z GitHubu…');
     try {
-      const r = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/deck-data.json`, {
-        headers: { 'Authorization': `Bearer ${token}`, 'Cache-Control': 'no-cache' }
-      });
-      if (r.ok) {
-        const { content, sha } = await r.json();
-        deckSha = sha;
-        DECK = JSON.parse(atob(content.replace(/\n/g, '')));
+      const data = await fetchDeckFromGH();
+      if (data) {
+        DECK = data;
         try { localStorage.setItem(KEY, JSON.stringify(DECK)); } catch (_) {}
+        setStatus('Systém online');
+      } else {
+        // deck-data.json doesn't exist yet — push our current deck
+        setStatus('Vytvářím zálohu…');
+        await ghSyncDeck();
       }
-    } catch (_) {}
+    } catch (e) {
+      setStatus('GitHub chyba: ' + e.message);
+    }
     setInterval(pollDeck, 30000);
   } else {
     const map = await idbGetAll().catch(() => ({}));
