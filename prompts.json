@@ -1,14 +1,3 @@
 {
-  "themes": [
-    {
-      "id": "mqwi3we1thj4a",
-      "name": "Práce",
-      "prompts": []
-    },
-    {
-      "id": "mqwi418jaeewq",
-      "name": "Škola",
-      "prompts": []
-    }
-  ]
+  "themes": []
 }
