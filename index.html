@@ -812,6 +812,7 @@ async function ghSyncDeck() {
   if (!ghOk()) return;
   const { token, owner, repo } = ghCfg;
   const clean = DECK.map(t => ({ ...t, projekty: t.projekty.map(p => { const { html, ...rest } = p; return rest; }) }));
+  if (!deckSha) deckSha = await getFileSha();
   const body = { message: 'Sync deck', content: toB64(JSON.stringify(clean)) };
   if (deckSha) body.sha = deckSha;
   setStatus('Synchronizuji…');
@@ -849,7 +850,7 @@ function scheduleSyncDeck() {
 async function pollDeck() {
   if (!ghOk()) return;
   try {
-    const data = await fetchDeckFromGH();
+    const data = await readDeckFromPages();
     if (!data || JSON.stringify(data) === JSON.stringify(DECK)) return;
     DECK = data;
     try { localStorage.setItem(KEY, JSON.stringify(DECK)); } catch (_) {}
@@ -1034,35 +1035,45 @@ document.getElementById('f-stamp').textContent = new Date().toLocaleDateString('
   else frame();
 })();
 
-async function fetchDeckFromGH() {
-  const { token, owner, repo } = ghCfg;
-  const r = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/deck-data.json`, {
-    headers: { 'Authorization': `Bearer ${token}`, 'Cache-Control': 'no-cache' }
-  });
+async function readDeckFromPages() {
+  // Read deck-data.json from GitHub Pages (same-origin, no auth, no CORS issues)
+  const r = await fetch('./deck-data.json?_=' + Date.now(), { cache: 'no-store' });
   if (r.status === 404) return null;
-  if (!r.ok) throw new Error('GitHub API: ' + r.status);
-  const { content, sha } = await r.json();
-  deckSha = sha;
-  return JSON.parse(fromB64(content));
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
+
+async function getFileSha() {
+  if (!ghOk()) return null;
+  const { token, owner, repo } = ghCfg;
+  try {
+    const r = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/deck-data.json`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!r.ok) return null;
+    return (await r.json()).sha;
+  } catch { return null; }
 }
 
 async function init() {
   await idbOpen().catch(() => {});
   if (ghOk()) {
-    setStatus('Načítám z GitHubu…');
+    setStatus('Načítám…');
     try {
-      const data = await fetchDeckFromGH();
+      const data = await readDeckFromPages();
       if (data) {
         DECK = data;
         try { localStorage.setItem(KEY, JSON.stringify(DECK)); } catch (_) {}
+        // Fetch SHA in background for future writes
+        getFileSha().then(sha => { if (sha) deckSha = sha; });
         setStatus('Systém online');
       } else {
-        // deck-data.json doesn't exist yet — push our current deck
+        // deck-data.json not on Pages yet — create it
         setStatus('Vytvářím zálohu…');
         await ghSyncDeck();
       }
     } catch (e) {
-      setStatus('GitHub chyba: ' + e.message);
+      setStatus('Chyba: ' + e.message);
     }
     setInterval(pollDeck, 30000);
   } else {
