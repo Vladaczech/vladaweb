@@ -217,13 +217,43 @@
   ::-webkit-scrollbar-thumb{background:#2a323a;border-radius:6px;border:2px solid var(--bg)}
   ::-webkit-scrollbar-thumb:hover{background:#39434c}
 
+  /* FAB */
+  .fab{display:none;position:fixed;bottom:22px;right:20px;width:52px;height:52px;border-radius:50%;background:var(--accent);color:#1a120a;border:none;align-items:center;justify-content:center;box-shadow:0 4px 24px rgba(0,0,0,.45);z-index:25;transition:.15s;cursor:pointer}
+  .fab:hover{background:#ecb87c;transform:scale(1.05)}
+  .fab:active{transform:scale(.96)}
+  .fab svg{width:22px;height:22px}
+
+  /* Sidebar backdrop */
+  .sidebar-backdrop{display:none;position:fixed;inset:0;z-index:29;background:rgba(0,0,0,.45);backdrop-filter:blur(1px)}
+
   @media (max-width:760px){
     .app{grid-template-columns:1fr}
-    .sidebar{position:fixed;inset:0 40% 0 0;z-index:30;transform:translateX(-105%);transition:.2s}
-    .sidebar.open{transform:none;box-shadow:0 0 40px rgba(0,0,0,.5)}
+    /* Sidebar slides in as full-height sheet, 82vw wide */
+    .sidebar{position:fixed;inset:0 18% 0 0;z-index:30;transform:translateX(-105%);transition:.22s;max-width:360px}
+    .sidebar.open{transform:none;box-shadow:0 0 60px rgba(0,0,0,.6)}
+    .sidebar.open~.sidebar-backdrop{display:block}
     .menu-btn{display:inline-flex !important}
-    .search input{width:130px}
-    .search input:focus{width:150px}
+    /* Topbar: 2-row layout */
+    .topbar{flex-wrap:wrap;padding:10px 14px;gap:8px}
+    .topbar .menu-btn{order:0}
+    .topbar .crumbs{order:1;flex:1}
+    .topbar #addPrompt{order:2;padding:8px 10px;min-width:0}
+    .topbar #addPrompt .btn-label{display:none}
+    .search{order:3;flex:1 1 100%}
+    .search input{width:100% !important}
+    .search input:focus{width:100% !important}
+    /* Cards */
+    .grid{grid-template-columns:1fr}
+    .canvas{padding:14px 12px 84px}
+    /* Modal as bottom sheet */
+    .overlay{padding:0;align-items:flex-end}
+    .modal{border-radius:18px 18px 0 0;max-height:90vh;max-width:100vw;border-left:none;border-right:none;border-bottom:none}
+    /* Settings grid: 1 column */
+    .cfg-grid{grid-template-columns:1fr !important}
+    /* FAB visible */
+    .fab{display:flex}
+    /* Card copy button: bigger tap target */
+    .card-copy{padding:8px 12px}
   }
   .menu-btn{display:none}
   @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
@@ -279,7 +309,7 @@
       </div>
       <button class="btn" id="addPrompt">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-        Nový prompt
+        <span class="btn-label">Nový prompt</span>
       </button>
     </div>
     <div class="canvas" id="canvas"></div>
@@ -288,6 +318,11 @@
 
 <!-- generic overlay/modal -->
 <div class="overlay" id="overlay"><div id="modalSlot"></div></div>
+
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+<button class="fab" id="fabAdd" title="Nový prompt">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+</button>
 
 <div class="toast" id="toast"><span class="dot ok"></span><span id="toastText"></span></div>
 
@@ -563,7 +598,7 @@ function settingsModal(){
       <div class="mhead"><span class="eyebrow">Nastavení · GitHub synchronizace</span>
         <button class="icon-btn x" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
       <div class="mbody">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 14px">
+        <div class="cfg-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:0 14px">
           <label class="fld"><span class="lbl">Vlastník (owner)</span><input class="input" id="cfgOwner" value="${esc(config.owner)}" placeholder="vladaczech"></label>
           <label class="fld"><span class="lbl">Repozitář</span><input class="input" id="cfgRepo" value="${esc(config.repo)}" placeholder="vladaweb"></label>
           <label class="fld"><span class="lbl">Soubor s daty</span><input class="input" id="cfgPath" value="${esc(config.path)}" placeholder="prompts.json"></label>
@@ -680,7 +715,7 @@ $('#searchInput').addEventListener('input',e=>{ search=e.target.value; renderCan
 $('#themeList').addEventListener('click',e=>{
   const ed=e.target.closest('[data-edit-theme]'); if(ed){ themeModal(ed.dataset.editTheme); return; }
   const del=e.target.closest('[data-del-theme]'); if(del){ deleteThemeModal(del.dataset.delTheme); return; }
-  const th=e.target.closest('[data-theme]'); if(th){ activeTheme=th.dataset.theme; search=''; $('#searchInput').value=''; renderAll(); if(window.innerWidth<=760) $('#sidebar').classList.remove('open'); }
+  const th=e.target.closest('[data-theme]'); if(th){ activeTheme=th.dataset.theme; search=''; $('#searchInput').value=''; renderAll(); if(window.innerWidth<=760) closeSidebar(); }
 });
 
 $('#canvas').addEventListener('click',async e=>{
@@ -698,7 +733,11 @@ $('#canvas').addEventListener('click',async e=>{
 });
 
 document.addEventListener('click',e=>{ if(e.target.closest('[data-close]')) closeModal(); });
+function openSidebar(){ $('#sidebar').classList.add('open'); }
+function closeSidebar(){ $('#sidebar').classList.remove('open'); }
 $('#menuBtn').onclick=()=>$('#sidebar').classList.toggle('open');
+$('#sidebarBackdrop').onclick=closeSidebar;
+$('#fabAdd').onclick=()=>promptEditModal();
 
 /* ============ start ============ */
 renderAll();
