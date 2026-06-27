@@ -258,6 +258,17 @@
 
   .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
 
+  .file-zone {
+    display: flex; align-items: center; gap: 12px;
+    background: rgba(6,10,22,0.7); border: 1px dashed var(--line); border-radius: 10px;
+    padding: 10px 13px; cursor: pointer; transition: border-color 0.18s;
+  }
+  .file-zone:hover { border-color: var(--line-strong); }
+  .file-zone input[type=file] { display: none; }
+  .file-zone-name { font-size: 13px; color: var(--muted); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file-zone.has-file { border-color: rgba(52,227,255,0.35); }
+  .file-zone.has-file .file-zone-name { color: var(--cyan); }
+
   ::selection { background: rgba(52,227,255,0.28); }
   :focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; border-radius: 4px; }
 
@@ -375,7 +386,15 @@
       <p class="sub" id="p-sub">Nový subweb do tématu.</p>
       <div class="field"><label for="p-name">Název</label><input id="p-name" type="text" placeholder="název projektu"></div>
       <div class="field"><label for="p-desc">Popis</label><textarea id="p-desc" placeholder="k čemu projekt je"></textarea></div>
-      <div class="field"><label for="p-url">Odkaz</label><input id="p-url" type="text" placeholder="./slozka/index.html nebo https://…"></div>
+      <div class="field"><label for="p-url">Odkaz <span style="color:var(--muted-2);font-weight:400">(nepovinné pokud nahráváš soubor)</span></label><input id="p-url" type="text" placeholder="./slozka/index.html nebo https://…"></div>
+      <div class="field">
+        <label>HTML soubor <span style="color:var(--muted-2);font-weight:400">(přepíše odkaz)</span></label>
+        <label class="file-zone" id="file-zone" for="p-file">
+          <span class="btn btn-sm" style="pointer-events:none;flex-shrink:0">Vybrat soubor</span>
+          <span class="file-zone-name" id="file-zone-name">žádný soubor</span>
+          <input type="file" id="p-file" accept=".html,.htm">
+        </label>
+      </div>
       <div class="field"><label for="p-tags">Tagy</label><input id="p-tags" type="text" placeholder="oddělené čárkou: AI, hra, CZ"></div>
       <div class="field"><label for="p-stav">Stav</label>
         <select id="p-stav">
@@ -438,11 +457,46 @@ const SEED = [
     ] }
 ];
 
+/* ── IndexedDB pro HTML soubory ─────────────────────── */
+let idb = null;
+function idbOpen() {
+  return new Promise((res, rej) => {
+    const r = indexedDB.open('vibe-deck', 1);
+    r.onupgradeneeded = e => e.target.result.createObjectStore('html');
+    r.onsuccess = e => { idb = e.target.result; res(); };
+    r.onerror = rej;
+  });
+}
+function idbSet(key, val) {
+  return new Promise((res, rej) => {
+    const tx = idb.transaction('html', 'readwrite');
+    tx.objectStore('html').put(val, key);
+    tx.oncomplete = res; tx.onerror = rej;
+  });
+}
+function idbGetAll() {
+  return new Promise(res => {
+    const tx = idb.transaction('html', 'readonly');
+    const out = {};
+    tx.objectStore('html').openCursor().onsuccess = e => {
+      const c = e.target.result;
+      if (c) { out[c.key] = c.value; c.continue(); } else res(out);
+    };
+  });
+}
+function idbDel(key) {
+  if (!key) return;
+  const tx = idb.transaction('html', 'readwrite');
+  tx.objectStore('html').delete(key);
+}
+
 /* ── Úložiště (s nouzovým in-memory fallbackem) ────── */
 let memStore = null;
 function save() {
-  try { localStorage.setItem(KEY, JSON.stringify(DECK)); }
-  catch (e) { memStore = JSON.parse(JSON.stringify(DECK)); }
+  // Strip html content — stored separately in IndexedDB
+  const clean = DECK.map(t => ({ ...t, projekty: t.projekty.map(p => { const { html, ...rest } = p; return rest; }) }));
+  try { localStorage.setItem(KEY, JSON.stringify(clean)); }
+  catch (e) { memStore = JSON.parse(JSON.stringify(clean)); }
 }
 function load() {
   try { const r = localStorage.getItem(KEY); return r ? JSON.parse(r) : null; }
@@ -453,12 +507,15 @@ let DECK = load();
 if (!DECK) { DECK = JSON.parse(JSON.stringify(SEED)); save(); }
 let editMode = false;
 const uid = () => 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+let blobUrls = new Map();
 
 /* ── Render ────────────────────────────────────────── */
 const deckEl = document.getElementById('deck');
 const navEl  = document.getElementById('nav-chips');
 
 function render() {
+  blobUrls.forEach(u => URL.revokeObjectURL(u));
+  blobUrls.clear();
   deckEl.innerHTML = '';
   navEl.innerHTML = '';
   let totalProjects = 0;
@@ -504,7 +561,12 @@ function render() {
       topic.projekty.forEach((p, pi) => {
         const wrap = document.createElement('div');
         wrap.className = 'card-wrap';
-        const href = p.odkaz || '#';
+        let href = p.odkaz || '#';
+        if (p.html) {
+          const blob = new Blob([p.html], { type: 'text/html' });
+          href = URL.createObjectURL(blob);
+          blobUrls.set(ti + '_' + pi, href);
+        }
         const ext = href !== '#' ? ' target="_blank" rel="noopener"' : '';
         const idxStr = String(pi + 1).padStart(2, '0');
         const tagsHtml = (p.tagy || []).map(t => '<span class="tag">' + esc(t) + '</span>').join('');
@@ -640,26 +702,59 @@ document.getElementById('t-save').addEventListener('click', () => {
 
 /* ── Nový web ──────────────────────────────────────── */
 let projTopicIndex = null;
+let projHtmlContent = null;
+let projHtmlName = null;
+
+document.getElementById('p-file').addEventListener('change', function () {
+  const f = this.files[0];
+  const zone = document.getElementById('file-zone');
+  const label = document.getElementById('file-zone-name');
+  if (!f) { projHtmlContent = null; projHtmlName = null; label.textContent = 'žádný soubor'; zone.classList.remove('has-file'); return; }
+  const reader = new FileReader();
+  reader.onload = () => {
+    projHtmlContent = reader.result;
+    projHtmlName = f.name;
+    label.textContent = f.name;
+    zone.classList.add('has-file');
+  };
+  reader.readAsText(f);
+});
+
 function openProjectModal(ti) {
   projTopicIndex = ti;
+  projHtmlContent = null; projHtmlName = null;
   document.getElementById('p-sub').textContent = 'Nový subweb do tématu „' + DECK[ti].nazev + '".';
   ['p-name','p-desc','p-url','p-tags'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('p-stav').value = 'live';
   document.getElementById('p-err').textContent = '';
+  document.getElementById('p-file').value = '';
+  document.getElementById('file-zone-name').textContent = 'žádný soubor';
+  document.getElementById('file-zone').classList.remove('has-file');
   open('ov-project');
   setTimeout(() => document.getElementById('p-name').focus(), 50);
 }
 document.getElementById('p-save').addEventListener('click', () => {
   const name = document.getElementById('p-name').value.trim();
   if (!name) { document.getElementById('p-err').textContent = 'Zadej název webu.'; return; }
+  if (!projHtmlContent && !document.getElementById('p-url').value.trim()) {
+    document.getElementById('p-err').textContent = 'Zadej odkaz nebo nahraj HTML soubor.'; return;
+  }
   const tags = document.getElementById('p-tags').value.split(',').map(t => t.trim()).filter(Boolean);
-  DECK[projTopicIndex].projekty.push({
+  const proj = {
     nazev: name,
     popis: document.getElementById('p-desc').value.trim(),
     odkaz: document.getElementById('p-url').value.trim() || '#',
     tagy: tags,
     stav: document.getElementById('p-stav').value
-  });
+  };
+  if (projHtmlContent) {
+    const key = uid();
+    proj.htmlKey = key;
+    proj.html = projHtmlContent;
+    proj.htmlName = projHtmlName;
+    idbSet(key, projHtmlContent);
+  }
+  DECK[projTopicIndex].projekty.push(proj);
   save(); close('ov-project'); render();
 });
 
@@ -681,7 +776,7 @@ deckEl.addEventListener('click', e => {
   const delT = e.target.closest('[data-deltopic]');
   if (delT) {
     const ti = +delT.dataset.deltopic; const t = DECK[ti];
-    openConfirm('Smazat téma?', 'Smaže se „' + t.nazev + '" včetně ' + t.projekty.length + ' webů. Akci nelze vrátit.', () => { DECK.splice(ti, 1); save(); render(); });
+    openConfirm('Smazat téma?', 'Smaže se „' + t.nazev + '" včetně ' + t.projekty.length + ' webů. Akci nelze vrátit.', () => { t.projekty.forEach(p => idbDel(p.htmlKey)); DECK.splice(ti, 1); save(); render(); });
     return;
   }
   const delP = e.target.closest('[data-delproj]');
@@ -689,13 +784,21 @@ deckEl.addEventListener('click', e => {
     e.preventDefault();
     const [ti, pi] = delP.dataset.delproj.split(':').map(Number);
     const p = DECK[ti].projekty[pi];
-    openConfirm('Smazat web?', 'Smaže se „' + p.nazev + '". Akci nelze vrátit.', () => { DECK[ti].projekty.splice(pi, 1); save(); render(); });
+    openConfirm('Smazat web?', 'Smaže se „' + p.nazev + '". Akci nelze vrátit.', () => { idbDel(p.htmlKey); DECK[ti].projekty.splice(pi, 1); save(); render(); });
   }
 });
 
 /* ── Export / Import ───────────────────────────────── */
-document.getElementById('btn-export').addEventListener('click', () => {
-  const blob = new Blob([JSON.stringify(DECK, null, 2)], { type: 'application/json' });
+document.getElementById('btn-export').addEventListener('click', async () => {
+  const map = await idbGetAll();
+  const data = DECK.map(t => ({
+    ...t,
+    projekty: t.projekty.map(p => ({
+      ...p,
+      html: p.htmlKey && map[p.htmlKey] ? map[p.htmlKey] : (p.html || undefined)
+    }))
+  }));
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'vibe-deck-zaloha.json';
@@ -710,7 +813,18 @@ importFile.addEventListener('change', () => {
     try {
       const data = JSON.parse(reader.result);
       if (!Array.isArray(data)) throw 0;
-      openConfirm('Nahradit obsah?', 'Importovaná záloha přepíše aktuální témata. Pokračovat?', () => { DECK = data; save(); render(); });
+      openConfirm('Nahradit obsah?', 'Importovaná záloha přepíše aktuální témata. Pokračovat?', async () => {
+        for (const t of data) {
+          for (const p of t.projekty) {
+            if (p.html) {
+              const key = uid();
+              await idbSet(key, p.html);
+              p.htmlKey = key;
+            }
+          }
+        }
+        DECK = data; save(); render();
+      });
     } catch (e) { openConfirm('Chyba importu', 'Soubor nelze načíst jako platnou zálohu.', () => {}); }
     importFile.value = '';
   };
@@ -749,7 +863,15 @@ document.getElementById('f-stamp').textContent = new Date().toLocaleDateString('
   else frame();
 })();
 
-render();
+idbOpen()
+  .then(idbGetAll)
+  .then(map => {
+    DECK.forEach(t => t.projekty.forEach(p => {
+      if (p.htmlKey && map[p.htmlKey]) p.html = map[p.htmlKey];
+    }));
+    render();
+  })
+  .catch(() => render());
 </script>
 </body>
 </html>
