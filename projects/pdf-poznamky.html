@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDF Poznámky</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0f1318; --panel:#161c24; --panel2:#1a2130; --line:#273040;
+  --text:#e4e8ed; --muted:#7a8899; --muted-dim:#4a5566;
+  --accent:#4f7ef7; --ok:#4caf82; --danger:#d97a7a;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --sans:'Inter',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer}
+::selection{background:rgba(79,126,247,.3)}
+
+/* ── topbar ── */
+.topbar{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:10px 18px;border-bottom:1px solid var(--line);
+  background:var(--panel);position:sticky;top:0;z-index:20;
+}
+.brand{font-weight:600;font-size:15px;letter-spacing:-.01em;margin-right:auto;white-space:nowrap}
+.brand span{color:var(--muted);font-weight:400;font-size:12px;margin-left:6px;font-family:var(--mono)}
+
+.btn{
+  background:var(--panel2);border:1px solid var(--line);color:var(--text);
+  border-radius:8px;padding:7px 13px;font-size:13px;font-weight:500;
+  display:inline-flex;align-items:center;gap:7px;transition:.15s;white-space:nowrap;
+}
+.btn svg{width:15px;height:15px;flex:none}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{background:#6290f8}
+.btn:disabled{opacity:.4;cursor:default;pointer-events:none}
+.btn.ghost{background:none}
+
+.page-nav{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.page-nav input{
+  background:var(--panel2);border:1px solid var(--line);color:var(--text);
+  border-radius:6px;padding:5px 8px;width:54px;text-align:center;
+  font-family:var(--mono);font-size:12px;
+}
+.page-nav input:focus{outline:none;border-color:var(--accent)}
+
+/* ── layout ── */
+.layout{display:grid;grid-template-columns:1fr 440px;height:calc(100vh - 53px)}
+
+/* ── pdf panel ── */
+.pdf-panel{
+  overflow-y:auto;padding:20px;background:#090c10;
+  display:flex;flex-direction:column;align-items:center;gap:16px;
+}
+.drop-zone{
+  width:100%;max-width:680px;border:2px dashed var(--line);border-radius:14px;
+  padding:64px 24px;text-align:center;color:var(--muted);cursor:pointer;transition:.15s;
+}
+.drop-zone:hover,.drop-zone.over{border-color:var(--accent);color:var(--text)}
+.drop-zone svg{width:52px;height:52px;opacity:.4;margin-bottom:16px}
+.drop-zone h2{font-size:17px;font-weight:600;margin-bottom:6px}
+.drop-zone p{font-size:13px;line-height:1.6;max-width:36ch;margin:0 auto}
+#pdfCanvas{max-width:100%;border-radius:6px;box-shadow:0 10px 50px rgba(0,0,0,.7);display:none}
+.page-label{font-family:var(--mono);font-size:11px;color:var(--muted-dim);letter-spacing:.08em}
+
+/* ── notes panel ── */
+.notes-panel{border-left:1px solid var(--line);display:flex;flex-direction:column;background:var(--panel)}
+.notes-head{padding:14px 18px 12px;border-bottom:1px solid var(--line);flex:none}
+.notes-head .filename{
+  font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:5px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.notes-head .page-title{font-weight:600;font-size:15px;letter-spacing:-.01em}
+.notes-body{flex:1;padding:14px 18px;display:flex;flex-direction:column;gap:10px;min-height:0;overflow:hidden}
+#notesArea{
+  flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:9px;
+  color:var(--text);padding:13px;font-size:13.5px;line-height:1.7;
+  resize:none;font-family:var(--sans);min-height:0;transition:.15s;
+}
+#notesArea:focus{outline:none;border-color:var(--accent)}
+#notesArea::placeholder{color:var(--muted-dim)}
+#notesArea:disabled{opacity:.4;cursor:not-allowed}
+
+.hint-row{font-size:11.5px;color:var(--muted-dim);line-height:1.5}
+.hint-row code{font-family:var(--mono);background:var(--panel2);padding:1px 5px;border-radius:4px;font-size:11px}
+
+.notes-foot{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap;flex:none}
+.notes-foot .right{margin-left:auto;display:flex;gap:8px}
+
+.statusbar{
+  padding:7px 18px;border-top:1px solid var(--line);
+  display:flex;align-items:center;gap:16px;font-size:11px;
+  font-family:var(--mono);color:var(--muted-dim);flex:none;
+}
+.save-dot{width:7px;height:7px;border-radius:50%;background:var(--muted-dim);flex:none;transition:.25s}
+.save-dot.ok{background:var(--ok)}
+.save-dot.dirty{background:var(--accent)}
+
+/* ── overview panel (all pages) ── */
+.overview-toggle{font-size:12px;color:var(--muted);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.overview-toggle:hover{color:var(--text)}
+#overviewList{
+  max-height:200px;overflow-y:auto;border:1px solid var(--line);border-radius:8px;
+  background:var(--panel2);display:none;
+}
+#overviewList.open{display:block}
+.ov-item{display:flex;align-items:center;gap:10px;padding:7px 12px;border-bottom:1px solid var(--line);cursor:pointer;transition:.1s}
+.ov-item:last-child{border-bottom:none}
+.ov-item:hover{background:#202a38}
+.ov-item.has-note{color:var(--text)}
+.ov-item.no-note{color:var(--muted-dim)}
+.ov-item .ov-pg{font-family:var(--mono);font-size:11px;width:46px;flex:none}
+.ov-item .ov-prev{font-size:12px;flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.ov-item .ov-dot{width:6px;height:6px;border-radius:50%;background:var(--ok);flex:none}
+
+/* scrollbars */
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:#253040;border-radius:5px;border:2px solid var(--bg)}
+::-webkit-scrollbar-thumb:hover{background:#2e3d52}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="brand">PDF Poznámky <span>MÚVS ČVUT</span></span>
+
+  <label class="btn" style="cursor:pointer" title="Otevřít PDF soubor">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Otevřít PDF
+    <input type="file" accept=".pdf" id="fileInput" style="display:none">
+  </label>
+
+  <div class="page-nav" id="pageNav" style="display:none">
+    <button class="btn ghost" id="prevBtn" title="Předchozí strana (←)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <input type="number" id="pageInput" min="1" value="1" title="Číslo strany">
+    <span>/ <span id="totalPages">?</span></span>
+    <button class="btn ghost" id="nextBtn" title="Další strana (→)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+  </div>
+
+  <button class="btn" id="exportMd" style="display:none" title="Exportovat všechny poznámky jako Markdown pro NotebookLM">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Export .md
+  </button>
+  <button class="btn" id="exportTxt" style="display:none">Export .txt</button>
+</div>
+
+<div class="layout">
+
+  <!-- PDF viewer -->
+  <div class="pdf-panel" id="pdfPanel">
+    <div class="drop-zone" id="dropZone">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+      <h2>Otevři PDF nebo přetáhni sem</h2>
+      <p>Soubory se screenshoty studijních materiálů MÚVS ČVUT</p>
+    </div>
+    <canvas id="pdfCanvas"></canvas>
+    <div class="page-label" id="pageLabel" style="display:none"></div>
+  </div>
+
+  <!-- Notes -->
+  <div class="notes-panel">
+    <div class="notes-head">
+      <div class="filename" id="filenameLabel">Žádný soubor</div>
+      <div class="page-title" id="pageTitleLabel">Otevři PDF vlevo</div>
+    </div>
+
+    <div class="notes-body">
+      <textarea id="notesArea" disabled
+        placeholder="Napiš sem obsah této strany — vlastními slovy, přepis textu, klíčové pojmy, definice...
+
+Poznámky se automaticky ukládají do prohlížeče.
+Export → čistý .md soubor pro NotebookLM a AI nástroje."></textarea>
+
+      <div class="hint-row">
+        Tip: šipky ← → pro přechod stran &nbsp;·&nbsp; <code>Ctrl+S</code> uloží ručně
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <span class="overview-toggle" id="overviewToggle" style="display:none">Přehled stran ▾</span>
+        <span id="noteCountLabel" style="font-size:11.5px;color:var(--muted-dim);margin-left:auto"></span>
+      </div>
+      <div id="overviewList"></div>
+    </div>
+
+    <div class="notes-foot">
+      <button class="btn primary" id="saveBtn" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Uložit
+      </button>
+      <button class="btn ghost" id="clearPageBtn" disabled>Smazat stranu</button>
+      <div class="right">
+        <button class="btn ghost" id="clearAllBtn" style="color:var(--danger);border-color:#5a2a2a" disabled>Smazat vše</button>
+      </div>
+    </div>
+
+    <div class="statusbar">
+      <span class="save-dot" id="saveDot"></span>
+      <span id="saveStatus">Čeká na soubor</span>
+      <span style="margin-left:auto" id="charCountLabel">0 znaků</span>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+const $id = id => document.getElementById(id);
+
+let pdf = null;
+let curPage = 1;
+let numPages = 0;
+let filename = '';
+let autoSaveTimer = null;
+
+/* ── storage ── */
+const key = (f, p) => `pdfnotes::${f}::${p}`;
+const getNote = (f, p) => localStorage.getItem(key(f, p)) || '';
+function setNote(f, p, text) {
+  if (text.trim()) localStorage.setItem(key(f, p), text);
+  else localStorage.removeItem(key(f, p));
+}
+function countNotes(f, n) {
+  let c = 0;
+  for (let i = 1; i <= n; i++) if (localStorage.getItem(key(f, i))) c++;
+  return c;
+}
+
+/* ── render ── */
+async function renderPage(n) {
+  const page = await pdf.getPage(n);
+  const panel = $id('pdfPanel');
+  const avail = panel.clientWidth - 40;
+  const vp0 = page.getViewport({ scale: 1 });
+  const scale = Math.min(avail / vp0.width, 2.2);
+  const vp = page.getViewport({ scale });
+  const canvas = $id('pdfCanvas');
+  canvas.width = vp.width;
+  canvas.height = vp.height;
+  await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+  $id('pageLabel').textContent = `Strana ${n} z ${numPages}`;
+}
+
+/* ── navigation ── */
+async function goTo(n) {
+  n = Math.max(1, Math.min(n, numPages));
+  // autosave current before leaving
+  if (filename) setNote(filename, curPage, $id('notesArea').value);
+  curPage = n;
+  $id('pageInput').value = n;
+  $id('pageTitleLabel').textContent = `Strana ${n} / ${numPages}`;
+  const text = getNote(filename, n);
+  $id('notesArea').value = text;
+  updateCharCount();
+  setDot('saved');
+  await renderPage(n);
+  refreshOverview();
+  updateNoteCount();
+}
+
+/* ── load ── */
+async function loadPDF(buf, name) {
+  filename = name;
+  $id('filenameLabel').textContent = name;
+  pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  numPages = pdf.numPages;
+  $id('totalPages').textContent = numPages;
+  $id('pageInput').max = numPages;
+  curPage = 0;
+
+  $id('dropZone').style.display = 'none';
+  $id('pdfCanvas').style.display = 'block';
+  $id('pageLabel').style.display = 'block';
+  $id('pageNav').style.display = 'flex';
+  $id('exportMd').style.display = '';
+  $id('exportTxt').style.display = '';
+  $id('notesArea').disabled = false;
+  $id('saveBtn').disabled = false;
+  $id('clearPageBtn').disabled = false;
+  $id('clearAllBtn').disabled = false;
+  $id('overviewToggle').style.display = '';
+
+  await goTo(1);
+}
+
+/* ── file input ── */
+$id('fileInput').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  await loadPDF(await f.arrayBuffer(), f.name);
+});
+
+/* ── drag & drop ── */
+const dz = $id('dropZone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+dz.addEventListener('drop', async e => {
+  e.preventDefault(); dz.classList.remove('over');
+  const f = e.dataTransfer.files[0];
+  if (f?.type === 'application/pdf') await loadPDF(await f.arrayBuffer(), f.name);
+});
+dz.addEventListener('click', () => $id('fileInput').click());
+
+/* ── nav buttons ── */
+$id('prevBtn').addEventListener('click', () => goTo(curPage - 1));
+$id('nextBtn').addEventListener('click', () => goTo(curPage + 1));
+$id('pageInput').addEventListener('change', e => goTo(+e.target.value));
+
+document.addEventListener('keydown', e => {
+  if (!pdf) return;
+  const tag = (document.activeElement?.tagName || '').toUpperCase();
+  if (tag === 'TEXTAREA' || tag === 'INPUT') return;
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); goTo(curPage + 1); }
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   { e.preventDefault(); goTo(curPage - 1); }
+});
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    e.preventDefault();
+    if (filename) { setNote(filename, curPage, $id('notesArea').value); setDot('saved'); updateNoteCount(); }
+  }
+});
+
+/* ── notes input ── */
+function setDot(state) {
+  const dot = $id('saveDot');
+  dot.className = 'save-dot' + (state === 'saved' ? ' ok' : state === 'dirty' ? ' dirty' : '');
+  $id('saveStatus').textContent = { saved: 'Uloženo', dirty: 'Neuloženo', idle: 'Čeká na soubor' }[state] || state;
+}
+function updateCharCount() {
+  $id('charCountLabel').textContent = $id('notesArea').value.length + ' znaků';
+}
+function updateNoteCount() {
+  if (!filename) return;
+  const n = countNotes(filename, numPages);
+  $id('noteCountLabel').textContent = n + ' / ' + numPages + ' stran má poznámky';
+}
+
+$id('notesArea').addEventListener('input', () => {
+  setDot('dirty');
+  updateCharCount();
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(() => {
+    setNote(filename, curPage, $id('notesArea').value);
+    setDot('saved');
+    updateNoteCount();
+    refreshOverview();
+  }, 700);
+});
+
+$id('saveBtn').addEventListener('click', () => {
+  setNote(filename, curPage, $id('notesArea').value);
+  setDot('saved');
+  updateNoteCount();
+  refreshOverview();
+});
+$id('clearPageBtn').addEventListener('click', () => {
+  if (!confirm(`Smazat poznámky pro stranu ${curPage}?`)) return;
+  $id('notesArea').value = '';
+  setNote(filename, curPage, '');
+  updateCharCount(); updateNoteCount(); setDot('saved'); refreshOverview();
+});
+$id('clearAllBtn').addEventListener('click', () => {
+  if (!confirm(`Smazat VŠECHNY poznámky pro „${filename}"?`)) return;
+  for (let i = 1; i <= numPages; i++) localStorage.removeItem(key(filename, i));
+  $id('notesArea').value = '';
+  updateCharCount(); updateNoteCount(); setDot('saved'); refreshOverview();
+});
+
+/* ── overview ── */
+let overviewOpen = false;
+$id('overviewToggle').addEventListener('click', () => {
+  overviewOpen = !overviewOpen;
+  $id('overviewList').classList.toggle('open', overviewOpen);
+  $id('overviewToggle').textContent = 'Přehled stran ' + (overviewOpen ? '▴' : '▾');
+  if (overviewOpen) refreshOverview();
+});
+function refreshOverview() {
+  if (!overviewOpen || !filename) return;
+  const list = $id('overviewList');
+  list.innerHTML = '';
+  for (let i = 1; i <= numPages; i++) {
+    const text = getNote(filename, i);
+    const div = document.createElement('div');
+    div.className = 'ov-item ' + (text ? 'has-note' : 'no-note');
+    div.innerHTML =
+      `<span class="ov-pg">Str. ${i}</span>` +
+      (text ? `<span class="ov-dot"></span>` : '<span style="width:6px;flex:none"></span>') +
+      `<span class="ov-prev">${text ? text.slice(0, 80).replace(/\n/g, ' ') : '—'}</span>`;
+    div.addEventListener('click', () => goTo(i));
+    list.appendChild(div);
+  }
+}
+
+/* ── export ── */
+function buildDoc(fmt) {
+  const title = filename.replace(/\.pdf$/i, '');
+  const lines = [fmt === 'md' ? `# ${title}` : title, ''];
+  for (let i = 1; i <= numPages; i++) {
+    const text = getNote(filename, i);
+    if (!text.trim()) continue;
+    lines.push(fmt === 'md' ? `## Strana ${i}` : `=== Strana ${i} ===`);
+    lines.push(text.trim());
+    lines.push('');
+  }
+  return lines.join('\n');
+}
+function dl(content, name, mime) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], { type: mime }));
+  a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+$id('exportMd').addEventListener('click', () =>
+  dl(buildDoc('md'), filename.replace(/\.pdf$/i, '') + '-poznamky.md', 'text/markdown'));
+$id('exportTxt').addEventListener('click', () =>
+  dl(buildDoc('txt'), filename.replace(/\.pdf$/i, '') + '-poznamky.txt', 'text/plain'));
+</script>
+</body>
+</html>
