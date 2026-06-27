@@ -207,6 +207,9 @@
   .card-del { display: none; position: absolute; top: 10px; right: 10px; z-index: 5; width: 26px; height: 26px; border-radius: 8px; border: 1px solid rgba(255,122,138,0.3); background: rgba(10,15,30,0.85); color: var(--danger); cursor: pointer; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
   .card-del:hover { background: rgba(255,122,138,0.15); }
   body.editing .card-del { display: flex; }
+  .card-edit { display: none; position: absolute; top: 10px; left: 10px; z-index: 5; width: 26px; height: 26px; border-radius: 8px; border: 1px solid rgba(52,227,255,0.3); background: rgba(10,15,30,0.85); color: var(--cyan); cursor: pointer; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+  .card-edit:hover { background: rgba(52,227,255,0.12); }
+  body.editing .card-edit { display: flex; }
 
   .topic-empty { font-family: "JetBrains Mono", monospace; font-size: 12.5px; color: var(--muted-2); border: 1px dashed var(--line); border-radius: var(--r); padding: 26px; text-align: center; }
 
@@ -573,6 +576,9 @@ function render() {
         '<span class="topic-tag">' + topic.projekty.length + ' modulů</span>' +
         '<span class="topic-edit">' +
           '<button class="btn btn-sm" data-add="' + ti + '">+ web</button>' +
+          '<button class="icon-btn" data-edittopic="' + ti + '" title="Upravit téma" aria-label="Upravit téma">' +
+            '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>' +
+          '</button>' +
           '<button class="icon-btn" data-deltopic="' + ti + '" title="Smazat téma" aria-label="Smazat téma">' +
             '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>' +
           '</button>' +
@@ -610,6 +616,9 @@ function render() {
             '<div class="card-go"><span>' + (p.stav === 'idea' ? 'Připravuje se' : 'Spustit modul') + '</span>' +
             '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg></div>' +
           '</a>' +
+          '<button class="card-edit" data-editproj="' + ti + ':' + pi + '" title="Upravit web" aria-label="Upravit web">' +
+            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>' +
+          '</button>' +
           '<button class="card-del" data-delproj="' + ti + ':' + pi + '" title="Smazat web" aria-label="Smazat web">' +
             '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>' +
           '</button>';
@@ -713,21 +722,33 @@ Object.keys(ICONS).forEach(name => {
   iconWrap.appendChild(b);
 });
 
-document.getElementById('btn-add-topic').addEventListener('click', () => requireUnlock(openTopicModal));
-function openTopicModal() {
-  document.getElementById('t-name').value = '';
-  document.getElementById('t-desc').value = '';
+let editTopicIndex = null;
+document.getElementById('btn-add-topic').addEventListener('click', () => requireUnlock(() => openTopicModal(null)));
+function openTopicModal(ti) {
+  editTopicIndex = ti;
+  const t = ti !== null ? DECK[ti] : null;
+  document.getElementById('t-name').value = t ? t.nazev : '';
+  document.getElementById('t-desc').value = t ? t.popis : '';
   document.getElementById('t-err').textContent = '';
-  pickedIcon = 'play';
-  iconWrap.querySelectorAll('.icon-opt').forEach(x => x.classList.toggle('sel', x.dataset.icon === 'play'));
+  pickedIcon = t ? t.ikona : 'play';
+  iconWrap.querySelectorAll('.icon-opt').forEach(x => x.classList.toggle('sel', x.dataset.icon === pickedIcon));
+  document.querySelector('#ov-topic h3').textContent = t ? 'Upravit téma' : 'Nové téma';
+  document.getElementById('t-save').textContent = t ? 'Uložit změny' : 'Vytvořit téma';
   open('ov-topic');
   setTimeout(() => document.getElementById('t-name').focus(), 50);
 }
 document.getElementById('t-save').addEventListener('click', () => {
   const name = document.getElementById('t-name').value.trim();
   if (!name) { document.getElementById('t-err').textContent = 'Zadej název tématu.'; return; }
-  DECK.push({ id: uid(), nazev: name, popis: document.getElementById('t-desc').value.trim(), ikona: pickedIcon, projekty: [] });
+  if (editTopicIndex !== null) {
+    DECK[editTopicIndex].nazev = name;
+    DECK[editTopicIndex].popis = document.getElementById('t-desc').value.trim();
+    DECK[editTopicIndex].ikona = pickedIcon;
+  } else {
+    DECK.push({ id: uid(), nazev: name, popis: document.getElementById('t-desc').value.trim(), ikona: pickedIcon, projekty: [] });
+  }
   save(); close('ov-topic'); render();
+  if (ghOk()) { clearTimeout(syncTimer); ghSyncDeck(); }
 });
 
 /* ── GitHub API ────────────────────────────────────── */
@@ -878,30 +899,41 @@ document.getElementById('p-file').addEventListener('change', function () {
   reader.readAsText(f);
 });
 
-function openProjectModal(ti) {
+let editProjIndex = null;
+function openProjectModal(ti, pi = null) {
   projTopicIndex = ti;
+  editProjIndex = pi;
   projHtmlContent = null; projHtmlName = null;
-  document.getElementById('p-sub').textContent = 'Nový subweb do tématu „' + DECK[ti].nazev + '".';
-  ['p-name','p-desc','p-url','p-tags'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('p-stav').value = 'live';
+  const p = pi !== null ? DECK[ti].projekty[pi] : null;
+  document.getElementById('p-sub').textContent = 'Téma „' + DECK[ti].nazev + '"';
+  document.getElementById('p-name').value = p ? p.nazev : '';
+  document.getElementById('p-desc').value = p ? p.popis : '';
+  document.getElementById('p-url').value = p && p.odkaz !== '#' ? p.odkaz : '';
+  document.getElementById('p-tags').value = p ? (p.tagy || []).join(', ') : '';
+  document.getElementById('p-stav').value = p ? p.stav : 'live';
   document.getElementById('p-err').textContent = '';
   document.getElementById('p-file').value = '';
   document.getElementById('file-zone-name').textContent = 'žádný soubor';
   document.getElementById('file-zone').classList.remove('has-file');
+  document.querySelector('#ov-project h3').textContent = p ? 'Upravit web' : 'Přidat web';
+  document.getElementById('p-save').textContent = p ? 'Uložit změny' : 'Přidat web';
   open('ov-project');
   setTimeout(() => document.getElementById('p-name').focus(), 50);
 }
 document.getElementById('p-save').addEventListener('click', async () => {
   const name = document.getElementById('p-name').value.trim();
   if (!name) { document.getElementById('p-err').textContent = 'Zadej název webu.'; return; }
-  if (!projHtmlContent && !document.getElementById('p-url').value.trim()) {
+  const urlVal = document.getElementById('p-url').value.trim();
+  const existing = editProjIndex !== null ? DECK[projTopicIndex].projekty[editProjIndex] : null;
+  if (!projHtmlContent && !urlVal && !existing) {
     document.getElementById('p-err').textContent = 'Zadej odkaz nebo nahraj HTML soubor.'; return;
   }
   const tags = document.getElementById('p-tags').value.split(',').map(t => t.trim()).filter(Boolean);
   const proj = {
+    ...(existing || {}),
     nazev: name,
     popis: document.getElementById('p-desc').value.trim(),
-    odkaz: document.getElementById('p-url').value.trim() || '#',
+    odkaz: urlVal || (existing ? existing.odkaz : '#'),
     tagy: tags,
     stav: document.getElementById('p-stav').value
   };
@@ -913,15 +945,16 @@ document.getElementById('p-save').addEventListener('click', async () => {
         proj.odkaz = await ghCommit(filename, projHtmlContent);
       } catch (e) { document.getElementById('p-err').textContent = 'GitHub: ' + e.message; return; }
     } else {
-      const key = uid();
-      proj.htmlKey = key;
-      proj.html = projHtmlContent;
+      const key = uid(); proj.htmlKey = key; proj.html = projHtmlContent;
       idbSet(key, projHtmlContent);
     }
   }
-  DECK[projTopicIndex].projekty.push(proj);
-  save();
-  clearTimeout(syncTimer);
+  if (editProjIndex !== null) {
+    DECK[projTopicIndex].projekty[editProjIndex] = proj;
+  } else {
+    DECK[projTopicIndex].projekty.push(proj);
+  }
+  save(); clearTimeout(syncTimer);
   close('ov-project'); render();
   if (ghOk()) await ghSyncDeck();
 });
@@ -940,6 +973,12 @@ document.getElementById('c-ok').addEventListener('click', () => { if (confirmAct
 deckEl.addEventListener('click', e => {
   const add = e.target.closest('[data-add]');
   if (add) { openProjectModal(+add.dataset.add); return; }
+
+  const editT = e.target.closest('[data-edittopic]');
+  if (editT) { openTopicModal(+editT.dataset.edittopic); return; }
+
+  const editP = e.target.closest('[data-editproj]');
+  if (editP) { e.preventDefault(); const [ti,pi] = editP.dataset.editproj.split(':').map(Number); openProjectModal(ti, pi); return; }
 
   const delT = e.target.closest('[data-deltopic]');
   if (delT) {
