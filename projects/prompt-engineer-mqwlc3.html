@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prompt Architect</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0e1116; --surface:#151a22; --panel:#1a212c; --panel-2:#11161d;
+    --line:#283140; --line-soft:#1f2733;
+    --ink:#e7ecf3; --ink-mid:#aab4c4; --ink-dim:#727e90;
+    --accent:#5b6cff;        /* ultramarine signal */
+    --accent-soft:#36408a;
+    --amber:#ffb454;         /* active / live readout */
+    --teal:#34d0a8;
+    --display:"Space Grotesk",system-ui,sans-serif;
+    --body:"Inter",system-ui,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,monospace;
+    --r:10px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:
+      radial-gradient(1200px 600px at 15% -10%, #19202d 0%, transparent 60%),
+      var(--bg);
+    color:var(--ink); font-family:var(--body); line-height:1.5;
+    -webkit-font-smoothing:antialiased; min-height:100vh;
+  }
+  a{color:var(--accent)}
+  button{font-family:inherit; cursor:pointer}
+  ::selection{background:var(--accent-soft); color:#fff}
+
+  /* ---- header ---- */
+  header{
+    display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+    padding:16px 22px; border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,rgba(20,26,34,.9),rgba(14,17,22,.6));
+    backdrop-filter:blur(6px); position:sticky; top:0; z-index:20;
+  }
+  .brand{display:flex; flex-direction:column; line-height:1.05; margin-right:auto}
+  .brand .kicker{font-family:var(--mono); font-size:10.5px; letter-spacing:.32em;
+    text-transform:uppercase; color:var(--ink-dim)}
+  .brand h1{font-family:var(--display); font-weight:700; font-size:22px; margin:2px 0 0;
+    letter-spacing:-.01em}
+  .brand h1 b{color:var(--accent); font-weight:700}
+
+  /* build-integrity gauge: the signature readout */
+  .gauge{display:flex; flex-direction:column; gap:6px; min-width:200px}
+  .gauge .glabel{display:flex; justify-content:space-between; align-items:baseline;
+    font-family:var(--mono); font-size:10px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--ink-dim)}
+  .gauge .gval{color:var(--amber)}
+  .segs{display:flex; gap:4px}
+  .seg{flex:1; height:7px; border-radius:2px; background:#222b38;
+    border:1px solid var(--line-soft); transition:background .25s, box-shadow .25s}
+  .seg.on{background:linear-gradient(180deg,var(--accent),var(--accent-soft));
+    border-color:transparent; box-shadow:0 0 10px rgba(91,108,255,.45)}
+  .seg.full{background:linear-gradient(180deg,var(--teal),#1f7e66);
+    box-shadow:0 0 10px rgba(52,208,168,.4)}
+
+  .ctrls{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+  select,.btn{
+    background:var(--panel); color:var(--ink); border:1px solid var(--line);
+    border-radius:8px; padding:9px 13px; font-size:13px; font-family:var(--body);
+  }
+  select{font-family:var(--mono); font-size:12px; letter-spacing:.02em}
+  .btn{display:inline-flex; align-items:center; gap:7px; font-weight:500;
+    transition:border-color .15s, background .15s, transform .05s}
+  .btn:hover{border-color:var(--accent)}
+  .btn:active{transform:translateY(1px)}
+  .btn.primary{background:var(--accent); border-color:var(--accent); color:#fff; font-weight:600}
+  .btn.primary:hover{background:#6c7bff}
+  .btn svg{width:15px; height:15px}
+  .lang{display:flex; border:1px solid var(--line); border-radius:8px; overflow:hidden}
+  .lang button{background:transparent; border:0; color:var(--ink-dim);
+    padding:8px 11px; font-family:var(--mono); font-size:11px; letter-spacing:.05em}
+  .lang button[aria-pressed="true"]{background:var(--accent-soft); color:#fff}
+
+  /* ---- layout ---- */
+  main{display:grid; grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);
+    gap:0; align-items:start}
+  .console{padding:22px; display:flex; flex-direction:column; gap:14px;
+    border-right:1px solid var(--line)}
+  .intro{font-size:13.5px; color:var(--ink-mid); max-width:60ch}
+
+  /* step rows */
+  .step{border:1px solid var(--line-soft); border-radius:var(--r);
+    background:linear-gradient(180deg,var(--surface),var(--panel-2));
+    overflow:hidden; transition:border-color .2s}
+  .step:focus-within{border-color:var(--accent)}
+  .step.filled{border-color:#2f3a4d}
+  .step-head{display:flex; align-items:center; gap:13px; padding:13px 15px 11px}
+  .num{font-family:var(--mono); font-weight:700; font-size:13px; color:var(--ink-dim);
+    width:30px; height:30px; flex:none; display:grid; place-items:center;
+    border:1px solid var(--line); border-radius:8px; background:var(--panel-2);
+    transition:.2s}
+  .step.filled .num{color:var(--bg); background:var(--teal); border-color:transparent}
+  .step:focus-within .num{color:#fff; background:var(--accent); border-color:transparent;
+    box-shadow:0 0 0 3px rgba(91,108,255,.2)}
+  .titles{display:flex; flex-direction:column; gap:1px}
+  .titles .t{font-family:var(--display); font-weight:600; font-size:15px; letter-spacing:-.01em}
+  .titles .s{font-size:11.5px; color:var(--ink-dim)}
+  .step-body{padding:0 15px 14px}
+  label.field{display:block; font-family:var(--mono); font-size:10px; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--ink-dim); margin:0 0 6px}
+  textarea,input[type=text],.console select.full{
+    width:100%; background:var(--panel-2); border:1px solid var(--line);
+    color:var(--ink); border-radius:8px; padding:10px 12px; font-size:13.5px;
+    font-family:var(--body); resize:vertical; line-height:1.5;
+  }
+  textarea:focus,input:focus,select:focus{outline:none; border-color:var(--accent);
+    box-shadow:0 0 0 3px rgba(91,108,255,.14)}
+  textarea{min-height:62px}
+  .hint{font-size:11.5px; color:var(--ink-dim); margin-top:6px}
+
+  /* examples builder */
+  .pair{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px}
+  .pair textarea{min-height:46px}
+  .ex-actions{display:flex; gap:8px; align-items:center; margin-top:2px}
+  .mini{background:transparent; border:1px dashed var(--line); color:var(--ink-mid);
+    border-radius:7px; padding:6px 10px; font-size:12px}
+  .mini:hover{border-color:var(--accent); color:var(--ink)}
+  .mini.del{border-style:solid; border-color:var(--line-soft); color:var(--ink-dim)}
+  .mini.del:hover{border-color:#7a4a4a; color:#e89a9a}
+
+  /* ---- output ---- */
+  .output{padding:22px; position:sticky; top:73px; align-self:start}
+  .out-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px}
+  .out-head .lbl{font-family:var(--mono); font-size:11px; letter-spacing:.18em;
+    text-transform:uppercase; color:var(--ink-dim)}
+  .live{display:inline-flex; align-items:center; gap:6px; color:var(--amber);
+    font-family:var(--mono); font-size:10px; letter-spacing:.14em}
+  .live .dot{width:7px; height:7px; border-radius:50%; background:var(--amber);
+    box-shadow:0 0 8px var(--amber); animation:pulse 1.8s infinite}
+  @keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+  .spec{
+    border:1px solid var(--line); border-radius:var(--r); overflow:hidden;
+    background:
+      linear-gradient(var(--line-soft) 1px,transparent 1px) 0 0/100% 28px,
+      var(--panel-2);
+    box-shadow:inset 0 0 60px rgba(0,0,0,.3);
+  }
+  .spec pre{margin:0; padding:18px 18px 20px; font-family:var(--mono); font-size:12.5px;
+    line-height:1.7; color:var(--ink); white-space:pre-wrap; word-break:break-word;
+    max-height:calc(100vh - 230px); overflow:auto}
+  .spec pre .h{color:var(--accent); font-weight:700}
+  .spec pre .c{color:var(--ink-dim)}
+  .empty{color:var(--ink-dim); font-style:italic}
+  .out-foot{display:flex; gap:10px; margin-top:12px; flex-wrap:wrap}
+  .count{font-family:var(--mono); font-size:11px; color:var(--ink-dim); margin-left:auto;
+    align-self:center}
+  .toast{position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--teal); color:#06231b; font-weight:600; font-size:13px;
+    padding:10px 18px; border-radius:10px; opacity:0; pointer-events:none;
+    transition:.25s; z-index:50}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+
+  @media (max-width:900px){
+    main{grid-template-columns:1fr}
+    .console{border-right:0; border-bottom:1px solid var(--line)}
+    .output{position:static}
+    .spec pre{max-height:none}
+    .gauge{order:5; width:100%}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important; transition:none!important}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <span class="kicker" data-i="kicker">Protokol 7 kroků · elite prompt engineer</span>
+    <h1>Prompt&nbsp;<b>Architect</b></h1>
+  </div>
+
+  <div class="gauge" title="Kolik kroků protokolu je vyplněno">
+    <div class="glabel"><span data-i="integrity">Úplnost stavby</span><span class="gval"><span id="gcount">0</span>/7</span></div>
+    <div class="segs" id="segs"></div>
+  </div>
+
+  <div class="ctrls">
+    <select id="preset" aria-label="Preset">
+      <option value="blank" data-i="p_blank">Prázdná stavba</option>
+      <option value="adas" data-i="p_adas">ADAS Copilot agent</option>
+      <option value="web" data-i="p_web">Webový nástroj</option>
+      <option value="research" data-i="p_research">Výzkumná rešerše</option>
+    </select>
+    <div class="lang" role="group" aria-label="Jazyk">
+      <button id="lcs" aria-pressed="true">CS</button>
+      <button id="len" aria-pressed="false">EN</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="console" id="console">
+    <p class="intro" data-i="intro">Vyplň kroky zleva. Vpravo se v reálném čase skládá hotový prompt — připravený ke zkopírování nebo stažení. Žádný krok není povinný; vynechané se do výstupu nepřidají.</p>
+    <!-- steps injected -->
+  </section>
+
+  <section class="output">
+    <div class="out-head">
+      <span class="lbl" data-i="assembled">Sestavený prompt</span>
+      <span class="live"><span class="dot"></span><span data-i="livetxt">živé skládání</span></span>
+    </div>
+    <div class="spec"><pre id="out"></pre></div>
+    <div class="out-foot">
+      <button class="btn primary" id="copy">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+        <span data-i="copy">Kopírovat</span>
+      </button>
+      <button class="btn" id="dl">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>
+        <span data-i="dl">Stáhnout .md</span>
+      </button>
+      <button class="btn" id="refine" title="Nechá Claude prompt vyladit (funguje v Claude.ai)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15l-1.9-4.1L5.5 9l4.6-1.4z"/></svg>
+        <span data-i="refine">Vyladit s Claude</span>
+      </button>
+      <span class="count" id="count">0 slov</span>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------------- i18n ---------------- */
+const I = {
+  cs:{
+    kicker:"Protokol 7 kroků · elite prompt engineer",
+    integrity:"Úplnost stavby",
+    p_blank:"Prázdná stavba", p_adas:"ADAS Copilot agent", p_web:"Webový nástroj", p_research:"Výzkumná rešerše",
+    intro:"Vyplň kroky zleva. Vpravo se v reálném čase skládá hotový prompt — připravený ke zkopírování nebo stažení. Žádný krok není povinný; vynechané se do výstupu nepřidají.",
+    assembled:"Sestavený prompt", livetxt:"živé skládání",
+    copy:"Kopírovat", dl:"Stáhnout .md", refine:"Vyladit s Claude",
+    words:"slov", copied:"Zkopírováno do schránky", refining:"Claude ladí prompt…",
+    refdone:"Vyladěno Claudem", reverted:"Zpět na sestavený", revert:"Zpět",
+    reffail:"Ladění tady neběží — zkopíruj prompt do Claude.ai",
+    empty:"Začni vyplňovat kroky a prompt se objeví tady.",
+    fmt:{prose:"souvislý text",markdown:"Markdown",json:"JSON",bullets:"odrážky",code:"blok kódu",table:"tabulka"},
+    H:{role:"ROLE A EXPERTÍZA",obj:"CÍL",dom:"DOMÉNA A KONTEXT",fmt:"FORMÁT VÝSTUPU",con:"OMEZENÍ A PRAVIDLA",ex:"PŘÍKLADY",ref:"OŠETŘENÍ HRAN A ZPŘESNĚNÍ",fmtline:"Odpověz ve formátu:"},
+    exIn:"Vstup", exOut:"Výstup", addEx:"+ Přidat příklad", del:"Smazat",
+    steps:[
+      {t:"Definuj cíl",s:"Jaký přesný výstup má vzniknout?",f:"Cíl / deliverable",
+       ph:"Vygeneruj zákaznický checklist pro testovací scénář funkce X ve formátu připraveném do prezentace.",
+       hint:"Buď jednoznačný: co přesně má model vyrobit a k čemu to slouží."},
+      {t:"Ukotvi doménu",s:"Obor, kontext, vstupní data.",f:"Doména a kontext",
+       ph:"Testování ADAS funkcí ve Škoda Auto napříč platformami MQB Classic, MQB Evo PV7 a MEB.",
+       hint:"Doplň oborovou terminologii, zdrojová data a prostředí, ve kterém se prompt použije."},
+      {t:"Nastav personu",s:"Komu dáváš expertní roli?",f:"Role / persona modelu",
+       ph:"Jsi seniorní architekt testů ADAS s 15 lety praxe ve validaci asistenčních systémů.",
+       hint:"Konkrétní expertní role zvyšuje přesnost i tón. Začni „Jsi…“."},
+      {t:"Zvol formát",s:"Jaká struktura výstupu?",f:"Formát výstupu", select:true,
+       hint:"Explicitní formát = předvídatelný výstup."},
+      {t:"Vlož omezení",s:"Pravidla, hranice, tón.",f:"Omezení (jedno na řádek)",
+       ph:"Vždy porovnej všechny tři platformy.\nUveď zdroje a stakeholdery.\nMaximálně 200 slov na sekci.\nTón věcný, technický.",
+       hint:"Každý řádek = jedno pravidlo. Limity délky, tón, povinné sekce."},
+      {t:"Postav příklady",s:"Few-shot vzory vstup → výstup.",f:"Příklady", examples:true,
+       hint:"1–3 kvalitní příklady naučí model požadovaný vzor lépe než popis."},
+      {t:"Ošetři hrany a zpřesni",s:"Co se může splést?",f:"Hraniční případy a instrukce při nejistotě",
+       ph:"Pokud chybí data pro některou platformu, výslovně to označ místo dohadování. Při nejednoznačnosti se zeptej.",
+       hint:"Předvídej špatné interpretace a uzavři je předem."}
+    ]
+  },
+  en:{
+    kicker:"7-step protocol · elite prompt engineer",
+    integrity:"Build integrity",
+    p_blank:"Blank build", p_adas:"ADAS Copilot agent", p_web:"Web tool", p_research:"Research brief",
+    intro:"Fill the steps on the left. A finished prompt assembles on the right in real time — ready to copy or download. No step is required; skipped ones are left out of the output.",
+    assembled:"Assembled prompt", livetxt:"live assembly",
+    copy:"Copy", dl:"Download .md", refine:"Refine with Claude",
+    words:"words", copied:"Copied to clipboard", refining:"Claude is refining…",
+    refdone:"Refined by Claude", reverted:"Back to assembled", revert:"Revert",
+    reffail:"Refine doesn't run here — copy the prompt into Claude.ai",
+    empty:"Start filling the steps and the prompt appears here.",
+    fmt:{prose:"prose",markdown:"Markdown",json:"JSON",bullets:"bulleted list",code:"code block",table:"table"},
+    H:{role:"ROLE & EXPERTISE",obj:"OBJECTIVE",dom:"DOMAIN & CONTEXT",fmt:"OUTPUT FORMAT",con:"CONSTRAINTS & RULES",ex:"EXAMPLES",ref:"EDGE CASES & REFINEMENT",fmtline:"Respond in this format:"},
+    exIn:"Input", exOut:"Output", addEx:"+ Add example", del:"Delete",
+    steps:[
+      {t:"Define the objective",s:"What exact output should result?",f:"Objective / deliverable",
+       ph:"Generate a customer-facing test checklist for feature X, formatted ready for a slide deck.",
+       hint:"Be unambiguous: what the model must produce and what it's for."},
+      {t:"Ground the domain",s:"Field, context, input data.",f:"Domain & context",
+       ph:"ADAS feature testing at Škoda Auto across MQB Classic, MQB Evo PV7 and MEB platforms.",
+       hint:"Add domain terminology, source data, and where the prompt will be used."},
+      {t:"Set the persona",s:"Who is the expert role?",f:"Model role / persona",
+       ph:"You are a senior ADAS test architect with 15 years validating driver-assistance systems.",
+       hint:"A specific expert role lifts accuracy and tone. Start with “You are…”."},
+      {t:"Choose the format",s:"What output structure?",f:"Output format", select:true,
+       hint:"An explicit format means a predictable output."},
+      {t:"Inject constraints",s:"Rules, boundaries, tone.",f:"Constraints (one per line)",
+       ph:"Always compare all three platforms.\nCite sources and stakeholders.\nMax 200 words per section.\nTone: factual, technical.",
+       hint:"Each line is one rule. Length limits, tone, mandatory sections."},
+      {t:"Build examples",s:"Few-shot input → output.",f:"Examples", examples:true,
+       hint:"1–3 strong examples teach the pattern better than description."},
+      {t:"Edge cases & refinement",s:"What might it misread?",f:"Edge cases & fallback instructions",
+       ph:"If data is missing for a platform, flag it explicitly instead of guessing. If ambiguous, ask.",
+       hint:"Anticipate misinterpretations and close them up front."}
+    ]
+  }
+};
+
+/* ---------------- presets ---------------- */
+const PRESETS = {
+  blank:{},
+  adas:{
+    obj:"Vygeneruj zákaznický testovací checklist pro vybranou ADAS funkci z dat v Excelu a převeď ho do struktury připravené do prezentace.",
+    dom:"Testování ADAS funkcí ve Škoda Auto (Front Assist, ACC, Travel Assist, ADA, Driver Attention Monitor) napříč platformami MQB Classic, MQB Evo PV7 a MEB. Vstupem jsou tabulky testovacích scénářů.",
+    persona:"Jsi seniorní architekt testů ADAS s rozsáhlou praxí ve validaci asistenčních systémů a v tvorbě zákaznických výstupů.",
+    format:"markdown",
+    constraints:"Vždy porovnej všechny tři platformy: MQB Classic, MQB Evo PV7, MEB.\nProritně cituj zdroje a jmenované stakeholdery.\nPokud data pro některou platformu chybí, výslovně to označ.\nTón věcný a technický, bez marketingových frází.",
+    examples:[{in:"Funkce: Front Assist, scénář: brzdění před stojící překážkou",out:"Checklist krok za krokem s očekávaným chováním a kritérii PASS/FAIL pro každou platformu."}],
+    refine:"Pokud zadaná funkce nemá variantu na některé platformě, uveď to a nevymýšlej. Při nejednoznačném scénáři se zeptej na upřesnění místo dohadu."
+  },
+  web:{
+    obj:"Navrhni a popiš jednosouborový HTML nástroj, který běží staticky bez backendu a dá se nasadit na GitHub Pages.",
+    dom:"Osobní webové projekty: statické HTML stránky a nástroje, localStorage, čistý vanilla JavaScript, hostování na GitHub Pages.",
+    persona:"Jsi zkušený frontend vývojář, který staví minimalistické, rychlé a přenositelné nástroje v čistém HTML/CSS/JS.",
+    format:"code",
+    constraints:"Jeden soubor, žádné externí závislosti kromě CDN fontů.\nResponzivní a přístupné (focus stavy, klávesnice).\nKomentáře a texty v češtině.\nŽádné frameworky.",
+    examples:[],
+    refine:"Pokud požadavek vyžaduje backend nebo tajné klíče, navrhni alternativu, která zůstane plně klientská."
+  },
+  research:{
+    obj:"Zpracuj komplexní rešerši na zadané téma v češtině s praktickými doporučeními a jasnou strukturou.",
+    dom:"Česká rešerše pro vzdělávací a praktické účely. Důraz na ověřitelné zdroje, přehlednost a aplikovatelnost.",
+    persona:"Jsi pečlivý oborový analytik, který umí složité téma vysvětlit srozumitelně a podložit ho zdroji.",
+    format:"markdown",
+    constraints:"Piš česky.\nKaždé tvrzení podlož zdrojem nebo ho označ jako odhad.\nStruktura: shrnutí, hlavní část po sekcích, praktická doporučení.\nVyhni se balastu a opakování.",
+    examples:[],
+    refine:"U zdravotních nebo finančních témat doplň upozornění, že nejde o odbornou radu, a doporuč konzultaci s odborníkem."
+  }
+};
+
+/* ---------------- state ---------------- */
+let lang = "cs";
+let refined = null;        // holds Claude-refined text when present
+const state = { obj:"", dom:"", persona:"", format:"markdown",
+                constraints:"", examples:[], refine:"" };
+
+const $ = s => document.querySelector(s);
+const console_el = $("#console");
+
+/* build segment meter */
+const segsEl = $("#segs");
+for(let i=0;i<7;i++){ const d=document.createElement("div"); d.className="seg"; segsEl.appendChild(d); }
+const segNodes = [...segsEl.children];
+
+/* ---------------- render console ---------------- */
+function renderSteps(){
+  // remove old steps (keep intro)
+  [...console_el.querySelectorAll(".step")].forEach(n=>n.remove());
+  const S = I[lang].steps;
+  S.forEach((st,idx)=>{
+    const wrap = document.createElement("div");
+    wrap.className="step"; wrap.dataset.idx=idx;
+    let bodyHTML="";
+    if(st.select){
+      const f=I[lang].fmt;
+      bodyHTML = `<label class="field">${st.f}</label>
+        <select class="full" data-key="format">
+          ${Object.entries(f).map(([k,v])=>`<option value="${k}" ${state.format===k?"selected":""}>${v}</option>`).join("")}
+        </select>
+        <div class="hint">${st.hint}</div>`;
+    } else if(st.examples){
+      bodyHTML = `<label class="field">${st.f}</label>
+        <div id="exlist"></div>
+        <button class="mini" id="addEx">${I[lang].addEx}</button>
+        <div class="hint">${st.hint}</div>`;
+    } else {
+      const key = ["obj","dom","persona",null,"constraints",null,"refine"][idx];
+      bodyHTML = `<label class="field">${st.f}</label>
+        <textarea data-key="${key}" placeholder="${st.ph||""}">${state[key]||""}</textarea>
+        <div class="hint">${st.hint}</div>`;
+    }
+    wrap.innerHTML = `
+      <div class="step-head">
+        <div class="num">${idx+1}</div>
+        <div class="titles"><span class="t">${st.t}</span><span class="s">${st.s}</span></div>
+      </div>
+      <div class="step-body">${bodyHTML}</div>`;
+    console_el.appendChild(wrap);
+  });
+  // wire inputs
+  console_el.querySelectorAll("[data-key]").forEach(el=>{
+    el.addEventListener("input",e=>{
+      const k=e.target.dataset.key; state[k]=e.target.value; refined=null; update();
+    });
+    el.addEventListener("change",e=>{
+      const k=e.target.dataset.key; state[k]=e.target.value; refined=null; update();
+    });
+  });
+  const addBtn = $("#addEx");
+  if(addBtn) addBtn.addEventListener("click",()=>{ state.examples.push({in:"",out:""}); renderExamples(); update(); });
+  renderExamples();
+}
+
+function renderExamples(){
+  const list = $("#exlist"); if(!list) return;
+  list.innerHTML="";
+  state.examples.forEach((ex,i)=>{
+    const row=document.createElement("div");
+    row.innerHTML=`
+      <div class="pair">
+        <textarea data-ex="in" data-i="${i}" placeholder="${I[lang].exIn}">${ex.in||""}</textarea>
+        <textarea data-ex="out" data-i="${i}" placeholder="${I[lang].exOut}">${ex.out||""}</textarea>
+      </div>
+      <div class="ex-actions"><button class="mini del" data-del="${i}">${I[lang].del}</button></div>`;
+    list.appendChild(row);
+  });
+  list.querySelectorAll("[data-ex]").forEach(el=>{
+    el.addEventListener("input",e=>{
+      const i=+e.target.dataset.i, f=e.target.dataset.ex;
+      state.examples[i][f]=e.target.value; refined=null; update();
+    });
+  });
+  list.querySelectorAll("[data-del]").forEach(b=>{
+    b.addEventListener("click",e=>{
+      state.examples.splice(+e.target.dataset.del,1); renderExamples(); refined=null; update();
+    });
+  });
+}
+
+/* ---------------- assemble prompt ---------------- */
+function assemble(){
+  const H=I[lang].H, L=I[lang];
+  const parts=[];
+  if(state.persona.trim())     parts.push(["role", state.persona.trim()]);
+  if(state.obj.trim())         parts.push(["obj",  state.obj.trim()]);
+  if(state.dom.trim())         parts.push(["dom",  state.dom.trim()]);
+  parts.push(["fmt", `${H.fmtline} ${L.fmt[state.format]}.`]);
+  const cons = state.constraints.split("\n").map(s=>s.trim()).filter(Boolean);
+  if(cons.length)              parts.push(["con", cons.map(c=>"- "+c).join("\n")]);
+  const exs = state.examples.filter(e=>(e.in||e.out).trim());
+  if(exs.length){
+    const body = exs.map((e,i)=>`### ${i+1}\n${L.exIn}: ${e.in.trim()}\n${L.exOut}: ${e.out.trim()}`).join("\n\n");
+    parts.push(["ex", body]);
+  }
+  if(state.refine.trim())      parts.push(["ref", state.refine.trim()]);
+
+  const map={role:H.role,obj:H.obj,dom:H.dom,fmt:H.fmt,con:H.con,ex:H.ex,ref:H.ref};
+  // only the format line alone shouldn't count as "content"
+  const meaningful = parts.filter(p=>p[0]!=="fmt").length>0;
+  if(!meaningful) return "";
+  return parts.map(([k,v])=>`# ${map[k]}\n${v}`).join("\n\n");
+}
+
+function colorize(txt){
+  return txt
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+    .replace(/^# (.+)$/gm,'<span class="h"># $1</span>')
+    .replace(/^(### .+)$/gm,'<span class="c">$1</span>');
+}
+
+/* ---------------- update view ---------------- */
+function filledCount(){
+  let n=0;
+  if(state.persona.trim())n++;
+  if(state.obj.trim())n++;
+  if(state.dom.trim())n++;
+  if(state.format)n++; // format always chosen
+  if(state.constraints.trim())n++;
+  if(state.examples.some(e=>(e.in||e.out).trim()))n++;
+  if(state.refine.trim())n++;
+  return n;
+}
+function update(){
+  // step filled styling
+  console_el.querySelectorAll(".step").forEach(s=>{
+    const idx=+s.dataset.idx;
+    const checks=[
+      ()=>state.obj.trim(),()=>state.dom.trim(),()=>state.persona.trim(),
+      ()=>true,()=>state.constraints.trim(),
+      ()=>state.examples.some(e=>(e.in||e.out).trim()),()=>state.refine.trim()
+    ];
+    s.classList.toggle("filled", !!checks[idx]());
+  });
+  // gauge
+  const n=filledCount();
+  $("#gcount").textContent=n;
+  segNodes.forEach((seg,i)=>{
+    seg.classList.toggle("on", i<n && n<7);
+    seg.classList.toggle("full", i<n && n===7);
+    if(i>=n) seg.classList.remove("on","full");
+  });
+  // output
+  const out=$("#out");
+  const text = refined!=null ? refined : assemble();
+  if(!text){
+    out.innerHTML=`<span class="empty">${I[lang].empty}</span>`;
+    $("#count").textContent=`0 ${I[lang].words}`;
+  } else {
+    out.innerHTML = refined!=null ? colorize(text) : colorize(text);
+    const w=text.trim().split(/\s+/).filter(Boolean).length;
+    $("#count").textContent=`${w} ${I[lang].words}`;
+  }
+}
+
+function currentText(){ return refined!=null ? refined : assemble(); }
+
+/* ---------------- actions ---------------- */
+function toast(msg){
+  const t=$("#toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove("show"),1900);
+}
+$("#copy").addEventListener("click",async()=>{
+  const t=currentText(); if(!t) return;
+  try{ await navigator.clipboard.writeText(t); toast(I[lang].copied); }
+  catch{ const ta=document.createElement("textarea"); ta.value=t; document.body.appendChild(ta);
+    ta.select(); document.execCommand("copy"); ta.remove(); toast(I[lang].copied); }
+});
+$("#dl").addEventListener("click",()=>{
+  const t=currentText(); if(!t) return;
+  const blob=new Blob([t],{type:"text/markdown"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob); a.download="prompt.md"; a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+/* refine with Claude — works inside Claude.ai artifact runtime; graceful fallback elsewhere */
+const refineBtn=$("#refine");
+refineBtn.addEventListener("click",async()=>{
+  if(refined!=null){ refined=null; update(); toast(I[lang].reverted); refineBtn.querySelector("span").setAttribute("data-i","refine"); refineBtn.querySelector("span").textContent=I[lang].refine; return; }
+  const base=assemble(); if(!base){ return; }
+  const span=refineBtn.querySelector("span"); const old=span.textContent;
+  span.textContent=I[lang].refining; refineBtn.disabled=true;
+  try{
+    const r=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        model:"claude-sonnet-4-6", max_tokens:1000,
+        messages:[{role:"user",content:
+          `You are an elite prompt engineer. Improve the prompt below for clarity, specificity, and model performance, preserving its intent and language. Return ONLY the improved prompt, no preamble.\n\n---\n${base}`}]
+      })
+    });
+    const data=await r.json();
+    const txt=(data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("\n").trim();
+    if(!txt) throw new Error("empty");
+    refined=txt; update(); toast(I[lang].refdone);
+    span.textContent=I[lang].revert;
+  }catch(e){
+    toast(I[lang].reffail); span.textContent=old;
+  }finally{ refineBtn.disabled=false; }
+});
+
+/* preset + language */
+$("#preset").addEventListener("change",e=>{
+  const p=PRESETS[e.target.value]||{};
+  state.obj=p.obj||""; state.dom=p.dom||""; state.persona=p.persona||"";
+  state.format=p.format||"markdown"; state.constraints=p.constraints||"";
+  state.examples=(p.examples||[]).map(x=>({in:x.in||"",out:x.out||""}));
+  state.refine=p.refine||""; refined=null;
+  renderSteps(); update();
+});
+
+function applyLang(){
+  document.documentElement.lang=lang;
+  document.querySelectorAll("[data-i]").forEach(el=>{
+    const k=el.getAttribute("data-i"); if(I[lang][k]!=null) el.textContent=I[lang][k];
+  });
+  // preset option labels
+  [...$("#preset").options].forEach(o=>{ const k=o.getAttribute("data-i"); if(I[lang][k]) o.textContent=I[lang][k]; });
+  $("#lcs").setAttribute("aria-pressed", lang==="cs"); $("#len").setAttribute("aria-pressed", lang==="en");
+  renderSteps(); update();
+}
+$("#lcs").addEventListener("click",()=>{ lang="cs"; applyLang(); });
+$("#len").addEventListener("click",()=>{ lang="en"; applyLang(); });
+
+/* boot */
+renderSteps();
+update();
+</script>
+</body>
+</html>
