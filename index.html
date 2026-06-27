@@ -920,7 +920,10 @@ document.getElementById('p-save').addEventListener('click', async () => {
     }
   }
   DECK[projTopicIndex].projekty.push(proj);
-  save(); close('ov-project'); render();
+  save();
+  clearTimeout(syncTimer);
+  close('ov-project'); render();
+  if (ghOk()) await ghSyncDeck();
 });
 
 /* ── Mazání s potvrzením ───────────────────────────── */
