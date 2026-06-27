@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDF OCR – MÚVS ČVUT</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0f1318;--panel:#161c24;--panel2:#1a2130;--line:#273040;
+  --text:#e4e8ed;--muted:#7a8899;--muted-dim:#4a5566;
+  --accent:#4f7ef7;--ok:#4caf82;--danger:#d97a7a;--warn:#e0a96d;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --sans:'Inter',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer}
+::selection{background:rgba(79,126,247,.3)}
+
+.topbar{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:10px 18px;border-bottom:1px solid var(--line);
+  background:var(--panel);position:sticky;top:0;z-index:20;min-height:53px;
+}
+.brand{font-weight:600;font-size:15px;margin-right:auto;white-space:nowrap}
+.brand em{color:var(--muted);font-weight:400;font-size:12px;margin-left:6px;font-style:normal}
+
+.btn{
+  background:var(--panel2);border:1px solid var(--line);color:var(--text);
+  border-radius:8px;padding:7px 13px;font-size:13px;font-weight:500;
+  display:inline-flex;align-items:center;gap:7px;transition:.15s;white-space:nowrap;
+}
+.btn svg{width:15px;height:15px;flex:none}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{background:#6290f8}
+.btn.ok{background:rgba(76,175,130,.15);border-color:var(--ok);color:var(--ok);font-weight:600}
+.btn.ok:hover{background:rgba(76,175,130,.25)}
+.btn.ghost{background:none}
+.btn.ghost:hover{background:var(--panel2)}
+.btn.danger{border-color:var(--danger);color:var(--danger)}
+.btn.danger:hover{background:rgba(217,122,122,.1)}
+.btn:disabled{opacity:.4;cursor:default;pointer-events:none}
+
+.page-nav{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.page-nav input{
+  background:var(--panel2);border:1px solid var(--line);color:var(--text);
+  border-radius:6px;padding:5px 8px;width:54px;text-align:center;
+  font-family:var(--mono);font-size:12px;
+}
+.page-nav input:focus{outline:none;border-color:var(--accent)}
+
+select.lang-sel{
+  background:var(--panel2);border:1px solid var(--line);color:var(--text);
+  border-radius:8px;padding:7px 10px;font-size:12px;font-family:var(--mono);cursor:pointer;
+}
+select.lang-sel:focus{outline:none;border-color:var(--accent)}
+
+/* layout */
+.layout{display:grid;grid-template-columns:1fr 460px;height:calc(100vh - 53px)}
+
+/* pdf panel */
+.pdf-panel{
+  overflow-y:auto;padding:20px;background:#090c10;
+  display:flex;flex-direction:column;align-items:center;gap:14px;
+}
+.drop-zone{
+  width:100%;max-width:700px;border:2px dashed var(--line);border-radius:14px;
+  padding:70px 24px;text-align:center;color:var(--muted);cursor:pointer;transition:.15s;
+}
+.drop-zone:hover,.drop-zone.over{border-color:var(--accent);color:var(--text)}
+.drop-zone svg{width:56px;height:56px;opacity:.35;margin-bottom:18px}
+.drop-zone h2{font-size:17px;font-weight:600;margin-bottom:8px}
+.drop-zone p{font-size:13px;line-height:1.7;max-width:38ch;margin:0 auto}
+#pdfCanvas{max-width:100%;border-radius:6px;box-shadow:0 10px 50px rgba(0,0,0,.7);display:none}
+.page-badge{font-family:var(--mono);font-size:11px;color:var(--muted-dim);letter-spacing:.06em}
+
+/* right panel */
+.right-panel{border-left:1px solid var(--line);display:flex;flex-direction:column;background:var(--panel);overflow:hidden}
+
+.right-head{padding:14px 18px 12px;border-bottom:1px solid var(--line);flex:none}
+.right-head .filename{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.right-head .page-title{font-weight:600;font-size:15px;letter-spacing:-.01em}
+
+/* progress */
+.progress-wrap{padding:12px 18px;border-bottom:1px solid var(--line);flex:none;display:none}
+.progress-wrap.show{display:block}
+.progress-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;font-size:12px}
+.progress-top .plabel{color:var(--muted)}
+.progress-top .ppct{font-family:var(--mono);color:var(--accent)}
+.progress-bar{height:5px;background:var(--line);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:var(--accent);border-radius:3px;transition:width .3s}
+.progress-sub{margin-top:6px;font-size:11px;color:var(--muted-dim);font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ocr action row */
+.ocr-row{padding:12px 18px;border-bottom:1px solid var(--line);flex:none;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.page-ocr-status{font-size:11.5px;margin-left:4px}
+
+.right-body{flex:1;padding:14px 18px;display:flex;flex-direction:column;gap:0;min-height:0;overflow:hidden}
+.text-label{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted-dim);margin-bottom:7px}
+#notesArea{
+  flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:9px;
+  color:var(--text);padding:13px;font-size:13px;line-height:1.72;
+  resize:none;font-family:var(--sans);min-height:0;transition:.15s;
+}
+#notesArea:focus{outline:none;border-color:var(--accent)}
+#notesArea::placeholder{color:var(--muted-dim);font-size:13px}
+#notesArea:disabled{opacity:.35;cursor:not-allowed}
+
+.right-foot{padding:11px 18px;border-top:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap;flex:none;align-items:center}
+
+.statusbar{
+  padding:7px 18px;border-top:1px solid var(--line);
+  display:flex;align-items:center;gap:10px;font-size:11px;
+  font-family:var(--mono);color:var(--muted-dim);flex:none;
+}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--muted-dim);flex:none;transition:.25s}
+.dot.ok{background:var(--ok)}
+.dot.dirty{background:var(--warn)}
+.dot.ocr{background:var(--accent);animation:blink .8s infinite}
+@keyframes blink{0%,100%{opacity:.4}50%{opacity:1}}
+
+/* scrollbars */
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:#253040;border-radius:5px;border:2px solid var(--bg)}
+::-webkit-scrollbar-thumb:hover{background:#2e3d52}
+
+@media(max-width:900px){
+  .layout{grid-template-columns:1fr}
+  .right-panel{height:50vh;border-left:none;border-top:1px solid var(--line)}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="brand">PDF OCR <em>MÚVS ČVUT</em></span>
+
+  <label class="btn" style="cursor:pointer">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Otevřít PDF
+    <input type="file" accept=".pdf" id="fileInput" style="display:none">
+  </label>
+
+  <div class="page-nav" id="pageNav" style="display:none">
+    <button class="btn ghost" id="prevBtn" title="Předchozí (←)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <input type="number" id="pageInput" min="1" value="1">
+    <span>/ <span id="totalPages">?</span></span>
+    <button class="btn ghost" id="nextBtn" title="Další (→)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+  </div>
+
+  <select class="lang-sel" id="langSel" title="Jazyk OCR">
+    <option value="ces">CS – Čeština</option>
+    <option value="ces+eng" selected>CS + EN</option>
+    <option value="eng">EN – English</option>
+  </select>
+
+  <button class="btn ok" id="ocrAllBtn" style="display:none">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 3l14 9-14 9V3z"/></svg>
+    OCR celý dokument
+  </button>
+
+  <button class="btn danger" id="cancelBtn" style="display:none">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+    Zrušit
+  </button>
+
+  <button class="btn" id="exportMd" style="display:none">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Export .md
+  </button>
+  <button class="btn ghost" id="exportTxt" style="display:none">Export .txt</button>
+</div>
+
+<div class="layout">
+
+  <!-- PDF viewer -->
+  <div class="pdf-panel" id="pdfPanel">
+    <div class="drop-zone" id="dropZone">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="12" y1="18" x2="12" y2="12"/>
+        <line x1="9" y1="15" x2="15" y2="15"/>
+      </svg>
+      <h2>Otevři PDF nebo přetáhni sem</h2>
+      <p>PDF se screenshoty studijních materiálů<br>Tesseract OCR rozpozná text automaticky<br><br>
+        <span style="font-size:12px;color:var(--muted-dim)">První spuštění stáhne jazykový model (~10 MB)</span>
+      </p>
+    </div>
+    <canvas id="pdfCanvas"></canvas>
+    <div class="page-badge" id="pageBadge" style="display:none"></div>
+  </div>
+
+  <!-- Right: OCR output -->
+  <div class="right-panel">
+    <div class="right-head">
+      <div class="filename" id="filenameLabel">Žádný soubor</div>
+      <div class="page-title" id="pageTitleLabel">Otevři PDF vlevo</div>
+    </div>
+
+    <!-- progress bar -->
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-top">
+        <span class="plabel" id="progressLabel">Inicializuji...</span>
+        <span class="ppct" id="progressPct">0 %</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="progress-sub" id="progressSub"></div>
+    </div>
+
+    <!-- OCR button row -->
+    <div class="ocr-row" id="ocrRow" style="display:none">
+      <button class="btn primary" id="ocrPageBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12h8M12 8v8"/></svg>
+        OCR tuto stranu
+      </button>
+      <span class="page-ocr-status" id="pageOcrStatus"></span>
+    </div>
+
+    <div class="right-body">
+      <div class="text-label">Rozpoznaný text</div>
+      <textarea id="notesArea" disabled
+        placeholder="Klikni „OCR tuto stranu" pro aktuální stranu,
+nebo „OCR celý dokument" v horní liště
+pro automatické zpracování všech stran najednou.
+
+Text rozpoznaný Tesseract OCR se zobrazí tady.
+Můžeš ho opravit — uloží se automaticky.
+
+Export → čistý .md soubor pro NotebookLM."></textarea>
+    </div>
+
+    <div class="right-foot">
+      <button class="btn" id="saveBtn" disabled>Uložit</button>
+      <button class="btn ghost" id="clearPageBtn" disabled>Smazat stranu</button>
+      <button class="btn ghost" id="clearAllBtn" disabled style="color:var(--danger);margin-left:auto">Smazat vše</button>
+    </div>
+
+    <div class="statusbar">
+      <span class="dot" id="statusDot"></span>
+      <span id="statusMsg">Čeká na soubor</span>
+      <span style="margin-left:auto;font-size:10.5px" id="statsLabel"></span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+'use strict';
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+const $id = id => document.getElementById(id);
+
+/* ── state ── */
+let pdf = null, curPage = 1, numPages = 0, filename = '';
+let tWorker = null, workerLang = '';
+let ocrRunning = false, cancelFlag = false;
+let saveTimer = null;
+
+/* ── localStorage ── */
+const lsKey  = (f, p) => `pdfocr2::${f}::${p}`;
+const getNote = (f, p) => localStorage.getItem(lsKey(f, p)) || '';
+function setNote(f, p, text) {
+  text.trim() ? localStorage.setItem(lsKey(f, p), text) : localStorage.removeItem(lsKey(f, p));
+}
+function countNotes(f, n) {
+  let c = 0;
+  for (let i = 1; i <= n; i++) if (localStorage.getItem(lsKey(f, i))) c++;
+  return c;
+}
+
+/* ── Tesseract worker ── */
+async function ensureWorker(lang) {
+  if (tWorker && workerLang === lang) return tWorker;
+  if (tWorker) { await tWorker.terminate(); tWorker = null; }
+  setDot('ocr'); setMsg('Stahuji OCR model pro jazyk: ' + lang + ' …');
+  showProgress('Inicializuji Tesseract LSTM…', 0, '');
+  tWorker = await Tesseract.createWorker(lang, 1, {
+    logger: m => {
+      if (m.status === 'loading tesseract core')
+        showProgress('Načítám OCR jádro…', m.progress * 25, '');
+      if (m.status === 'loading language traineddata')
+        showProgress('Stahuji jazykový model (' + lang + ')…', 25 + m.progress * 55, '~10 MB, jen poprvé');
+      if (m.status === 'initializing api')
+        showProgress('Inicializuji…', 80 + m.progress * 15, '');
+      if (m.status === 'recognizing text')
+        showProgress('Rozpoznávám text…', 95 + m.progress * 5, '');
+    }
+  });
+  workerLang = lang;
+  hideProgress();
+  return tWorker;
+}
+
+/* ── render page to display canvas ── */
+async function renderPage(n) {
+  const page = await pdf.getPage(n);
+  const avail = $id('pdfPanel').clientWidth - 40;
+  const vp0 = page.getViewport({ scale: 1 });
+  const vp = page.getViewport({ scale: Math.min(avail / vp0.width, 2.0) });
+  const canvas = $id('pdfCanvas');
+  canvas.width = vp.width; canvas.height = vp.height;
+  await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+}
+
+/* ── render page at high res for OCR ── */
+async function renderForOCR(n) {
+  const page = await pdf.getPage(n);
+  const vp = page.getViewport({ scale: 2.5 }); // high res → better accuracy
+  const canvas = document.createElement('canvas');
+  canvas.width = vp.width; canvas.height = vp.height;
+  await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+  return canvas;
+}
+
+/* ── navigate ── */
+async function goTo(n) {
+  n = Math.max(1, Math.min(n, numPages));
+  if (filename) setNote(filename, curPage, $id('notesArea').value);
+  curPage = n;
+  $id('pageInput').value = n;
+  $id('pageTitleLabel').textContent = `Strana ${n} / ${numPages}`;
+  $id('pageBadge').textContent = `Strana ${n} z ${numPages}`;
+  const saved = getNote(filename, n);
+  $id('notesArea').value = saved;
+  updatePageStatus(saved);
+  updateStats();
+  setDot('ok'); setMsg('Uloženo');
+  await renderPage(n);
+}
+
+function updatePageStatus(text) {
+  const el = $id('pageOcrStatus');
+  if (text) { el.textContent = '✓ text uložen'; el.style.color = 'var(--ok)'; }
+  else { el.textContent = 'prázdná strana'; el.style.color = 'var(--muted-dim)'; }
+}
+
+/* ── load PDF ── */
+async function loadPDF(buf, name) {
+  filename = name;
+  $id('filenameLabel').textContent = name;
+  pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  numPages = pdf.numPages;
+  $id('totalPages').textContent = numPages;
+  $id('pageInput').max = numPages;
+  curPage = 0;
+
+  /* show UI */
+  $id('dropZone').style.display = 'none';
+  $id('pdfCanvas').style.display = 'block';
+  $id('pageBadge').style.display = 'block';
+  $id('pageNav').style.display = 'flex';
+  $id('ocrAllBtn').style.display = '';
+  $id('exportMd').style.display = '';
+  $id('exportTxt').style.display = '';
+  $id('ocrRow').style.display = 'flex';
+  $id('notesArea').disabled = false;
+  $id('saveBtn').disabled = false;
+  $id('clearPageBtn').disabled = false;
+  $id('clearAllBtn').disabled = false;
+  await goTo(1);
+}
+
+/* ── file input ── */
+$id('fileInput').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  await loadPDF(await f.arrayBuffer(), f.name);
+  e.target.value = '';
+});
+
+/* ── drag & drop ── */
+const dz = $id('dropZone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+dz.addEventListener('drop', async e => {
+  e.preventDefault(); dz.classList.remove('over');
+  const f = e.dataTransfer.files[0];
+  if (f?.type === 'application/pdf') await loadPDF(await f.arrayBuffer(), f.name);
+});
+dz.addEventListener('click', () => $id('fileInput').click());
+
+/* ── navigation ── */
+$id('prevBtn').onclick = () => goTo(curPage - 1);
+$id('nextBtn').onclick = () => goTo(curPage + 1);
+$id('pageInput').addEventListener('change', e => goTo(+e.target.value));
+document.addEventListener('keydown', e => {
+  if (!pdf) return;
+  const tag = (document.activeElement?.tagName || '').toUpperCase();
+  if (tag === 'TEXTAREA' || tag === 'INPUT') return;
+  if (e.key === 'ArrowRight') { e.preventDefault(); goTo(curPage + 1); }
+  if (e.key === 'ArrowLeft')  { e.preventDefault(); goTo(curPage - 1); }
+});
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    e.preventDefault();
+    if (!filename) return;
+    setNote(filename, curPage, $id('notesArea').value);
+    setDot('ok'); setMsg('Uloženo'); updateStats();
+  }
+});
+
+/* ── OCR single page ── */
+$id('ocrPageBtn').addEventListener('click', async () => {
+  if (!pdf || ocrRunning) return;
+  ocrRunning = true;
+  const lang = $id('langSel').value;
+  $id('ocrPageBtn').disabled = true;
+  setDot('ocr'); setMsg(`OCR strany ${curPage}…`);
+  try {
+    const worker = await ensureWorker(lang);
+    showProgress(`Rozpoznávám stranu ${curPage}…`, 0, '');
+    const canvas = await renderForOCR(curPage);
+    const { data: { text } } = await worker.recognize(canvas);
+    hideProgress();
+    const cleaned = text.trim();
+    $id('notesArea').value = cleaned;
+    setNote(filename, curPage, cleaned);
+    updatePageStatus(cleaned);
+    updateStats();
+    setDot('ok'); setMsg('OCR dokončeno – zkontroluj text');
+  } catch (err) {
+    hideProgress();
+    setDot('dirty'); setMsg('Chyba: ' + err.message);
+    console.error(err);
+  }
+  ocrRunning = false;
+  $id('ocrPageBtn').disabled = false;
+});
+
+/* ── OCR all pages ── */
+$id('ocrAllBtn').addEventListener('click', async () => {
+  if (!pdf || ocrRunning) return;
+  ocrRunning = true; cancelFlag = false;
+  const lang = $id('langSel').value;
+  $id('ocrAllBtn').style.display = 'none';
+  $id('cancelBtn').style.display = '';
+  $id('ocrPageBtn').disabled = true;
+  setDot('ocr');
+
+  try {
+    const worker = await ensureWorker(lang);
+    for (let p = 1; p <= numPages; p++) {
+      if (cancelFlag) break;
+      const pct = Math.round((p - 1) / numPages * 100);
+      setMsg(`OCR strana ${p} / ${numPages}`);
+      showProgress(`Strana ${p} z ${numPages}`, pct, filename);
+
+      const canvas = await renderForOCR(p);
+      if (cancelFlag) break;
+      const { data: { text } } = await worker.recognize(canvas);
+      if (cancelFlag) break;
+
+      const cleaned = text.trim();
+      setNote(filename, p, cleaned);
+      if (p === curPage) {
+        $id('notesArea').value = cleaned;
+        updatePageStatus(cleaned);
+      }
+      updateStats();
+    }
+    hideProgress();
+    if (!cancelFlag) {
+      $id('notesArea').value = getNote(filename, curPage);
+      updatePageStatus($id('notesArea').value);
+      setDot('ok'); setMsg('OCR celého dokumentu dokončeno ✓');
+    } else {
+      setDot('dirty'); setMsg('OCR zrušeno');
+    }
+  } catch (err) {
+    hideProgress();
+    setDot('dirty'); setMsg('Chyba OCR: ' + err.message);
+    console.error(err);
+  }
+
+  ocrRunning = false;
+  $id('cancelBtn').style.display = 'none';
+  $id('ocrAllBtn').style.display = '';
+  $id('ocrPageBtn').disabled = false;
+});
+
+$id('cancelBtn').addEventListener('click', () => { cancelFlag = true; });
+
+/* ── language change → reset worker ── */
+$id('langSel').addEventListener('change', async () => {
+  if (tWorker) { await tWorker.terminate(); tWorker = null; workerLang = ''; }
+});
+
+/* ── notes editing ── */
+$id('notesArea').addEventListener('input', () => {
+  setDot('dirty'); setMsg('Neuloženo');
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    setNote(filename, curPage, $id('notesArea').value);
+    setDot('ok'); setMsg('Uloženo');
+    updatePageStatus($id('notesArea').value);
+    updateStats();
+  }, 700);
+});
+
+$id('saveBtn').addEventListener('click', () => {
+  setNote(filename, curPage, $id('notesArea').value);
+  setDot('ok'); setMsg('Uloženo'); updatePageStatus($id('notesArea').value); updateStats();
+});
+$id('clearPageBtn').addEventListener('click', () => {
+  if (!confirm(`Smazat OCR text strany ${curPage}?`)) return;
+  $id('notesArea').value = '';
+  setNote(filename, curPage, '');
+  updatePageStatus(''); updateStats(); setDot('ok'); setMsg('Smazáno');
+});
+$id('clearAllBtn').addEventListener('click', () => {
+  if (!confirm(`Smazat VEŠKERÝ OCR text pro „${filename}"? Tuto akci nelze vrátit.`)) return;
+  for (let i = 1; i <= numPages; i++) localStorage.removeItem(lsKey(filename, i));
+  $id('notesArea').value = '';
+  updatePageStatus(''); updateStats(); setDot('ok'); setMsg('Vše smazáno');
+});
+
+/* ── progress / status ── */
+function showProgress(label, pct, sub) {
+  $id('progressWrap').classList.add('show');
+  $id('progressLabel').textContent = label;
+  $id('progressPct').textContent = Math.round(pct) + ' %';
+  $id('progressFill').style.width = Math.round(pct) + '%';
+  $id('progressSub').textContent = sub || '';
+}
+function hideProgress() { $id('progressWrap').classList.remove('show'); }
+function setDot(s) {
+  $id('statusDot').className = 'dot' + ({ok:' ok',dirty:' dirty',ocr:' ocr'}[s] || '');
+}
+function setMsg(m) { $id('statusMsg').textContent = m; }
+function updateStats() {
+  if (!filename) return;
+  const n = countNotes(filename, numPages);
+  $id('statsLabel').textContent = `${n} / ${numPages} stran zpracováno`;
+}
+
+/* ── export ── */
+function buildDoc(fmt) {
+  const title = filename.replace(/\.pdf$/i, '');
+  const lang = $id('langSel').value;
+  const n = countNotes(filename, numPages);
+  const md = fmt === 'md';
+  const lines = [
+    md ? `# ${title}` : title,
+    md ? `> OCR jazyk: ${lang} · zpracováno ${n} / ${numPages} stran`
+       : `OCR: ${lang} | ${n} / ${numPages} stran`,
+    '', md ? '---' : '===', ''
+  ];
+  for (let i = 1; i <= numPages; i++) {
+    const text = getNote(filename, i);
+    if (!text.trim()) continue;
+    lines.push(md ? `## Strana ${i}` : `--- Strana ${i} ---`);
+    lines.push(text.trim());
+    lines.push('');
+  }
+  return lines.join('\n');
+}
+function download(content, name, mime) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], { type: mime }));
+  a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+$id('exportMd').addEventListener('click', () =>
+  download(buildDoc('md'), filename.replace(/\.pdf$/i, '') + '-ocr.md', 'text/markdown'));
+$id('exportTxt').addEventListener('click', () =>
+  download(buildDoc('txt'), filename.replace(/\.pdf$/i, '') + '-ocr.txt', 'text/plain'));
+</script>
+</body>
+</html>
