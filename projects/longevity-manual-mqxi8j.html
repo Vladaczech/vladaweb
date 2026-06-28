@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Longevity manuál — evidence-based studnice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;450;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#e8e8df;
+  --paper:#f7f7f1;
+  --paper-2:#f1f1ea;
+  --ink:#15211c;
+  --ink-soft:#4c574f;
+  --ink-faint:#7d877f;
+  --line:#d2d2c5;
+  --line-soft:#e0e0d5;
+  --pine:#0e5a47;
+  --pine-deep:#093b2f;
+  --amber:#a9760f;
+  --amber-bg:#f3e9d2;
+  --clay:#9d4128;
+  --clay-bg:#f1e2db;
+  --steel:#2f6f94;
+  --gA:#0e5a47;
+  --gB:#2f6f94;
+  --gC:#a9760f;
+  --gD:#86867a;
+  --maxw:1340px;
+  --shadow:0 1px 2px rgba(21,33,28,.05), 0 8px 24px -16px rgba(21,33,28,.22);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,sans-serif;
+  font-weight:450;font-size:16px;line-height:1.62;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+}
+h1,h2,h3,h4{font-family:"Fraunces",Georgia,serif;font-weight:500;line-height:1.08;letter-spacing:-.01em;margin:0}
+p{margin:0 0 1em}
+a{color:var(--pine);text-decoration-thickness:1px;text-underline-offset:2px}
+mark{background:#fbe48a;color:var(--ink);padding:0 .08em;border-radius:2px}
+::selection{background:#cfe3da;color:var(--pine-deep)}
+.mono{font-family:"IBM Plex Mono",monospace}
+
+/* progress + header */
+#progress{position:fixed;top:0;left:0;height:3px;width:0;background:var(--pine);z-index:120;transition:width .08s linear}
+header.top{
+  position:sticky;top:0;z-index:100;background:rgba(232,232,223,.86);
+  backdrop-filter:saturate(140%) blur(10px);border-bottom:1px solid var(--line);
+}
+.top-inner{max-width:var(--maxw);margin:0 auto;padding:.7rem clamp(1rem,3vw,2rem);
+  display:flex;align-items:center;gap:1rem}
+.brand{display:flex;align-items:baseline;gap:.6rem;font-family:"Fraunces",serif;font-weight:600;font-size:1.12rem;letter-spacing:-.02em;white-space:nowrap}
+.brand .tick{font-family:"IBM Plex Mono",monospace;font-size:.62rem;font-weight:500;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--pine);border:1px solid var(--pine);border-radius:2px;padding:.12rem .35rem;transform:translateY(-2px)}
+.search-wrap{margin-left:auto;position:relative;flex:0 1 320px;display:flex;align-items:center}
+.search-wrap svg{position:absolute;left:.6rem;width:15px;height:15px;color:var(--ink-faint);pointer-events:none}
+#search{width:100%;font-family:"IBM Plex Mono",monospace;font-size:.82rem;color:var(--ink);
+  background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:.5rem .6rem .5rem 1.9rem;outline:none}
+#search:focus{border-color:var(--pine);box-shadow:0 0 0 3px rgba(14,90,71,.13)}
+#search::placeholder{color:var(--ink-faint)}
+#search-count{position:absolute;right:.55rem;font-family:"IBM Plex Mono",monospace;font-size:.66rem;color:var(--ink-faint)}
+.menu-btn{display:none;background:var(--paper);border:1px solid var(--line);border-radius:6px;
+  padding:.45rem .55rem;cursor:pointer;color:var(--ink)}
+
+/* layout */
+.shell{max-width:var(--maxw);margin:0 auto;display:grid;grid-template-columns:248px 1fr;gap:clamp(1.4rem,3vw,3rem);
+  padding:0 clamp(1rem,3vw,2rem)}
+nav.toc{position:sticky;top:74px;align-self:start;height:calc(100vh - 90px);overflow-y:auto;padding:1.6rem 0 2rem;
+  border-right:1px solid var(--line);scrollbar-width:thin}
+.toc-label{font-family:"IBM Plex Mono",monospace;font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-faint);padding:0 .2rem .6rem;margin-bottom:.4rem;border-bottom:1px solid var(--line-soft)}
+.toc a{display:flex;gap:.6rem;align-items:baseline;text-decoration:none;color:var(--ink-soft);
+  padding:.42rem .5rem;border-radius:5px;font-size:.9rem;font-weight:500;line-height:1.25;transition:background .12s,color .12s}
+.toc a .n{font-family:"IBM Plex Mono",monospace;font-size:.66rem;color:var(--ink-faint);transition:color .12s}
+.toc a:hover{background:var(--paper-2);color:var(--ink)}
+.toc a.active{background:var(--pine);color:#f3f6f3}
+.toc a.active .n{color:#9fc6b8}
+main{min-width:0;padding-bottom:5rem}
+
+/* sections */
+section{padding:clamp(2.6rem,5vw,4.4rem) 0;border-bottom:1px solid var(--line)}
+section:last-of-type{border-bottom:none}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--pine);display:flex;align-items:center;gap:.7rem;margin-bottom:1rem}
+.eyebrow::before{content:attr(data-code);color:var(--ink-faint)}
+.eyebrow .rule{flex:1;height:1px;background:var(--line)}
+h2.section-title{font-size:clamp(1.9rem,4vw,3rem);max-width:18ch;margin-bottom:.7rem}
+.lede{font-size:clamp(1.05rem,1.6vw,1.22rem);color:var(--ink-soft);max-width:62ch;line-height:1.55;margin-bottom:1.8rem}
+.lede strong{color:var(--ink);font-weight:600}
+
+/* HERO */
+.hero{padding-top:clamp(2.4rem,5vw,4rem);border-bottom:1px solid var(--line)}
+.hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(1.6rem,4vw,3.4rem);align-items:end}
+.hero-kicker{font-family:"IBM Plex Mono",monospace;font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--pine);margin-bottom:1.4rem}
+.hero h1{font-size:clamp(2.5rem,6.2vw,5.1rem);font-weight:500;letter-spacing:-.025em;line-height:.98;margin-bottom:1.3rem}
+.hero h1 em{font-style:italic;color:var(--pine)}
+.hero-sub{font-size:clamp(1.05rem,1.7vw,1.28rem);color:var(--ink-soft);max-width:54ch;line-height:1.5}
+.hero-sub b{color:var(--ink);font-weight:600}
+.stamp{display:inline-flex;align-items:center;gap:.55rem;margin-top:1.7rem;font-family:"IBM Plex Mono",monospace;
+  font-size:.7rem;letter-spacing:.06em;color:var(--ink-soft);border:1px dashed var(--clay);border-radius:4px;padding:.45rem .7rem}
+.stamp b{color:var(--clay);text-transform:uppercase;letter-spacing:.1em}
+
+/* ladder */
+.ladder{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:1.3rem 1.3rem 1rem;box-shadow:var(--shadow)}
+.ladder-h{font-family:"IBM Plex Mono",monospace;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-faint);display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:.6rem;margin-bottom:.3rem}
+.rung{display:flex;align-items:center;gap:.8rem;padding:.5rem 0;border-bottom:1px solid var(--line-soft)}
+.rung:last-child{border-bottom:none}
+.rung .rk{font-family:"IBM Plex Mono",monospace;font-size:.72rem;color:var(--ink-faint);width:1.4rem;flex:none}
+.rung .rt{flex:1;font-weight:500;font-size:.95rem}
+.bar{height:7px;border-radius:4px;background:var(--pine);flex:none}
+
+/* pill quicknav */
+.pillnav{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:2.6rem}
+.pillnav a{text-decoration:none;font-weight:600;font-size:.9rem;color:var(--ink);background:var(--paper);
+  border:1px solid var(--line);border-radius:30px;padding:.5rem 1rem;display:flex;gap:.5rem;align-items:center;transition:.14s}
+.pillnav a .pn{font-family:"IBM Plex Mono",monospace;font-size:.68rem;color:var(--pine)}
+.pillnav a:hover{border-color:var(--pine);background:#fff;transform:translateY(-1px)}
+
+/* grade chips */
+.grade{font-family:"IBM Plex Mono",monospace;font-size:.66rem;font-weight:600;letter-spacing:.04em;
+  display:inline-flex;align-items:center;gap:.3rem;padding:.16rem .42rem;border-radius:4px;border:1px solid;white-space:nowrap;vertical-align:middle}
+.grade::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.gA{color:var(--gA);border-color:#a8cabf;background:#e4efe9}
+.gB{color:var(--gB);border-color:#b5cdda;background:#e4eef4}
+.gC{color:var(--gC);border-color:#ddc99a;background:#f3ecda}
+.gD{color:var(--gD);border-color:#cfcfc2;background:#ececdf}
+
+/* generic cards & grid */
+.cards{display:grid;gap:1.1rem}
+.g2{grid-template-columns:repeat(2,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:1.25rem 1.3rem;box-shadow:var(--shadow)}
+.card h3{font-size:1.18rem;margin-bottom:.5rem;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.card h4{font-family:"IBM Plex Sans",sans-serif;font-weight:600;font-size:.96rem;letter-spacing:0;margin:.2rem 0 .4rem}
+.card p{font-size:.94rem;color:var(--ink-soft)}
+.card p:last-child{margin-bottom:0}
+.card-num{font-family:"IBM Plex Mono",monospace;font-size:.7rem;color:var(--pine);display:block;margin-bottom:.5rem;letter-spacing:.08em}
+
+.kicker-card{border-left:3px solid var(--pine)}
+
+/* lists */
+ul.clean{list-style:none;padding:0;margin:0}
+ul.clean li{position:relative;padding-left:1.5rem;margin-bottom:.6rem;font-size:.95rem;color:var(--ink-soft)}
+ul.clean li::before{content:"";position:absolute;left:0;top:.55em;width:7px;height:7px;border:1.5px solid var(--pine);border-radius:50%}
+ul.clean li b,ul.clean li strong{color:var(--ink);font-weight:600}
+ul.check li::before{content:"✓";border:none;color:var(--pine);font-weight:700;top:0;font-size:.95rem;width:auto}
+ul.cross li::before{content:"×";border:none;color:var(--clay);font-weight:700;top:0;font-size:1rem;width:auto}
+
+/* tables */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);background:var(--paper)}
+table{width:100%;border-collapse:collapse;font-size:.88rem;min-width:560px}
+th,td{text-align:left;padding:.72rem .9rem;border-bottom:1px solid var(--line-soft);vertical-align:top}
+thead th{font-family:"IBM Plex Mono",monospace;font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink-faint);background:var(--paper-2);position:sticky;top:0;border-bottom:1px solid var(--line)}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--paper-2)}
+td b{color:var(--ink);font-weight:600}
+.muted-row{color:var(--ink-faint)}
+
+/* callout: pro tebe / DM1 */
+.dm1{background:var(--clay-bg);border:1px solid #e0c8bd;border-left:3px solid var(--clay);border-radius:8px;
+  padding:1.1rem 1.25rem;margin:1.6rem 0}
+.dm1 .dm1-h{font-family:"IBM Plex Mono",monospace;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--clay);font-weight:600;display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem}
+.dm1 .dm1-h::before{content:"◆";font-size:.7rem}
+.dm1 p{font-size:.92rem;color:#5e4035;margin-bottom:.5rem}
+.dm1 p:last-child{margin-bottom:0}
+.dm1 b{color:var(--clay)}
+
+/* note / caution */
+.note{background:var(--amber-bg);border:1px solid #e3d3a8;border-radius:8px;padding:.9rem 1.1rem;margin:1.4rem 0;font-size:.9rem;color:#6b521a}
+.note b{color:var(--amber)}
+
+/* details / hloubka */
+details.depth{border:1px solid var(--line);border-radius:8px;background:var(--paper);margin:1.2rem 0;overflow:hidden}
+details.depth>summary{cursor:pointer;list-style:none;padding:.8rem 1.1rem;font-family:"IBM Plex Mono",monospace;
+  font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--pine);display:flex;align-items:center;gap:.6rem;font-weight:600}
+details.depth>summary::-webkit-details-marker{display:none}
+details.depth>summary::before{content:"+";font-size:1rem;line-height:1;color:var(--pine);transition:transform .15s}
+details.depth[open]>summary::before{content:"–"}
+details.depth>summary:hover{background:var(--paper-2)}
+.depth-body{padding:.2rem 1.1rem 1.1rem;border-top:1px solid var(--line-soft)}
+.depth-body p,.depth-body li{font-size:.92rem;color:var(--ink-soft)}
+
+/* tabs */
+.tabs{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1.2rem;border-bottom:1px solid var(--line);padding-bottom:.2rem}
+.tab-btn{font-family:"IBM Plex Mono",monospace;font-size:.74rem;letter-spacing:.04em;font-weight:500;
+  background:none;border:none;border-bottom:2px solid transparent;color:var(--ink-soft);padding:.5rem .7rem;cursor:pointer;border-radius:4px 4px 0 0}
+.tab-btn:hover{color:var(--ink);background:var(--paper-2)}
+.tab-btn.active{color:var(--pine);border-bottom-color:var(--pine);font-weight:600}
+.tab-panel{display:none}
+.tab-panel.active{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.tab-panel.active{animation:none}}
+
+/* stat row */
+.statrow{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin:1.6rem 0}
+.stat{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:1rem 1.1rem}
+.stat .num{font-family:"Fraunces",serif;font-size:1.9rem;font-weight:600;color:var(--pine);line-height:1;letter-spacing:-.02em}
+.stat .lab{font-size:.82rem;color:var(--ink-soft);margin-top:.4rem;line-height:1.35}
+
+/* synthesis map */
+.synth{display:grid;grid-template-columns:repeat(5,1fr);gap:.8rem;margin:1.8rem 0}
+.synth .node{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:.9rem;text-align:center;box-shadow:var(--shadow)}
+.synth .node .ic{font-family:"IBM Plex Mono",monospace;font-size:.64rem;letter-spacing:.1em;color:var(--pine);text-transform:uppercase;margin-bottom:.35rem}
+.synth .node .nm{font-weight:600;font-size:.92rem}
+.synth-arrow{text-align:center;font-family:"IBM Plex Mono",monospace;color:var(--ink-faint);margin:.2rem 0;font-size:.8rem;letter-spacing:.3em}
+.synth-target{background:var(--pine);color:#f2f6f3;border:none;text-align:center;padding:1rem;border-radius:8px;font-family:"Fraunces",serif;font-size:1.2rem;font-weight:600;box-shadow:var(--shadow)}
+
+.cross{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.7rem}
+.cross a{font-size:.78rem;font-family:"IBM Plex Mono",monospace;text-decoration:none;color:var(--pine);
+  border:1px solid var(--line);border-radius:20px;padding:.25rem .7rem;background:var(--paper);transition:.12s}
+.cross a:hover{border-color:var(--pine);background:#fff}
+.cross a::before{content:"→ ";color:var(--ink-faint)}
+
+/* citation */
+.cite{font-family:"IBM Plex Mono",monospace;font-size:.74rem;color:var(--ink-faint);margin-top:.7rem;line-height:1.5}
+
+/* footer */
+footer{background:var(--pine-deep);color:#cfe0d8;padding:clamp(2.4rem,5vw,4rem) clamp(1rem,3vw,2rem)}
+.foot-inner{max-width:var(--maxw);margin:0 auto;display:grid;grid-template-columns:1.3fr 1fr;gap:2.5rem}
+footer h3{color:#f2f6f3;font-size:1.5rem;margin-bottom:.8rem}
+footer p{color:#a9c4ba;font-size:.92rem;max-width:48ch}
+.src-list{list-style:none;padding:0;margin:0}
+.src-list li{font-family:"IBM Plex Mono",monospace;font-size:.78rem;color:#bcd2c9;padding:.45rem 0;border-bottom:1px solid rgba(255,255,255,.1);display:flex;gap:.7rem}
+.src-list li .sn{color:#6fae97}
+.foot-disc{grid-column:1/-1;border-top:1px solid rgba(255,255,255,.14);margin-top:1rem;padding-top:1.4rem;
+  font-size:.8rem;color:#8eada2}
+
+.section-sub{font-family:"Fraunces",serif;font-size:1.4rem;font-weight:500;margin:2.4rem 0 1rem;letter-spacing:-.01em}
+.section-sub .sc{font-family:"IBM Plex Mono",monospace;font-size:.7rem;color:var(--pine);letter-spacing:.1em;margin-right:.6rem;vertical-align:middle}
+
+/* responsive */
+@media (max-width:980px){
+  .hero-grid{grid-template-columns:1fr}
+  .synth{grid-template-columns:repeat(3,1fr)}
+  .g4{grid-template-columns:repeat(2,1fr)}
+  .statrow{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:860px){
+  .shell{grid-template-columns:1fr}
+  nav.toc{position:fixed;top:0;left:0;height:100vh;width:80%;max-width:320px;background:var(--paper);
+    border-right:1px solid var(--line);z-index:110;transform:translateX(-105%);transition:transform .26s ease;
+    padding:5rem 1.2rem 2rem;box-shadow:0 0 40px rgba(0,0,0,.18)}
+  nav.toc.open{transform:translateX(0)}
+  .menu-btn{display:block}
+  .search-wrap{flex-basis:200px}
+  .g2,.g3{grid-template-columns:1fr}
+  .scrim{position:fixed;inset:0;background:rgba(21,33,28,.4);z-index:105;opacity:0;pointer-events:none;transition:opacity .2s}
+  .scrim.show{opacity:1;pointer-events:auto}
+  .foot-inner{grid-template-columns:1fr}
+}
+@media (max-width:560px){
+  .g4,.synth,.statrow{grid-template-columns:1fr}
+  .brand .full{display:none}
+  body{font-size:15.5px}
+}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+
+<header class="top">
+  <div class="top-inner">
+    <button class="menu-btn" id="menuBtn" aria-label="Otevřít navigaci">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 4.5h14M2 9h14M2 13.5h14"/></svg>
+    </button>
+    <div class="brand"><span class="full">Longevity</span><span class="tick">manuál</span></div>
+    <div class="search-wrap">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="4.5"/><path d="m11 11 3.5 3.5"/></svg>
+      <input id="search" type="search" placeholder="hledej: spánek, protein, omega-3…" autocomplete="off" aria-label="Hledat ve webu">
+      <span id="search-count"></span>
+    </div>
+  </div>
+</header>
+
+<div class="scrim" id="scrim"></div>
+
+<div class="shell">
+  <nav class="toc" id="toc" aria-label="Obsah">
+    <div class="toc-label">Obsah · 8 sekcí</div>
+    <a href="#cist"><span class="n">00</span><span>Jak číst tento manuál</span></a>
+    <a href="#protokol"><span class="n">01</span><span>Základní protokol</span></a>
+    <a href="#trenink"><span class="n">02</span><span>Trénink</span></a>
+    <a href="#strava"><span class="n">03</span><span>Stravování</span></a>
+    <a href="#suplementy"><span class="n">04</span><span>Suplementace</span></a>
+    <a href="#spanek"><span class="n">05</span><span>Spánek</span></a>
+    <a href="#synteza"><span class="n">06</span><span>Jak to spolu souvisí</span></a>
+    <a href="#dm1"><span class="n">07</span><span>Kontext: Diabetes 1. typu</span></a>
+  </nav>
+
+  <main id="content">
+
+    <!-- HERO -->
+    <section class="hero" id="top">
+      <div class="hero-grid">
+        <div>
+          <div class="hero-kicker">Evidence-based · aktualizováno 2026 · osobní reference</div>
+          <h1>Nejlepší protokol je <em>nudně účinný</em>.</h1>
+          <p class="hero-sub">Žádné zázračné pilulky. Pět pilířů, které mají skutečná lidská data: <b>pohyb, strava, spánek, cílená suplementace a monitoring</b>. Tahle studnice spojuje, co o nich říkají nejlepší důkazy — a kde končí věda a začíná marketing.</p>
+          <div class="stamp"><b>Bez hype</b><span>každé tvrzení nese svou váhu důkazu</span></div>
+          <div class="pillnav">
+            <a href="#protokol"><span class="pn">01</span>Protokol</a>
+            <a href="#trenink"><span class="pn">02</span>Trénink</a>
+            <a href="#strava"><span class="pn">03</span>Strava</a>
+            <a href="#suplementy"><span class="pn">04</span>Suplementy</a>
+            <a href="#spanek"><span class="pn">05</span>Spánek</a>
+          </div>
+        </div>
+        <div class="ladder" aria-label="Žebříček návratnosti intervencí">
+          <div class="ladder-h"><span>Žebříček návratnosti</span><span>důkaz</span></div>
+          <div class="rung"><span class="rk">01</span><span class="rt">Nekouřit</span><span class="bar" style="width:96px"></span></div>
+          <div class="rung"><span class="rk">02</span><span class="rt">Pohyb — aerobní + silový</span><span class="bar" style="width:92px"></span></div>
+          <div class="rung"><span class="rk">03</span><span class="rt">Středomořská strava</span><span class="bar" style="width:88px"></span></div>
+          <div class="rung"><span class="rk">04</span><span class="rt">Zdravá kompozice · nízký pas</span><span class="bar" style="width:84px"></span></div>
+          <div class="rung"><span class="rk">05</span><span class="rt">Spánek 7–9 h · pravidelně</span><span class="bar" style="width:80px"></span></div>
+          <div class="rung"><span class="rk">06</span><span class="rt">Minimum alkoholu</span><span class="bar" style="width:78px"></span></div>
+          <div class="rung"><span class="rk">07</span><span class="rt">Monitoring TK · lipidy · glykémie</span><span class="bar" style="width:74px"></span></div>
+          <div class="rung" style="opacity:.65"><span class="rk">…</span><span class="rt">Cílené suplementy (jen při indikaci)</span><span class="bar" style="width:42px;background:var(--amber)"></span></div>
+          <div class="rung" style="opacity:.5"><span class="rk">×</span><span class="rt">„Anti-aging" stacky</span><span class="bar" style="width:16px;background:var(--gD)"></span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 00 JAK ČÍST -->
+    <section id="cist">
+      <div class="eyebrow" data-code="§00"><span>Jak to čteš</span><span class="rule"></span></div>
+      <h2 class="section-title">Každé tvrzení má svou váhu</h2>
+      <p class="lede">Na délku života nejdou dělat desetileté zaslepené studie. Proto se závěry skládají z více vrstev: guidelines, RCT na surrogate markery, dlouhé kohorty a mechanismy. <strong>Síla důkazu je odstupňovaná A → D</strong> a vrací se napříč celým manuálem.</p>
+
+      <div class="cards g4">
+        <div class="card kicker-card">
+          <span class="grade gA">A</span>
+          <h4>Silné doporučení</h4>
+          <p>Víc lidských meta-analýz nebo RCT plus shoda guidelines. Tady se nemýlíš, když to děláš.</p>
+        </div>
+        <div class="card kicker-card">
+          <span class="grade gB">B</span>
+          <h4>Středně silné</h4>
+          <p>Kohorty plus menší RCT nebo konzistentní surrogate outcomes. Rozumná sázka.</p>
+        </div>
+        <div class="card kicker-card">
+          <span class="grade gC">C</span>
+          <h4>Slabší</h4>
+          <p>Omezená lidská data, nekonzistence nebo přenos z mechanismů. Zvaž kontext.</p>
+        </div>
+        <div class="card kicker-card">
+          <span class="grade gD">D</span>
+          <h4>Nedostatečné</h4>
+          <p>Hlavně zvířata, pilotní studie nebo komerční hype. Rutinně nedoporučeno.</p>
+        </div>
+      </div>
+
+      <div class="note">
+        <b>Důležité.</b> Tohle je vzdělávací syntéza tvých vlastních podkladů, ne lékařská rada. Je to populační pohled — nezohledňuje tvoje konkrétní léky, hodnoty ani diagnózu. U čehokoliv, co mění léčbu, je první krok tvůj lékař nebo klinický farmaceut.
+      </div>
+
+      <div class="dm1">
+        <div class="dm1-h">Pro tebe · Diabetes 1. typu</div>
+        <p>Většina „metabolických" doporučení v podkladech (snižování HbA1c tréninkem, berberin, metformin) cílí na <b>diabetes 2. typu</b> a inzulinovou rezistenci. U DM1 je obraz jiný — klíčové je řízení glykémie kolem zátěže, riziko hypoglykémie a sacharidové počítání, ne „metformin-like" páky.</p>
+        <p>V celém manuálu hledej cihlové bloky jako tenhle. Označují místa, kde se obecné longevity doporučení pro tebe mění.</p>
+      </div>
+    </section>
+
+    <!-- 01 PROTOKOL -->
+    <section id="protokol">
+      <div class="eyebrow" data-code="§01"><span>Longevity tipy a triky</span><span class="rule"></span></div>
+      <h2 class="section-title">Základní protokol</h2>
+      <p class="lede">Největší a nejspolehlivější přínos pro healthspan nepřinášejí doplňky, ale <strong>dlouhodobě udržitelná kombinace návyků</strong>. Efekty se sčítají — kvalitní strava sama o sobě nestačí, když špatně spíš, jsi sedavý a máš vysoký tlak.</p>
+
+      <div class="statrow">
+        <div class="stat"><div class="num">7–9 h</div><div class="lab">spánku za noc, pravidelně, s pevným časem vstávání</div></div>
+        <div class="stat"><div class="num">150–300</div><div class="lab">minut aerobní aktivity týdně + 2–4 silové jednotky</div></div>
+        <div class="stat"><div class="num">1,0–1,2</div><div class="lab">g bílkovin / kg / den (víc ve vyšším věku a při tréninku)</div></div>
+        <div class="stat"><div class="num">≈ 0</div><div class="lab">alkohol — pro longevity neexistuje bezpečná dávka</div></div>
+      </div>
+
+      <h3 class="section-sub"><span class="sc">A</span>Co dělat (nejvyšší návratnost)</h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Intervence</th><th>Hlavní efekt</th><th>Důkaz</th><th>Verdikt</th></tr></thead>
+          <tbody>
+            <tr><td><b>Nekouřit / vyhýbat se tabáku</b></td><td>Velký pokles mortality, KVO, nádorů, CHOPN</td><td><span class="grade gA">A</span></td><td>Absolutní priorita</td></tr>
+            <tr><td><b>Pravidelný pohyb dle WHO</b></td><td>Nižší celková mortalita, lepší metabolické i duševní zdraví</td><td><span class="grade gA">A</span></td><td>Základ každého plánu</td></tr>
+            <tr><td><b>Vysoká kardiorespirační zdatnost</b></td><td>Silný pokles mortality a KV rizika</td><td><span class="grade gA">A</span></td><td>Zlepšovat systematicky</td></tr>
+            <tr><td><b>Svalová síla + silový trénink</b></td><td>Nižší mortalita, menší frailty, lepší funkčnost</td><td><span class="grade gA">A</span>/<span class="grade gB">B</span></td><td>2–4× týdně</td></tr>
+            <tr><td><b>Středomořský / rostlinně orientovaný vzorec</b></td><td>Nižší mortalita, méně KVO, lepší metabolika</td><td><span class="grade gA">A</span></td><td>Nejlepší výchozí dieta</td></tr>
+            <tr><td><b>Zdravá kompozice · nízký viscerální tuk</b></td><td>Lepší tlak, lipidy, glykémie, nižší zánět</td><td><span class="grade gA">A</span></td><td>Cíl, ne vedlejší efekt</td></tr>
+            <tr><td><b>Spánek 7–9 h + pravidelnost</b></td><td>Lepší kardiometabolika a kognice</td><td><span class="grade gA">A</span>/<span class="grade gB">B</span></td><td>Podceňovaná priorita</td></tr>
+            <tr><td><b>Minimalizovat alkohol</b></td><td>Nižší riziko nádorů; bez bezpečného prahu</td><td><span class="grade gA">A</span></td><td>Pro longevity nejlépe 0</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="section-sub"><span class="sc">B</span>Selektivně a opatrně</h3>
+      <div class="cards g3">
+        <div class="card">
+          <span class="card-num">VHODNÉ U NĚKOHO</span>
+          <h3>Mírná kalorická restrikce</h3>
+          <p>CALERIE: lepší kardiometabolika a zpomalení tempa biologického stárnutí. Ale ubírá kostní denzitu a beztukovou hmotu. <span class="grade gB">B</span></p>
+          <p style="margin-top:.5rem;font-size:.86rem"><b>Pro koho:</b> spíš lidé s nadbytkem tuku, ne už štíhlí a aktivní.</p>
+        </div>
+        <div class="card">
+          <span class="card-num">NÁSTROJ, NE NUTNOST</span>
+          <h3>TRF / přerušovaný půst</h3>
+          <p>Pomáhá s hmotností, glykémií a cirkadiánním sladěním. Při stejné energii ale často nepřekoná obyčejné snížení kalorií. <span class="grade gB">B</span>/<span class="grade gC">C</span></p>
+          <p style="margin-top:.5rem;font-size:.86rem"><b>Lepší:</b> jíst dřív v rámci dne než pozdě večer.</p>
+        </div>
+        <div class="card" style="opacity:.85">
+          <span class="card-num">RUTINNĚ NE</span>
+          <h3>„Anti-aging" suplementy</h3>
+          <p>NMN, resveratrol a spol. zatím bez přesvědčivého důkazu na lifespan u lidí. <span class="grade gD">D</span></p>
+          <p style="margin-top:.5rem;font-size:.86rem"><b>Realita:</b> hype vysoko, tvrdá data nízko. Viz <a href="#suplementy">§04</a>.</p>
+        </div>
+      </div>
+
+      <h3 class="section-sub"><span class="sc">C</span>Co měřit v prevenci</h3>
+      <p style="max-width:60ch;color:var(--ink-soft)">Pro longevity dává větší smysl sledovat pár centrálních klinických biomarkerů než exotické testy. Dobrý základ: tlak, obvod pasu, lipidogram (ideálně s ApoB), <b>jednorázově Lp(a)</b>, HbA1c, jaterní a ledvinné parametry, podle situace 25(OH)D, B12 a TSH.</p>
+
+      <details class="depth">
+        <summary>Hloubka · epigenetické hodiny a telomery</summary>
+        <div class="depth-body">
+          <p>Telomery a epigenetické hodiny dobře predikují mortalitu na úrovni skupin, ale pro individuální rozhodování je jejich interpretace omezená, laboratorní standardizace nejednotná a akční dopad slabý. Ne jako rutinní test — spíš volitelný „n-of-1" nástroj pro motivované, kteří akceptují nejistotu a drží stejnou laboratoř i typ testu.</p>
+        </div>
+      </details>
+
+      <div class="cite">Zdroj: Dlouhověkost a zdravé stárnutí — Exekutivní shrnutí · WHO 2020 · ESC · PREDIMED · CALERIE · AASM/SRS.</div>
+
+      <div class="cross">
+        <a href="#trenink">Trénink detailně</a>
+        <a href="#strava">Strava detailně</a>
+        <a href="#spanek">Spánek detailně</a>
+        <a href="#synteza">Jak se to sčítá</a>
+      </div>
+    </section>
+
+    <!-- 02 TRÉNINK -->
+    <section id="trenink">
+      <div class="eyebrow" data-code="§02"><span>Pohyb a síla</span><span class="rule"></span></div>
+      <h2 class="section-title">Trénink</h2>
+      <p class="lede">Pro dlouhověkost nerozhoduje „dokonalý" program, ale <strong>dlouhodobě udržitelný progresivní odporový trénink, který se skutečně dělá</strong> — v kombinaci s aerobní složkou. Prioritou je síla a funkce, ne maximalistická hypertrofie.</p>
+
+      <div class="cards g2">
+        <div class="card kicker-card">
+          <h3>Síla &gt; hypertrofie <span class="grade gA">A</span></h3>
+          <p>Vyšší svalová síla je spojena s nižší mortalitou, lepší chůzí, nižším rizikem disability a lepší schopností zvládnout nemoc či hospitalizaci. U starších žen předpovídala mortalitu robustněji než samotná aktivita. Řiď program <b>výkonem a funkcí</b>, ne jen kilogramy svalů.</p>
+        </div>
+        <div class="card kicker-card">
+          <h3>Konzistence &gt; komplikovanost <span class="grade gA">A</span></h3>
+          <p>Přehled 137 systematických review: největší skok v přínosu je přechod z nuly na „nějaký" trénink. Pokročilé techniky, trénink do selhání nebo složitá periodizace obvykle nemění výsledek natolik, aby to pro longevity rozhodovalo.</p>
+        </div>
+      </div>
+
+      <h3 class="section-sub"><span class="sc">DÁVKA</span>Jak nastavit proměnné</h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Proměnná</th><th>Pro longevity</th><th>Poznámka</th></tr></thead>
+          <tbody>
+            <tr><td><b>Frekvence</b></td><td>2× týdně je podložené minimum</td><td>3× pomáhá rozložit objem u pokročilejších</td></tr>
+            <tr><td><b>Intenzita</b></td><td>Síla profituje z těžších zátěží (často &gt;80 % 1RM)</td><td>Začínat nemusíš těžce — k těžší zátěži postupně dojdi</td></tr>
+            <tr><td><b>Objem</b></td><td>1–2 série = realistické minimum; 2–4 série dají rezervu pro sílu</td><td>Vyšší objem hlavně když nízký přestane stačit</td></tr>
+            <tr><td><b>Progrese</b></td><td>Progresivní přetížení — nepřenosná podmínka</td><td>Zátěž, opakování, série, ROM nebo technická kvalita</td></tr>
+            <tr><td><b>Odpočinek</b></td><td>1,5–3 min u vícekloubových a těžších sérií</td><td>Nedělej ze silového tréninku kardio-circuit</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="section-sub"><span class="sc">VĚK</span>Podle dekády</h3>
+      <div class="tabs" role="tablist">
+        <button class="tab-btn active" data-tab="t40">40–55 let</button>
+        <button class="tab-btn" data-tab="t56">56–70 let</button>
+        <button class="tab-btn" data-tab="t70">70+</button>
+      </div>
+      <div class="tab-panel active" id="t40">
+        <div class="card">
+          <h4>Priorita: budovat rezervu, než přijde rychlejší pokles</h4>
+          <ul class="clean">
+            <li>2–3 full-body dny týdně; 6–8 cviků; 2–4 série</li>
+            <li>Hlavní cviky středně těžce až těžce</li>
+            <li>1 den práce na power / rychlou koncentriku</li>
+            <li>150–300 min aeroba týdně</li>
+          </ul>
+        </div>
+      </div>
+      <div class="tab-panel" id="t56">
+        <div class="card">
+          <h4>Priorita: síla, power, funkce, tolerance zátěže</h4>
+          <ul class="clean">
+            <li>2–3 dny týdně, více technického důrazu</li>
+            <li>Část sérií těžší, část střední</li>
+            <li>Pravidelně testovat chair-stand, gait speed, grip</li>
+            <li>Přidat rovnováhu 3+ dny týdně</li>
+          </ul>
+        </div>
+      </div>
+      <div class="tab-panel" id="t70">
+        <div class="card">
+          <h4>Priorita: nezávislost, prevence pádů, bezpečná expozice zátěži</h4>
+          <ul class="clean">
+            <li>Začít konzervativně, ale necvičit „jen lehce" navždy</li>
+            <li>2 dny silově, 1–3 dny rovnováha / chůze</li>
+            <li>Sed/leh tlak a tah, dřep na box, hip hinge, step-up, carry</li>
+            <li>Delší pauzy a přísnější kontrola symptomů</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3 class="section-sub"><span class="sc">PLÁN</span>Týden, který funguje</h3>
+      <div class="cards g2">
+        <div class="card">
+          <span class="card-num">SILOVÁ KOSTRA — FULL BODY</span>
+          <ul class="clean">
+            <li><b>Dřepový vzor</b> — dřep na box / leg press</li>
+            <li><b>Kyčelní tah</b> — rumunský tah / hip hinge</li>
+            <li><b>Horizontální tlak</b> + <b>horizontální tah</b></li>
+            <li><b>Vertikální tlak</b> nebo přítah</li>
+            <li><b>Core + carry</b> (farmer's walk, plank)</li>
+          </ul>
+        </div>
+        <div class="card">
+          <span class="card-num">AEROBNÍ A DOPLŇKOVÁ SLOŽKA</span>
+          <ul class="clean">
+            <li><b>Zóna 2</b> 3–5× týdně, 30–60 min („mluvím ve větách")</li>
+            <li><b>HIIT</b> 1× týdně jako doplněk (např. 4×4 min)</li>
+            <li><b>NEAT a kroky</b> — cíl ~7000–10000/den dle věku</li>
+            <li><b>Mobilita / balance</b> 5–10 min denně</li>
+          </ul>
+        </div>
+      </div>
+
+      <details class="depth">
+        <summary>Hloubka · 12týdenní rámec a double progression</summary>
+        <div class="depth-body">
+          <ul class="clean">
+            <li><b>Týdny 1–4 · adaptace:</b> 2 tréninky, 5–6 cviků, 1–2 série, RPE 6–7. Nácvik vzorů.</li>
+            <li><b>Týdny 5–8 · objem a síla:</b> 2–3 tréninky, 6–8 cviků, 2–3 série, RPE 7–8. Postupně přidávat zátěž / opakování.</li>
+            <li><b>Týdny 9–11 · akcent síly a power:</b> hlavní cviky těžší, koncentrickou fázi co nejrychleji při bezpečné technice.</li>
+            <li><b>Týden 12 · deload + přetestování:</b> −20 až −30 % objemu, kontrola grip strength, chair stand, gait speed.</li>
+          </ul>
+          <p style="margin-top:.7rem"><b>Double progression:</b> např. 3 série po 5–8 opakováních. Když zvládneš ve všech sériích horní hranici s čistou technikou a rezervou 1–3 opakování, přidej nejmenší možný krok zátěže. Praktičtější a bezpečnější než rutinně chodit do selhání.</p>
+        </div>
+      </details>
+
+      <h3 class="section-sub"><span class="sc">MĚŘ</span>Co sledovat</h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Ukazatel</th><th>Proč</th><th>Cíl</th></tr></thead>
+          <tbody>
+            <tr><td><b>Grip strength</b></td><td>Silný marker síly a mortality</td><td>Trend nahoru, nebo aspoň bez poklesu s věkem</td></tr>
+            <tr><td><b>5× chair stand</b></td><td>Funkce dolních končetin, sarkopenie</td><td>Klesající čas; &gt;15 s je varovný signál</td></tr>
+            <tr><td><b>Gait speed 4 m</b></td><td>Prediktor disability a přežití</td><td>&gt;0,8 m/s; +0,1 m/s je významná změna</td></tr>
+            <tr><td><b>SPPB</b></td><td>Kompozitní funkční ukazatel</td><td>≥9 dobrý cíl; +1 bod je významný posun</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="dm1">
+        <div class="dm1-h">Pro tebe · Diabetes 1. typu</div>
+        <p>Silový i aerobní trénink jsou pro tebe skvělé — zlepšují inzulinovou senzitivitu a kompozici. Klíčový rozdíl oproti DM2 je <b>řízení glykémie kolem zátěže</b>: různé typy cvičení působí různě (vytrvalost často glykémii snižuje, intenzivní intervaly a silový trénink ji mohou přechodně zvednout).</p>
+        <p>Praktické body: <b>měř před a po</b>, počítej s opožděnou hypoglykémií i v noci po tréninku, měj rychlé sacharidy po ruce a uprav inzulin/sacharidy podle plánu s diabetologem. „Snižování HbA1c tréninkem" z podkladů je o DM2 — u tebe jde primárně o stabilitu a bezpečnost, ne o náhradu inzulinu.</p>
+      </div>
+
+      <div class="cite">Zdroj: Jak nastavit co nejefektivnější silový trénink pro longevity · WHO 2020 · ACSM 2026 · Currier 2026 · Radaelli 2025 · LaMonte 2026 · EWGSOP2.</div>
+
+      <div class="cross">
+        <a href="#strava">Protein pro svaly</a>
+        <a href="#spanek">Regenerace a spánek</a>
+        <a href="#suplementy">Kreatin a protein</a>
+        <a href="#synteza">Souvislosti</a>
+      </div>
+    </section>
+
+    <!-- 03 STRAVA -->
+    <section id="strava">
+      <div class="eyebrow" data-code="§03"><span>Výživa</span><span class="rule"></span></div>
+      <h2 class="section-title">Stravování</h2>
+      <p class="lede">Nejsilnější a nejkonzistentnější důkazy nepodporují žádnou extrémní dietu. Nejlépe vychází <strong>středomořský a obecně plant-forward vzorec</strong>. Kvalita potravin je důležitější než samotné makroživinové štítky.</p>
+
+      <div class="cards g3">
+        <div class="card kicker-card">
+          <h3>Výchozí vzorec <span class="grade gA">A</span></h3>
+          <p>Vysoký podíl zeleniny, luštěnin, ovoce, celozrnných obilovin, ořechů a semen; hlavní tuk z extra panenského olivového oleje; pravidelně ryby; minimum ultra-zpracovaných potravin a červeného/zpracovaného masa.</p>
+        </div>
+        <div class="card kicker-card">
+          <h3>Kvalita &gt; makra</h3>
+          <p>„Zdravě rostlinný" vzorec snižuje riziko; „nezdravě rostlinný" (rafinované škroby, sladké nápoje, UPF) efekt ztrácí nebo obrací. Cílit na ~80–90 % energie z minimálně zpracovaných potravin, ne na dietní čistotu.</p>
+        </div>
+        <div class="card kicker-card">
+          <h3>Pesco kompromis <span class="grade gB">B</span></h3>
+          <p>Pesco-vegetariánský model je prakticky silný kompromis mezi mortalitou, kardiometabolickým profilem a kognicí — díky kvalitním rostlinám i rybám jako zdroji EPA/DHA.</p>
+        </div>
+      </div>
+
+      <h3 class="section-sub"><span class="sc">CÍLE</span>Makroživiny</h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Složka</th><th>Cíl</th><th>Komentář</th></tr></thead>
+          <tbody>
+            <tr><td><b>Bílkoviny</b></td><td>1,0–1,2 g/kg/den</td><td>Při redukci, vyšším věku nebo silovém tréninku spíš 1,2–1,6. Rozložit do 3–4 jídel.</td></tr>
+            <tr><td><b>Vláknina</b></td><td>30–45 g/den</td><td>EFSA minimum 25 g; pro prevenci výhodnější vyšší pásmo</td></tr>
+            <tr><td><b>Tuky</b></td><td>25–35 % energie</td><td>Preferovat EVOO, ořechy, semena, ryby; nasycené co nejníže</td></tr>
+            <tr><td><b>Sacharidy</b></td><td>Převážně celozrnné, luštěniny, ovoce, zelenina</td><td>Nikoliv tekuté cukry a ultra-zpracované potraviny</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="section-sub"><span class="sc">VZOR</span>Substituce v českých podmínkách</h3>
+      <div class="cards g2">
+        <div class="card">
+          <span class="card-num">VÍCE</span>
+          <ul class="clean check">
+            <li>Olivový olej a jogurt místo másla a smetanových omáček</li>
+            <li>Celozrnný chléb, oves, luštěniny místo bílého pečiva a sladkých cereálií</li>
+            <li>Ryby, luštěniny, vejce, libové maso místo uzenin a smažených polotovarů</li>
+            <li>Voda, minerálky, neslazený čaj místo sladkých nápojů</li>
+          </ul>
+        </div>
+        <div class="card">
+          <span class="card-num">MÉNĚ</span>
+          <ul class="clean cross">
+            <li>Ultra-zpracované potraviny — napříč doménami horší výsledky</li>
+            <li>Zpracované maso — konzistentní karcinogenní riziko (kolorektum)</li>
+            <li>Alkohol — pro longevity nejlépe 0, bez bezpečného prahu</li>
+            <li>Dezert jako denní norma — udělej z něj příležitost</li>
+          </ul>
+        </div>
+      </div>
+
+      <details class="depth">
+        <summary>Hloubka · low-carb, keto, půst a kalorická restrikce</summary>
+        <div class="depth-body">
+          <ul class="clean">
+            <li><b>Low-carb / keto:</b> nejsou dobrý default pro longevity. Krátkodobě zlepší hmotnost, TG a glykémii, ale dlouhodobá mortalitní data jsou smíšená až nepříznivá — zvlášť když jsou kalorie nahrazeny živočišnými tuky a proteiny. Nejlépe vycházejí plant-based low-carb varianty. <span class="grade gC">C</span></li>
+            <li><b>TRF / přerušovaný půst:</b> rozumný nástroj pro kontrolu hmotnosti a cirkadiánní sladění, ale sám o sobě není pro longevity lepší než dobře vedená kontinuální restrikce. <span class="grade gB">B</span>/<span class="grade gC">C</span></li>
+            <li><b>Kalorická restrikce:</b> biologicky nejpřesvědčivější anti-aging linka (CALERIE: lepší kardiometabolika, pomalejší DunedinPACE), ale s trade-offy (kostní denzita, adherence). Pro většinu lidí lepší „mírně střízlivá, nutričně bohatá středomořská" než agresivní restrikce. <span class="grade gB">B</span></li>
+          </ul>
+        </div>
+      </details>
+
+      <div class="dm1">
+        <div class="dm1-h">Pro tebe · Diabetes 1. typu</div>
+        <p>Středomořský vzorec ti sedí výborně — vyšší vláknina a nižší glykemická nálož znamenají <b>plošší postprandiální křivky a menší výkyvy</b>, což zjednodušuje dávkování inzulinu. Vláknina a tuk v jídle zpomalují vstřebávání sacharidů, takže počítej s časováním bolusu.</p>
+        <p><b>Opatrně s půstem a TRF.</b> U DM1 zvyšují riziko hypoglykémie a komplikují inzulinový režim — tohle není „behaviorální trik" zadarmo jako u zdravého člověka. Klíčové zůstává <b>počítání sacharidů</b> a stabilní, předvídatelná jídla. Změny v okně jídla řeš nejdřív s diabetologem.</p>
+      </div>
+
+      <div class="cite">Zdroj: Stravování pro longevity · PREDIMED · CORDIOPREV · CALERIE · AHA 2021 · EFSA · Nature Medicine healthy aging 2025.</div>
+
+      <div class="cross">
+        <a href="#trenink">Protein + trénink</a>
+        <a href="#suplementy">B12, omega-3, vitamin D</a>
+        <a href="#protokol">Monitoring lipidů</a>
+        <a href="#synteza">Souvislosti</a>
+      </div>
+    </section>
+
+    <!-- 04 SUPLEMENTY -->
+    <section id="suplementy">
+      <div class="eyebrow" data-code="§04"><span>Doplňky</span><span class="rule"></span></div>
+      <h2 class="section-title">Suplementace</h2>
+      <p class="lede">Střízlivý závěr: k roku 2026 <strong>neexistuje volně dostupný suplement s přesvědčivým důkazem, že prodlužuje život zdravých lidí</strong>. Nejvyšší poměr přínosu k riziku nevzniká z agresivních stacků, ale z korekce deficitů a zacílení na konkrétní problém.</p>
+
+      <h3 class="section-sub"><span class="sc">LIGY</span>Podle translační použitelnosti</h3>
+      <div class="tabs" role="tablist">
+        <button class="tab-btn active" data-tab="s1">První liga</button>
+        <button class="tab-btn" data-tab="s2">Druhá liga</button>
+        <button class="tab-btn" data-tab="s3">Třetí liga</button>
+        <button class="tab-btn" data-tab="s4">Experimentální</button>
+      </div>
+      <div class="tab-panel active" id="s1">
+        <div class="cards g3">
+          <div class="card"><h3>Omega-3 EPA+DHA <span class="grade gB">B</span></h3><p>Modestní redukce KV příhod u vyššího rizika / vyšších TG; malý vliv na epigenetické hodiny (DO-HEALTH). Bez jasného efektu na celkovou mortalitu. Smysl u nízkého příjmu ryb.</p></div>
+          <div class="card"><h3>Vitamin D3 <span class="grade gB">B</span></h3><p>Hlavní přínos u <b>deficitu</b> a kostního zdraví. Plošná suplementace zdravých (VITAL) nesnížila incidenci nádorů ani KV příhod. Korekce nízkého 25(OH)D je rozumná.</p></div>
+          <div class="card"><h3>Koenzym Q10 <span class="grade gB">B</span></h3><p>Silnější signál v <b>nemocné populaci</b>: u chronického srdečního selhání (Q-SYMBIO) nižší mortalita a hospitalizace. Mimo HF slabé. Není „omlazovací" doplněk.</p></div>
+        </div>
+      </div>
+      <div class="tab-panel" id="s2">
+        <div class="cards g4">
+          <div class="card"><h3>Berberin <span class="grade gC">C</span></h3><p>Zlepšuje glykémii, IR, TG, LDL u metabolicky nemocných. Silné lékové interakce (CYP/P-gp). U DM1 to není ta správná páka.</p></div>
+          <div class="card"><h3>Melatonin <span class="grade gB">B</span></h3><p>Pro spánek a cirkadiánní timing; zkracuje usínání. Jako longevity nástroj velmi nízká jistota.</p></div>
+          <div class="card"><h3>Vitamin K2 (MK-7) <span class="grade gC">C</span></h3><p>2026 RCT: pomalejší progrese koronární kalcifikace u CAD, ale bez tvrdých outcome. Kontraindikace s warfarinem.</p></div>
+          <div class="card"><h3>Spermidin <span class="grade gC">C</span></h3><p>Cílí autofagii; observačně nižší mortalita. Větší RCT na kognici negativní. Nízké riziko, nízká jistota.</p></div>
+        </div>
+      </div>
+      <div class="tab-panel" id="s3">
+        <div class="cards g3">
+          <div class="card" style="opacity:.9"><h3>NR / NMN <span class="grade gD">D</span></h3><p>Spolehlivě zvyšují NAD+ markery — ale to je biomarker expozice, ne klinický benefit. Nejzajímavější NMN u postmenopauzálních žen s prediabetem. Bez hard endpointů.</p></div>
+          <div class="card" style="opacity:.9"><h3>Resveratrol <span class="grade gD">D</span></h3><p>Klasická translace, která se v lidech zadrhla. Nekonzistentní surrogate výsledky, bez důkazu na délku života.</p></div>
+          <div class="card" style="opacity:.9"><h3>Polyfenolové směsi <span class="grade gD">D</span></h3><p>Lepší jako součást stravy než jako kapsle. Extrémní heterogenita látek, dávek a populací. Food-first přístup.</p></div>
+        </div>
+      </div>
+      <div class="tab-panel" id="s4">
+        <div class="cards g3">
+          <div class="card" style="opacity:.85"><h3>Metformin <span class="grade gD">D</span></h3><p>Vážný geroscience kandidát, ale u nediabetiků neprokázaný. V části studií tlumí adaptaci na trénink. Patří k indikaci, ne do wellness.</p></div>
+          <div class="card" style="opacity:.85"><h3>Rapamycin / rapalogy <span class="grade gD">D</span></h3><p>Biologicky silní kandidáti, klinicky nehotoví. Třídní rizika (infekce, cytopenie). Jen klinická studie nebo specialista.</p></div>
+          <div class="card" style="opacity:.85"><h3>Senolytika (D+Q, fisetin) <span class="grade gD">D</span></h3><p>Proof-of-concept existuje, plošný benefit ne. Dasatinib je onkologický lék s nebanálním rizikem. Self-use mimo studie neobhajitelný.</p></div>
+        </div>
+      </div>
+
+      <h3 class="section-sub"><span class="sc">DÁVKY</span>Cílené doplňky a kdy dávají smysl</h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Suplement</th><th>Kdy dává smysl</th><th>Praktická dávka (studovaná)</th><th>Pozor na</th></tr></thead>
+          <tbody>
+            <tr><td><b>Vitamin D3</b></td><td>Nízká expozice slunci, nízký 25(OH)D, vyšší věk</td><td>1000–2000 IU/den; UL 4000</td><td>Hyperkalcémie při vysokých dávkách</td></tr>
+            <tr><td><b>Omega-3</b></td><td>Nízká konzumace ryb, hypertriglyceridémie</td><td>~1 g/den EPA+DHA; u hyperTG 2–4 g receptově</td><td>Antikoagulancia, fibrilace síní u vyšších dávek</td></tr>
+            <tr><td><b>Vitamin B12</b></td><td>Veganství, vyšší věk, metformin, PPI</td><td>250–500 µg/den nebo 1000 µg 2–3× týdně</td><td>Hladiny snižuje metformin a inhibitory kyseliny</td></tr>
+            <tr><td><b>Hořčík</b></td><td>Nízký příjem, křeče, marginální deficit</td><td>100–200 mg elementárního/den</td><td>Bisfosfonáty, chinolony, tetracykliny</td></tr>
+            <tr><td><b>Kreatin monohydrát</b></td><td>Síla a svalová hmota, zvlášť při RT</td><td>3–5 g/den</td><td>U renálního onemocnění individuálně; dost tekutin</td></tr>
+            <tr><td><b>Psyllium</b></td><td>Když nejde dosáhnout vlákniny z jídla</td><td>5–10 g/den s vodou</td><td>Oddělit od léků; nadýmání při rychlém nasazení</td></tr>
+            <tr><td><b>Melatonin</b></td><td>Jet lag, zpožděná fáze, krátkodobě insomnie</td><td>0,3–1 mg cirkadiánně / 1–3 mg krátkodobě</td><td>Antikoagulancia, CNS depresiva</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="dm1">
+        <div class="dm1-h">Pro tebe · Diabetes 1. typu</div>
+        <p><b>Berberin a metformin nejsou tvoje hra.</b> Cílí na inzulinovou rezistenci u DM2 — u DM1 chybí inzulin, ne citlivost na něj, a u berberinu navíc hrozí lékové interakce. Nepřidávej je „pro longevity".</p>
+        <p>Relevantní zůstává cílená korekce deficitů: <b>vitamin D</b> dle hladiny, <b>omega-3</b> při nízkém příjmu ryb, a <b>B12</b> hlídej, pokud bys někdy bral metformin (občas se přidává i u DM1 s inzulinovou rezistencí). Pravidlo „korekce deficitů, ne stack" platí pro tebe dvojnásob kvůli polypragmazii.</p>
+      </div>
+
+      <div class="cite">Zdroj: Nejúčinnější suplementace pro longevity · NIA/NIH · VITAL · DO-HEALTH · Q-SYMBIO · VitaK-CAC 2026 · ODS fact sheets.</div>
+
+      <div class="cross">
+        <a href="#strava">Food-first přístup</a>
+        <a href="#spanek">Melatonin a spánek</a>
+        <a href="#protokol">Co měřit</a>
+      </div>
+    </section>
+
+    <!-- 05 SPÁNEK -->
+    <section id="spanek">
+      <div class="eyebrow" data-code="§05"><span>Regenerace</span><span class="rule"></span></div>
+      <h2 class="section-title">Spánek</h2>
+      <p class="lede">Cílem není „nahnat co nejvyšší sleep score", ale maximalizovat <strong>biologicky účinný spánek</strong>: pravidelný režim, adekvátní délka, nízká fragmentace a včasná léčba poruch. Pravidelnost je podceňovaná a může být silnější prediktor mortality než samotná délka.</p>
+
+      <div class="statrow">
+        <div class="stat"><div class="num">7–9 h</div><div class="lab">optimum pro většinu dospělých (starší ~7–8 h)</div></div>
+        <div class="stat"><div class="num">U-křivka</div><div class="lab">krátký i dlouhý spánek = vyšší mortalita</div></div>
+        <div class="stat"><div class="num">±30 min</div><div class="lab">pevný čas vstávání i o víkendu — nejsilnější kotva</div></div>
+        <div class="stat"><div class="num">~18 °C</div><div class="lab">orientační teplota v ložnici (16–18 °C)</div></div>
+      </div>
+
+      <h3 class="section-sub"><span class="sc">PILÍŘE</span>Čtyři nejlépe podložené páky</h3>
+      <div class="cards g4">
+        <div class="card kicker-card"><span class="card-num">PRIORITA 1</span><h4>Léčit poruchy</h4><p>CBT-I je první volba u chronické insomnie. PAP/CPAP u obstrukční spánkové apnoe — významný modifikovatelný longevity faktor. <span class="grade gA">A</span></p></div>
+        <div class="card kicker-card"><span class="card-num">PRIORITA 2</span><h4>Pevný čas vstávání</h4><p>Vstávání je snáz kontrolovatelné než usínání. Přes pravidelnost se získává velká část dlouhodobého benefitu.</p></div>
+        <div class="card kicker-card"><span class="card-num">PRIORITA 3</span><h4>Světlo</h4><p>Ranní denní světlo 20–30 min; večer tlumit jasné a modré světlo. U cirkadiánních poruch je světlo léčba, ne wellness detail.</p></div>
+        <div class="card kicker-card"><span class="card-num">PRIORITA 4</span><h4>Pohyb</h4><p>Jedna z mála intervencí, která zlepší spánek i ostatní longevity domény současně.</p></div>
+      </div>
+
+      <h3 class="section-sub"><span class="sc">REŽIM</span>Praktický protokol</h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Prvek</th><th>Doporučení</th><th>Poznámka</th></tr></thead>
+          <tbody>
+            <tr><td><b>Délka</b></td><td>7,5–8,5 h času v posteli</td><td>Cíl reálně 7–9 h spánku</td></tr>
+            <tr><td><b>Vstávání</b></td><td>Pevný čas ±30 min i o víkendu</td><td>Silnější kotva než čas ulehnutí</td></tr>
+            <tr><td><b>Světlo ráno</b></td><td>20–30 min denního světla</td><td>Ideálně venku</td></tr>
+            <tr><td><b>Světlo večer</b></td><td>Méně jasných displejů 1–2 h před spaním</td><td>Zvlášť pro pozdní chronotyp</td></tr>
+            <tr><td><b>Kofein</b></td><td>Stop nejméně 6 h před spaním</td><td>Citliví i dříve (po 14.–15. h)</td></tr>
+            <tr><td><b>Alkohol</b></td><td>Ideálně vůbec; ne jako „pomoc na spánek"</td><td>Zhoršuje architekturu, fragmentuje druhou půlku noci</td></tr>
+            <tr><td><b>Jídlo</b></td><td>Poslední větší jídlo 2–4 h před spaním</td><td>Méně refluxu, lepší kontinuita</td></tr>
+            <tr><td><b>Zdřímnutí</b></td><td>10–30 min, ne pozdě odpoledne</td><td>Delší napy = riziko narušení noci</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <details class="depth">
+        <summary>Hloubka · OSA, wearables a co nedělat</summary>
+        <div class="depth-body">
+          <ul class="clean">
+            <li><b>Obstrukční spánková apnoe:</b> při hlasitém chrápání, ranní bolesti hlavy, denní spavosti nebo apnoických pauzách mysli na OSA — z longevity hlediska vyšší priorita než „málo hlubokého spánku" podle hodinek. Benefit CPAP roste s adherencí (≥4 h/noc).</li>
+            <li><b>Wearables:</b> užitečné pro sledování trendů a pravidelnosti, ale nejsou diagnostické, často nadhodnocují spánek a u části lidí zhoršují úzkost kolem spánku (orthosomnia). Nedělej z nich výkonnostní obsesi.</li>
+            <li><b>Fatalismus „ve stáří se prostě špatně spí":</b> data ho nepodporují. Ve vyšším věku je potřeba o spánek pečovat aktivněji, ne pasivně čekat.</li>
+          </ul>
+        </div>
+      </details>
+
+      <div class="dm1">
+        <div class="dm1-h">Pro tebe · Diabetes 1. typu</div>
+        <p>Spánek a glykémie jsou obousměrně provázané. Krátký nebo nepravidelný spánek zhoršuje inzulinovou senzitivitu a zvedá ranní glykémii — u tebe to znamená <b>nestabilnější křivky a těžší dávkování</b>. Pravidelný režim je proto i nástroj kontroly cukru, ne jen regenerace.</p>
+        <p>Hlídej <b>noční hypoglykémii</b>, zvlášť po odpoledním nebo večerním tréninku. Pokud používáš CGM, alarmy během spánku jsou tvoje pojistka. Konzistentní čas večeře a bolusu pomáhá noční stabilitě.</p>
+      </div>
+
+      <div class="cite">Zdroj: Jak na co nejefektivnější spánek pro longevity · AASM/SRS · Windred 2024 (pravidelnost) · Edinger 2021 (CBT-I) · Patil 2019 (OSA) · CDC/NHLBI.</div>
+
+      <div class="cross">
+        <a href="#trenink">Pohyb a spánek</a>
+        <a href="#suplementy">Melatonin</a>
+        <a href="#strava">Kofein a alkohol</a>
+        <a href="#synteza">Souvislosti</a>
+      </div>
+    </section>
+
+    <!-- 06 SYNTÉZA -->
+    <section id="synteza">
+      <div class="eyebrow" data-code="§06"><span>Provázanost</span><span class="rule"></span></div>
+      <h2 class="section-title">Jak to spolu souvisí</h2>
+      <p class="lede">Žádný pilíř nestojí sám. Efekty se <strong>sčítají a vzájemně posilují</strong> — kvalitní strava nestačí, když špatně spíš a jsi sedavý. Tady je, jak vstupy ústí do jednoho cíle.</p>
+
+      <div class="synth">
+        <div class="node"><div class="ic">§03</div><div class="nm">Dieta</div></div>
+        <div class="node"><div class="ic">§02</div><div class="nm">Pohyb</div></div>
+        <div class="node"><div class="ic">§05</div><div class="nm">Spánek</div></div>
+        <div class="node"><div class="ic">§04</div><div class="nm">Suplementy</div></div>
+        <div class="node"><div class="ic">§01</div><div class="nm">Monitoring</div></div>
+      </div>
+      <div class="synth-arrow">↓ ↓ ↓ ↓ ↓</div>
+      <div class="cards g3" style="margin-bottom:1rem">
+        <div class="card" style="text-align:center"><div class="ic mono" style="font-size:.64rem;letter-spacing:.1em;color:var(--pine)">MEDIÁTORY</div><div class="nm" style="font-weight:600;margin-top:.3rem">Zánět · inzulinová senzitivita · kompozice · cirkadiánní rytmus</div></div>
+        <div class="card" style="text-align:center"><div class="ic mono" style="font-size:.64rem;letter-spacing:.1em;color:var(--pine)">FUNKCE</div><div class="nm" style="font-weight:600;margin-top:.3rem">Svalová síla · kardiorespirační zdatnost · kostní zdraví · kognice</div></div>
+        <div class="card" style="text-align:center"><div class="ic mono" style="font-size:.64rem;letter-spacing:.1em;color:var(--pine)">RIZIKO</div><div class="nm" style="font-weight:600;margin-top:.3rem">TK · lipidy/ApoB · glykémie · viscerální tuk</div></div>
+      </div>
+      <div class="synth-arrow">↓</div>
+      <div class="synth-target">Vyšší healthspan · nižší mortalitní riziko</div>
+
+      <h3 class="section-sub"><span class="sc">UZLY</span>Kde se pilíře potkávají</h3>
+      <div class="cards g2">
+        <div class="card">
+          <h4>Protein × trénink</h4>
+          <p>Bílkoviny jsou nejlépe podložený nutriční partner silového tréninku ve vyšším věku. Sám trénink bez dostatku proteinu i samotný protein bez tréninku dávají slabší výsledek než kombinace.</p>
+          <div class="cross"><a href="#trenink">§02</a><a href="#strava">§03</a></div>
+        </div>
+        <div class="card">
+          <h4>Spánek × glykémie × kompozice</h4>
+          <p>Nedostatek spánku mění osu hladu a sytosti, zvyšuje kortizol a zhoršuje glukózu — podkopává jak dietu, tak metabolické zdraví. Pravidelný spánek je metabolická páka.</p>
+          <div class="cross"><a href="#spanek">§05</a><a href="#strava">§03</a></div>
+        </div>
+        <div class="card">
+          <h4>Pohyb × spánek</h4>
+          <p>Pravidelná aktivita zlepšuje spánek a u starších i příznaky insomnie; lepší spánek zase umožňuje kvalitnější trénink a regeneraci. Pozitivní smyčka.</p>
+          <div class="cross"><a href="#trenink">§02</a><a href="#spanek">§05</a></div>
+        </div>
+        <div class="card">
+          <h4>Monitoring × všechno</h4>
+          <p>Bez měření nevíš, co funguje. Tlak, ApoB, HbA1c, pas a funkční testy (grip, gait speed) ukazují, jestli se ostatní pilíře promítají do skutečného rizika.</p>
+          <div class="cross"><a href="#protokol">§01</a><a href="#trenink">§02</a></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 07 DM1 -->
+    <section id="dm1">
+      <div class="eyebrow" data-code="§07"><span>Tvůj kontext</span><span class="rule"></span></div>
+      <h2 class="section-title">Diabetes 1. typu — jak se obraz mění</h2>
+      <p class="lede">Podklady mluví hlavně o populaci a o diabetu 2. typu. Tady je <strong>shrnutí míst, kde se obecné longevity doporučení pro tebe upravuje</strong>. Není to lékařská rada — konkrétní změny léčby vždy nejdřív s diabetologem.</p>
+
+      <div class="cards g2">
+        <div class="dm1" style="margin:0">
+          <div class="dm1-h">Trénink</div>
+          <p>Skvělý pro tebe, ale řiď glykémii kolem zátěže. Vytrvalost často glykémii snižuje, intenzivní intervaly a silový trénink ji mohou zvednout. Měř před/po, počítej s opožděnou (i noční) hypoglykémií, měj rychlé sacharidy po ruce.</p>
+        </div>
+        <div class="dm1" style="margin:0">
+          <div class="dm1-h">Strava</div>
+          <p>Středomořský vzorec ti pomáhá plošší glykemickou křivkou. Vláknina a tuk zpomalují vstřebávání — počítej s časováním bolusu. Počítání sacharidů zůstává jádro. S půstem/TRF opatrně kvůli hypoglykémii.</p>
+        </div>
+        <div class="dm1" style="margin:0">
+          <div class="dm1-h">Suplementy</div>
+          <p>Berberin a metformin cílí na inzulinovou rezistenci u DM2 — u tebe to nejsou ty správné páky. Drž se korekce doložených deficitů (D, omega-3, B12) a hlídej lékové interakce kvůli polypragmazii.</p>
+        </div>
+        <div class="dm1" style="margin:0">
+          <div class="dm1-h">Spánek</div>
+          <p>Spánek a glykémie jsou obousměrné: nepravidelný spánek zhoršuje senzitivitu a ranní cukr. Pravidelný režim je i nástroj kontroly glykémie. Hlídej noční hypoglykémii, využij CGM alarmy.</p>
+        </div>
+      </div>
+
+      <div class="note">
+        <b>Připomínka.</b> Tenhle manuál je tvoje rychlá reference, ne náhrada péče. Cokoliv, co se dotýká inzulinového režimu, dávek nebo léků, patří k tvému diabetologovi nebo klinickému farmaceutovi.
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  <div class="foot-inner">
+    <div>
+      <h3>Tvoje studnice longevity</h3>
+      <p>Osm sekcí, pět pilířů, jeden princip: dělej dlouhodobě to, co má skutečná lidská data, a nech marketing marketingem. Vrať se sem, kdykoliv něco potřebuješ ověřit.</p>
+      <div class="cross" style="margin-top:1.2rem">
+        <a href="#top">Zpět nahoru</a>
+        <a href="#protokol">Protokol</a>
+        <a href="#synteza">Souvislosti</a>
+      </div>
+    </div>
+    <div>
+      <div class="toc-label" style="color:#7fb29d;border-color:rgba(255,255,255,.15);padding-left:0">Podklady · 5 reportů</div>
+      <ul class="src-list">
+        <li><span class="sn">01</span>Dlouhověkost a zdravé stárnutí</li>
+        <li><span class="sn">02</span>Silový trénink pro longevity</li>
+        <li><span class="sn">03</span>Stravování pro longevity</li>
+        <li><span class="sn">04</span>Nejúčinnější suplementace pro longevity</li>
+        <li><span class="sn">05</span>Nejefektivnější spánek pro longevity</li>
+      </ul>
+    </div>
+    <div class="foot-disc">
+      Vzdělávací syntéza vlastních podkladů, ne lékařská rada. Populační pohled bez zohlednění tvých konkrétních hodnot, léků a diagnózy. Veškeré změny léčby konzultuj s lékařem nebo klinickým farmaceutem.
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---- mobile nav ----
+  var toc=document.getElementById('toc'),
+      menuBtn=document.getElementById('menuBtn'),
+      scrim=document.getElementById('scrim');
+  function closeNav(){toc.classList.remove('open');scrim.classList.remove('show');}
+  menuBtn.addEventListener('click',function(){
+    toc.classList.toggle('open');scrim.classList.toggle('show');
+  });
+  scrim.addEventListener('click',closeNav);
+  toc.querySelectorAll('a').forEach(function(a){a.addEventListener('click',closeNav);});
+
+  // ---- progress bar ----
+  var prog=document.getElementById('progress');
+  function onScroll(){
+    var h=document.documentElement;
+    var max=h.scrollHeight-h.clientHeight;
+    var pct=max>0?(h.scrollTop/max)*100:0;
+    prog.style.width=pct+'%';
+  }
+  window.addEventListener('scroll',onScroll,{passive:true});
+  onScroll();
+
+  // ---- scroll-spy ----
+  var sections=Array.prototype.slice.call(document.querySelectorAll('main section[id]'));
+  var links={};
+  toc.querySelectorAll('a').forEach(function(a){
+    var id=a.getAttribute('href').slice(1);links[id]=a;
+  });
+  if('IntersectionObserver' in window){
+    var spy=new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){
+          var id=e.target.id;
+          Object.keys(links).forEach(function(k){links[k].classList.remove('active');});
+          if(links[id])links[id].classList.add('active');
+        }
+      });
+    },{rootMargin:'-45% 0px -50% 0px',threshold:0});
+    sections.forEach(function(s){spy.observe(s);});
+  }
+
+  // ---- tabs ----
+  document.querySelectorAll('.tabs').forEach(function(group){
+    var btns=group.querySelectorAll('.tab-btn');
+    btns.forEach(function(btn){
+      btn.addEventListener('click',function(){
+        var id=btn.getAttribute('data-tab');
+        btns.forEach(function(b){b.classList.remove('active');});
+        btn.classList.add('active');
+        // panels are siblings after the tabs group, find by id within same section
+        var section=group.closest('section');
+        section.querySelectorAll('.tab-panel').forEach(function(p){
+          // only toggle panels that belong to this tab group (match ids referenced by these btns)
+        });
+        // collect ids from this group's buttons
+        var ids=Array.prototype.map.call(btns,function(b){return b.getAttribute('data-tab');});
+        ids.forEach(function(pid){
+          var panel=document.getElementById(pid);
+          if(panel)panel.classList.toggle('active',pid===id);
+        });
+      });
+    });
+  });
+
+  // ---- search highlight ----
+  var input=document.getElementById('search'),
+      countEl=document.getElementById('search-count'),
+      content=document.getElementById('content'),
+      timer=null;
+
+  function clearMarks(){
+    var marks=content.querySelectorAll('mark[data-s]');
+    marks.forEach(function(m){
+      var parent=m.parentNode;
+      parent.replaceChild(document.createTextNode(m.textContent),m);
+      parent.normalize();
+    });
+  }
+
+  function escapeRe(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+
+  function walk(node,re,acc){
+    if(node.nodeType===3){
+      var txt=node.nodeValue;
+      if(re.test(txt)){acc.push(node);}
+      re.lastIndex=0;
+      return;
+    }
+    if(node.nodeType===1){
+      var tag=node.tagName;
+      if(tag==='SCRIPT'||tag==='STYLE'||tag==='MARK')return;
+      for(var i=0;i<node.childNodes.length;i++){walk(node.childNodes[i],re,acc);}
+    }
+  }
+
+  function highlight(q){
+    clearMarks();
+    countEl.textContent='';
+    if(!q||q.length<2)return;
+    var re=new RegExp(escapeRe(q),'gi');
+    var targets=[];
+    walk(content,re,targets);
+    var total=0,first=null;
+    targets.forEach(function(textNode){
+      var txt=textNode.nodeValue;
+      var frag=document.createDocumentFragment();
+      var last=0,m;re.lastIndex=0;
+      while((m=re.exec(txt))!==null){
+        if(m.index>last)frag.appendChild(document.createTextNode(txt.slice(last,m.index)));
+        var mk=document.createElement('mark');
+        mk.setAttribute('data-s','1');
+        mk.textContent=m[0];
+        frag.appendChild(mk);
+        if(!first)first=mk;
+        total++;last=re.lastIndex;
+        if(m.index===re.lastIndex)re.lastIndex++;
+      }
+      if(last<txt.length)frag.appendChild(document.createTextNode(txt.slice(last)));
+      textNode.parentNode.replaceChild(frag,textNode);
+    });
+    countEl.textContent=total?total+'×':'0';
+    if(first){
+      // expand any closed <details> ancestors so match is visible
+      var p=first.parentNode;
+      while(p&&p!==content){
+        if(p.tagName==='DETAILS')p.open=true;
+        p=p.parentNode;
+      }
+      first.scrollIntoView({behavior:'smooth',block:'center'});
+    }
+  }
+
+  input.addEventListener('input',function(){
+    clearTimeout(timer);
+    var q=input.value.trim();
+    timer=setTimeout(function(){highlight(q);},220);
+  });
+  input.addEventListener('keydown',function(e){
+    if(e.key==='Escape'){input.value='';clearMarks();countEl.textContent='';}
+  });
+})();
+</script>
+</body>
+</html>
