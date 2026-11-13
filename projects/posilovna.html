@@ -255,37 +255,25 @@ svg.fig .pul{fill:#050505;stroke:#6a6a6a;stroke-width:2}
 .err-msg{color:var(--bad);font-size:13px;min-height:18px;margin-top:8px}
 .empty{color:var(--muted2);text-align:center;padding:28px 10px;font-size:14px}
 .note{font-size:12.5px;color:var(--muted2)}
+.auth-links{display:flex;justify-content:space-between;gap:8px;margin-top:10px}
+.ok-msg{color:var(--neon);font-size:13.5px;margin-top:8px}
+.steps{display:grid;gap:10px;margin:0 0 14px;padding-left:20px;font-size:13.5px;color:#cfcfcf}
+.steps li::marker{color:var(--neon);font-family:var(--mono)}
+.steps b{color:var(--text)}
+pre.code{font-variant-ligatures:none;background:var(--panel2);border:1px solid var(--line2);border-radius:10px;padding:10px;font-family:var(--mono);font-size:10.5px;line-height:1.5;overflow:auto;color:#bdbdbd;margin-top:6px}
+textarea{min-height:120px;font-family:var(--mono);font-size:12px}
 </style>
 </head>
 <body>
 
-<!-- ZAMČENÁ OBRAZOVKA -->
+<!-- PŘIHLÁŠENÍ -->
 <div class="lock hidden" id="lock">
   <div class="hero">
     <div id="lock-fig"></div>
     <h1>Posilovna<span class="d">.</span></h1>
     <p class="sub">Tréninkový deník, progresivní přetížení a doporučení na příště.</p>
   </div>
-  <form id="lock-form" autocomplete="on">
-    <input type="text" name="username" value="posilovna" autocomplete="username" hidden>
-    <div class="field" id="f-token">
-      <label for="l-token">GitHub token</label>
-      <input id="l-token" type="password" placeholder="github_pat_…" autocomplete="off">
-      <div class="help">Stejný token jako u decku (Contents: Read and write pro <b>vladaweb</b>). <a id="l-token-link" target="_blank" rel="noopener">Vytvořit token ↗</a> · nebo nech prázdné a ukládej jen v tomto telefonu.</div>
-    </div>
-    <div class="field">
-      <label for="l-pw">Heslo k deníku</label>
-      <input id="l-pw" type="password" autocomplete="current-password" placeholder="••••••••">
-    </div>
-    <div class="field hidden" id="f-pw2">
-      <label for="l-pw2">Heslo znovu (nový deník)</label>
-      <input id="l-pw2" type="password" autocomplete="new-password" placeholder="••••••••">
-      <div class="help">Data se šifrují tímto heslem (AES‑256). Bez něj je nikdo – ani ty – neotevře, tak si ho ulož.</div>
-    </div>
-    <label class="check"><input type="checkbox" id="l-remember" checked> Zapamatovat na tomto zařízení</label>
-    <button class="btn p big wide" type="submit" id="l-go">Odemknout</button>
-    <div class="err-msg" id="l-err"></div>
-  </form>
+  <div id="auth"></div>
 </div>
 
 <!-- APLIKACE -->
@@ -318,6 +306,9 @@ svg.fig .pul{fill:#050505;stroke:#6a6a6a;stroke-width:2}
 <div class="sheet" id="sheet"><div class="in"><div class="grab"></div><div id="sheet-c"></div></div></div>
 <div class="toast" id="toast"></div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
 'use strict';
 /* ═══════════════════════════════════════════════════════════════
@@ -457,165 +448,144 @@ function unitOf(ex) { return ex.unit === 's' ? 's' : 'opak.'; }
 function liveWorkouts() { return S.w.filter(w => !w.del); }
 function openWorkout() { return liveWorkouts().filter(w => w.open).sort((a, b) => b.d.localeCompare(a.d))[0] || null; }
 function doneWorkouts() { return liveWorkouts().filter(w => !w.open).sort((a, b) => b.d.localeCompare(a.d)); }
-function touch(w) { w.u = now(); }
+function touch(w) { w.u = now(); dirty.w.add(w.id); }
 const rirOf = s => s.q == null ? 2 : s.q;
 const e1rm = s => s.w > 0 ? s.w * (1 + (s.r + rirOf(s)) / 30) : 0;
 const doneSets = it => it.s.filter(s => s.ok && s.r > 0);
 
 /* ═══════════════════════════════════════════════════════════════
-   ŠIFROVÁNÍ (AES‑GCM, klíč z hesla přes PBKDF2)
+   FIREBASE – účet (jméno + heslo, obnova e-mailem) a ukládání do Firestore
+   Data: users/{uid} (nastavení), users/{uid}/workouts/{id}, users/{uid}/cx/{id}
+         usernames/{jméno} → { uid, email } (pro přihlášení jménem)
    ═══════════════════════════════════════════════════════════════ */
-const te = new TextEncoder(), td = new TextDecoder();
-const b64 = buf => { let s = ''; const b = new Uint8Array(buf); for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s); };
+// Konfigurace webové aplikace z Firebase konzole. Není tajná – data chrání pravidla Firestore.
+const FIREBASE_CONFIG = null;
+const K_FB = 'posilovna-fb';
+function fbConfig() { if (FIREBASE_CONFIG) return FIREBASE_CONFIG; try { return JSON.parse(ls.get(K_FB) || 'null'); } catch { return null; } }
+let auth = null, db = null, USER = null, PROFILE = null, unsubs = [], loaded = false;
+const dirty = { w: new Set(), cx: new Set(), set: false };
+const userDoc = () => db.collection('users').doc(USER.uid);
+const nameKey = n => n.trim().toLowerCase();
+const clean = o => JSON.parse(JSON.stringify(o));
 const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
-const ITER = 210000;
-let KEY = null, SALT = null;
-async function deriveKey(pw, salt) {
-  const base = await crypto.subtle.importKey('raw', te.encode(pw), 'PBKDF2', false, ['deriveKey']);
-  return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: ITER, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
-}
-async function encrypt(obj) {
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, KEY, te.encode(JSON.stringify(obj)));
-  return { v: 1, app: 'posilovna', iter: ITER, salt: b64(SALT), iv: b64(iv), ct: b64(ct) };
-}
-async function decrypt(vault, key = KEY) {
-  const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(vault.iv) }, key, unb64(vault.ct));
-  return JSON.parse(td.decode(pt));
-}
-const K_VAULT = 'posilovna-vault', K_KEY = 'posilovna-key', K_DIRTY = 'posilovna-dirty', K_LASTCT = 'posilovna-lastct', K_GH = 'vibe-deck-gh';
-async function rememberKey() { ls.set(K_KEY, JSON.stringify({ k: b64(await crypto.subtle.exportKey('raw', KEY)), s: b64(SALT) })); }
-async function loadRememberedKey() {
-  const r = JSON.parse(ls.get(K_KEY) || 'null'); if (!r) return false;
-  KEY = await crypto.subtle.importKey('raw', unb64(r.k), { name: 'AES-GCM' }, true, ['encrypt', 'decrypt']);
-  SALT = unb64(r.s); return true;
-}
 
-/* ═══════════════════════════════════════════════════════════════
-   GITHUB – data na samostatné větvi (necommituje do main, nespouští Pages)
-   ═══════════════════════════════════════════════════════════════ */
-const DATA_BRANCH = 'posilovna-data', DATA_PATH = 'posilovna.json';
-function gh() {
-  let c = null; try { c = JSON.parse(ls.get(K_GH) || 'null'); } catch {}
-  return c && c.token ? { token: c.token, owner: c.owner || 'Vladaczech', repo: c.repo || 'vladaweb' } : null;
-}
-function tokenUrl() {
-  return 'https://github.com/settings/personal-access-tokens/new?name=vladaweb-deck&description=' + encodeURIComponent('Ukládání decku a posilovny z webu vladaweb') + '&target_name=Vladaczech&expires_in=none&contents=write';
-}
-async function api(path, opts = {}) {
-  const g = gh(); if (!g) throw new Error('Chybí token');
-  const r = await fetch(`https://api.github.com/repos/${g.owner}/${g.repo}/${path}`, {
-    ...opts, cache: 'no-store',
-    headers: { Authorization: 'Bearer ' + g.token, Accept: 'application/vnd.github+json', ...(opts.body ? { 'Content-Type': 'application/json' } : {}) },
-  });
-  if (r.status === 401 || (r.status === 403 && r.headers.get('x-ratelimit-remaining') !== '0')) { const e = new Error(r.status === 401 ? 'Token GitHubu je neplatný nebo vypršel' : 'Token nemá právo zapisovat do repozitáře'); e.auth = true; throw e; }
-  return r;
-}
-const toB64 = s => btoa(unescape(encodeURIComponent(s)));
-const fromB64 = s => decodeURIComponent(escape(atob(s.replace(/\n/g, ''))));
-async function ghRead() {
-  const r = await api(`contents/${DATA_PATH}?ref=${DATA_BRANCH}`);
-  if (r.status === 404) return null;
-  if (!r.ok) throw new Error('GitHub: ' + r.status);
-  const j = await r.json();
-  let content = j.content;
-  if (!content && j.sha) { const b = await api(`git/blobs/${j.sha}`); content = (await b.json()).content; }
-  return { sha: j.sha, vault: JSON.parse(fromB64(content)) };
-}
-async function ensureBranch() {
-  const r = await api(`git/ref/heads/${DATA_BRANCH}`);
-  if (r.ok) return;
-  const repo = await (await api('')).json();
-  const base = await (await api(`git/ref/heads/${repo.default_branch || 'main'}`)).json();
-  const c = await api('git/refs', { method: 'POST', body: JSON.stringify({ ref: `refs/heads/${DATA_BRANCH}`, sha: base.object.sha }) });
-  if (!c.ok && c.status !== 422) throw new Error('Nepodařilo se vytvořit větev pro data');
-}
-async function ghWrite(vault, sha) {
-  const body = { message: 'Sync posilovna (web)', content: toB64(JSON.stringify(vault)), branch: DATA_BRANCH };
-  if (sha) body.sha = sha;
-  let r = await api(`contents/${DATA_PATH}`, { method: 'PUT', body: JSON.stringify(body) });
-  if (r.status === 404 || (r.status === 422 && !sha)) { await ensureBranch(); r = await api(`contents/${DATA_PATH}`, { method: 'PUT', body: JSON.stringify(body) }); }
-  return r;
-}
-
-/* ── Slučování (záznamy podle id, vyhrává novější úprava) ── */
+function markAll() { S.w.forEach(w => dirty.w.add(w.id)); S.cx.forEach(c => dirty.cx.add(c.id)); dirty.set = true; }
 function mergeState(a, b) {
   const pick = (x, y) => { const m = new Map(); for (const it of [...x, ...y]) { const o = m.get(it.id); if (!o || (it.u || 0) > (o.u || 0)) m.set(it.id, it); } return [...m.values()]; };
   return { v: 1, w: pick(a.w || [], b.w || []), cx: pick(a.cx || [], b.cx || []), set: (a.setU || 0) >= (b.setU || 0) ? a.set : b.set, setU: Math.max(a.setU || 0, b.setU || 0) };
 }
-const sameState = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
-/* ── Ukládání ── */
-let saveT = null, pushT = null, pushing = false, pushAgain = false;
+/* ── Ukládání: změněné záznamy se po chvíli odešlou dávkou; offline je Firestore podrží ── */
+let saveT = null;
 function commit(rerender = false) {
-  clearTimeout(saveT); saveT = setTimeout(saveLocal, 250);
-  ls.set(K_DIRTY, '1');
-  schedulePush();
+  clearTimeout(saveT); saveT = setTimeout(flush, 600);
+  syncStatus('pend');
   if (rerender) render();
 }
-async function saveLocal() { clearTimeout(saveT); ls.set(K_VAULT, JSON.stringify(await encrypt(S))); }
-function schedulePush(delay) {
-  if (!gh()) { syncStatus('local'); return; }
-  syncStatus('pend');
-  clearTimeout(pushT);
-  pushT = setTimeout(push, delay ?? (openWorkout() ? 15000 : 2000));
-}
-async function push() {
-  clearTimeout(pushT);
-  if (!gh()) { syncStatus('local'); return; }
-  if (pushing) { pushAgain = true; return; }
-  pushing = true; syncStatus('busy');
-  try {
-    await saveLocal();
-    for (let i = 0; i < 3; i++) {
-      const rem = await ghRead();
-      if (rem && rem.vault.ct !== ls.get(K_LASTCT)) {
-        if (rem.vault.salt !== b64(SALT)) throw Object.assign(new Error('Heslo bylo změněno na jiném zařízení – přihlas se znovu.'), { relogin: true });
-        const d = await decrypt(rem.vault);
-        const merged = mergeState(S, d);
-        if (!sameState(merged, S)) { S = merged; safeRender(); }
-      }
-      if (rem && ls.get(K_DIRTY) !== '1' && rem.vault.ct === ls.get(K_LASTCT)) { syncStatus('ok'); break; }
-      const v = await encrypt(S);
-      const r = await ghWrite(v, rem && rem.sha);
-      if (r.ok) { ls.set(K_LASTCT, v.ct); ls.set(K_VAULT, JSON.stringify(v)); ls.del(K_DIRTY); syncStatus('ok'); break; }
-      if (r.status === 409 || r.status === 422) continue;
-      throw new Error('GitHub: ' + r.status);
-    }
-  } catch (e) {
-    syncStatus('err', e.message);
-    if (e.relogin) { lockApp(e.message); }
-  } finally {
-    pushing = false;
-    if (pushAgain) { pushAgain = false; schedulePush(500); }
+async function flush() {
+  clearTimeout(saveT);
+  if (!USER || !db || !S) return;
+  const ops = [];
+  for (const id of dirty.w) { const w = S.w.find(x => x.id === id); if (w) ops.push([userDoc().collection('workouts').doc(id), clean(w)]); }
+  for (const id of dirty.cx) { const c = S.cx.find(x => x.id === id); if (c) ops.push([userDoc().collection('cx').doc(id), clean(c)]); }
+  if (dirty.set) ops.push([userDoc(), { set: clean(S.set), setU: S.setU }, true]);
+  dirty.w.clear(); dirty.cx.clear(); dirty.set = false;
+  if (!ops.length) { syncStatus(navigator.onLine ? 'ok' : 'off'); return; }
+  const commits = [];
+  for (let i = 0; i < ops.length; i += 400) {
+    const b = db.batch();
+    ops.slice(i, i + 400).forEach(([ref, data, merge]) => merge ? b.set(ref, data, { merge: true }) : b.set(ref, data));
+    commits.push(b.commit());
   }
+  if (!navigator.onLine) syncStatus('off');
+  try { await Promise.all(commits); syncStatus('ok'); }
+  catch (e) { syncStatus('err', fbErr(e)); }
 }
-async function pull() {
-  if (!gh()) { syncStatus('local'); return; }
-  try {
-    syncStatus('busy');
-    const rem = await ghRead();
-    if (rem && rem.vault.ct !== ls.get(K_LASTCT)) {
-      if (rem.vault.salt !== b64(SALT)) { lockApp('Heslo bylo změněno na jiném zařízení – přihlas se znovu.'); return; }
-      const d = await decrypt(rem.vault);
-      const merged = mergeState(S, d);
-      const changed = !sameState(merged, S);
-      S = merged;
-      if (sameState(S, d)) { ls.set(K_LASTCT, rem.vault.ct); if (!changed) {} }
-      if (changed) safeRender();
-      await saveLocal();
-    }
-    if (ls.get(K_DIRTY) === '1' || !rem) await push(); else syncStatus('ok');
-  } catch (e) { syncStatus('err', e.message); }
+
+/* ── Načítání a živé změny z ostatních zařízení ── */
+function applyChanges(q, arr, pend) {
+  q.docChanges().forEach(ch => {
+    const x = ch.doc.data(), i = arr.findIndex(o => o.id === ch.doc.id);
+    if (ch.type === 'removed') { if (i >= 0) arr.splice(i, 1); return; }
+    if (i < 0) arr.push(x); else if (!pend.has(x.id) && (x.u || 0) >= (arr[i].u || 0)) arr[i] = x;
+  });
+}
+function subscribe() {
+  loaded = false;
+  let got = 0;
+  const once = () => { let d = false; return () => { if (!d) { d = true; if (++got === 3) { loaded = true; afterLoad(); } } }; };
+  const r1 = once(), r2 = once(), r3 = once();
+  const onErr = e => { syncStatus('err', fbErr(e)); if (!loaded) showLock(fbErr(e)); };
+  unsubs.push(userDoc().onSnapshot(d => {
+    const v = d.data() || {};
+    PROFILE = v;
+    if ((v.setU || 0) > (S.setU || 0)) { S.set = { rest: 120, inc: {}, ...v.set }; S.setU = v.setU; }
+    r1(); if (loaded && !d.metadata.hasPendingWrites) safeRender();
+  }, onErr));
+  unsubs.push(userDoc().collection('workouts').onSnapshot(q => { applyChanges(q, S.w, dirty.w); r2(); if (loaded && !q.metadata.hasPendingWrites) safeRender(); }, onErr));
+  unsubs.push(userDoc().collection('cx').onSnapshot(q => { applyChanges(q, S.cx, dirty.cx); r3(); if (loaded && !q.metadata.hasPendingWrites) safeRender(); }, onErr));
+}
+async function afterLoad() { showApp(); await migrateLocal(); }
+// Přenos dat z předchozí verze (šifrovaně v tomto prohlížeči)
+async function migrateLocal() {
+  const old = ['posilovna-vault', 'posilovna-key', 'posilovna-dirty', 'posilovna-lastct'];
+  const v = JSON.parse(ls.get(old[0]) || 'null'), k = JSON.parse(ls.get(old[1]) || 'null');
+  if (!v) return;
+  if (k && window.crypto && crypto.subtle) {
+    try {
+      const key = await crypto.subtle.importKey('raw', unb64(k.k), { name: 'AES-GCM' }, false, ['decrypt']);
+      const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(v.iv) }, key, unb64(v.ct));
+      const d = JSON.parse(new TextDecoder().decode(pt));
+      const n = (d.w || []).filter(w => !w.del).length;
+      S = mergeState(S, d); markAll(); commit(true);
+      if (n) toast(`Přeneseno ${pl(n, 'trénink', 'tréninky', 'tréninků')} z tohoto zařízení do účtu`, 4000);
+    } catch {}
+  }
+  old.forEach(x => ls.del(x));
 }
 function syncStatus(s, msg) {
   const dot = $('#sync-dot'), t = $('#sync-t');
-  dot.className = 'dot ' + ({ ok: 'ok', pend: 'pend', busy: 'pend', err: 'err' }[s] || '');
-  t.textContent = { ok: 'GitHub', pend: 'čeká', busy: 'sync…', err: 'chyba', local: 'offline' }[s] || '';
-  $('#sync').title = msg || { ok: 'Uloženo na GitHubu', pend: 'Změny čekají na odeslání', busy: 'Synchronizuji…', local: 'Ukládá se jen v tomto zařízení' }[s] || '';
-  ui.syncMsg = msg || '';
+  if (s === 'ok' && !navigator.onLine) s = 'off';
+  dot.className = 'dot ' + ({ ok: 'ok', pend: 'pend', off: 'pend', err: 'err' }[s] || '');
+  t.textContent = { ok: 'uloženo', pend: 'ukládám', off: 'offline', err: 'chyba' }[s] || '';
+  $('#sync').title = msg || { ok: 'Uloženo v účtu', pend: 'Ukládám…', off: 'Offline – uloží se, až bude signál' }[s] || '';
+  ui.syncMsg = s === 'err' ? (msg || '') : '';
 }
-function safeRender() { const a = document.activeElement; if (a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA') && $('#main').contains(a)) return; render(); }
+function safeRender() { if (!S || $('#app').classList.contains('hidden')) return; const a = document.activeElement; if (a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.tagName === 'SELECT') && $('#main').contains(a)) return; render(); }
+
+/* ── Účet ── */
+function fbErr(e) {
+  const c = (e && e.code) || '';
+  return ({
+    'auth/invalid-credential': 'Špatné jméno nebo heslo.', 'auth/wrong-password': 'Špatné jméno nebo heslo.', 'auth/invalid-login-credentials': 'Špatné jméno nebo heslo.',
+    'auth/user-not-found': 'Účet s tímto e-mailem neexistuje.', 'auth/too-many-requests': 'Moc pokusů – chvíli počkej, nebo si obnov heslo.',
+    'auth/network-request-failed': 'Nejsi online.', 'auth/email-already-in-use': 'Tenhle e-mail už má účet – zkus obnovit heslo.',
+    'auth/invalid-email': 'Neplatný e-mail.', 'auth/missing-email': 'Zadej e-mail.', 'auth/weak-password': 'Heslo musí mít aspoň 6 znaků.',
+    'auth/unauthorized-domain': 'Tahle doména není ve Firebase povolená (Authentication → Settings → Authorized domains).',
+    'auth/operation-not-allowed': 'Ve Firebase není zapnuté přihlášení e-mailem a heslem.',
+    'auth/configuration-not-found': 'Ve Firebase není zapnutá Authentication.', 'auth/api-key-not-valid.-please-pass-a-valid-api-key.': 'Neplatná konfigurace Firebase (apiKey).',
+    'permission-denied': 'Databáze odmítla přístup – zkontroluj pravidla Firestore.', 'unavailable': 'Nejsi online – uloží se, až bude signál.',
+  })[c] || (e && e.message) || 'Něco se pokazilo.';
+}
+async function emailFor(login) {
+  login = login.trim();
+  if (login.includes('@')) return login;
+  const d = await db.collection('usernames').doc(nameKey(login)).get();
+  if (!d.exists) throw new Error('Uživatel s tímto jménem neexistuje.');
+  return d.data().email;
+}
+async function register(name, email, pw) {
+  const key = nameKey(name);
+  if (!/^[a-z0-9._-]{3,24}$/.test(key)) throw new Error('Jméno: 3–24 znaků – písmena bez diakritiky, číslice, tečka, pomlčka nebo podtržítko.');
+  if ((await db.collection('usernames').doc(key).get()).exists) throw new Error('Tohle jméno už je obsazené.');
+  const cred = await auth.createUserWithEmailAndPassword(email.trim(), pw);
+  try {
+    await db.collection('usernames').doc(key).set({ uid: cred.user.uid, email: email.trim() });
+    await cred.user.updateProfile({ displayName: name.trim() });
+    await db.collection('users').doc(cred.user.uid).set({ name: name.trim(), username: key, created: now() }, { merge: true });
+  } catch (e) { await cred.user.delete().catch(() => {}); throw e; }
+}
+const maskEmail = e => e.replace(/^(.)(.*)(@.*)$/, (_, a, b, c) => a + '•'.repeat(Math.min(6, Math.max(2, b.length))) + c);
 
 /* ═══════════════════════════════════════════════════════════════
    DOPORUČENÍ – dvojitá progrese s ohledem na selhání (RIR)
@@ -1091,17 +1061,14 @@ function mountProg() {
 
 /* ── Nastavení ── */
 function vSet() {
-  const g = gh();
   const custom = S.cx.filter(c => !c.del);
   return `<div class="kicker">Nastavení</div><h1 class="title">Nastavení<span class="d">.</span></h1>
-    <h2 class="sec">Synchronizace</h2>
+    <h2 class="sec">Účet</h2>
     <div class="card stack">
-      <div class="row"><span class="dot ${g ? (ui.syncMsg ? 'err' : 'ok') : ''}"></span><span style="flex:1">${g ? `GitHub · ${esc(g.owner)}/${esc(g.repo)} · větev <span class="mono">${DATA_BRANCH}</span>` : 'Jen v tomto zařízení'}</span></div>
+      <div class="row"><span class="dot ${ui.syncMsg ? 'err' : 'ok'}"></span><span style="flex:1;min-width:0"><b>${esc(PROFILE && PROFILE.name || USER.displayName || '')}</b> <span class="mono muted" style="font-size:11px">${esc(USER.email)}</span></span></div>
       ${ui.syncMsg ? `<div class="err-msg" style="margin:0">${esc(ui.syncMsg)}</div>` : ''}
-      <div class="field" style="margin:0"><label for="s-token">GitHub token</label><input id="s-token" type="password" placeholder="${g ? '•••••••• (uložen)' : 'github_pat_…'}" autocomplete="off">
-      <div class="help">Sdílený s deckem vladaweb. <a href="${tokenUrl()}" target="_blank" rel="noopener">Vytvořit nový ↗</a> (Contents: Read and write)</div></div>
-      <div class="row"><button class="btn sm wide" data-act="savetoken">Uložit token</button><button class="btn sm wide" data-act="syncnow" ${g ? '' : 'disabled'}>Synchronizovat teď</button></div>
-      <p class="note">Data jsou na GitHubu zašifrovaná tvým heslem (AES‑256) – v repozitáři je vidět jen nečitelný blob.</p>
+      <div class="row"><button class="btn sm wide" data-act="pwreset">Změnit heslo e-mailem</button><button class="btn sm danger wide" data-act="logout">Odhlásit</button></div>
+      <p class="note">Data se ukládají do tvého účtu a fungují i bez signálu – odešlou se, jakmile budeš online. Zařízení si přihlášení pamatuje.</p>
     </div>
     <h2 class="sec">Trénink</h2>
     <div class="card stack">
@@ -1121,9 +1088,6 @@ function vSet() {
     <div class="card stack">
       <div class="row"><button class="btn sm wide" data-act="export">Export JSON</button><button class="btn sm wide" data-act="import">Import JSON</button></div>
       <input type="file" id="imp" accept="application/json,.json" hidden>
-      <div class="field" style="margin:0"><label for="s-pw">Změnit heslo</label><input id="s-pw" type="password" autocomplete="new-password" placeholder="Nové heslo (min. 6 znaků)"></div>
-      <button class="btn sm" data-act="chpw">Změnit heslo</button>
-      <button class="btn sm danger" data-act="logout">Zamknout a zapomenout na tomto zařízení</button>
     </div>
     <p class="note" style="margin-top:16px;text-align:center"><a href="../index.html">← zpět na rozcestník</a></p>`;
 }
@@ -1159,7 +1123,7 @@ async function keepAwake() { try { if (openWorkout() && !document.hidden && 'wak
    ═══════════════════════════════════════════════════════════════ */
 function startWorkout(exId) {
   const w = { id: uid(), d: localISO(), open: true, it: [], u: now() };
-  S.w.push(w);
+  S.w.push(w); touch(w);
   if (exId) w.it.push({ ex: exId, s: newSetsFor(getEx(exId), w) });
   view = 'train'; commit(true); keepAwake(); scrollTo(0, 0);
 }
@@ -1229,44 +1193,24 @@ document.addEventListener('click', async e => {
       if (w) { toast('Nejdřív dokonči rozběhnutý trénink.'); return; }
       const x = S.w.find(x => x.id === b.dataset.id); x.open = true; x.it.forEach(i => i.s.forEach(s => s.ok = true)); touch(x); view = 'train'; commit(true); scrollTo(0, 0); break;
     }
-    case 'savetoken': {
-      const t = $('#s-token').value.trim();
-      if (!t) { toast('Vlož token.'); return; }
-      try {
-        const r = await fetch('https://api.github.com/repos/Vladaczech/vladaweb', { headers: { Authorization: 'Bearer ' + t } });
-        if (!r.ok) throw new Error('Token je neplatný nebo nemá přístup k vladaweb.');
-        const perms = (await r.json()).permissions; if (perms && !perms.push) throw new Error('Token nemá právo zapisovat (Contents: Read and write).');
-        const old = (() => { try { return JSON.parse(ls.get(K_GH) || 'null'); } catch { return null; } })() || {};
-        ls.set(K_GH, JSON.stringify({ ...old, token: t, owner: old.owner || 'Vladaczech', repo: old.repo || 'vladaweb' }));
-        ui.syncMsg = ''; toast('Token uložen'); await pull(); render();
-      } catch (er) { toast(esc(er.message), 4000); }
-      break;
-    }
-    case 'syncnow': await pull(); render(); break;
     case 'addcx': {
       const n = $('#c-name').value.trim(); if (!n) { toast('Zadej název.'); return; }
       const lo = Math.max(1, num($('#c-lo').value) || 8), hi = Math.max(lo, num($('#c-hi').value) || 12);
-      S.cx.push({ id: 'c_' + uid(), n, g: $('#c-g').value, eq: $('#c-eq').value, lo, hi, m: [], m2: [], custom: true, u: now() });
+      const id = 'c_' + uid(); S.cx.push({ id, n, g: $('#c-g').value, eq: $('#c-eq').value, lo, hi, m: [], m2: [], custom: true, u: now() }); dirty.cx.add(id);
       commit(true); toast('Cvik přidán'); break;
     }
-    case 'delcx': { const c = S.cx.find(c => c.id === b.dataset.ex); if (c && confirm(`Smazat cvik ${c.n}? Záznamy v historii zůstanou.`)) { c.del = true; c.u = now(); closeSheet(); commit(true); } break; }
+    case 'delcx': { const c = S.cx.find(c => c.id === b.dataset.ex); if (c && confirm(`Smazat cvik ${c.n}? Záznamy v historii zůstanou.`)) { c.del = true; c.u = now(); dirty.cx.add(c.id); closeSheet(); commit(true); } break; }
     case 'export': {
       const blob = new Blob([JSON.stringify(S, null, 1)], { type: 'application/json' });
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `posilovna-${localISO().slice(0, 10)}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
       break;
     }
     case 'import': $('#imp').click(); break;
-    case 'chpw': {
-      const pw = $('#s-pw').value;
-      if (pw.length < 6) { toast('Heslo musí mít aspoň 6 znaků.'); return; }
-      if (!confirm('Změnit heslo? Na ostatních zařízeních se pak budeš muset přihlásit novým heslem.')) return;
-      if (gh()) await push();
-      SALT = crypto.getRandomValues(new Uint8Array(16)); KEY = await deriveKey(pw, SALT);
-      if (ls.get(K_KEY)) await rememberKey();
-      ls.set(K_DIRTY, '1'); await saveLocal(); if (gh()) await push();
-      $('#s-pw').value = ''; toast('Heslo změněno'); break;
-    }
-    case 'logout': if (confirm('Zamknout? Na tomto zařízení se pak přihlásíš znovu heslem.' + (ls.get(K_DIRTY) === '1' && gh() ? ' Neodeslané změny se nejdřív zkusí odeslat.' : ''))) { if (ls.get(K_DIRTY) === '1' && gh()) await push(); ls.del(K_KEY); lockApp(); } break;
+    case 'pwreset':
+      try { await auth.sendPasswordResetEmail(USER.email); toast(`Odkaz na změnu hesla odešel na ${esc(maskEmail(USER.email))}`, 4500); }
+      catch (er) { toast(esc(fbErr(er)), 4000); }
+      break;
+    case 'logout': if (confirm('Odhlásit se z tohoto zařízení?')) { await flush(); await auth.signOut(); } break;
   }
 });
 document.addEventListener('input', e => {
@@ -1285,13 +1229,13 @@ document.addEventListener('change', e => {
   const f = e.target.dataset.f; if (!f) return;
   if (f === 'wdate') { const w = openWorkout(); if (w && e.target.value) { w.d = e.target.value; touch(w); commit(); } }
   else if (f === 'progex') { ui.progEx = e.target.value; render(); }
-  else if (f === 'rest') { S.set.rest = Math.max(0, Math.round(num(e.target.value) || 0)); S.setU = now(); commit(); toast('Uloženo'); }
-  else if (f === 'inc') { const v = num(e.target.value); if (v > 0) { S.set.inc[e.target.dataset.k] = v; S.setU = now(); commit(); toast('Uloženo'); } }
+  else if (f === 'rest') { S.set.rest = Math.max(0, Math.round(num(e.target.value) || 0)); S.setU = now(); dirty.set = true; commit(); toast('Uloženo'); }
+  else if (f === 'inc') { const v = num(e.target.value); if (v > 0) { S.set.inc[e.target.dataset.k] = v; S.setU = now(); dirty.set = true; commit(); toast('Uloženo'); } }
 });
 document.addEventListener('change', async e => {
   if (e.target.id !== 'imp') return;
   const f = e.target.files[0]; if (!f) return;
-  try { const d = JSON.parse(await f.text()); if (!Array.isArray(d.w)) throw 0; S = mergeState(S, d); commit(true); toast('Importováno a sloučeno'); }
+  try { const d = JSON.parse(await f.text()); if (!Array.isArray(d.w)) throw 0; S = mergeState(S, d); markAll(); commit(true); toast('Importováno a sloučeno'); }
   catch { toast('Soubor není platný export.'); }
   e.target.value = '';
 });
@@ -1303,86 +1247,144 @@ $('#sheet').addEventListener('touchend', e => { if (sy0 != null && e.changedTouc
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
 document.addEventListener('visibilitychange', () => {
   if (!S) return;
-  if (document.hidden) { saveLocal(); if (ls.get(K_DIRTY) === '1' && gh()) push(); }
-  else { keepAwake(); pull(); tickTimers(); }
+  if (document.hidden) flush();
+  else { keepAwake(); tickTimers(); }
 });
+addEventListener('online', () => { if (S) { syncStatus('pend'); flush(); } });
+addEventListener('offline', () => { if (S) syncStatus('off'); });
 
 /* ═══════════════════════════════════════════════════════════════
    PŘIHLÁŠENÍ
    ═══════════════════════════════════════════════════════════════ */
-let newVault = false;
+const RULES = `rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{uid}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+    match /usernames/{name} {
+      allow get: if true;
+      allow list, update, delete: if false;
+      allow create: if request.auth != null
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.email == request.auth.token.email;
+    }
+  }
+}`;
+let authMode = 'login';
+function authHtml(msg = '', ok = '') {
+  const err = `<div class="err-msg" id="a-err">${esc(msg)}</div>${ok ? `<div class="ok-msg">${ok}</div>` : ''}`;
+  if (!fbConfig()) return `<h2 class="sec" style="margin-top:0">Jednorázové nastavení</h2>
+    <ol class="steps">
+      <li>Na <a href="https://console.firebase.google.com/" target="_blank" rel="noopener">console.firebase.google.com</a> založ projekt (Analytics nepotřebuješ).</li>
+      <li><b>Build → Authentication → Get started</b> → zapni <b>Email/Password</b>.</li>
+      <li>V <b>Authentication → Settings → Authorized domains</b> přidej <span class="mono">vladaczech.github.io</span>.</li>
+      <li><b>Build → Firestore Database → Create database</b> (lokace eur3) a v záložce <b>Rules</b> vlož pravidla níže a dej Publish.</li>
+      <li><b>Project settings → Your apps → Web (&lt;/&gt;)</b> → zaregistruj aplikaci a zkopíruj <span class="mono">firebaseConfig</span> sem.</li>
+    </ol>
+    <pre class="code" id="rules">${esc(RULES)}</pre>
+    <button class="btn sm" type="button" data-auth="copyrules" style="margin:8px 0 18px">Kopírovat pravidla</button>
+    <form id="auth-form" data-mode="setup">
+      <div class="field"><label for="a-cfg">firebaseConfig</label><textarea id="a-cfg" placeholder="const firebaseConfig = { apiKey: &quot;…&quot;, authDomain: &quot;…&quot;, projectId: &quot;…&quot;, … };"></textarea></div>
+      <button class="btn p big wide" type="submit">Uložit a pokračovat</button>${err}
+    </form>`;
+  if (authMode === 'register') return `<form id="auth-form" data-mode="register" autocomplete="on">
+      <div class="field"><label for="a-user">Jméno</label><input id="a-user" name="username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="např. vlada" required></div>
+      <div class="field"><label for="a-email">E-mail</label><input id="a-email" name="email" type="email" autocomplete="email" placeholder="pro obnovu hesla" required></div>
+      <div class="field"><label for="a-pw">Heslo</label><input id="a-pw" name="password" type="password" autocomplete="new-password" minlength="6" placeholder="aspoň 6 znaků" required></div>
+      <div class="field"><label for="a-pw2">Heslo znovu</label><input id="a-pw2" type="password" autocomplete="new-password" minlength="6" required></div>
+      <button class="btn p big wide" type="submit">Vytvořit účet</button>${err}
+      <div class="auth-links"><button type="button" class="btn ghost sm" data-auth="login">← Mám účet</button></div>
+    </form>`;
+  if (authMode === 'reset') return `<form id="auth-form" data-mode="reset" autocomplete="on">
+      <p class="note" style="margin-bottom:12px">Pošleme ti e-mail s odkazem, přes který si nastavíš nové heslo.</p>
+      <div class="field"><label for="a-user">Jméno nebo e-mail</label><input id="a-user" name="username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" required></div>
+      <button class="btn p big wide" type="submit">Poslat odkaz</button>${err}
+      <div class="auth-links"><button type="button" class="btn ghost sm" data-auth="login">← Zpět na přihlášení</button></div>
+    </form>`;
+  return `<form id="auth-form" data-mode="login" autocomplete="on">
+      <div class="field"><label for="a-user">Jméno</label><input id="a-user" name="username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="jméno nebo e-mail" required></div>
+      <div class="field"><label for="a-pw">Heslo</label><input id="a-pw" name="password" type="password" autocomplete="current-password" required></div>
+      <label class="check"><input type="checkbox" id="a-rem" checked> Zůstat přihlášen</label>
+      <button class="btn p big wide" type="submit">Přihlásit</button>${err}
+      <div class="auth-links"><button type="button" class="btn ghost sm" data-auth="reset">Zapomenuté heslo?</button><button type="button" class="btn ghost sm" data-auth="register">Vytvořit účet</button></div>
+    </form>`;
+}
+function renderAuth(msg, ok) { $('#auth').innerHTML = authHtml(msg, ok); }
 function showLock(msg = '') {
   $('#app').classList.add('hidden'); $('#nav').classList.add('hidden'); $('#rest').classList.add('hidden');
   $('#lock').classList.remove('hidden');
-  $('#f-token').classList.toggle('hidden', !!gh());
-  $('#l-token-link').href = tokenUrl();
-  $('#l-err').textContent = msg;
-  $('#lock-fig').innerHTML = figSvg(EX.find(e => e.id === 'squat'));
-  setTimeout(() => $('#l-pw').focus(), 50);
+  if (!$('#lock-fig').firstChild) $('#lock-fig').innerHTML = figSvg(EX.find(e => e.id === 'squat'));
+  renderAuth(msg);
 }
-function lockApp(msg) { S = null; KEY = null; closeSheet(); showLock(msg); }
+function showLoading(t = 'Načítám…') { showLock(); $('#auth').innerHTML = `<p class="mono muted" style="font-size:12px;letter-spacing:.1em">${esc(t)}</p>`; }
 function showApp() {
   $('#lock').classList.add('hidden'); $('#app').classList.remove('hidden'); $('#nav').classList.remove('hidden');
-  syncStatus(gh() ? (ls.get(K_DIRTY) === '1' ? 'pend' : 'ok') : 'local');
+  syncStatus(navigator.onLine ? 'ok' : 'off');
   render(); keepAwake();
 }
-$('#lock-form').addEventListener('submit', async e => {
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-auth]'); if (!b) return;
+  if (b.dataset.auth === 'copyrules') { navigator.clipboard?.writeText(RULES).then(() => toast('Pravidla zkopírována')).catch(() => {}); return; }
+  const u = $('#a-user') && $('#a-user').value;
+  authMode = b.dataset.auth; renderAuth();
+  if (u && $('#a-user')) $('#a-user').value = u;
+  $('#auth input')?.focus();
+});
+document.addEventListener('submit', async e => {
+  if (e.target.id !== 'auth-form') return;
   e.preventDefault();
-  const err = $('#l-err'), btn = $('#l-go');
-  const pw = $('#l-pw').value, tok = $('#l-token').value.trim();
-  if (!pw) { err.textContent = 'Zadej heslo.'; return; }
-  btn.disabled = true; btn.textContent = 'Odemykám…'; err.textContent = '';
+  const f = e.target, mode = f.dataset.mode, btn = $('button[type=submit]', f), err = $('#a-err');
+  const label = btn.textContent; btn.disabled = true; btn.textContent = '…'; err.textContent = '';
   try {
-    if (tok) {
-      const r = await fetch('https://api.github.com/repos/Vladaczech/vladaweb', { headers: { Authorization: 'Bearer ' + tok } });
-      if (!r.ok) throw new Error('Token je neplatný nebo nemá přístup k repozitáři vladaweb.');
-      const old = (() => { try { return JSON.parse(ls.get(K_GH) || 'null'); } catch { return null; } })() || {};
-      ls.set(K_GH, JSON.stringify({ ...old, token: tok, owner: old.owner || 'Vladaczech', repo: old.repo || 'vladaweb' }));
+    if (mode === 'setup') {
+      const txt = $('#a-cfg').value, cfg = {};
+      for (const m of txt.matchAll(/["']?(\w+)["']?\s*:\s*["']([^"']+)["']/g)) cfg[m[1]] = m[2];
+      if (!cfg.apiKey || !cfg.projectId || !cfg.appId) throw new Error('V textu chybí apiKey, projectId nebo appId – zkopíruj celý firebaseConfig.');
+      ls.set(K_FB, JSON.stringify(cfg)); location.reload(); return;
     }
-    let remote = null;
-    if (gh()) { try { remote = await ghRead(); } catch (er) { if (er.auth) throw er; } }
-    const local = JSON.parse(ls.get(K_VAULT) || 'null');
-    const vault = remote ? remote.vault : local;
-    if (!vault) {
-      if (!newVault) { newVault = true; $('#f-pw2').classList.remove('hidden'); $('#l-pw2').focus(); throw new Error('Nový deník – potvrď heslo.'); }
-      if (pw.length < 6) throw new Error('Heslo musí mít aspoň 6 znaků.');
-      if (pw !== $('#l-pw2').value) throw new Error('Hesla se neshodují.');
-      SALT = crypto.getRandomValues(new Uint8Array(16)); KEY = await deriveKey(pw, SALT);
-      S = blank(); ls.set(K_DIRTY, '1');
-    } else {
-      SALT = unb64(vault.salt); KEY = await deriveKey(pw, SALT);
-      try { S = await decrypt(vault); } catch { throw new Error('Špatné heslo.'); }
-      if (remote) {
-        ls.set(K_LASTCT, remote.vault.ct);
-        if (local && local.ct !== remote.vault.ct && ls.get(K_DIRTY) === '1') {
-          try { const lk = local.salt === vault.salt ? KEY : await deriveKey(pw, unb64(local.salt)); S = mergeState(S, await decrypt(local, lk)); } catch {}
-        }
-      }
+    if (mode === 'login') {
+      await auth.setPersistence($('#a-rem').checked ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION);
+      const email = await emailFor($('#a-user').value);
+      await auth.signInWithEmailAndPassword(email, $('#a-pw').value);
+      showLoading();
+    } else if (mode === 'register') {
+      if ($('#a-pw').value !== $('#a-pw2').value) throw new Error('Hesla se neshodují.');
+      await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+      await register($('#a-user').value, $('#a-email').value, $('#a-pw').value);
+      showLoading();
+    } else if (mode === 'reset') {
+      const email = await emailFor($('#a-user').value);
+      await auth.sendPasswordResetEmail(email);
+      renderAuth('', `Odkaz na obnovu hesla odešel na <b>${esc(maskEmail(email))}</b>. Zkontroluj i spam, pak se přihlas novým heslem.`);
+      return;
     }
-    await saveLocal();
-    if ($('#l-remember').checked) await rememberKey(); else ls.del(K_KEY);
-    $('#l-pw').value = ''; $('#l-pw2').value = ''; $('#l-token').value = ''; newVault = false; $('#f-pw2').classList.add('hidden');
-    showApp();
-    if (gh() && (ls.get(K_DIRTY) === '1' || !remote)) push();
-  } catch (er) { err.textContent = er.message; }
-  finally { btn.disabled = false; btn.textContent = 'Odemknout'; }
+  } catch (er) {
+    const m = er.code ? fbErr(er) : er.message;
+    if ($('#a-err')) $('#a-err').textContent = m; else renderAuth(m);
+  } finally { if (btn.isConnected) { btn.disabled = false; btn.textContent = label; } }
 });
 
 /* ═══════════════════════════════════════════════════════════════
    START
    ═══════════════════════════════════════════════════════════════ */
-(async function init() {
+(function init() {
   requestAnimationFrame(animLoop);
-  if (!window.crypto || !crypto.subtle) { showLock('Prohlížeč nepodporuje šifrování – otevři stránku přes https.'); return; }
+  const cfg = fbConfig();
+  if (!window.firebase) { showLock('Nepodařilo se načíst Firebase – jsi online?'); return; }
+  if (!cfg) { showLock(); return; }
   try {
-    const local = JSON.parse(ls.get(K_VAULT) || 'null');
-    if (local && await loadRememberedKey() && b64(SALT) === local.salt) {
-      S = await decrypt(local);
-      S.set = { rest: 120, inc: {}, ...S.set };
-      showApp(); pull(); return;
-    }
-  } catch {}
-  showLock();
+    firebase.initializeApp(cfg);
+    auth = firebase.auth(); auth.languageCode = 'cs';
+    db = firebase.firestore();
+    db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+  } catch (e) { ls.del(K_FB); showLock('Chybná konfigurace Firebase: ' + e.message); return; }
+  showLoading();
+  auth.onAuthStateChanged(u => {
+    unsubs.forEach(f => f()); unsubs = [];
+    if (u) { USER = u; S = blank(); subscribe(); }
+    else { USER = null; PROFILE = null; S = null; closeSheet(); restEnd = 0; authMode = 'login'; showLock(); }
+  });
 })();
 </script>
 </body>
