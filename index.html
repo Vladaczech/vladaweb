@@ -525,10 +525,14 @@ function idbDel(key) {
 
 /* ── Úložiště (s nouzovým in-memory fallbackem) ────── */
 let memStore = null;
-function save() {
+// Uloží deck jen do tohoto prohlížeče (bez nahrání na GitHub)
+function saveLocal() {
   const clean = DECK.map(t => ({ ...t, projekty: t.projekty.map(p => { const { html, ...rest } = p; return rest; }) }));
   try { localStorage.setItem(KEY, JSON.stringify(clean)); }
   catch (e) { memStore = JSON.parse(JSON.stringify(clean)); }
+}
+function save() {
+  saveLocal();
   scheduleSyncDeck();
 }
 function load() {
@@ -537,7 +541,7 @@ function load() {
 }
 
 let DECK = load();
-if (!DECK) { DECK = JSON.parse(JSON.stringify(SEED)); save(); }
+if (!DECK) { DECK = JSON.parse(JSON.stringify(SEED)); saveLocal(); }
 let editMode = false;
 const uid = () => 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 let blobUrls = new Map();
@@ -811,8 +815,21 @@ document.getElementById('gh-save').addEventListener('click', async () => {
     ghCfg = { token, owner, repo };
     localStorage.setItem(GH_KEY, JSON.stringify(ghCfg));
     ghLabel();
-    document.getElementById('gh-err').textContent = 'Synchronizuji deck…';
-    await ghSyncDeck();
+    document.getElementById('gh-err').textContent = 'Načítám aktuální deck…';
+    // Nejdřív stáhnout to, co je na GitHubu. Nahrávat jen pokud tam deck ještě není
+    // nebo pokud tu jsou projekty uložené jen v tomto prohlížeči.
+    const fr = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/deck-data.json`, { headers: { 'Authorization': `Bearer ${token}` } });
+    if (fr.status === 404) {
+      await ghSyncDeck();
+    } else if (fr.ok) {
+      const f = await fr.json();
+      deckSha = f.sha;
+      const remote = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(f.content.replace(/\s/g, '')), c => c.charCodeAt(0))));
+      const added = adoptRemoteDeck(remote);
+      if (added) await ghSyncDeck();
+    } else {
+      throw new Error('Deck se nepodařilo načíst (HTTP ' + fr.status + ').');
+    }
     close('ov-settings');
   } catch (e) { document.getElementById('gh-err').textContent = e.message; }
 });
@@ -868,13 +885,41 @@ function scheduleSyncDeck() {
   syncTimer = setTimeout(ghSyncDeck, 800);
 }
 
+// Převezme deck z webu jako hlavní zdroj. Projekty, které existují jen v tomto
+// prohlížeči (nahrané HTML uložené v IndexedDB), zachová. Vrací jejich počet.
+function adoptRemoteDeck(remote) {
+  const known = new Set();
+  remote.forEach(t => t.projekty.forEach(p => known.add(p.odkaz || p.nazev)));
+  let added = 0;
+  for (const lt of DECK) {
+    const localOnly = lt.projekty.filter(p => p.htmlKey && !known.has(p.odkaz || p.nazev));
+    if (!localOnly.length) continue;
+    let rt = remote.find(t => t.id === lt.id);
+    if (!rt) { rt = { ...lt, projekty: [] }; remote.push(rt); }
+    rt.projekty.push(...localOnly); added += localOnly.length;
+  }
+  DECK = remote;
+  saveLocal();
+  render();
+  return added;
+}
+
+async function attachLocalHtml() {
+  const map = await idbGetAll().catch(() => ({}));
+  DECK.forEach(t => t.projekty.forEach(p => {
+    if (p.htmlKey && map[p.htmlKey]) p.html = map[p.htmlKey];
+  }));
+}
+
 async function pollDeck() {
-  if (!ghOk()) return;
+  if (editMode) return;
   try {
     const data = await readDeckFromPages();
-    if (!data || JSON.stringify(data) === JSON.stringify(DECK)) return;
-    DECK = data;
-    try { localStorage.setItem(KEY, JSON.stringify(DECK)); } catch (_) {}
+    if (!data) return;
+    const strip = d => JSON.stringify(d.map(t => ({ ...t, projekty: t.projekty.map(({ html, ...rest }) => rest) })));
+    if (strip(data) === strip(DECK)) return;
+    adoptRemoteDeck(data);
+    await attachLocalHtml();
     render();
   } catch {}
 }
@@ -1099,32 +1144,28 @@ async function getFileSha() {
 
 async function init() {
   await idbOpen().catch(() => {});
-  if (ghOk()) {
-    setStatus('Načítám…');
-    try {
-      const data = await readDeckFromPages();
-      if (data) {
-        DECK = data;
-        try { localStorage.setItem(KEY, JSON.stringify(DECK)); } catch (_) {}
-        // Fetch SHA in background for future writes
-        getFileSha().then(sha => { if (sha) deckSha = sha; });
-        setStatus('Systém online');
-      } else {
-        // deck-data.json not on Pages yet — create it
-        setStatus('Vytvářím zálohu…');
-        await ghSyncDeck();
-      }
-    } catch (e) {
-      setStatus('Chyba: ' + e.message);
+  render(); // hned ukázat uloženou kopii, aktuální deck se doplní po stažení
+  setStatus('Načítám…');
+  try {
+    // deck-data.json je veřejný soubor na stejné doméně, token ke čtení není potřeba
+    const data = await readDeckFromPages();
+    if (data) {
+      adoptRemoteDeck(data);
+      if (ghOk()) getFileSha().then(sha => { if (sha) deckSha = sha; });
+      setStatus('Systém online');
+    } else if (ghOk()) {
+      // deck-data.json na Pages ještě není — vytvořit ho
+      setStatus('Vytvářím zálohu…');
+      await ghSyncDeck();
+    } else {
+      setStatus('Offline kopie');
     }
-    setInterval(pollDeck, 30000);
-  } else {
-    const map = await idbGetAll().catch(() => ({}));
-    DECK.forEach(t => t.projekty.forEach(p => {
-      if (p.htmlKey && map[p.htmlKey]) p.html = map[p.htmlKey];
-    }));
+  } catch (e) {
+    setStatus(ghOk() ? 'Chyba: ' + e.message : 'Offline kopie');
   }
+  await attachLocalHtml();
   render();
+  setInterval(pollDeck, 30000);
 }
 init();
 </script>
