@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f3ede2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#15130f" media="(prefers-color-scheme: dark)">
+<meta name="description" content="Výheň – slovní pyramida. Obsaď políčka tím, že dřív než soupeř najdeš tajné slovo podle teploty tipů. Propoj tři strany a vyhraj.">
+<title>Výheň — slovní pyramida</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --bg:#f3ede2;--surface:#fbf8f2;--surface2:#ece4d5;
+  --ink:#2a241c;--ink2:#5b5144;--muted:#83786a;--line:#ddd2bf;
+  --accent:#bf4a2a;--accent-ink:#fff;
+  --a:#d0572b;--a-wash:rgba(208,87,43,.13);--a-ink:#fff;
+  --b:#2c6e9e;--b-wash:rgba(44,110,158,.13);--b-ink:#fff;
+  --hex:#fbf8f2;--hex-line:#cbbfa9;--ice:#b9c9d4;--ice-line:#7e97a8;
+  --shadow:0 18px 40px -22px rgba(60,40,20,.45);
+  --r:16px;
+  --display:"Fraunces",Georgia,serif;
+  --sans:"Instrument Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#15130f;--surface:#1f1c17;--surface2:#29251e;
+    --ink:#efe7d8;--ink2:#c9bfae;--muted:#9a8f7e;--line:#38322a;
+    --accent:#e57a55;--accent-ink:#1a120d;
+    --a:#e9784b;--a-wash:rgba(233,120,75,.16);--a-ink:#1a120d;
+    --b:#5fa6dc;--b-wash:rgba(95,166,220,.16);--b-ink:#0d1620;
+    --hex:#26221c;--hex-line:#4a4237;--ice:#3d4b56;--ice-line:#6f8799;
+    --shadow:0 18px 40px -22px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#15130f;--surface:#1f1c17;--surface2:#29251e;
+  --ink:#efe7d8;--ink2:#c9bfae;--muted:#9a8f7e;--line:#38322a;
+  --accent:#e57a55;--accent-ink:#1a120d;
+  --a:#e9784b;--a-wash:rgba(233,120,75,.16);--a-ink:#1a120d;
+  --b:#5fa6dc;--b-wash:rgba(95,166,220,.16);--b-ink:#0d1620;
+  --hex:#26221c;--hex-line:#4a4237;--ice:#3d4b56;--ice-line:#6f8799;
+  --shadow:0 18px 40px -22px rgba(0,0,0,.8);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);-webkit-font-smoothing:antialiased;min-height:100vh}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hidden{display:none!important}
+
+.top{display:flex;align-items:center;gap:12px;padding:10px 16px;padding-top:max(10px,env(safe-area-inset-top));border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:20}
+.brand{display:flex;align-items:center;gap:8px;font-family:var(--display);font-weight:700;font-size:20px;letter-spacing:-.01em;background:none;border:0;padding:0;color:var(--ink)}
+.brand svg{width:22px;height:22px;color:var(--accent)}
+.spacer{flex:1}
+.back{font-size:13px;color:var(--muted);text-decoration:none;white-space:nowrap}
+.back:hover{color:var(--ink)}
+.iconbtn{height:34px;min-width:34px;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-size:13px;color:var(--ink2)}
+.iconbtn:hover{color:var(--ink)}
+
+.stage{display:grid;grid-template-columns:minmax(0,1fr) minmax(330px,430px);gap:0;min-height:calc(100vh - 56px)}
+.boardwrap{padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;min-width:0}
+.side{border-left:1px solid var(--line);padding:16px;display:flex;flex-direction:column;gap:14px;min-width:0}
+
+/* scoreboard */
+.score{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:640px}
+.team{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:9px 12px;display:flex;align-items:center;gap:10px;transition:box-shadow .2s,border-color .2s}
+.team .dot{width:14px;height:14px;border-radius:4px;flex:none;transform:rotate(30deg);clip-path:polygon(25% 5%,75% 5%,100% 50%,75% 95%,25% 95%,0 50%)}
+.team.a .dot{background:var(--a)}.team.b .dot{background:var(--b)}
+.team .nm{font-weight:600;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.team .sub{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.team .cnt{margin-left:auto;font-family:var(--display);font-weight:700;font-size:22px;font-variant-numeric:tabular-nums}
+.team.on.a{border-color:var(--a);box-shadow:0 0 0 3px var(--a-wash)}
+.team.on.b{border-color:var(--b);box-shadow:0 0 0 3px var(--b-wash)}
+.team>div{min-width:0}
+
+/* board */
+#board{width:100%;max-width:640px;height:auto;display:block;user-select:none;-webkit-user-select:none}
+.cell polygon{fill:var(--hex);stroke:var(--hex-line);stroke-width:.05;transition:fill .25s}
+.cell .num{font-family:var(--display);font-weight:700;font-size:.42px;fill:var(--ink);text-anchor:middle;pointer-events:none}
+.cell .cat{font-size:.17px;fill:var(--muted);text-anchor:middle;pointer-events:none;font-weight:600;letter-spacing:.01px}
+.cell .dots circle{fill:var(--muted)}
+.cell.pick{cursor:pointer}
+.cell.pick:hover polygon{stroke:var(--ink);stroke-width:.07}
+.cell.dim{opacity:.55}
+.cell.own0 polygon{fill:var(--a);stroke:var(--a)}
+.cell.own1 polygon{fill:var(--b);stroke:var(--b)}
+.cell.own0 .num{fill:var(--a-ink)}.cell.own1 .num{fill:var(--b-ink)}
+.cell.own0 .cat,.cell.own1 .cat{fill:currentColor;opacity:.85}
+.cell.own0 text.cat{fill:var(--a-ink)}.cell.own1 text.cat{fill:var(--b-ink)}
+.cell.own0 .dots circle{fill:var(--a-ink)}.cell.own1 .dots circle{fill:var(--b-ink)}
+.cell.frozen polygon{fill:var(--ice);stroke:var(--ice-line);stroke-dasharray:.12 .08}
+.cell.active polygon{stroke:var(--ink);stroke-width:.1;animation:pulse 1.2s ease-in-out infinite}
+.cell.winpath polygon{stroke:var(--ink);stroke-width:.11}
+@keyframes pulse{50%{stroke-opacity:.35}}
+.edge{fill:none;stroke-width:.09;stroke-linecap:round;opacity:.5;stroke:var(--muted)}
+.legend{font-size:12px;color:var(--muted);text-align:center;max-width:560px}
+
+/* panel */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.kicker{font-size:12px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.headline{font-family:var(--display);font-weight:700;font-size:22px;line-height:1.2;margin:4px 0 6px;letter-spacing:-.01em}
+.headline .a{color:var(--a)}.headline .b{color:var(--b)}
+.p{margin:0;color:var(--ink2);font-size:14px}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tag{font-size:12px;padding:3px 9px;border-radius:999px;background:var(--surface2);color:var(--ink2);white-space:nowrap}
+.tag b{color:var(--ink)}
+.tag.a{background:var(--a-wash);color:var(--a)}.tag.b{background:var(--b-wash);color:var(--b)}
+.tag.a b{color:var(--a)}.tag.b b{color:var(--b)}
+
+.guessbox{position:relative}
+.inrow{display:flex;gap:8px}
+.inrow input{flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:11px 13px;font-size:16px;outline:none}
+.inrow input:focus{border-color:var(--accent)}
+.btn{border:0;border-radius:12px;padding:11px 16px;font-weight:600;background:var(--accent);color:var(--accent-ink);font-size:15px;white-space:nowrap}
+.btn.ga{background:var(--a);color:var(--a-ink)}.btn.gb{background:var(--b);color:var(--b-ink)}
+.btn.ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn:active{transform:scale(.98)}
+.sugg{position:absolute;left:0;right:0;top:calc(100% + 4px);background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;z-index:30}
+.sugg button{display:block;width:100%;text-align:left;border:0;background:none;padding:8px 13px;font-size:15px}
+.sugg button[aria-selected="true"],.sugg button:hover{background:var(--surface2)}
+.err{font-size:13px;color:var(--accent);min-height:19px;margin-top:4px}
+.turnline{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink2);margin-bottom:8px}
+.turnline .who{font-weight:600}
+.turnline .who.a{color:var(--a)}.turnline .who.b{color:var(--b)}
+.thinking::after{content:"";display:inline-block;width:1.2em;text-align:left;animation:dots 1s steps(4) infinite}
+@keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+
+.glist{display:flex;flex-direction:column;gap:5px}
+.g{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px 10px;padding:7px 10px;border-radius:10px;background:var(--bg);border:1px solid transparent;position:relative;overflow:hidden}
+.g .bar{position:absolute;left:0;top:0;bottom:0;opacity:.18;border-radius:10px 0 0 10px}
+.g>*:not(.bar){position:relative}
+.g .sd{width:10px;height:10px;border-radius:3px}
+.g.a .sd{background:var(--a)}.g.b .sd{background:var(--b)}
+.g .w{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.g .w small{font-weight:400;color:var(--muted);font-size:12px;margin-left:6px}
+.g .rk{font-variant-numeric:tabular-nums;font-size:13px;text-align:right;white-space:nowrap}
+.g .rk b{font-size:15px}
+.g.last{border-color:var(--ink2)}
+.g.win{border-color:var(--ink);background:var(--surface2)}
+.lastlbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:4px 0 2px}
+.empty{font-size:13px;color:var(--muted);text-align:center;padding:10px}
+
+.result{border-radius:var(--r);padding:14px;border:1px solid var(--line);background:var(--surface)}
+.result.a{background:var(--a-wash);border-color:var(--a)}
+.result.b{background:var(--b-wash);border-color:var(--b)}
+.result .headline{font-size:20px}
+.result .btn{margin-top:10px;width:100%}
+
+.howto ol{margin:6px 0 0;padding-left:20px;color:var(--ink2);font-size:14px}
+.howto li{margin-bottom:4px}
+
+/* overlay */
+.overlay{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:16px;background:color-mix(in srgb,var(--bg) 72%,transparent);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);overflow:auto}
+.panel{width:100%;max-width:620px;background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:24px;margin:auto}
+.panel h1{font-family:var(--display);font-weight:700;font-size:clamp(32px,6vw,44px);line-height:1.05;margin:0 0 8px;letter-spacing:-.02em}
+.panel h1 em{font-style:normal;color:var(--accent)}
+.panel h2{font-family:var(--display);font-size:22px;margin:0 0 8px}
+.lead{color:var(--ink2);margin:0 0 18px}
+.lbl{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:7px 12px;font-size:14px;color:var(--ink2)}
+.seg button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg);font-weight:600}
+.sides{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+.sidecfg{border:1px solid var(--line);border-radius:14px;padding:12px;background:var(--bg)}
+.sidecfg.a{border-top:4px solid var(--a)}.sidecfg.b{border-top:4px solid var(--b)}
+.sidecfg label{display:block;font-size:12px;color:var(--muted);margin:8px 0 3px}
+.sidecfg label:first-child{margin-top:0}
+.sidecfg input,.sidecfg select{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:7px 9px;font-size:14px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.row .btn{flex:1}
+.small{font-size:13px;color:var(--muted)}
+.loading{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:14px}
+
+@media (max-width:860px){
+  .stage{grid-template-columns:1fr}
+  .side{border-left:0;border-top:1px solid var(--line)}
+  .boardwrap{padding:12px 12px 8px}
+  #board{max-width:min(560px,100%)}
+}
+@media (max-width:520px){
+  .sides{grid-template-columns:1fr}
+  .panel{padding:18px}
+  .back{display:none}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <button class="brand" id="home" aria-label="Výheň — nová hra">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 2.5 20.2 7.25v9.5L12 21.5 3.8 16.75v-9.5z"/><path d="M12 7.5c1.8 2 3 3.4 3 5.2a3 3 0 0 1-6 0c0-1 .4-1.8 1.1-2.6.2 1 .7 1.6 1.4 1.8-.3-1.6-.1-3 .5-4.4z" fill="currentColor" stroke="none"/></svg>
+    Výheň
+  </button>
+  <span class="spacer"></span>
+  <button class="iconbtn" id="rulesBtn">Pravidla</button>
+  <button class="iconbtn" id="newBtn">Nová hra</button>
+  <a class="back" href="../index.html">← Rozcestník</a>
+</header>
+
+<main class="stage">
+  <section class="boardwrap">
+    <div class="score" id="score"></div>
+    <svg id="board" role="img" aria-label="Herní pyramida"></svg>
+    <div class="legend">Spoj všechny <b>tři strany</b> pyramidy souvislou cestou svých políček. Tečky = obtížnost, šrafované = zamrzlé políčko (dá se zkusit znovu, tipy zůstávají).</div>
+  </section>
+  <aside class="side" id="side"></aside>
+</main>
+
+<!-- start overlay -->
+<div class="overlay" id="startOv">
+  <div class="panel">
+    <h1>Výheň<em>.</em></h1>
+    <p class="lead">Slovní pyramida. Každé políčko skrývá tajné slovo – hledáš ho podle toho, jak „hřeje“ tvůj tip. Kdo slovo najde dřív, políčko získá. Propoj tři strany a vyhraješ.</p>
+    <div class="lbl">Rychlá volba</div>
+    <div class="seg" id="presets">
+      <button data-p="bot" aria-pressed="true">Já proti botovi</button>
+      <button data-p="duo" aria-pressed="false">Dva hráči</button>
+      <button data-p="team" aria-pressed="false">Tým proti týmu</button>
+      <button data-p="watch" aria-pressed="false">Bot proti botovi</button>
+    </div>
+    <div class="sides" id="sidecfg"></div>
+    <div class="row">
+      <button class="btn ghost hidden" id="resumeBtn">Pokračovat v rozehrané</button>
+      <button class="btn" id="startBtn" disabled>Načítám slovník…</button>
+    </div>
+    <p class="small" style="margin:12px 0 0">Hráče v týmu odděl čárkou – při tipování se střídají. Všechny tipy a jejich teplota jsou vidět oběma stranám.</p>
+  </div>
+</div>
+
+<!-- rules overlay -->
+<div class="overlay hidden" id="rulesOv">
+  <div class="panel howto">
+    <h2>Jak se hraje</h2>
+    <ol>
+      <li><b>Výběr políčka.</b> Strany se střídají ve výběru políčka. Kdo vybírá, tipuje v souboji jako první.</li>
+      <li><b>Souboj o slovo.</b> Strany se střídají v tipech. Každý tip dostane <b>pořadí</b> – jak blízko významem je tajnému slovu (#1 = to je ono). Čím menší číslo, tím víc hoří.</li>
+      <li><b>Učíš se ze soupeře.</b> Tipy obou stran jsou vidět i s teplotou. Soupeřův horký tip je i tvoje stopa.</li>
+      <li><b>Obtížnost.</b> Tečky na políčku: ● lehké (kategorie je vidět hned), ●● střední (kategorie se odhalí po 4 tipech), ●●● těžké (po 8 tipech). Těžší políčka mají víc tipů.</li>
+      <li><b>Zamrznutí.</b> Když slovo nikdo nenajde, políčko zamrzne. Kdokoli ho může vybrat znovu – dosavadní tipy zůstávají, takže je pak snazší.</li>
+      <li><b>Vítězství.</b> Vyhrává ten, kdo souvislou cestou svých políček propojí všechny tři strany pyramidy. Rohová políčka se počítají za obě strany. Remíza neexistuje.</li>
+      <li><b>Taktika.</b> Můžeš vybrat políčko, které soupeř potřebuje, a zablokovat ho – ale pozor, když ho neuhodneš ty, může ho získat on.</li>
+    </ol>
+    <p class="small">Slovník obsahuje stovky běžných českých slov (podstatná jména v 1. pádě). Piš a vyber z našeptávače.</p>
+    <div class="row"><button class="btn" id="rulesClose">Rozumím</button></div>
+  </div>
+</div>
+
+<!-- end overlay -->
+<div class="overlay hidden" id="endOv">
+  <div class="panel" style="text-align:center">
+    <div class="kicker">Konec hry</div>
+    <h1 id="endTitle" style="margin-top:6px"></h1>
+    <p class="lead" id="endText"></p>
+    <div class="row"><button class="btn ghost" id="endView">Prohlédnout desku</button><button class="btn" id="endNew">Nová hra</button></div>
+  </div>
+</div>
+
+<script id="vocab" type="text/plain">
+% formát: slovo/alias|obtížnost(0 = jen k tipování): štítky
+% štítky popisují význam; společné štítky = podobnost. Jméno slova je zároveň štítkem (propojení slov navzájem).
+@zvire|zvíře
+zvíře|0: zvire
+savec|0: zvire savec
+šelma|0: zvire savec selma
+pták|0: zvire ptak letat peri kridla
+hmyz|0: zvire hmyz maly
+plaz|0: zvire plaz
+mazlíček|0: zvire domaci mazlicek
+pes/psík|1: zvire savec domaci mazlicek stekat srst kost obojek vlk vernost
+kočka/kocour|1: zvire savec domaci mazlicek mnoukat srst selma kockovita mys
+kůň|1: zvire savec domaci farma kopyto jezdit hriva sedlo stado
+kráva|1: zvire savec domaci farma mleko pastvina roh stado
+prase|1: zvire savec domaci farma maso blato sunka
+ovce|1: zvire savec domaci farma vlna stado pastvina
+koza|2: zvire savec domaci farma mleko roh syr
+slepice|1: zvire ptak domaci farma vejce peri
+kohout|2: zvire ptak domaci farma rano kokrhat peri
+kachna|2: zvire ptak domaci farma voda rybnik peri
+husa|2: zvire ptak domaci farma peri
+králík|1: zvire savec domaci mazlicek usi mrkev hlodavec
+křeček|2: zvire savec domaci mazlicek hlodavec klec
+myš|1: zvire savec hlodavec maly syr kocka
+krysa|2: zvire savec hlodavec kanal
+veverka|1: zvire savec hlodavec les strom orech ocas
+zajíc|2: zvire savec les pole usi rychly
+liška|1: zvire savec selma les ocas chytry
+vlk|1: zvire savec selma les smecka vyt
+medvěd|1: zvire savec selma les velky med zimni_spanek
+jelen|2: zvire savec les parozi
+srna|2: zvire savec les jelen
+ježek|1: zvire savec les bodliny
+netopýr|2: zvire savec letat noc jeskyne upir
+lev|1: zvire savec selma kockovita afrika hriva kral savana
+tygr|1: zvire savec selma kockovita asie pruhy dzungle
+slon|1: zvire savec afrika velky chobot kly savana
+žirafa|1: zvire savec afrika krk savana vysoky
+zebra|2: zvire savec afrika pruhy savana kopyto
+opice|1: zvire savec dzungle strom banan
+velbloud|2: zvire savec poust hrb
+klokan|2: zvire savec australie skakat vak
+tučňák|2: zvire ptak led zima antarktida plavat
+delfín|1: zvire savec more plavat chytry
+velryba|1: zvire savec more plavat velky ocean
+žralok|1: zvire ryba more plavat zub nebezpeci selma
+ryba|1: zvire voda plavat ploutev rybnik reka more supiny
+kapr|2: zvire ryba voda rybnik vanoce
+žába|1: zvire obojzivelnik voda rybnik skakat zelena
+had|1: zvire plaz jed nebezpeci
+krokodýl|2: zvire plaz reka zub nebezpeci
+želva|1: zvire plaz krunyr pomaly
+ještěrka|2: zvire plaz ocas
+orel|2: zvire ptak letat drave_ptak hora
+sova|1: zvire ptak noc letat moudry les
+vrabec|2: zvire ptak letat maly mesto
+holub|2: zvire ptak letat mesto namesti
+čáp|2: zvire ptak letat louka miminko
+papoušek|2: zvire ptak dzungle mluvit barevny mazlicek
+labuť|2: zvire ptak voda rybnik bila
+včela|1: zvire hmyz med kvetina bodnuti letat
+moucha|2: zvire hmyz letat otravny
+komár|2: zvire hmyz letat bodnuti leto otravny
+motýl|1: zvire hmyz letat kvetina barevny kridla
+mravenec|2: zvire hmyz maly mraveniste pracovity
+pavouk|1: zvire pavoukovec sit osm strach
+šnek|2: zvire mekkys pomaly ulita zahrada
+chobotnice|2: zvire mekkys more chapadla
+krab|3: zvire more klepeta plaz
+
+@jidlo|jídlo a pití
+jídlo|0: jidlo
+ovoce|0: jidlo ovoce
+zelenina|0: jidlo zelenina
+nápoj/pití|0: napoj pit
+sladkost|0: jidlo sladke
+pečivo|0: jidlo pecivo mouka pekarna
+alkohol|0: napoj alkohol
+chléb/chleba|1: jidlo pecivo mouka pekarna snidane
+rohlík|1: jidlo pecivo mouka pekarna snidane
+koláč|2: jidlo pecivo sladke mouka pekarna
+dort|1: jidlo sladke narozeniny svicka smetana oslava
+čokoláda|1: jidlo sladke kakao hneda
+bonbon|2: jidlo sladke cukr dite
+cukr|2: jidlo sladke bila prisada
+sůl|2: jidlo prisada bila more
+pepř|3: jidlo prisada koreni palive
+med|1: jidlo sladke vcela zlata
+zmrzlina|1: jidlo sladke studene leto mrazak
+mléko|1: napoj mlecne krava bila
+sýr|1: jidlo mlecne krava mys
+máslo|2: jidlo mlecne krava tuk chleb
+jogurt|2: jidlo mlecne snidane
+vejce|1: jidlo slepice snidane velikonoce
+maso|1: jidlo zivocisne reznik obed
+klobása|2: jidlo maso uzenina gril
+párek|2: jidlo maso uzenina
+šunka|2: jidlo maso uzenina prase chleb
+řízek|2: jidlo maso smazene obed
+guláš|2: jidlo maso omacka obed hrnec knedlik
+knedlík|2: jidlo priloha cesko omacka
+brambora/brambor|1: jidlo zelenina priloha pole hlina
+hranolky|2: jidlo brambora smazene rychle_obcerstveni
+pizza|1: jidlo italie syr rajce rychle_obcerstveni
+těstoviny|2: jidlo italie mouka priloha
+polévka|1: jidlo tekute talir lzice hrnec obed
+rýže|2: jidlo obili priloha asie
+mouka|2: jidlo obili prisada pekarna bila
+jablko|1: jidlo ovoce strom sad cervena
+hruška|2: jidlo ovoce strom sad
+banán|1: jidlo ovoce tropy zluta opice
+pomeranč|1: jidlo ovoce tropy citrus oranzova stava
+citron|1: jidlo ovoce citrus kysele zluta
+jahoda|1: jidlo ovoce cervena leto zahrada
+třešeň|2: jidlo ovoce strom cervena leto
+hrozno|2: jidlo ovoce vino vinice
+meloun|2: jidlo ovoce leto velky zelena
+ananas|2: jidlo ovoce tropy
+švestka|2: jidlo ovoce strom sad
+mrkev|1: jidlo zelenina oranzova kralik zahrada
+rajče|1: jidlo zelenina cervena salat zahrada
+okurka|2: jidlo zelenina zelena salat zahrada
+cibule|2: jidlo zelenina slzy prisada
+česnek|2: jidlo zelenina prisada vune upir
+zelí|2: jidlo zelenina kysele knedlik
+salát|2: jidlo zelenina zelena zdravi
+houba|1: jidlo les podzim
+ořech|2: jidlo strom veverka skorapka
+káva|1: napoj teple kofein rano snidane hrnek kavarna
+čaj|1: napoj teple hrnek bylinky
+pivo|1: napoj alkohol cesko hospoda chmel
+víno|1: napoj alkohol hrozno vinice sklenice
+džus|2: napoj ovoce sladke
+limonáda|2: napoj sladke bublinky leto
+snídaně|2: jidlo rano jidlo_dne
+oběd|2: jidlo poledne jidlo_dne
+večeře|2: jidlo vecer jidlo_dne
+
+@domov|domácnost
+nábytek|0: nabytek dum
+nádobí|0: kuchyne nadobi
+spotřebič|0: spotrebic elektrina
+místnost|0: dum mistnost
+stůl|1: nabytek dum drevo zidle jidlo
+židle|1: nabytek dum sedet drevo stul
+postel|1: nabytek dum spat loznice polstar noc
+skříň|2: nabytek dum obleceni drevo
+gauč|2: nabytek dum sedet obyvak televize
+polštář|2: dum spat postel mekky
+peřina|3: dum spat postel peri mekky
+lampa|1: dum svetlo elektrina zarovka
+okno|1: dum sklo vyhled zed
+dveře|1: dum vstup klic zamek_dvere
+klíč|1: dum zamek_dvere dvere otevrit kov
+zrcadlo|2: dum sklo odraz koupelna
+koupelna|2: dum mistnost voda vana myti
+kuchyně|1: dum mistnost vareni jidlo sporak lednice
+ložnice|2: dum mistnost spat postel
+střecha|2: dum stavba nahore cihla
+zeď|2: dum stavba cihla
+schody|2: dum stavba nahoru
+lednice/lednička|1: spotrebic kuchyne studene elektrina jidlo
+sporák|2: spotrebic kuchyne vareni teple
+pračka|2: spotrebic koupelna myti obleceni elektrina
+televize|1: spotrebic obrazovka obyvak film elektrina zpravy
+hrnec|2: kuchyne nadobi vareni polevka
+pánev|2: kuchyne nadobi vareni smazene
+talíř|1: kuchyne nadobi jidlo stul
+hrnek|1: kuchyne nadobi kava caj
+sklenice|2: kuchyne nadobi sklo napoj
+lžíce|1: kuchyne pribor jidlo polevka
+vidlička|2: kuchyne pribor jidlo
+nůž|1: kuchyne pribor ostry rezat zbran
+mýdlo|2: koupelna myti cisty vune
+ručník|2: koupelna myti latka
+kartáček|3: koupelna zub myti
+svíčka|1: svetlo ohen vosk dort romantika
+hodiny|1: cas rucicky dum zed
+koberec|2: dum podlaha latka mekky
+
+@vec|nářadí a věci
+nástroj/nářadí|0: nastroj dilna
+dřevo|0: drevo strom
+kov|0: kov tvrdy
+sklo|0: sklo pruhledny
+kladivo|1: nastroj hrebik kov dilna stavba
+hřebík|2: nastroj kov kladivo dilna ostry
+šroubovák|2: nastroj sroub dilna kov
+pila|1: nastroj drevo rezat dilna ostry
+sekera|2: nastroj drevo strom rezat les ostry
+nůžky|1: nastroj rezat papir ostry
+lopata|2: nastroj zahrada hlina kopat
+žebřík|2: nastroj nahoru stavba
+provaz/lano|2: nastroj vazat lod
+jehla|2: nastroj sit_latka nit ostry latka
+deštník|1: dest pocasi chranit
+baterka|3: svetlo baterie noc tma
+balón/balonek|2: hracka vzduch oslava letat
+
+@priroda|příroda a počasí
+příroda|0: priroda
+rostlina|0: priroda rostlina
+počasí|0: pocasi
+krajina|0: priroda krajina
+strom|1: priroda rostlina les drevo list koren
+les|1: priroda strom houba zvire zelena
+list|2: priroda rostlina strom zelena podzim
+květina/kytka|1: priroda rostlina kvet zahrada vune barevny vcela
+růže|1: priroda rostlina kvet laska cervena trny
+tráva|1: priroda rostlina zelena louka zahrada
+louka|2: priroda trava kvetina krajina
+hora|1: priroda vysoky skala snih krajina
+kopec|2: priroda hora krajina
+skála|2: priroda kamen hora tvrdy
+kámen|1: priroda tvrdy sedy skala
+písek|1: priroda plaz poust drobny
+řeka|1: priroda voda tece most ryba krajina
+rybník|2: priroda voda ryba kapr kachna
+moře|1: priroda voda slane vlna plaz ryba lod dovolena
+oceán|2: priroda voda more velky velryba
+jezero|2: priroda voda krajina
+vodopád|3: priroda voda tece skala
+voda|1: priroda tekute napoj pit mokry
+oheň|1: priroda horke svetlo plamen kour teplo
+led|1: zima studene voda tvrdy klouzat
+sníh|1: pocasi zima studene bila snehulak lyze vanoce
+déšť|1: pocasi voda mrak mokry destnik
+mrak|2: pocasi nebe sedy dest
+bouřka|2: pocasi blesk hrom dest nebezpeci
+blesk|2: pocasi bourka elektrina svetlo rychly
+vítr|1: pocasi vzduch foukat
+duha|2: pocasi barevny nebe dest slunce
+mlha|3: pocasi sedy rano
+slunce|1: vesmir hvezda svetlo teplo leto den zluta
+měsíc|1: vesmir noc nebe svetlo
+hvězda|1: vesmir noc nebe svetlo zarit
+nebe|2: priroda modra nahore mrak slunce
+ostrov|2: priroda more pevnina dovolena
+poušť|2: priroda pisek horke sucho velbloud
+džungle|2: priroda tropy strom opice
+jeskyně|2: priroda skala tma netopyr podzemi
+sopka|2: priroda hora ohen nebezpeci lava
+zima|1: rocni_obdobi studene snih vanoce
+léto|1: rocni_obdobi teplo slunce dovolena prazdniny
+jaro|1: rocni_obdobi kvetina zelena
+podzim|1: rocni_obdobi list houba vitr
+noc|1: cas tma spat mesic hvezda
+den|2: cas svetlo slunce
+ráno|2: cas slunce snidane budik
+pole|2: priroda venkov obili traktor
+zahrada|1: priroda dum kvetina zelenina trava
+
+@telo|tělo a zdraví
+tělo|0: telo
+zdraví|0: zdravi
+orgán|0: telo organ
+hlava|1: telo nahore vlasy mozek oko
+oko|1: telo hlava videt
+ucho|1: telo hlava slyset
+nos|1: telo hlava cich vune
+ústa/pusa|2: telo hlava jist mluvit zub
+zub|1: telo usta kousat zubar bila
+vlasy|1: telo hlava strihat kadernik
+ruka|1: telo prst drzet
+noha|1: telo chodit bota
+prst|2: telo ruka prsten
+srdce|1: telo organ krev laska
+mozek|2: telo organ hlava myslet chytry
+krev|2: telo cervena srdce zraneni
+kost|2: telo tvrdy kostra pes bila
+kůže|3: telo povrch
+žaludek|3: telo organ jidlo hlad
+nemoc|2: zdravi lekar nemocnice lek
+lék|2: zdravi lekar nemoc lekarna
+nemocnice|1: zdravi budova lekar nemoc mesto
+spánek|2: spat noc postel unava sen
+sen|2: spat noc postel fantazie
+
+@doprava|doprava
+vozidlo/dopravní prostředek|0: doprava
+auto/automobil|1: doprava silnice motor ridit benzin
+autobus|1: doprava silnice motor mesto zastavka cestujici
+tramvaj|2: doprava mesto koleje zastavka elektrina cestujici
+vlak|1: doprava koleje nadrazi cestujici lokomotiva
+letadlo|1: doprava letat nebe letiste pilot kridla
+loď|1: doprava voda more plavat pristav kotva
+kolo/jízdní kolo|1: doprava silnice slapat sport helma
+motorka|2: doprava silnice motor rychly helma
+raketa|2: doprava vesmir letat rychly
+vrtulník/helikoptéra|2: doprava letat vrtule
+traktor|2: doprava pole farma motor
+silnice|2: doprava cesta auto asfalt
+most|2: stavba reka cesta prejit
+nádraží|2: doprava vlak budova mesto
+letiště|2: doprava letadlo budova
+benzín|3: auto palivo motor
+semafor|2: doprava silnice krizovatka cervena zelena svetlo
+motor|2: stroj auto benzin
+kotva|3: lod more kov
+
+@lide|lidé a postavy
+člověk|0: clovek
+muž|0: clovek muz
+žena|0: clovek zena
+povolání|0: povolani prace
+lékař/doktor|1: povolani zdravi nemocnice nemoc lek
+učitel|1: povolani skola tabule zak vzdelani
+hasič|1: povolani ohen zachrana hadice cervena
+policista/policie|1: povolani zakon zlodej zachrana uniforma
+kuchař|1: povolani vareni kuchyne jidlo restaurace
+pekař|2: povolani pekarna chleb mouka rano
+pilot|2: povolani letadlo letat
+kadeřník|2: povolani vlasy strihat nuzky
+zubař|2: povolani zub zdravi
+herec|2: povolani divadlo film role
+zpěvák|2: povolani hudba pisen hlas koncert
+malíř|2: povolani umeni obraz barva stetec
+zahradník|3: povolani zahrada kvetina
+farmář|2: povolani farma pole zvire traktor
+kosmonaut/astronaut|2: povolani vesmir raketa
+voják|2: povolani valka zbran armada uniforma
+král|1: vladce koruna hrad moc zamek
+královna|2: vladce koruna hrad zena kral
+princezna|2: vladce pohadka hrad zena
+rytíř|2: hrad mec stredovek brneni kun
+kouzelník/čaroděj|2: kouzlo pohadka fantazie hulka
+drak|2: pohadka fantazie ohen letat kridla
+duch/strašidlo|3: noc pohadka strach
+zloděj|2: zlocin policie krast noc
+dítě|1: clovek maly hracka skola rodina
+miminko|2: clovek maly rodina
+babička|1: clovek rodina stari
+dědeček|2: clovek rodina stari
+rodina|2: clovek domov laska maminka
+maminka/máma|1: clovek rodina zena laska
+tatínek/táta|2: clovek rodina muz
+kamarád|2: clovek pratelstvi
+soused|3: clovek dum
+
+@sport|sport a hry
+sport|0: sport
+hra|0: hra hrat
+fotbal|1: sport mic tym hriste gol branka
+hokej|1: sport tym led zima hokejka puk brusle branka cesko
+tenis|2: sport mic sit kurt
+basketbal|2: sport mic tym kos
+volejbal|3: sport mic tym sit plaz
+plavání|2: sport voda bazen plavat
+bazén|2: sport voda plavat leto
+lyže|2: sport zima snih hora
+brusle|2: sport led zima
+běh|2: sport rychly zavod
+míč|1: sport hracka kulaty hrat
+gól|2: sport fotbal branka
+olympiáda|3: sport medaile svet zavod
+medaile|2: sport vitez zlato zavod
+závod|2: sport rychly vitez
+šachy|1: hra deska kral strategie myslet
+karty|2: hra hazard
+hračka|2: hra dite
+panenka|3: hra hracka dite
+
+@kultura|kultura a zábava
+umění|0: umeni
+hudební nástroj|0: hudba nastroj_hudebni
+svátek|0: svatek oslava
+hudba|1: umeni zvuk pisen nastroj_hudebni koncert
+píseň|2: hudba zpivat text zvuk
+kytara|1: hudba nastroj_hudebni struny koncert
+klavír|1: hudba nastroj_hudebni klavesy
+housle|2: hudba nastroj_hudebni struny smycec
+buben|2: hudba nastroj_hudebni rytmus hlasity
+trubka|3: hudba nastroj_hudebni hlasity
+koncert|2: hudba publikum podium vstupenka
+divadlo|1: umeni herec podium publikum vstupenka
+kino|1: film budova vstupenka publikum popcorn
+film|1: umeni kino herec pribeh obrazovka
+kniha|1: cteni pribeh papir knihovna stranky spisovatel
+pohádka|1: pribeh fantazie dite princezna drak kniha
+báseň|2: literatura slovo rym kniha
+obraz|1: umeni malir barva galerie zed
+socha|2: umeni kamen muzeum
+muzeum|2: budova historie galerie
+fotografie/fotka|2: umeni obraz fotak
+tanec|2: hudba pohyb ples
+ples|3: tanec saty oslava
+narozeniny|1: oslava dort darek svicka
+vánoce|1: svatek zima darek stromek kapr snih
+velikonoce|2: svatek jaro vejce
+dárek|1: oslava prekvapeni narozeniny vanoce
+oslava|2: radost party
+svatba|2: laska slib saty prsten
+
+@obleceni|oblečení a doplňky
+oblečení/oděv|0: obleceni latka
+šperk|0: sperk zlato
+bota|1: obleceni noha chodit
+ponožka|2: obleceni noha
+tričko|2: obleceni leto latka
+kalhoty|1: obleceni noha latka
+sukně|2: obleceni zena latka
+šaty|2: obleceni zena latka ples
+kabát|2: obleceni zima teple
+čepice|1: obleceni hlava zima teple
+klobouk|2: obleceni hlava slunce
+rukavice|2: obleceni ruka zima teple
+šála|3: obleceni krk zima teple
+brýle|1: oko videt sklo
+prsten|2: sperk prst zlato svatba
+hodinky|2: cas ruka sperk
+batoh|2: nosit skola vylet
+koruna|2: kral zlato sperk penize hlava
+helma|3: hlava chranit
+
+@misto|místa a budovy
+budova|0: budova stavba
+město|1: mesto ulice budova lide
+vesnice|2: venkov dum kostel pole
+dům|1: budova bydlet domov stavba
+hrad|1: budova historie kral stredovek rytir
+zámek|2: budova historie kral salon
+kostel|2: budova vez zvon nabozenstvi
+škola|1: budova vzdelani ucitel zak trida
+obchod|1: budova nakup penize prodavac
+restaurace|2: budova jidlo kuchar cisnik
+hospoda|2: budova pivo pratelstvi
+kavárna|3: budova kava
+banka|2: budova penize
+pošta|2: budova dopis balik
+knihovna|2: budova kniha cteni ticho
+ulice|2: mesto chodnik dum
+park|2: mesto strom lavicka trava prochazka
+věž|2: budova vysoky
+hřiště|2: sport dite hrat
+zoo|2: zvire mesto vylet
+cirkus|2: klaun zvire predstaveni
+klaun|3: cirkus smich
+
+@technika|technika a věda
+technika|0: technika
+energie|0: energie elektrina
+věda|0: veda
+počítač|1: technika obrazovka klavesnice internet elektrina prace
+telefon/mobil|1: technika volat obrazovka internet zprava
+internet|2: technika pocitac sit_pocitacova informace
+robot|2: technika stroj umela_inteligence budoucnost
+fotoaparát/foťák|2: technika fotografie
+rádio|2: technika zvuk hudba zpravy
+elektřina/proud|2: energie zasuvka blesk
+baterie|3: energie elektrina
+žárovka|2: svetlo elektrina lampa vynalez napad
+stroj|2: technika motor tovarna
+továrna|2: budova stroj prace vyroba
+planeta|2: vesmir zeme kulaty
+země|2: vesmir planeta svet domov
+vesmír|1: nebe hvezda planeta raketa nekonecno tma
+mapa|2: cestovani svet papir smer
+magnet|3: veda kov pritahovat
+
+@skola|škola a psaní
+tužka|1: skola psat kreslit papir
+pero|2: skola psat inkoust
+papír|1: skola psat strom bila
+sešit|2: skola psat papir
+tabule|2: skola ucitel krida trida
+dopis|2: psat posta obalka zprava
+číslo|2: matematika pocitat
+matematika|2: skola cislo pocitat
+slovo|3: jazyk psat mluvit
+jazyk|3: mluvit slovo telo usta
+
+@pojem|pojmy a pocity
+pocit|0: pocit
+láska|2: pocit srdce romantika vztah polibek
+radost|2: pocit smich stesti usmev
+smutek|3: pocit slzy plakat
+strach|2: pocit nebezpeci tma strasidlo
+vztek/hněv|3: pocit kricet cervena
+štěstí|2: pocit radost nahoda
+smích|2: radost vtip klaun usmev
+slzy|3: plakat smutek oko cibule
+přátelství|3: vztah kamarad duvera
+svoboda|3: pocit volnost ptak
+pravda|3: pojem lez slib
+lež|3: pojem pravda podvod
+čas|2: pojem hodiny minuta budoucnost minulost
+budoucnost|3: cas pojem robot zitra
+minulost|3: cas pojem historie vzpominka
+historie/dějiny|3: minulost muzeum hrad
+peníze|1: obchod banka koruna bohatstvi platit
+bohatství|3: penize zlato poklad
+poklad|2: zlato truhla pirat mapa
+zlato|2: kov drahy zluta poklad sperk
+pirát|2: more lod poklad
+válka|3: armada vojak zbran nebezpeci
+mír|3: valka holub klid
+ticho|3: zvuk klid noc knihovna
+zvuk|3: slyset ucho hudba hlasity
+barva|2: obraz malir barevny duha
+tma|2: noc cerna strach jeskyne
+světlo|2: slunce lampa zarovka den
+domov|2: dum rodina bezpeci
+cesta|2: cestovani silnice smer
+dovolená|2: cestovani more leto odpocinek prazdniny
+prázdniny|2: leto skola volno
+nápad|3: myslet mozek zarovka
+vzpomínka|3: minulost mozek
+nebezpečí|3: strach riziko
+práce|2: povolani penize kancelar
+odpočinek|3: klid spat dovolena
+hlad|3: jidlo zaludek
+vtip|3: smich humor
+</script>
+
+<script>
+(()=>{
+"use strict";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const norm=s=>String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").trim().replace(/\s+/g," ");
+const store={
+  get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}},
+  del(k){try{localStorage.removeItem(k)}catch(e){}}
+};
+const rnd=n=>Math.floor(Math.random()*n);
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
+
+/* =========================================================
+   SÉMANTICKÝ MODEL
+   Každé slovo = vážený vektor štítků (IDF). Podobnost = kosinus
+   + vyhlazení druhého řádu (sousedé sousedů). Pořadí tipu = kolikáté
+   nejbližší je slovo k tajnému ze všech slov ve slovníku.
+   Model je izolovaný: později jde nahradit předpočítanými embeddingy.
+   ========================================================= */
+const SEM=(()=>{
+  const W=[],lookup=new Map();
+  let catLabel="",catId="";
+  for(const raw of $("#vocab").textContent.split("\n")){
+    const t=raw.trim(); if(!t||t[0]==="%")continue;
+    if(t[0]==="@"){[catId,catLabel]=t.slice(1).split("|");continue}
+    const m=t.match(/^([^|]+)\|(\d)\s*:\s*(.*)$/); if(!m)continue;
+    const names=m[1].split("/").map(s=>s.trim());
+    const w={i:W.length,name:names[0],keys:names.map(norm),diff:+m[2],cat:catLabel,catId,tags:m[3].split(/\s+/).filter(Boolean).map(norm)};
+    if(lookup.has(w.keys[0])){console.warn("duplicitní slovo",w.name);continue}
+    W.push(w); w.keys.forEach(k=>{if(!lookup.has(k))lookup.set(k,w.i)});
+  }
+  const N=W.length;
+  // tokens
+  const tokId=new Map(),df=[];
+  const vecs=W.map(w=>{
+    const m=new Map();
+    const add=(tok,mult)=>{let id=tokId.get(tok);if(id==null){id=tokId.size;tokId.set(tok,id);df.push(0)}m.set(id,Math.max(m.get(id)||0,mult))};
+    add(w.keys[0],1.5);
+    w.tags.forEach(t=>add(t,1));
+    add("#"+w.catId,.55);
+    return m;
+  });
+  vecs.forEach(m=>m.forEach((_,id)=>df[id]++));
+  const inv=[];   // token -> [[word, weight]]
+  const V=vecs.map((m,wi)=>{
+    const arr=[];let n2=0;
+    m.forEach((mult,id)=>{const wt=mult*Math.log(1+N/df[id]);arr.push([id,wt]);n2+=wt*wt});
+    const n=Math.sqrt(n2);
+    arr.forEach(e=>{e[1]/=n;(inv[e[0]]||(inv[e[0]]=[])).push([wi,e[1]])});
+    return arr;
+  });
+  // first-order similarity
+  const S1=new Float32Array(N*N);
+  for(const lst of inv){if(!lst||lst.length<2)continue;
+    for(let a=0;a<lst.length;a++)for(let b=0;b<lst.length;b++){if(a===b)continue;S1[lst[a][0]*N+lst[b][0]]+=lst[a][1]*lst[b][1]}}
+  for(let i=0;i<N;i++)S1[i*N+i]=1;
+  // second-order: cosine of similarity rows (sparse)
+  const nz=[];for(let i=0;i<N;i++){const r=[];for(let j=0;j<N;j++){const v=S1[i*N+j];if(v>0)r.push(j)}nz.push(r)}
+  const S2=new Float32Array(N*N);
+  for(let i=0;i<N;i++)for(const k of nz[i]){const a=S1[i*N+k];for(const j of nz[k])S2[i*N+j]+=a*S1[k*N+j]}
+  const d=new Float32Array(N);for(let i=0;i<N;i++)d[i]=Math.sqrt(S2[i*N+i])||1;
+  const S=new Float32Array(N*N);
+  for(let i=0;i<N;i++)for(let j=0;j<N;j++)S[i*N+j]=i===j?9:S1[i*N+j]+.45*S2[i*N+j]/(d[i]*d[j]);
+  // ranks
+  const R=new Uint16Array(N*N);
+  const idx=[...Array(N).keys()];
+  for(let t=0;t<N;t++){
+    const o=idx.slice().sort((a,b)=>S[t*N+b]-S[t*N+a]||a-b);
+    for(let p=0;p<N;p++)R[t*N+o[p]]=p+1;
+  }
+  const near=(t,k)=>{const o=[];for(let j=0;j<N;j++)o.push(j);o.sort((a,b)=>R[t*N+a]-R[t*N+b]);return o.slice(0,k).map(j=>W[j].name)};
+  const find=s=>{const k=norm(s);return lookup.has(k)?lookup.get(k):-1};
+  const allKeys=[];W.forEach(w=>w.keys.forEach((k,ki)=>allKeys.push({k,i:w.i,label:ki?`${names(w)[ki]} → ${w.name}`:w.name})));
+  function names(w){return w.keys.map((k,ki)=>ki===0?w.name:k)}
+  const suggest=(s,lim=6)=>{const k=norm(s);if(k.length<2)return[];const seen=new Set(),out=[];
+    for(const e of allKeys){if(e.k.startsWith(k)&&!seen.has(e.i)){seen.add(e.i);out.push(e.i);if(out.length>=lim)break}}
+    if(out.length<lim)for(const e of allKeys){if(!seen.has(e.i)&&e.k.includes(k)){seen.add(e.i);out.push(e.i);if(out.length>=lim)break}}
+    return out};
+  return {W,N,S,R,rank:(t,g)=>R[t*N+g],sim:(t,g)=>S[t*N+g],near,find,suggest,cats:[...new Set(W.map(w=>w.cat))]};
+})();
+window.SEM=SEM;
+
+/* teplota */
+function temp(rank){
+  const N=SEM.N;
+  if(rank===1)return{lbl:"Nalezeno!",c:"hsl(8 85% 50%)",f:1};
+  const f=Math.max(0,1-Math.log(rank)/Math.log(N));
+  const T=[[5,"Hoří!",4],[15,"Horko",18],[40,"Teplo",34],[90,"Vlažno",48],[180,"Chladno",195],[1e9,"Mrzne",215]];
+  const [,lbl,hue]=T.find(t=>rank<=t[0]);
+  return{lbl,c:`hsl(${hue} 78% 52%)`,f};
+}
+
+/* =========================================================
+   DESKA – trojúhelník 7 řad, 28 políček (hra typu Y)
+   ========================================================= */
+const ROWS=7;
+const CELLS=[];for(let r=0;r<ROWS;r++)for(let c=0;c<=r;c++)CELLS.push({r,c});
+const cid=(r,c)=>(r*(r+1))/2+c;
+const NB=CELLS.map(({r,c})=>[[r,c-1],[r,c+1],[r-1,c-1],[r-1,c],[r+1,c],[r+1,c+1]].filter(([y,x])=>y>=0&&y<ROWS&&x>=0&&x<=y).map(([y,x])=>cid(y,x)));
+const EDGES=[i=>CELLS[i].c===0, i=>CELLS[i].c===CELLS[i].r, i=>CELLS[i].r===ROWS-1];
+const DIFF_LIMIT={1:6,2:8,3:10}, RETRY_LIMIT=4, REVEAL={1:0,2:4,3:8};
+
+function winnerPath(owner,side){
+  const seen=new Set();
+  for(let s=0;s<CELLS.length;s++){
+    if(owner[s]!==side||seen.has(s))continue;
+    const comp=[],st=[s];seen.add(s);
+    while(st.length){const x=st.pop();comp.push(x);for(const y of NB[x])if(owner[y]===side&&!seen.has(y)){seen.add(y);st.push(y)}}
+    if(EDGES.every(e=>comp.some(e)))return comp;
+  }
+  return null;
+}
+// Y-vzdálenost: kolik políček ještě chybí k propojení tří stran
+function ydist(owner,side){
+  const n=CELLS.length,INF=1e9;
+  const cost=i=>owner[i]===side?0:owner[i]==null?1:INF;
+  const dist=EDGES.map(edge=>{
+    const d=new Array(n).fill(INF);const q=[];
+    for(let i=0;i<n;i++)if(edge(i)&&cost(i)<INF){d[i]=cost(i);q.push(i)}
+    while(q.length){q.sort((a,b)=>d[b]-d[a]);const x=q.pop();
+      for(const y of NB[x]){const c=cost(y);if(c>=INF)continue;if(d[x]+c<d[y]){d[y]=d[x]+c;q.push(y)}}}
+    return d;
+  });
+  let best=INF;
+  for(let i=0;i<n;i++){const c=cost(i);if(c>=INF)continue;const v=dist[0][i]+dist[1][i]+dist[2][i]-2*c;if(v<best)best=v}
+  return best;
+}
+
+/* =========================================================
+   STAV HRY
+   ========================================================= */
+const BOTS={bot1:"Bot · lehký",bot2:"Bot · střední",bot3:"Bot · těžký"};
+let G=null;          // game state (serializable)
+let botTimer=null, autoTimer=null;
+const SAVE="vyhen.game.v1", CFG="vyhen.cfg.v1";
+
+function newGame(cfg){
+  // vyber slova podle obtížnosti
+  const diffs=shuffle([...Array(9).fill(1),...Array(12).fill(2),...Array(7).fill(3)]);
+  const pool={1:[],2:[],3:[]};SEM.W.forEach(w=>{if(w.diff)pool[w.diff].push(w.i)});
+  Object.values(pool).forEach(shuffle);
+  const usedCat={};
+  const cells=diffs.map(d=>{
+    // drž pestrost kategorií
+    let k=pool[d].findIndex(i=>(usedCat[SEM.W[i].catId]||0)<3);if(k<0)k=0;
+    const w=pool[d].splice(k,1)[0];usedCat[SEM.W[w].catId]=(usedCat[SEM.W[w].catId]||0)+1;
+    return{w,d,owner:null,frozen:false,g:[]};
+  });
+  G={v:1,sides:cfg.map(s=>({name:s.name,members:s.members.length?s.members:[s.name],ctrl:s.ctrl,mi:0})),
+     cells,chooser:0,phase:"pick",active:-1,turn:0,left:[0,0],last:null,res:null,winner:null,path:null,round:1};
+  save();render();schedule();
+}
+function save(){store.set(SAVE,G)}
+const owners=()=>G.cells.map(c=>c.owner);
+const isBot=s=>G.sides[s].ctrl!=="human";
+const curPlayer=s=>{const sd=G.sides[s];return isBot(s)&&sd.members.length===1&&sd.members[0]===sd.name?BOTS[sd.ctrl]:sd.members[sd.mi%sd.members.length]};
+const sideCls=s=>s===0?"a":"b";
+const catVisible=c=>c.g.length>=REVEAL[c.d];
+
+function pickCell(i){
+  if(G.phase!=="pick")return;
+  const c=G.cells[i];if(c.owner!=null)return;
+  G.active=i;G.phase="duel";G.turn=G.chooser;
+  const lim=c.frozen?RETRY_LIMIT:DIFF_LIMIT[c.d];
+  G.left=[lim,lim];G.last=null;
+  save();render();schedule();
+}
+function guess(wi){
+  if(G.phase!=="duel")return"Teď se netipuje.";
+  const c=G.cells[G.active];
+  if(c.g.some(x=>x.w===wi))return`„${SEM.W[wi].name}“ už na tomhle políčku padlo.`;
+  const s=G.turn,r=SEM.rank(c.w,wi);
+  c.g.push({w:wi,s,p:curPlayer(s),r});
+  G.last=c.g.length-1;
+  G.sides[s].mi++;G.left[s]--;
+  if(r===1){
+    c.owner=s;c.frozen=false;
+    G.res={type:"win",side:s,cell:G.active,word:c.w,player:c.g[G.last].p};
+    endDuel();
+  }else if(G.left[0]<=0&&G.left[1]<=0){
+    c.frozen=true;
+    G.res={type:"freeze",cell:G.active};
+    endDuel();
+  }else{
+    const o=1-s;G.turn=G.left[o]>0?o:s;
+  }
+  save();render();schedule();
+  return"";
+}
+function endDuel(){
+  G.phase="result";
+  const p=winnerPath(owners(),G.res.side??-1);
+  if(G.res.type==="win"&&p){G.winner=G.res.side;G.path=p}
+}
+function nextTurn(){
+  clearTimeout(autoTimer);
+  if(G.phase!=="result")return;
+  if(G.winner!=null){G.phase="over";save();render();showEnd();return}
+  G.phase="pick";G.active=-1;G.res=null;G.last=null;G.chooser=1-G.chooser;G.round++;
+  save();render();schedule();
+}
+
+/* =========================================================
+   BOT
+   ========================================================= */
+function botPickCell(s){
+  const lvl=+G.sides[s].ctrl.slice(3);
+  const own=owners(),o=1-s;
+  const meNow=ydist(own,s),opNow=ydist(own,o);
+  let best=-1,bestV=-1e9;
+  G.cells.forEach((c,i)=>{
+    if(c.owner!=null)return;
+    const a=own.slice();a[i]=s;const b=own.slice();b[i]=o;
+    const mine=meNow-ydist(a,s), theirs=opNow-ydist(b,o);
+    let v=mine+theirs*(lvl===1?.4:.95);
+    const {r,c:col}=CELLS[i];
+    v+=.08*(3-Math.abs(r-4))+.04*Math.min(col,r-col);       // střed/vnitřek
+    v-=(c.frozen?-.15:0)+(lvl===3?.12:.06)*(c.d-1);           // zamrzlé = víc informací
+    if(ydist(a,s)===0)v+=50;                                 // vítězný tah
+    if(ydist(b,o)===0)v+=20;                                 // nutná blokace
+    v+=Math.random()*(lvl===1?1.6:lvl===2?.5:.15);
+    if(v>bestV){bestV=v;best=i}
+  });
+  return best;
+}
+function botGuess(s){
+  const lvl=+G.sides[s].ctrl.slice(3);
+  const c=G.cells[G.active];
+  const used=new Set(c.g.map(x=>x.w));
+  let cand=SEM.W.filter(w=>!used.has(w.i));
+  if(catVisible(c)){const f=cand.filter(w=>w.cat===SEM.W[c.w].cat);if(f.length)cand=f}
+  let obs=c.g.slice();
+  if(lvl===1)obs=obs.filter(x=>x.s===s||Math.random()<.35);
+  if(!obs.length){const e=cand.filter(w=>w.diff===1);const p=e.length?e:cand;return p[rnd(p.length)].i}
+  // Bot si pamatuje jen pár nejteplejších tipů (lehký 1, střední 2, těžký 3)
+  // a hledá slovo, které by jim dalo podobná pořadí – s šumem, ať hraje lidsky.
+  const P=[null,{m:1,k:8,noise:1.2},{m:2,k:5,noise:.6},{m:3,k:3,noise:.3}][lvl];
+  const best=obs.sort((a,b)=>a.r-b.r).slice(0,P.m);
+  const sc=cand.map(w=>{let e=0;for(const x of best){const d=Math.log(SEM.rank(w.i,x.w))-Math.log(x.r);e+=d*d}return[w.i,e+Math.random()*P.noise]});
+  sc.sort((a,b)=>a[1]-b[1]);
+  return sc[rnd(Math.min(P.k,sc.length))][0];
+}
+function schedule(){
+  clearTimeout(botTimer);clearTimeout(autoTimer);
+  if(!G)return;
+  if(G.phase==="pick"&&isBot(G.chooser)){
+    botTimer=setTimeout(()=>pickCell(botPickCell(G.chooser)),900);
+  }else if(G.phase==="duel"&&isBot(G.turn)){
+    botTimer=setTimeout(()=>guess(botGuess(G.turn)),900+rnd(900));
+  }else if(G.phase==="result"&&isBot(0)&&isBot(1)){
+    autoTimer=setTimeout(nextTurn,2400);
+  }
+}
+
+/* =========================================================
+   VYKRESLENÍ
+   ========================================================= */
+const HS=1, HW=Math.sqrt(3)*HS, RH=1.5*HS;
+function hexPts(cx,cy){let s="";for(let k=0;k<6;k++){const a=Math.PI/180*(60*k-90);s+=`${(cx+HS*.96*Math.cos(a)).toFixed(3)},${(cy+HS*.96*Math.sin(a)).toFixed(3)} `}return s}
+function cellXY(i){const{r,c}=CELLS[i];return[(c-r/2)*HW,r*RH]}
+function renderBoard(){
+  const svg=$("#board");
+  const minX=-(ROWS-1)/2*HW-HW/2-.35,maxX=(ROWS-1)/2*HW+HW/2+.35,minY=-HS-.35,maxY=(ROWS-1)*RH+HS+.35;
+  svg.setAttribute("viewBox",`${minX} ${minY} ${maxX-minX} ${maxY-minY}`);
+  const pick=G&&G.phase==="pick"&&!isBot(G.chooser);
+  const pathSet=new Set(G&&G.path||[]);
+  let h="";
+  // edge markers
+  const L=cellXY(cid(ROWS-1,0)),T=cellXY(0),Rr=cellXY(cid(ROWS-1,ROWS-1));
+  const off=1.12;
+  h+=`<path class="edge" d="M${T[0]-HW*.5*off},${T[1]-.3} L${L[0]-HW*.6},${L[1]+.25}"/>`;
+  h+=`<path class="edge" d="M${T[0]+HW*.5*off},${T[1]-.3} L${Rr[0]+HW*.6},${Rr[1]+.25}"/>`;
+  h+=`<path class="edge" d="M${L[0]-HW*.45},${L[1]+HS*1.12} L${Rr[0]+HW*.45},${Rr[1]+HS*1.12}"/>`;
+  CELLS.forEach((_,i)=>{
+    const [x,y]=cellXY(i);const c=G?G.cells[i]:{d:1,owner:null,g:[]};
+    const cls=["cell"];
+    if(c.owner!=null)cls.push("own"+c.owner);else if(c.frozen)cls.push("frozen");
+    if(pick&&c.owner==null)cls.push("pick");
+    if(G&&G.active===i&&G.phase!=="pick")cls.push("active");
+    if(pathSet.has(i))cls.push("winpath");
+    if(G&&G.phase==="duel"&&G.active!==i)cls.push("dim");
+    let dots="";for(let k=0;k<c.d;k++)dots+=`<circle cx="${x+(k-(c.d-1)/2)*.17}" cy="${y+.5}" r=".055"/>`;
+    const showCat=G&&c.owner==null&&catVisible(c);
+    const cat=showCat?SEM.W[c.w].cat.split(" ")[0]:"";
+    const won=c.owner!=null?SEM.W[c.w].name:"";
+    h+=`<g class="${cls.join(" ")}" data-i="${i}" ${pick&&c.owner==null?`role="button" tabindex="0" aria-label="Políčko ${i+1}"`:""}>
+      <polygon points="${hexPts(x,y)}"/>
+      <text class="num" x="${x}" y="${y+(cat||won?.02:.14)}">${i+1}</text>
+      ${won?`<text class="cat" x="${x}" y="${y+.3}">${esc(won.length>11?won.slice(0,10)+"…":won)}</text>`:cat?`<text class="cat" x="${x}" y="${y+.3}">${esc(cat)}</text>`:""}
+      <g class="dots">${dots}</g></g>`;
+  });
+  svg.innerHTML=h;
+}
+function renderScore(){
+  if(!G){$("#score").innerHTML="";return}
+  const cnt=[0,1].map(s=>G.cells.filter(c=>c.owner===s).length);
+  const on=G.phase==="pick"?G.chooser:G.phase==="duel"?G.turn:-1;
+  $("#score").innerHTML=[0,1].map(s=>{const sd=G.sides[s];
+    const sub=isBot(s)?BOTS[sd.ctrl]:sd.members.length>1?sd.members.join(", "):"člověk";
+    return`<div class="team ${sideCls(s)} ${on===s?"on":""}"><span class="dot"></span><div><div class="nm">${esc(sd.name)}</div><div class="sub">${esc(sub)}</div></div><span class="cnt">${cnt[s]}</span></div>`}).join("");
+}
+function sideName(s){return`<span class="${sideCls(s)}">${esc(G.sides[s].name)}</span>`}
+function guessRow(x,c,extra=""){
+  const t=temp(x.r);const w=SEM.W[x.w];
+  return`<div class="g ${sideCls(x.s)} ${extra}"><span class="bar" style="width:${Math.max(4,t.f*100)}%;background:${t.c}"></span>
+    <span class="sd"></span><span class="w">${esc(w.name)}<small>${esc(x.p)}</small></span>
+    <span class="rk"><span style="color:${t.c};font-weight:600">${t.lbl}</span> &nbsp;<b>#${x.r}</b></span></div>`;
+}
+let sugState={list:[],sel:0};
+function renderSide(){
+  const el=$("#side");
+  if(!G){el.innerHTML="";return}
+  let h="";
+  if(G.phase==="pick"){
+    const s=G.chooser;
+    h+=`<div class="card"><div class="kicker">Kolo ${G.round} · výběr políčka</div>
+      <div class="headline">${sideName(s)} vybírá políčko</div>
+      <p class="p">${isBot(s)?`<span class="thinking">${esc(BOTS[G.sides[s].ctrl])} zvažuje tah</span>`:"Klikni na volné nebo zamrzlé políčko. Ve výběru tipuješ jako první."}</p></div>`;
+    h+=howtoMini();
+  }else if(G.phase==="duel"||G.phase==="result"||G.phase==="over"){
+    const c=G.cells[G.active];
+    if(!c){h+=howtoMini();el.innerHTML=h;return}
+    const showCat=catVisible(c)||G.phase!=="duel";
+    const need=REVEAL[c.d]-c.g.length;
+    h+=`<div class="card"><div class="kicker">Políčko ${G.active+1} · ${"●".repeat(c.d)} ${["","lehké","střední","těžké"][c.d]}${c.frozen&&G.phase==="duel"?" · zamrzlé":""}</div>
+      <div class="headline">${G.phase==="duel"?"Hledej tajné slovo":"Souboj skončil"}</div>
+      <div class="meta"><span class="tag">Kategorie: <b>${showCat?esc(SEM.W[c.w].cat):`odhalí se za ${need} ${need===1?"tip":need<5?"tipy":"tipů"}`}</b></span>
+      ${[0,1].map(s=>`<span class="tag ${sideCls(s)}">${esc(G.sides[s].name)}: zbývá <b>${Math.max(0,G.left[s])}</b></span>`).join("")}</div></div>`;
+    if(G.phase==="duel"){
+      const s=G.turn;
+      if(isBot(s)){
+        h+=`<div class="card"><div class="turnline"><span class="who ${sideCls(s)} thinking">${esc(curPlayer(s))} přemýšlí</span></div><p class="p">Sleduj jeho tipy – jeho teplota je i tvoje nápověda.</p></div>`;
+      }else{
+        h+=`<div class="card guessbox"><div class="turnline">Tipuje: <span class="who ${sideCls(s)}">${esc(curPlayer(s))}</span><span class="small">(${esc(G.sides[s].name)})</span></div>
+          <form class="inrow" id="gform" autocomplete="off"><input id="gin" placeholder="Napiš slovo…" aria-label="Tvůj tip" enterkeyhint="send" autocapitalize="off" spellcheck="false"><button class="btn g${sideCls(s)}">Tipnout</button></form>
+          <div class="sugg hidden" id="sugg" role="listbox"></div>
+          <div class="err" id="gerr"></div></div>`;
+      }
+    }else if(G.res){
+      const r=G.res;
+      if(r.type==="win"){
+        h+=`<div class="result ${sideCls(r.side)}"><div class="kicker">Políčko ${r.cell+1} získává</div>
+          <div class="headline">${sideName(r.side)}</div>
+          <p class="p">Tajné slovo bylo <b>${esc(SEM.W[r.word].name)}</b> – trefa: ${esc(r.player)}. Nejbližší slova: ${SEM.near(r.word,7).slice(1).map(esc).join(", ")}.</p>
+          ${G.phase==="result"?`<button class="btn" id="nextBtn">${G.winner!=null?"Konec hry →":"Další kolo →"}</button>`:""}</div>`;
+      }else{
+        h+=`<div class="result"><div class="kicker">Políčko ${r.cell+1}</div><div class="headline">Nikdo neuhodl – zamrzá</div>
+          <p class="p">Tipy zůstávají. Kdo políčko vybere příště, naváže na ně (${RETRY_LIMIT} další tipy pro každou stranu).</p>
+          ${G.phase==="result"?`<button class="btn" id="nextBtn">Další kolo →</button>`:""}</div>`;
+      }
+    }
+    // guesses
+    const list=c.g.map((x,k)=>({...x,k})).sort((a,b)=>a.r-b.r);
+    if(!c.g.length)h+=`<div class="empty">Zatím žádné tipy. Začni něčím obecným – teplota ti řekne, jestli jdeš správně.</div>`;
+    else{
+      h+=`<div>`;
+      if(G.last!=null){h+=`<div class="lastlbl">Poslední tip</div>`+guessRow(c.g[G.last],c,"last")}
+      h+=`<div class="lastlbl" style="margin-top:10px">Všechny tipy (${c.g.length}) podle teploty</div><div class="glist">${list.map(x=>guessRow(x,c,x.r===1?"win":"")).join("")}</div></div>`;
+    }
+  }
+  el.innerHTML=h;
+  wireSide();
+}
+function howtoMini(){
+  return`<div class="card howto"><div class="kicker">Ve zkratce</div><ol>
+    <li>Vyber políčko – tipuješ v něm první.</li>
+    <li>Střídáte se v tipech. Číslo je pořadí blízkosti k tajnému slovu (#1 = trefa).</li>
+    <li>Kdo slovo najde, bere políčko. Když nikdo, zamrzne.</li>
+    <li>Propoj své barvy přes všechny tři strany.</li></ol></div>`;
+}
+function wireSide(){
+  const nb=$("#nextBtn");if(nb){nb.onclick=nextTurn;if(!(isBot(0)&&isBot(1)))setTimeout(()=>nb.focus({preventScroll:true}),30)}
+  const f=$("#gform");if(!f)return;
+  const inp=$("#gin"),sg=$("#sugg"),er=$("#gerr");
+  const drawS=()=>{
+    if(!sugState.list.length){sg.classList.add("hidden");return}
+    sg.innerHTML=sugState.list.map((i,k)=>`<button type="button" role="option" data-i="${i}" aria-selected="${k===sugState.sel}">${esc(SEM.W[i].name)}</button>`).join("");
+    sg.classList.remove("hidden");
+  };
+  const submit=val=>{
+    const wi=typeof val==="number"?val:SEM.find(val);
+    if(wi<0){er.textContent=val.trim()?`„${val.trim()}“ ve slovníku nemám – zkus jiné slovo (podstatné jméno v 1. pádě).`:"";return}
+    const msg=guess(wi);
+    if(msg){er.textContent=msg;inp.select()}
+  };
+  inp.addEventListener("input",()=>{er.textContent="";sugState={list:SEM.suggest(inp.value),sel:0};
+    if(sugState.list.length&&SEM.W[sugState.list[0]].keys.includes(norm(inp.value))&&sugState.list.length===1){}drawS()});
+  inp.addEventListener("keydown",e=>{
+    if(!sugState.list.length)return;
+    if(e.key==="ArrowDown"){e.preventDefault();sugState.sel=(sugState.sel+1)%sugState.list.length;drawS()}
+    else if(e.key==="ArrowUp"){e.preventDefault();sugState.sel=(sugState.sel-1+sugState.list.length)%sugState.list.length;drawS()}
+    else if(e.key==="Tab"){e.preventDefault();inp.value=SEM.W[sugState.list[sugState.sel]].name;sugState={list:[],sel:0};drawS()}
+    else if(e.key==="Escape"){sugState={list:[],sel:0};drawS()}
+  });
+  sg.addEventListener("mousedown",e=>{const b=e.target.closest("button");if(!b)return;e.preventDefault();sugState={list:[],sel:0};submit(+b.dataset.i)});
+  f.addEventListener("submit",e=>{e.preventDefault();
+    const exact=SEM.find(inp.value);
+    if(exact<0&&sugState.list.length&&inp.value.trim()){submit(sugState.list[sugState.sel]);return}
+    submit(inp.value)});
+  sugState={list:[],sel:0};
+  setTimeout(()=>inp.focus({preventScroll:window.innerWidth<860}),30);
+}
+function render(){renderScore();renderBoard();renderSide()}
+
+$("#board").addEventListener("click",e=>{const g=e.target.closest(".cell.pick");if(g)pickCell(+g.dataset.i)});
+$("#board").addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.closest(".cell.pick")){e.preventDefault();pickCell(+e.target.closest(".cell").dataset.i)}});
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&G&&G.phase==="result"&&document.activeElement?.tagName!=="INPUT"&&!document.activeElement?.closest("button")){nextTurn()}});
+
+/* =========================================================
+   KONEC HRY
+   ========================================================= */
+function showEnd(){
+  const s=G.winner;
+  $("#endTitle").innerHTML=`<span style="color:var(--${sideCls(s)})">${esc(G.sides[s].name)}</span> vyhrává!`;
+  const cnt=G.cells.filter(c=>c.owner===s).length;
+  $("#endText").textContent=`Propojení tří stran přes ${G.path.length} políček (celkem obsazeno ${cnt}). Kol: ${G.round}.`;
+  $("#endOv").classList.remove("hidden");
+  store.del(SAVE);
+}
+$("#endView").onclick=()=>$("#endOv").classList.add("hidden");
+$("#endNew").onclick=()=>{$("#endOv").classList.add("hidden");openStart()};
+
+/* =========================================================
+   NASTAVENÍ
+   ========================================================= */
+const PRESETS={
+  bot:[{name:"Ty",members:"",ctrl:"human"},{name:"Bot",members:"",ctrl:"bot2"}],
+  duo:[{name:"Hráč 1",members:"",ctrl:"human"},{name:"Hráč 2",members:"",ctrl:"human"}],
+  team:[{name:"Plameny",members:"Anna, Petr",ctrl:"human"},{name:"Jiskry",members:"Eva, Tomáš",ctrl:"human"}],
+  watch:[{name:"Kovář",members:"",ctrl:"bot3"},{name:"Učeň",members:"",ctrl:"bot2"}]
+};
+let cfg=store.get(CFG,null)||PRESETS.bot;
+function drawCfg(){
+  $("#sidecfg").innerHTML=cfg.map((s,k)=>`<div class="sidecfg ${k?"b":"a"}">
+    <label for="n${k}">Název strany</label><input id="n${k}" value="${esc(s.name)}" maxlength="24">
+    <label for="c${k}">Hraje</label><select id="c${k}">
+      <option value="human"${s.ctrl==="human"?" selected":""}>Člověk / lidé</option>
+      <option value="bot1"${s.ctrl==="bot1"?" selected":""}>Bot – lehký</option>
+      <option value="bot2"${s.ctrl==="bot2"?" selected":""}>Bot – střední</option>
+      <option value="bot3"${s.ctrl==="bot3"?" selected":""}>Bot – těžký</option></select>
+    <div class="${s.ctrl==="human"?"":"hidden"}"><label for="m${k}">Hráči v týmu (nepovinné)</label><input id="m${k}" value="${esc(s.members)}" placeholder="např. Anna, Petr"></div>
+  </div>`).join("");
+  cfg.forEach((s,k)=>{
+    $("#n"+k).oninput=e=>{s.name=e.target.value};
+    $("#c"+k).onchange=e=>{s.ctrl=e.target.value;markPreset(null);drawCfg()};
+    const m=$("#m"+k);if(m)m.oninput=e=>{s.members=e.target.value};
+  });
+}
+function markPreset(p){document.querySelectorAll("#presets button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.p===p))}
+document.querySelectorAll("#presets button").forEach(b=>b.onclick=()=>{cfg=JSON.parse(JSON.stringify(PRESETS[b.dataset.p]));markPreset(b.dataset.p);drawCfg()});
+function openStart(){
+  clearTimeout(botTimer);clearTimeout(autoTimer);
+  const saved=store.get(SAVE,null);
+  $("#resumeBtn").classList.toggle("hidden",!(saved&&saved.v===1&&saved.phase!=="over"));
+  drawCfg();$("#startOv").classList.remove("hidden");
+}
+$("#startBtn").onclick=()=>{
+  const c=cfg.map((s,k)=>({name:(s.name||"").trim()||(k?"Strana B":"Strana A"),ctrl:s.ctrl,
+    members:s.ctrl==="human"?(s.members||"").split(",").map(x=>x.trim()).filter(Boolean):[]}));
+  store.set(CFG,cfg);
+  $("#startOv").classList.add("hidden");
+  newGame(c);
+};
+$("#resumeBtn").onclick=()=>{G=store.get(SAVE,null);$("#startOv").classList.add("hidden");render();schedule()};
+$("#newBtn").onclick=openStart;$("#home").onclick=openStart;
+$("#rulesBtn").onclick=()=>$("#rulesOv").classList.remove("hidden");
+$("#rulesClose").onclick=()=>$("#rulesOv").classList.add("hidden");
+document.querySelectorAll(".overlay").forEach(o=>o.addEventListener("click",e=>{if(e.target===o&&o.id!=="startOv")o.classList.add("hidden")}));
+
+// start
+renderBoard();
+const sb=$("#startBtn");sb.disabled=false;sb.textContent="Začít hru";
+markPreset(store.get(CFG,null)?null:"bot");
+openStart();
+})();
+</script>
+</body>
+</html>
