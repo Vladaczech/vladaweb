@@ -1,0 +1,1389 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#050505">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Posilovna">
+<title>Posilovna</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050505;--panel:#0b0b0b;--panel2:#111;--line:#1b1b1b;--line2:#292929;
+  --text:#ececec;--muted:#8d8d8d;--muted2:#5c5c5c;
+  --neon:#39ff88;--neon-d:#1d7d46;--neon-g:rgba(57,255,136,.12);
+  --warn:#ffa630;--bad:#ff4d6d;--cyan:#3ee6ff;
+  --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;--sans:'Inter',system-ui,sans-serif;--display:'Space Grotesk','Inter',sans-serif;
+  --nav:62px;--r:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg);color-scheme:dark}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.45;min-height:100dvh;overscroll-behavior-y:none;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;background:radial-gradient(700px 420px at 90% -10%,rgba(57,255,136,.08),transparent 65%);z-index:0}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+input,select,textarea{font:inherit;color:var(--text);background:var(--panel2);border:1px solid var(--line2);border-radius:10px;padding:10px 12px;font-size:16px;outline:none;width:100%;min-width:0}
+input:focus,select:focus,textarea:focus{border-color:var(--neon);box-shadow:0 0 0 3px var(--neon-g)}
+select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 16px) 50%,calc(100% - 11px) 50%;background-size:5px 5px;background-repeat:no-repeat;padding-right:30px}
+a{color:var(--neon)}
+.hidden{display:none!important}
+.mono{font-family:var(--mono)}
+.muted{color:var(--muted)}
+.wrap{position:relative;z-index:1;max-width:560px;margin:0 auto;padding:0 16px calc(var(--nav) + env(safe-area-inset-bottom) + 96px)}
+header.top{position:sticky;top:0;z-index:15;display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top) + 12px) 0 12px;background:linear-gradient(var(--bg) 70%,rgba(5,5,5,0))}
+.brand{font-family:var(--mono);font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);flex:1}
+.brand b{color:var(--neon);text-shadow:0 0 10px rgba(57,255,136,.7);font-weight:700}
+.cursor{color:var(--neon);animation:blink 1.1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.sync{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10.5px;color:var(--muted2);letter-spacing:.06em}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted2);flex:none}
+.dot.ok{background:var(--neon);box-shadow:0 0 8px var(--neon)}
+.dot.pend{background:var(--warn);box-shadow:0 0 8px var(--warn)}
+.dot.err{background:var(--bad);box-shadow:0 0 8px var(--bad)}
+.icon-btn{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;border:1px solid var(--line);color:var(--muted)}
+.icon-btn:active{border-color:var(--neon);color:var(--neon)}
+.icon-btn.on{color:var(--neon);border-color:var(--neon-d)}
+.kicker{font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--neon)}
+h1.title{font-family:var(--display);font-size:34px;font-weight:600;letter-spacing:-.03em;line-height:1.02;margin:6px 0 18px}
+h1.title .d{color:var(--neon);text-shadow:0 0 16px var(--neon)}
+h2.sec{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin:26px 0 10px;display:flex;align-items:center;gap:10px}
+h2.sec::after{content:"";flex:1;height:1px;background:var(--line)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.stack{display:grid;gap:10px}
+.row{display:flex;gap:8px;align-items:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 16px;border-radius:12px;border:1px solid var(--line2);font-family:var(--mono);font-size:12.5px;letter-spacing:.04em;color:var(--text);white-space:nowrap}
+.btn:active{border-color:var(--neon);color:var(--neon)}
+.btn.p{background:var(--neon);border-color:var(--neon);color:#03170a;font-weight:700;box-shadow:0 0 22px rgba(57,255,136,.25)}
+.btn.p:active{color:#03170a;filter:brightness(1.1)}
+.btn.ghost{border-color:transparent;color:var(--muted)}
+.btn.danger{color:var(--bad);border-color:rgba(255,77,109,.35)}
+.btn.wide{width:100%}
+.btn.big{min-height:58px;font-size:14px;border-radius:16px}
+.btn.sm{min-height:34px;padding:0 12px;font-size:11.5px;border-radius:10px}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;margin:0 -16px;padding:0 16px 2px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;padding:7px 12px;border-radius:999px;border:1px solid var(--line2);font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.chip.on{color:#03170a;background:var(--neon);border-color:var(--neon);font-weight:700}
+.seg{display:flex;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:3px}
+.seg button{flex:1;padding:8px 6px;border-radius:9px;font-family:var(--mono);font-size:11px;color:var(--muted)}
+.seg button.on{background:#1a1a1a;color:var(--neon);box-shadow:inset 0 0 0 1px var(--neon-d)}
+
+/* nav */
+nav.bottom{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(5,5,5,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);height:var(--nav)}
+nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2)}
+nav button svg{width:22px;height:22px}
+nav button.on{color:var(--neon)}
+nav button.on svg{filter:drop-shadow(0 0 6px rgba(57,255,136,.8))}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px}
+.stat .v{font-family:var(--display);font-size:24px;font-weight:600;letter-spacing:-.02em;line-height:1.1}
+.stat .l{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2);margin-top:4px}
+.recency{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.rec{border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:2px}
+.rec b{font-weight:500;font-size:13.5px}
+.rec span{font-family:var(--mono);font-size:11px;color:var(--muted2)}
+.rec.due{border-color:var(--neon-d)}
+.rec.due span{color:var(--neon)}
+
+/* workout */
+.wo-head{display:flex;align-items:flex-end;gap:12px;margin-bottom:14px}
+.wo-head .timer{font-family:var(--display);font-size:40px;font-weight:600;letter-spacing:-.03em;line-height:1;color:var(--neon);text-shadow:0 0 18px rgba(57,255,136,.45)}
+.wo-head input{width:auto;flex:1;font-size:13px;padding:8px 10px;font-family:var(--mono);color:var(--muted)}
+.exc{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px;margin-bottom:12px}
+.exc-h{display:flex;align-items:center;gap:10px}
+.exc-h .fig-mini{width:54px;height:48px;flex:none;border-radius:10px;background:#080808;border:1px solid var(--line)}
+.exc-h .nm{flex:1;min-width:0}
+.exc-h .nm b{display:block;font-family:var(--display);font-weight:500;font-size:17px;line-height:1.2}
+.exc-h .nm span{font-family:var(--mono);font-size:10.5px;color:var(--muted2);letter-spacing:.06em}
+.reco{margin-top:10px;border-radius:12px;padding:10px 12px;background:rgba(57,255,136,.05);border:1px solid rgba(57,255,136,.18)}
+.reco .rt{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.reco .rt .k{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--neon)}
+.reco .rt b{font-family:var(--display);font-size:18px;font-weight:600}
+.reco p{font-size:12.5px;color:var(--muted);margin-top:3px}
+.reco.down{background:rgba(255,166,48,.06);border-color:rgba(255,166,48,.25)}
+.reco.down .rt .k{color:var(--warn)}
+.reco.new{background:var(--panel2);border-color:var(--line2)}
+.reco.new .rt .k{color:var(--muted)}
+.last{font-family:var(--mono);font-size:11px;color:var(--muted2);margin-top:8px}
+.sets{margin-top:10px;display:grid;gap:6px}
+.set-h,.set{display:grid;grid-template-columns:20px minmax(54px,1fr) minmax(46px,.8fr) auto 42px;gap:6px;align-items:center}
+.set-h{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted2)}
+.set .n{font-family:var(--mono);font-size:12px;color:var(--muted2);text-align:center}
+.set input{padding:9px 6px;text-align:center;font-family:var(--mono);font-size:16px;border-radius:9px}
+.set:not(.ok) input{color:var(--muted)}
+.rir{display:flex;gap:3px}
+.rir button{width:30px;height:38px;border-radius:8px;border:1px solid var(--line2);font-family:var(--mono);font-size:11.5px;color:var(--muted2)}
+.rir button.on{color:#03170a;background:var(--neon);border-color:var(--neon);font-weight:700}
+.rir button.f.on{background:var(--warn);border-color:var(--warn)}
+.chk{width:42px;height:38px;border-radius:9px;border:1px solid var(--line2);display:grid;place-items:center;color:var(--muted2)}
+.set.ok .chk{background:var(--neon);border-color:var(--neon);color:#03170a;box-shadow:0 0 14px rgba(57,255,136,.35)}
+.set.ok .n{color:var(--neon)}
+.set-actions{display:flex;gap:6px;margin-top:8px}
+.set-actions .btn{flex:1}
+.legend-rir{font-size:11px;color:var(--muted2);margin-top:8px;font-family:var(--mono)}
+
+/* library */
+.lib{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.lib-it{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:8px 8px 10px;text-align:left;display:flex;flex-direction:column;gap:6px}
+.lib-it:active{border-color:var(--neon-d)}
+.lib-it svg.fig{width:100%;height:auto;aspect-ratio:220/192;background:#080808;border-radius:10px}
+.lib-it b{font-family:var(--display);font-weight:500;font-size:14.5px;line-height:1.2;padding:0 4px}
+.lib-it span{font-family:var(--mono);font-size:10px;color:var(--muted2);padding:0 4px;letter-spacing:.06em}
+.search{position:relative;margin-bottom:10px}
+.search input{padding-left:36px}
+.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted2)}
+
+/* figures */
+svg.fig .floor{stroke:#1e1e1e;stroke-width:2}
+svg.fig .prop{stroke:#3a3a3a;stroke-width:4;stroke-linecap:round;fill:none}
+svg.fig .propf{fill:#1a1a1a;stroke:#3a3a3a;stroke-width:2}
+svg.fig .b{stroke:var(--neon);stroke-width:6;stroke-linecap:round;fill:none}
+svg.fig .far .b{stroke:var(--neon-d)}
+svg.fig .hd{fill:#050505;stroke:var(--neon);stroke-width:5}
+svg.fig .glow{filter:drop-shadow(0 0 4px rgba(57,255,136,.55))}
+svg.fig .eq{stroke:#d7d7d7;stroke-width:3;fill:#050505;stroke-linecap:round}
+svg.fig .eqh{fill:#d7d7d7}
+svg.fig .cable{stroke:#6a6a6a;stroke-width:1.5;stroke-dasharray:3 3}
+svg.fig .pul{fill:#050505;stroke:#6a6a6a;stroke-width:2}
+
+/* sheet */
+.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:40;opacity:0;pointer-events:none;transition:opacity .2s}
+.sheet-bg.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;max-height:92dvh;overflow:auto;background:#090909;border-top:1px solid var(--line2);border-radius:22px 22px 0 0;transform:translateY(102%);transition:transform .26s cubic-bezier(.2,.8,.2,1);padding:10px 16px calc(24px + env(safe-area-inset-bottom));overscroll-behavior:contain}
+.sheet.on{transform:none}
+.sheet .in{max-width:560px;margin:0 auto}
+.grab{width:42px;height:4px;border-radius:4px;background:#2a2a2a;margin:2px auto 12px}
+.sheet h3{font-family:var(--display);font-size:26px;font-weight:600;letter-spacing:-.02em;line-height:1.1}
+.pick-list{display:grid;gap:6px;margin-top:10px}
+.pick{display:flex;align-items:center;gap:12px;padding:8px;border:1px solid var(--line);border-radius:14px;text-align:left;background:var(--panel)}
+.pick svg.fig{width:64px;height:56px;flex:none;background:#080808;border-radius:9px}
+.pick b{display:block;font-weight:500;font-size:15px}
+.pick span{font-family:var(--mono);font-size:10.5px;color:var(--muted2)}
+.big-fig{background:#070707;border:1px solid var(--line);border-radius:18px;padding:6px;margin:12px 0}
+.big-fig svg{width:100%;height:auto;display:block}
+.mmap svg{width:100%;height:auto;display:block}
+.tips{display:grid;gap:8px;margin-top:4px}
+.tips li{list-style:none;display:flex;gap:10px;font-size:14px;color:#cfcfcf}
+.tips li::before{content:"›";color:var(--neon);font-family:var(--mono);font-weight:700}
+.kv{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mtags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.mtag{font-family:var(--mono);font-size:10.5px;padding:4px 9px;border-radius:999px;border:1px solid var(--line2);color:var(--muted)}
+.mtag.p{border-color:var(--neon-d);color:var(--neon)}
+
+/* charts */
+.chart{position:relative;width:100%;touch-action:pan-y}
+.chart svg{display:block;width:100%}
+.chart .ax{font-family:var(--mono);font-size:10px;fill:var(--muted2)}
+.chart .grid{stroke:#191919;stroke-width:1}
+.chart .ln{fill:none;stroke:var(--neon);stroke-width:2;stroke-linejoin:round;stroke-linecap:round;filter:drop-shadow(0 0 5px rgba(57,255,136,.5))}
+.chart .pt{fill:var(--bg);stroke:var(--neon);stroke-width:2}
+.chart .pt.f{fill:var(--neon)}
+.chart .xh{stroke:#3a3a3a;stroke-width:1}
+.tt{position:absolute;pointer-events:none;background:#0f0f0f;border:1px solid var(--line2);border-radius:10px;padding:7px 10px;font-size:12px;white-space:nowrap;transform:translate(-50%,-100%);margin-top:-10px;box-shadow:0 8px 24px rgba(0,0,0,.6);z-index:2}
+.tt b{font-family:var(--display);font-size:15px;color:var(--text)}
+.tt span{display:block;font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+.mult{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.mult .card{padding:10px 10px 8px}
+.mult .hdr{display:flex;justify-content:space-between;align-items:baseline}
+.mult .hdr b{font-size:13.5px;font-weight:500}
+.mult .hdr span{font-family:var(--mono);font-size:10.5px;color:var(--muted2)}
+.mult .big{font-family:var(--display);font-size:22px;font-weight:600;line-height:1.1}
+.mult .big small{font-family:var(--mono);font-size:10px;color:var(--muted2);font-weight:400;margin-left:4px}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2);text-align:left;font-weight:400;padding:6px 4px;border-bottom:1px solid var(--line)}
+.tbl td{padding:8px 4px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+.tbl td.r,.tbl th.r{text-align:right}
+.pr{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.pr:last-child{border-bottom:0}
+.pr .nm{flex:1;font-size:14px}
+.pr .v{font-family:var(--display);font-weight:600;font-size:16px}
+.pr .d{font-family:var(--mono);font-size:10.5px;color:var(--muted2);width:54px;text-align:right}
+
+/* history */
+.heat{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,1fr);gap:3px;justify-content:start}
+.heat i{width:14px;height:14px;border-radius:3px;background:#141414;display:block}
+.heat i.l1{background:rgba(57,255,136,.25)}.heat i.l2{background:rgba(57,255,136,.5)}.heat i.l3{background:rgba(57,255,136,.78)}.heat i.l4{background:var(--neon);box-shadow:0 0 6px rgba(57,255,136,.6)}
+.heat i.today{outline:1px solid var(--muted)}
+.heat-leg{display:flex;align-items:center;gap:4px;font-family:var(--mono);font-size:10px;color:var(--muted2);margin-top:8px}
+.heat-leg i{width:10px;height:10px;border-radius:2px;display:block}
+.hist-it{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);margin-bottom:8px;overflow:hidden}
+.hist-it>button{width:100%;text-align:left;padding:12px 14px;display:flex;gap:12px;align-items:center}
+.hist-it .dt{width:44px;flex:none;text-align:center}
+.hist-it .dt b{display:block;font-family:var(--display);font-size:22px;font-weight:600;line-height:1}
+.hist-it .dt span{font-family:var(--mono);font-size:10px;color:var(--muted2);text-transform:uppercase}
+.hist-it .sm{flex:1;min-width:0}
+.hist-it .sm b{display:block;font-weight:500;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hist-it .sm span{font-family:var(--mono);font-size:10.5px;color:var(--muted2)}
+.hist-body{padding:0 14px 12px;border-top:1px solid var(--line)}
+.hist-ex{padding:10px 0;border-bottom:1px solid var(--line)}
+.hist-ex b{font-weight:500;font-size:14px}
+.hist-ex div{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:3px;line-height:1.7}
+.f-mark{color:var(--warn)}
+
+/* rest timer */
+.rest{position:fixed;left:12px;right:12px;bottom:calc(var(--nav) + env(safe-area-inset-bottom) + 10px);z-index:25;max-width:536px;margin:0 auto;background:#0d0d0d;border:1px solid var(--neon-d);border-radius:16px;padding:10px 12px;display:flex;align-items:center;gap:10px;box-shadow:0 10px 30px rgba(0,0,0,.7),0 0 24px rgba(57,255,136,.12);overflow:hidden}
+.rest .bar{position:absolute;left:0;bottom:0;height:3px;background:var(--neon);box-shadow:0 0 10px var(--neon)}
+.rest .t{font-family:var(--display);font-size:28px;font-weight:600;color:var(--neon);min-width:76px;letter-spacing:-.02em}
+.rest .l{flex:1;font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.rest.done{border-color:var(--warn);animation:pulse .8s ease-in-out 3}
+.rest.done .t{color:var(--warn)}
+@keyframes pulse{50%{box-shadow:0 0 30px rgba(255,166,48,.5)}}
+
+/* toast */
+.toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 14px);transform:translate(-50%,-140%);z-index:60;background:#0f0f0f;border:1px solid var(--neon-d);border-radius:12px;padding:10px 16px;font-size:13.5px;max-width:calc(100% - 32px);transition:transform .25s;box-shadow:0 10px 30px rgba(0,0,0,.6)}
+.toast.on{transform:translate(-50%,0)}
+
+/* lock */
+.lock{position:relative;z-index:1;min-height:100dvh;display:flex;flex-direction:column;justify-content:center;max-width:420px;margin:0 auto;padding:32px 20px calc(32px + env(safe-area-inset-bottom))}
+.lock .hero{margin-bottom:26px}
+.lock .hero svg.fig{width:150px;height:auto;margin:0 0 6px -14px}
+.lock h1{font-family:var(--display);font-size:44px;font-weight:600;letter-spacing:-.04em;line-height:1}
+.lock h1 .d{color:var(--neon);text-shadow:0 0 18px var(--neon)}
+.lock p.sub{color:var(--muted);margin-top:8px;font-size:14px}
+.field{display:grid;gap:6px;margin-bottom:12px}
+.field label{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.field .help{font-size:12px;color:var(--muted2)}
+.check{display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--muted);margin:4px 0 16px}
+.check input{width:18px;height:18px;accent-color:var(--neon)}
+.err-msg{color:var(--bad);font-size:13px;min-height:18px;margin-top:8px}
+.empty{color:var(--muted2);text-align:center;padding:28px 10px;font-size:14px}
+.note{font-size:12.5px;color:var(--muted2)}
+</style>
+</head>
+<body>
+
+<!-- ZAMČENÁ OBRAZOVKA -->
+<div class="lock hidden" id="lock">
+  <div class="hero">
+    <div id="lock-fig"></div>
+    <h1>Posilovna<span class="d">.</span></h1>
+    <p class="sub">Tréninkový deník, progresivní přetížení a doporučení na příště.</p>
+  </div>
+  <form id="lock-form" autocomplete="on">
+    <input type="text" name="username" value="posilovna" autocomplete="username" hidden>
+    <div class="field" id="f-token">
+      <label for="l-token">GitHub token</label>
+      <input id="l-token" type="password" placeholder="github_pat_…" autocomplete="off">
+      <div class="help">Stejný token jako u decku (Contents: Read and write pro <b>vladaweb</b>). <a id="l-token-link" target="_blank" rel="noopener">Vytvořit token ↗</a> · nebo nech prázdné a ukládej jen v tomto telefonu.</div>
+    </div>
+    <div class="field">
+      <label for="l-pw">Heslo k deníku</label>
+      <input id="l-pw" type="password" autocomplete="current-password" placeholder="••••••••">
+    </div>
+    <div class="field hidden" id="f-pw2">
+      <label for="l-pw2">Heslo znovu (nový deník)</label>
+      <input id="l-pw2" type="password" autocomplete="new-password" placeholder="••••••••">
+      <div class="help">Data se šifrují tímto heslem (AES‑256). Bez něj je nikdo – ani ty – neotevře, tak si ho ulož.</div>
+    </div>
+    <label class="check"><input type="checkbox" id="l-remember" checked> Zapamatovat na tomto zařízení</label>
+    <button class="btn p big wide" type="submit" id="l-go">Odemknout</button>
+    <div class="err-msg" id="l-err"></div>
+  </form>
+</div>
+
+<!-- APLIKACE -->
+<div class="wrap hidden" id="app">
+  <header class="top">
+    <div class="brand"><b>POSILOVNA</b><span class="cursor">_</span></div>
+    <div class="sync" id="sync"><span class="dot" id="sync-dot"></span><span id="sync-t">—</span></div>
+    <button class="icon-btn" id="btn-set" aria-label="Nastavení"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+  </header>
+  <main id="main"></main>
+</div>
+
+<nav class="bottom hidden" id="nav"><div class="in">
+  <button data-view="train" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5v11M17.5 6.5v11M3 9v6M21 9v6M6.5 12h11"/></svg>Trénink</button>
+  <button data-view="lib"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4.5" r="2"/><path d="M12 7v7l-3 7M12 14l3 7M6 10l6-2 6 2"/></svg>Cviky</button>
+  <button data-view="hist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Historie</button>
+  <button data-view="prog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18M5 16l4-5 4 3 6-8"/><path d="M15 6h4v4"/></svg>Progres</button>
+</div></nav>
+
+<div class="rest hidden" id="rest">
+  <div class="bar" id="rest-bar"></div>
+  <div class="t" id="rest-t">0:00</div>
+  <div class="l">Pauza</div>
+  <button class="btn sm" data-rest="-15">−15</button>
+  <button class="btn sm" data-rest="15">+15</button>
+  <button class="btn sm ghost" data-rest="x" aria-label="Zavřít">✕</button>
+</div>
+
+<div class="sheet-bg" id="sheet-bg"></div>
+<div class="sheet" id="sheet"><div class="in"><div class="grab"></div><div id="sheet-c"></div></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+/* ═══════════════════════════════════════════════════════════════
+   DATA – CVIKY
+   Pozice pro animaci: boční pohled, postava kouká doprava, podlaha y=150.
+   H = kyčel, t = úhel trupu (0 dolů, 90 doprava, 180 nahoru),
+   hand/foot = cíl pro ruku/nohu (dopočítá se loket/koleno),
+   jinak ua/fa (paže, předloktí), th/sh (stehno, bérec) jako úhly.
+   ═══════════════════════════════════════════════════════════════ */
+const GROUPS = ['Hrudník', 'Záda', 'Nohy', 'Ramena', 'Paže', 'Core'];
+const EQ = {
+  barbell: { n: 'Velká činka', inc: 2.5 },
+  dumbbell: { n: 'Jednoručky', inc: 2 },
+  machine: { n: 'Stroj', inc: 5 },
+  cable: { n: 'Kladka', inc: 2.5 },
+  bw: { n: 'Vlastní váha', inc: 2.5 },
+};
+const MUSCLE = { chest: 'Prsa', delts: 'Ramena', triceps: 'Triceps', biceps: 'Biceps', forearms: 'Předloktí', abs: 'Břicho', obliques: 'Šikmé břišní', quads: 'Kvadricepsy', hamstrings: 'Hamstringy', glutes: 'Hýždě', calves: 'Lýtka', lats: 'Široký zádový', traps: 'Trapézy', lowerback: 'Spodní záda' };
+
+const STAND = { H: [95, 70], t: 180, foot: [95, 146] };
+const EX = [
+  { id: 'bench', n: 'Bench press', g: 'Hrudník', eq: 'barbell', lo: 5, hi: 8, m: ['chest'], m2: ['triceps', 'delts'],
+    tips: ['Lopatky stáhni k sobě a dolů, drž je tak celou sérii.', 'Spouštěj na spodní část hrudníku, lokty zhruba 45° od těla.', 'Chodidla pevně na zemi, zadek zůstává na lavici.'],
+    a: { eq: 'barbell', props: [['bench', 40, 112, 100]], A: { H: [118, 106], t: -90, hand: [72, 52], foot: [150, 146] }, B: { hand: [84, 92] } } },
+  { id: 'incline', n: 'Tlaky s jednoručkami na šikmé', g: 'Hrudník', eq: 'dumbbell', lo: 8, hi: 12, m: ['chest', 'delts'], m2: ['triceps'],
+    tips: ['Lavice na 30–45°, víc už přebírají ramena.', 'Jednoručky spouštěj do protažení, předloktí kolmo k zemi.', 'Nahoře je nesrážej – drž napětí v prsou.'],
+    a: { eq: 'dumbbell', props: [['line', 126, 113, 72, 76], ['line', 96, 113, 146, 113], ['line', 118, 113, 118, 150]], A: { H: [120, 106], t: -125, hand: [82, 26], foot: [158, 146] }, B: { hand: [94, 66] } } },
+  { id: 'pushup', n: 'Kliky', g: 'Hrudník', eq: 'bw', lo: 10, hi: 25, m: ['chest'], m2: ['triceps', 'delts', 'abs'],
+    tips: ['Tělo v jedné linii – zpevni břicho i hýždě.', 'Dolů až hrudníkem těsně nad zem.', 'Lokty šikmo dozadu, ne do stran.'],
+    a: { A: { H: [110, 114], t: 112, hand: [153, 150], foot: [40, 144], ft: 60 }, B: { H: [114, 133], t: 98 } } },
+  { id: 'dips', n: 'Dipy na bradlech', g: 'Hrudník', eq: 'bw', lo: 6, hi: 12, m: ['chest', 'triceps'], m2: ['delts'],
+    tips: ['Mírný předklon = víc prsa, vzpřímeně = víc triceps.', 'Dolů, dokud rameno není zhruba v úrovni lokte.', 'Ramena drž dole od uší.'],
+    a: { props: [['line', 80, 84, 125, 84], ['line', 122, 84, 122, 150]], A: { H: [98, 78], t: 178, hand: [100, 84], th: 30, sh: -80 }, B: { H: [94, 102], t: 168 } } },
+
+  { id: 'pullup', n: 'Shyby', g: 'Záda', eq: 'bw', lo: 5, hi: 10, m: ['lats'], m2: ['biceps', 'forearms', 'traps'],
+    tips: ['Začni z plného visu, lopatky nejdřív stáhni dolů.', 'Táhni lokty k bokům, bradou nad hrazdu.', 'Bez švihu – dolů pomalu a pod kontrolou.'],
+    a: { props: [['bar', 60, 140, -26]], A: { H: [100, 76], t: 180, hand: [100, -24], th: 15, sh: -40, ft: 40 }, B: { H: [100, 40], t: 176 } } },
+  { id: 'deadlift', n: 'Mrtvý tah', g: 'Záda', eq: 'barbell', lo: 3, hi: 6, m: ['hamstrings', 'glutes', 'lowerback'], m2: ['quads', 'traps', 'forearms', 'lats'],
+    tips: ['Činka nad středem chodidla, drž ji těsně u nohou.', 'Neutrální záda – hrudník nahoru, zpevněný trup.', 'Tlač nohama do země, kyčle a ramena stoupají spolu.'],
+    a: { eq: 'barbell', A: { H: [76, 96], t: 112, hand: [102, 137], foot: [95, 146] }, B: { H: [92, 70], t: 178, hand: [97, 78] } } },
+  { id: 'row', n: 'Přítahy v předklonu', g: 'Záda', eq: 'barbell', lo: 6, hi: 10, m: ['lats', 'traps'], m2: ['biceps', 'delts', 'lowerback'],
+    tips: ['Předklon asi 45°, záda rovná, kolena mírně pokrčená.', 'Táhni k pupíku, lokty podél těla.', 'Nahoře stáhni lopatky, nehoupej trupem.'],
+    a: { eq: 'barbell', A: { H: [78, 76], t: 125, hand: [113, 102], foot: [95, 146] }, B: { hand: [100, 80] } } },
+  { id: 'latpull', n: 'Stahování kladky', g: 'Záda', eq: 'cable', lo: 8, hi: 12, m: ['lats'], m2: ['biceps', 'traps'],
+    tips: ['Úchop o něco širší než ramena.', 'Hrudník nahoru, táhni tyč k hornímu hrudníku.', 'Nahoře nech lopatky vyjet a protáhni se.'],
+    a: { eq: 'handle', cable: [92, -34], props: [['bench', 58, 112, 44]], A: { H: [82, 106], t: 176, hand: [92, 8], foot: [122, 146] }, B: { t: 170, hand: [106, 54] } } },
+  { id: 'cablerow', n: 'Veslování na kladce', g: 'Záda', eq: 'cable', lo: 8, hi: 12, m: ['lats', 'traps'], m2: ['biceps', 'delts'],
+    tips: ['Sed vzpřímeně, kolena lehce pokrčená.', 'Přitahuj k břichu, lokty těsně u těla.', 'Na konci stáhni lopatky, trupem moc nehoupej.'],
+    a: { eq: 'handle', cable: [182, 98], props: [['bench', 36, 128, 62], ['line', 142, 112, 142, 148]], A: { H: [70, 122], t: 150, hand: [140, 96], foot: [136, 132], ft: 150 }, B: { t: 183, hand: [96, 100] } } },
+
+  { id: 'squat', n: 'Dřep s velkou činkou', g: 'Nohy', eq: 'barbell', lo: 5, hi: 8, m: ['quads', 'glutes'], m2: ['hamstrings', 'lowerback', 'abs'],
+    tips: ['Chodidla na šíři ramen, špičky lehce ven.', 'Kolena jdou ve směru špiček, paty na zemi.', 'Dolů aspoň do paralely, hrudník drž nahoře.'],
+    a: { eq: 'barbell', A: { H: [95, 70], t: 180, ua: -20, fa: 165, foot: [95, 146] }, B: { H: [72, 108], t: 140, ua: -55, fa: 125 } } },
+  { id: 'legpress', n: 'Legpress', g: 'Nohy', eq: 'machine', lo: 8, hi: 12, m: ['quads', 'glutes'], m2: ['hamstrings'],
+    tips: ['Spodní část zad drž přitisknutou k opěrce.', 'Dolů, dokud se pánev neodlepuje.', 'Nahoře kolena úplně nezamykej.'],
+    a: { eq: 'sled', eqAt: 'A', props: [['line', 22, 84, 62, 124], ['line', 30, 126, 92, 126]], A: { H: [60, 118], t: -130, ua: 40, fa: 80, foot: [100, 84], ft: 150 }, B: { foot: [124, 64] } } },
+  { id: 'rdl', n: 'Rumunský mrtvý tah', g: 'Nohy', eq: 'barbell', lo: 6, hi: 10, m: ['hamstrings', 'glutes'], m2: ['lowerback', 'forearms'],
+    tips: ['Kolena jen mírně pokrčená, pohyb jde z kyčlí.', 'Zadek posílej dozadu, činka klouže po stehnech.', 'Dolů jen dokud udržíš rovná záda.'],
+    a: { eq: 'barbell', A: { H: [92, 70], t: 178, hand: [97, 78], foot: [95, 146] }, B: { H: [76, 74], t: 105, hand: [118, 112] } } },
+  { id: 'lunge', n: 'Bulharské výpady / výpady', g: 'Nohy', eq: 'dumbbell', lo: 8, hi: 12, m: ['quads', 'glutes'], m2: ['hamstrings', 'calves'],
+    tips: ['Krok dost dlouhý, aby přední pata zůstala na zemi.', 'Zadní koleno jde těsně nad zem.', 'Trup vzpřímeně, váha na přední noze.'],
+    a: { eq: 'dumbbell', A: { H: [90, 72], t: 180, hand: [93, 80], foot: [120, 146], foot2: [58, 140], ft2: 20 }, B: { H: [88, 106], t: 178, hand: [91, 114] } } },
+  { id: 'legext', n: 'Předkopávání', g: 'Nohy', eq: 'machine', lo: 10, hi: 15, m: ['quads'], m2: [],
+    tips: ['Kolenní kloub v ose otáčení stroje.', 'Nahoře na chvíli zastav a zatni stehna.', 'Dolů pomalu, nepouštěj závaží.'],
+    a: { eq: 'roller', eqAt: 'A', props: [['bench', 46, 108, 62], ['line', 50, 108, 56, 48]], A: { H: [70, 102], t: 174, hand: [70, 108], th: 90, sh: 10, ft: 100 }, B: { sh: 82, ft: 170 } } },
+  { id: 'legcurl', n: 'Zakopávání', g: 'Nohy', eq: 'machine', lo: 10, hi: 15, m: ['hamstrings'], m2: ['calves'],
+    tips: ['Boky drž přitisknuté k lavici.', 'Paty táhni co nejblíž k hýždím.', 'Spouštěj pomalu, 2–3 sekundy.'],
+    a: { eq: 'roller', eqAt: 'A', props: [['bench', 30, 106, 130]], A: { H: [95, 100], t: 90, hand: [166, 112], th: -90, sh: -90, ft: 0 }, B: { sh: -165, ft: -75 } } },
+  { id: 'calf', n: 'Výpony na lýtka', g: 'Nohy', eq: 'dumbbell', lo: 10, hi: 15, m: ['calves'], m2: [],
+    tips: ['Dole pořádně protáhni, paty pod úroveň schodu.', 'Nahoře vteřinu podrž.', 'Kolena propnutá, bez houpání.'],
+    a: { eq: 'dumbbell', props: [['step', 92, 146, 40]], A: { H: [95, 70], t: 180, hand: [97, 78], foot: [95, 142], ft: 70 }, B: { H: [95, 60], hand: [97, 68], foot: [95, 132], ft: 20 } } },
+  { id: 'hipthrust', n: 'Hip thrust', g: 'Nohy', eq: 'barbell', lo: 8, hi: 12, m: ['glutes'], m2: ['hamstrings', 'quads'],
+    tips: ['Lopatky o hranu lavice, brada ke hrudníku.', 'Nahoře tělo v linii, zatni hýždě.', 'Holeně nahoře kolmo k zemi.'],
+    a: { eq: 'barbell', props: [['bench', 8, 104, 46]], A: { H: [80, 130], t: -139, hand: [84, 118], foot: [118, 146] }, B: { H: [96, 98], t: -90, hand: [98, 86] } } },
+
+  { id: 'ohp', n: 'Tlaky nad hlavu', g: 'Ramena', eq: 'barbell', lo: 5, hi: 8, m: ['delts'], m2: ['triceps', 'traps', 'abs'],
+    tips: ['Zpevni hýždě a břicho, neprohýbej se v bedrech.', 'Činka jde svisle, hlavu nahoře lehce prostrč.', 'Lokty pod činkou, ne za ní.'],
+    a: { eq: 'barbell', A: { H: [95, 70], t: 180, hand: [103, 22], foot: [95, 146] }, B: { t: 181, hand: [96, -28] } } },
+  { id: 'latraise', n: 'Upažování s jednoručkami', g: 'Ramena', eq: 'dumbbell', inc: 1, lo: 12, hi: 20, m: ['delts'], m2: ['traps'],
+    tips: ['Lokty lehce pokrčené, vedou pohyb.', 'Zvedej do výšky ramen, ne výš.', 'Bez švihu – raději lehčí váha a čistý pohyb.'],
+    a: { front: true, eq: 'dumbbell', A: { H: [100, 70], t: 180, ua: 8, fa: 6, th: 4, sh: 1 }, B: { ua: 86, fa: 82 } } },
+  { id: 'facepull', n: 'Face pull', g: 'Ramena', eq: 'cable', lo: 12, hi: 20, m: ['delts', 'traps'], m2: ['biceps'],
+    tips: ['Kladka ve výšce obličeje, lano nadhmatem.', 'Táhni k očím a rozevři lano do stran.', 'Lokty vysoko, na konci vytoč ruce ven.'],
+    a: { eq: 'handle', cable: [198, 14], ab: -1, A: { H: [92, 70], t: 181, hand: [146, 18], foot: [95, 146] }, B: { t: 184, hand: [110, 6] } } },
+
+  { id: 'curl', n: 'Bicepsový zdvih', g: 'Paže', eq: 'dumbbell', inc: 1, lo: 8, hi: 12, m: ['biceps'], m2: ['forearms'],
+    tips: ['Lokty u těla, nehýbou se.', 'Nahoře zatni, dolů pomalu do propnutí.', 'Bez švihu trupem.'],
+    a: { eq: 'dumbbell', A: { ...STAND, ua: 3, fa: 3 }, B: { ua: -8, fa: 160 } } },
+  { id: 'hammer', n: 'Kladivové zdvihy', g: 'Paže', eq: 'dumbbell', inc: 1, lo: 8, hi: 12, m: ['biceps', 'forearms'], m2: [],
+    tips: ['Neutrální úchop – palce nahoru.', 'Lokty u těla.', 'Klidně střídavě, ale bez houpání.'],
+    a: { eq: 'dumbbell', A: { ...STAND, ua: 3, fa: 3 }, B: { ua: -6, fa: 150 } } },
+  { id: 'pushdown', n: 'Stahování kladky na triceps', g: 'Paže', eq: 'cable', lo: 10, hi: 15, m: ['triceps'], m2: [],
+    tips: ['Lokty u boků, hýbou se jen předloktí.', 'Dole úplně propni a zatni.', 'Nahoru jen po úroveň hrudníku.'],
+    a: { eq: 'handle', cable: [112, -34], A: { H: [92, 70], t: 174, ua: -4, fa: 150, foot: [95, 146] }, B: { fa: 4 } } },
+
+  { id: 'plank', n: 'Plank', g: 'Core', eq: 'bw', unit: 's', inc: 10, lo: 30, hi: 90, m: ['abs'], m2: ['obliques', 'delts'],
+    tips: ['Lokty pod rameny, tělo v jedné linii.', 'Zatni hýždě a podsaď pánev.', 'Dýchej, nezadržuj dech.'],
+    a: { A: { H: [100, 124], t: 98, hand: [168, 148], foot: [30, 144], ft: 60 }, B: { H: [100, 121] } } },
+  { id: 'hlr', n: 'Zvedání nohou ve visu', g: 'Core', eq: 'bw', lo: 8, hi: 15, m: ['abs'], m2: ['obliques', 'forearms'],
+    tips: ['Nehoupej se – začni z klidného visu.', 'Podsaď pánev, nejen zvedni nohy.', 'Dolů pomalu.'],
+    a: { props: [['bar', 60, 140, -26]], A: { H: [100, 76], t: 180, hand: [100, -24], th: 2, sh: 2, ft: 80 }, B: { th: 95, sh: 92, ft: 170 } } },
+  { id: 'crunch', n: 'Zkracovačky', g: 'Core', eq: 'bw', lo: 12, hi: 20, m: ['abs'], m2: ['obliques'],
+    tips: ['Bedra zůstávají na zemi.', 'Zvedni jen lopatky, vydechni nahoře.', 'Netahej se rukama za hlavu.'],
+    a: { A: { H: [100, 143], t: -90, hand: 'head', foot: [140, 146], ft: 80 }, B: { t: -122 } } },
+];
+EX.forEach(e => { if (e.a) e.a.B = { ...e.a.A, ...e.a.B }; });
+
+/* ═══════════════════════════════════════════════════════════════
+   STAV, POMOCNÉ FUNKCE
+   ═══════════════════════════════════════════════════════════════ */
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const now = () => Date.now();
+const num = v => { const n = parseFloat(String(v).replace(',', '.')); return isFinite(n) ? n : null; };
+const fmt = (n, d = 1) => n == null ? '–' : String(+(+n).toFixed(d)).replace('.', ',');
+const fmtInt = n => Math.round(n).toLocaleString('cs-CZ');
+const DAY = 864e5;
+const pl = (n, a, b, c) => `${n} ${n === 1 ? a : n >= 2 && n <= 4 ? b : c}`;
+const dShort = d => new Date(d).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric' });
+const dLong = d => new Date(d).toLocaleDateString('cs-CZ', { weekday: 'long', day: 'numeric', month: 'long' });
+const localISO = (t = now()) => { const d = new Date(t); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 16); };
+const startOfDay = t => { const d = new Date(t); d.setHours(0, 0, 0, 0); return d.getTime(); };
+const startOfWeek = t => { const d = new Date(startOfDay(t)); const wd = (d.getDay() + 6) % 7; return d.getTime() - wd * DAY; };
+const ls = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} }, del(k) { try { localStorage.removeItem(k); } catch {} } };
+
+let S = null;                 // dešifrovaný stav
+let view = 'train';
+const ui = { libGroup: 'Vše', libQ: '', pickGroup: 'Vše', pickQ: '', progEx: null, progMetric: 'e1', histOpen: null, setOpen: false };
+
+function blank() { return { v: 1, w: [], cx: [], set: { rest: 120, inc: {} }, setU: 0 }; }
+function allEx() { return [...EX, ...(S ? S.cx.filter(c => !c.del) : [])]; }
+function getEx(id) { return allEx().find(e => e.id === id) || (S && S.cx.find(c => c.id === id)) || { id, n: 'Neznámý cvik', g: 'Core', eq: 'bw', lo: 8, hi: 12, m: [], m2: [] }; }
+function incOf(ex) { return ex.inc ?? (S.set.inc && S.set.inc[ex.eq]) ?? EQ[ex.eq]?.inc ?? 2.5; }
+function unitOf(ex) { return ex.unit === 's' ? 's' : 'opak.'; }
+function liveWorkouts() { return S.w.filter(w => !w.del); }
+function openWorkout() { return liveWorkouts().filter(w => w.open).sort((a, b) => b.d.localeCompare(a.d))[0] || null; }
+function doneWorkouts() { return liveWorkouts().filter(w => !w.open).sort((a, b) => b.d.localeCompare(a.d)); }
+function touch(w) { w.u = now(); }
+const rirOf = s => s.q == null ? 2 : s.q;
+const e1rm = s => s.w > 0 ? s.w * (1 + (s.r + rirOf(s)) / 30) : 0;
+const doneSets = it => it.s.filter(s => s.ok && s.r > 0);
+
+/* ═══════════════════════════════════════════════════════════════
+   ŠIFROVÁNÍ (AES‑GCM, klíč z hesla přes PBKDF2)
+   ═══════════════════════════════════════════════════════════════ */
+const te = new TextEncoder(), td = new TextDecoder();
+const b64 = buf => { let s = ''; const b = new Uint8Array(buf); for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s); };
+const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const ITER = 210000;
+let KEY = null, SALT = null;
+async function deriveKey(pw, salt) {
+  const base = await crypto.subtle.importKey('raw', te.encode(pw), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: ITER, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+}
+async function encrypt(obj) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, KEY, te.encode(JSON.stringify(obj)));
+  return { v: 1, app: 'posilovna', iter: ITER, salt: b64(SALT), iv: b64(iv), ct: b64(ct) };
+}
+async function decrypt(vault, key = KEY) {
+  const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(vault.iv) }, key, unb64(vault.ct));
+  return JSON.parse(td.decode(pt));
+}
+const K_VAULT = 'posilovna-vault', K_KEY = 'posilovna-key', K_DIRTY = 'posilovna-dirty', K_LASTCT = 'posilovna-lastct', K_GH = 'vibe-deck-gh';
+async function rememberKey() { ls.set(K_KEY, JSON.stringify({ k: b64(await crypto.subtle.exportKey('raw', KEY)), s: b64(SALT) })); }
+async function loadRememberedKey() {
+  const r = JSON.parse(ls.get(K_KEY) || 'null'); if (!r) return false;
+  KEY = await crypto.subtle.importKey('raw', unb64(r.k), { name: 'AES-GCM' }, true, ['encrypt', 'decrypt']);
+  SALT = unb64(r.s); return true;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GITHUB – data na samostatné větvi (necommituje do main, nespouští Pages)
+   ═══════════════════════════════════════════════════════════════ */
+const DATA_BRANCH = 'posilovna-data', DATA_PATH = 'posilovna.json';
+function gh() {
+  let c = null; try { c = JSON.parse(ls.get(K_GH) || 'null'); } catch {}
+  return c && c.token ? { token: c.token, owner: c.owner || 'Vladaczech', repo: c.repo || 'vladaweb' } : null;
+}
+function tokenUrl() {
+  return 'https://github.com/settings/personal-access-tokens/new?name=vladaweb-deck&description=' + encodeURIComponent('Ukládání decku a posilovny z webu vladaweb') + '&target_name=Vladaczech&expires_in=none&contents=write';
+}
+async function api(path, opts = {}) {
+  const g = gh(); if (!g) throw new Error('Chybí token');
+  const r = await fetch(`https://api.github.com/repos/${g.owner}/${g.repo}/${path}`, {
+    ...opts, cache: 'no-store',
+    headers: { Authorization: 'Bearer ' + g.token, Accept: 'application/vnd.github+json', ...(opts.body ? { 'Content-Type': 'application/json' } : {}) },
+  });
+  if (r.status === 401 || (r.status === 403 && r.headers.get('x-ratelimit-remaining') !== '0')) { const e = new Error(r.status === 401 ? 'Token GitHubu je neplatný nebo vypršel' : 'Token nemá právo zapisovat do repozitáře'); e.auth = true; throw e; }
+  return r;
+}
+const toB64 = s => btoa(unescape(encodeURIComponent(s)));
+const fromB64 = s => decodeURIComponent(escape(atob(s.replace(/\n/g, ''))));
+async function ghRead() {
+  const r = await api(`contents/${DATA_PATH}?ref=${DATA_BRANCH}`);
+  if (r.status === 404) return null;
+  if (!r.ok) throw new Error('GitHub: ' + r.status);
+  const j = await r.json();
+  let content = j.content;
+  if (!content && j.sha) { const b = await api(`git/blobs/${j.sha}`); content = (await b.json()).content; }
+  return { sha: j.sha, vault: JSON.parse(fromB64(content)) };
+}
+async function ensureBranch() {
+  const r = await api(`git/ref/heads/${DATA_BRANCH}`);
+  if (r.ok) return;
+  const repo = await (await api('')).json();
+  const base = await (await api(`git/ref/heads/${repo.default_branch || 'main'}`)).json();
+  const c = await api('git/refs', { method: 'POST', body: JSON.stringify({ ref: `refs/heads/${DATA_BRANCH}`, sha: base.object.sha }) });
+  if (!c.ok && c.status !== 422) throw new Error('Nepodařilo se vytvořit větev pro data');
+}
+async function ghWrite(vault, sha) {
+  const body = { message: 'Sync posilovna (web)', content: toB64(JSON.stringify(vault)), branch: DATA_BRANCH };
+  if (sha) body.sha = sha;
+  let r = await api(`contents/${DATA_PATH}`, { method: 'PUT', body: JSON.stringify(body) });
+  if (r.status === 404 || (r.status === 422 && !sha)) { await ensureBranch(); r = await api(`contents/${DATA_PATH}`, { method: 'PUT', body: JSON.stringify(body) }); }
+  return r;
+}
+
+/* ── Slučování (záznamy podle id, vyhrává novější úprava) ── */
+function mergeState(a, b) {
+  const pick = (x, y) => { const m = new Map(); for (const it of [...x, ...y]) { const o = m.get(it.id); if (!o || (it.u || 0) > (o.u || 0)) m.set(it.id, it); } return [...m.values()]; };
+  return { v: 1, w: pick(a.w || [], b.w || []), cx: pick(a.cx || [], b.cx || []), set: (a.setU || 0) >= (b.setU || 0) ? a.set : b.set, setU: Math.max(a.setU || 0, b.setU || 0) };
+}
+const sameState = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
+/* ── Ukládání ── */
+let saveT = null, pushT = null, pushing = false, pushAgain = false;
+function commit(rerender = false) {
+  clearTimeout(saveT); saveT = setTimeout(saveLocal, 250);
+  ls.set(K_DIRTY, '1');
+  schedulePush();
+  if (rerender) render();
+}
+async function saveLocal() { clearTimeout(saveT); ls.set(K_VAULT, JSON.stringify(await encrypt(S))); }
+function schedulePush(delay) {
+  if (!gh()) { syncStatus('local'); return; }
+  syncStatus('pend');
+  clearTimeout(pushT);
+  pushT = setTimeout(push, delay ?? (openWorkout() ? 15000 : 2000));
+}
+async function push() {
+  clearTimeout(pushT);
+  if (!gh()) { syncStatus('local'); return; }
+  if (pushing) { pushAgain = true; return; }
+  pushing = true; syncStatus('busy');
+  try {
+    await saveLocal();
+    for (let i = 0; i < 3; i++) {
+      const rem = await ghRead();
+      if (rem && rem.vault.ct !== ls.get(K_LASTCT)) {
+        if (rem.vault.salt !== b64(SALT)) throw Object.assign(new Error('Heslo bylo změněno na jiném zařízení – přihlas se znovu.'), { relogin: true });
+        const d = await decrypt(rem.vault);
+        const merged = mergeState(S, d);
+        if (!sameState(merged, S)) { S = merged; safeRender(); }
+      }
+      if (rem && ls.get(K_DIRTY) !== '1' && rem.vault.ct === ls.get(K_LASTCT)) { syncStatus('ok'); break; }
+      const v = await encrypt(S);
+      const r = await ghWrite(v, rem && rem.sha);
+      if (r.ok) { ls.set(K_LASTCT, v.ct); ls.set(K_VAULT, JSON.stringify(v)); ls.del(K_DIRTY); syncStatus('ok'); break; }
+      if (r.status === 409 || r.status === 422) continue;
+      throw new Error('GitHub: ' + r.status);
+    }
+  } catch (e) {
+    syncStatus('err', e.message);
+    if (e.relogin) { lockApp(e.message); }
+  } finally {
+    pushing = false;
+    if (pushAgain) { pushAgain = false; schedulePush(500); }
+  }
+}
+async function pull() {
+  if (!gh()) { syncStatus('local'); return; }
+  try {
+    syncStatus('busy');
+    const rem = await ghRead();
+    if (rem && rem.vault.ct !== ls.get(K_LASTCT)) {
+      if (rem.vault.salt !== b64(SALT)) { lockApp('Heslo bylo změněno na jiném zařízení – přihlas se znovu.'); return; }
+      const d = await decrypt(rem.vault);
+      const merged = mergeState(S, d);
+      const changed = !sameState(merged, S);
+      S = merged;
+      if (sameState(S, d)) { ls.set(K_LASTCT, rem.vault.ct); if (!changed) {} }
+      if (changed) safeRender();
+      await saveLocal();
+    }
+    if (ls.get(K_DIRTY) === '1' || !rem) await push(); else syncStatus('ok');
+  } catch (e) { syncStatus('err', e.message); }
+}
+function syncStatus(s, msg) {
+  const dot = $('#sync-dot'), t = $('#sync-t');
+  dot.className = 'dot ' + ({ ok: 'ok', pend: 'pend', busy: 'pend', err: 'err' }[s] || '');
+  t.textContent = { ok: 'GitHub', pend: 'čeká', busy: 'sync…', err: 'chyba', local: 'offline' }[s] || '';
+  $('#sync').title = msg || { ok: 'Uloženo na GitHubu', pend: 'Změny čekají na odeslání', busy: 'Synchronizuji…', local: 'Ukládá se jen v tomto zařízení' }[s] || '';
+  ui.syncMsg = msg || '';
+}
+function safeRender() { const a = document.activeElement; if (a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA') && $('#main').contains(a)) return; render(); }
+
+/* ═══════════════════════════════════════════════════════════════
+   DOPORUČENÍ – dvojitá progrese s ohledem na selhání (RIR)
+   ═══════════════════════════════════════════════════════════════ */
+function sessions(exId, excludeId) {
+  return doneWorkouts().filter(w => w.id !== excludeId).map(w => {
+    const sets = w.it.filter(i => i.ex === exId).flatMap(doneSets);
+    return sets.length ? { d: w.d, sets, wid: w.id } : null;
+  }).filter(Boolean);
+}
+const bestE1 = sets => Math.max(0, ...sets.map(e1rm));
+function roundTo(v, inc, mode = 'round') { return Math[mode](v / inc - 1e-9 * (mode === 'ceil' ? 1 : 0)) * inc; }
+
+function recommend(ex, excludeId) {
+  const H = sessions(ex.id, excludeId);
+  const inc = incOf(ex), lo = ex.lo, hi = ex.hi, u = unitOf(ex), timed = ex.unit === 's';
+  const heavy = lo <= 6;
+  const rirNote = heavy ? 'Cíl RIR 1–2, u těžkých vícekloubových cviků selhání nehoň.' : 'Cíl RIR 0–2, poslední sérii klidně do selhání.';
+  if (!H.length) return { kind: 'new', w: null, r: lo, n: 3, head: `${lo}–${hi} ${u}`, txt: `První záznam. Zvol váhu, se kterou dáš ${lo}–${hi} ${u} a zbudou ti 2–3 v rezervě.` };
+  const last = H[0].sets;
+  const W = Math.max(...last.map(s => s.w));
+  const top = last.filter(s => s.w === W);
+  const reps = top.map(s => s.r), minR = Math.min(...reps), maxR = Math.max(...reps);
+  const fails = top.filter(s => s.q === 0).length;
+  const avgQ = top.reduce((a, s) => a + rirOf(s), 0) / top.length;
+  const n = Math.max(2, Math.min(6, last.length));
+  const out = (kind, w, r, txt) => ({ kind, w, r: Math.round(r), n, head: (w > 0 ? `${fmt(w, 2)} kg × ` : (ex.eq === 'bw' ? 'vlastní váha × ' : '')) + `${Math.round(r)} ${u}`, txt: txt + (kind !== 'down' ? ' ' + rirNote : ''), last: H[0] });
+
+  // Vlastní váha bez zátěže – progrese přes opakování / čas
+  if (W === 0) {
+    if (timed) return minR >= hi && !fails ? out('up', 0, maxR + inc, `Zvládáš ${hi} s – prodluž o ${inc} s nebo přidej těžší variantu.`) : out('reps', 0, Math.min(hi, maxR + (avgQ >= 2 ? 10 : 5)), 'Prodluž výdrž.');
+    if (minR >= hi && !fails) return out('up', inc, lo, `Všechny série na ${hi}+ ${u} s rezervou → přidej zátěž ${fmt(inc, 2)} kg (opasek/vesta/jednoručka).`);
+    if (fails && minR < lo) return out('hold', 0, lo, `Pod rozsahem a do selhání – drž a cíl ${lo} ${u}.`);
+    return out('reps', 0, Math.min(hi, maxR + (avgQ >= 2 && !fails ? 2 : 1)), avgQ >= 2 && !fails ? 'Měl jsi rezervu → +2 opakování.' : 'Přidej 1 opakování.');
+  }
+
+  // Stagnace: 3 tréninky bez zlepšení odhadu 1RM a se selháním → odlehčit
+  if (H.length >= 3 && fails) {
+    const [a, b, c] = H.slice(0, 3).map(h => bestE1(h.sets));
+    if (a <= Math.max(b, c) * 1.005 && b <= c * 1.01) {
+      const w = Math.max(inc, roundTo(W * 0.9, inc, 'floor'));
+      return out('down', w, Math.min(hi, lo + 2), `Tři tréninky bez zlepšení a končíš v selhání → odlehčení na ~90 % (${fmt(w, 2)} kg), nech 2–3 opakování v rezervě. Příště zase nahoru.`);
+    }
+  }
+  if (minR >= hi) {
+    const step = !fails && avgQ >= 3 ? inc * 2 : inc;
+    return out('up', W + step, lo, fails
+      ? `Horní hranici ${hi} ${u} jsi dal, i když na selhání → přidej ${fmt(step, 2)} kg a začni od ${lo} ${u}.`
+      : `Všechny série na ${hi}+ ${u} s rezervou → přidej ${fmt(step, 2)} kg.`);
+  }
+  if (minR < lo) {
+    if (fails) {
+      const prev = H[1] && H[1].sets.filter(s => s.w === W);
+      const prevBad = prev && prev.length && Math.min(...prev.map(s => s.r)) < lo && prev.some(s => s.q === 0);
+      if (lo - minR >= 2 || prevBad) {
+        const w = Math.max(inc, Math.min(W - inc, roundTo(W * 0.92, inc, 'floor')));
+        return out('down', w, lo, `Pod rozsahem (${minR} < ${lo}) a do selhání${prevBad ? ' už podruhé' : ''} → váha je zatím moc. Uber na ${fmt(w, 2)} kg a dej ${lo}–${hi} ${u} s rezervou 1–2.`);
+      }
+      return out('hold', W, lo, `Těsně pod rozsahem se selháním → drž ${fmt(W, 2)} kg a zkus dotáhnout všechny série na ${lo} ${u}.`);
+    }
+    return out('hold', W, lo, `Pod rozsahem, ale s rezervou → stejná váha, víc se zaber.`);
+  }
+  // V rozsahu
+  if (avgQ >= 3 && !fails) {
+    if (maxR >= Math.round((lo + hi) / 2)) return out('up', W + inc, lo, `Šlo to snadno (rezerva 3+) → rovnou přidej ${fmt(inc, 2)} kg.`);
+    return out('reps', W, Math.min(hi, minR + 2), 'Velká rezerva → +2 opakování v každé sérii.');
+  }
+  if (fails >= Math.ceil(top.length / 2) || top[0].q === 0) {
+    return out('hold', W, Math.min(hi, minR + 1), `Většina sérií do selhání → drž ${fmt(W, 2)} kg, cíl ${Math.min(hi, minR + 1)} ${u} v nejslabší sérii a nech 1 v rezervě.`);
+  }
+  return out('reps', W, Math.min(hi, minR + 1), `Přidej 1 opakování. Až dáš ${hi} ${u} ve všech sériích, přidá se váha.`);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   VIZUALIZACE CVIKŮ – animovaná postava
+   ═══════════════════════════════════════════════════════════════ */
+const V = (a, L) => [Math.sin(a * Math.PI / 180) * L, Math.cos(a * Math.PI / 180) * L];
+const add = (p, v) => [p[0] + v[0], p[1] + v[1]];
+const LEN = { to: 46, nk: 17, ua: 28, fa: 26, th: 38, sh: 38, ft: 11 };
+function ik(P, T, L1, L2, s) {
+  const dx = T[0] - P[0], dy = T[1] - P[1];
+  let d = Math.hypot(dx, dy) || 0.001; const ux = dx / d, uy = dy / d;
+  d = Math.min(Math.max(d, Math.abs(L1 - L2) + 0.5), L1 + L2 - 0.2);
+  const a = (L1 * L1 - L2 * L2 + d * d) / (2 * d), h = Math.sqrt(Math.max(0, L1 * L1 - a * a));
+  return [[P[0] + a * ux - uy * h * s, P[1] + a * uy + ux * h * s], [P[0] + d * ux, P[1] + d * uy]];
+}
+function lerpPose(A, B, p) {
+  const o = {};
+  for (const k in A) {
+    const a = A[k], b = B[k];
+    if (typeof a === 'number') o[k] = a + (b - a) * p;
+    else if (Array.isArray(a)) o[k] = [a[0] + (b[0] - a[0]) * p, a[1] + (b[1] - a[1]) * p];
+    else o[k] = a;
+  }
+  return o;
+}
+function solve(an, p) {
+  const P = lerpPose(an.A, an.B, p);
+  const H = P.H, S = add(H, V(P.t, LEN.to)), Hd = add(S, V(P.t, LEN.nk));
+  let E, Wr;
+  if (P.hand === 'head') [E, Wr] = ik(S, add(Hd, [-4, 0]), LEN.ua, LEN.fa, an.ab ?? 1);
+  else if (P.hand) [E, Wr] = ik(S, P.hand, LEN.ua, LEN.fa, an.ab ?? 1);
+  else { E = add(S, V(P.ua, LEN.ua)); Wr = add(E, V(P.fa, LEN.fa)); }
+  let K, A;
+  if (P.foot) [K, A] = ik(H, P.foot, LEN.th, LEN.sh, an.lb ?? -1);
+  else { K = add(H, V(P.th, LEN.th)); A = add(K, V(P.sh, LEN.sh)); }
+  const T = add(A, V(P.ft ?? 70, LEN.ft));
+  const o = { H, S, Hd, E, W: Wr, K, A, T };
+  if (P.foot2) { const [K2, A2] = ik(H, P.foot2, LEN.th, LEN.sh, an.lb ?? -1); o.K2 = K2; o.A2 = A2; o.T2 = add(A2, V(P.ft2 ?? 70, LEN.ft)); }
+  return o;
+}
+function solveFront(an, p) {
+  const P = lerpPose(an.A, an.B, p);
+  const H = P.H, S = add(H, [0, -LEN.to]), Hd = add(S, [0, -LEN.nk]);
+  const side = sg => {
+    const Sx = add(S, [13 * sg, 2]), Hx = add(H, [7 * sg, 0]);
+    const E = add(Sx, V(P.ua * sg, LEN.ua)), W = add(E, V(P.fa * sg, LEN.fa));
+    const K = add(Hx, V(P.th * sg, LEN.th)), A = add(K, V(P.sh * sg, LEN.sh)), T = add(A, [6 * sg, 3]);
+    return { Sx, Hx, E, W, K, A, T };
+  };
+  return { H, S, Hd, R: side(1), L: side(-1) };
+}
+function eqShape(t) {
+  if (t === 'barbell') return '<circle class="eq" r="13"/><circle class="eqh" r="3"/>';
+  if (t === 'dumbbell') return '<circle class="eq" r="6.5"/><circle class="eqh" r="2"/>';
+  if (t === 'handle') return '<line class="eq" x1="-8" y1="0" x2="8" y2="0"/>';
+  if (t === 'roller') return '<circle class="eq" r="6"/>';
+  if (t === 'sled') return '<line class="eq" x1="-6" y1="-16" x2="12" y2="14" style="stroke-width:5"/>';
+  return '';
+}
+function propSvg(pr) {
+  const [t, ...a] = pr;
+  if (t === 'line') return `<line class="prop" x1="${a[0]}" y1="${a[1]}" x2="${a[2]}" y2="${a[3]}"/>`;
+  if (t === 'bench') { const [x, y, w] = a; return `<line class="prop" x1="${x + 8}" y1="${y + 4}" x2="${x + 8}" y2="150"/><line class="prop" x1="${x + w - 8}" y1="${y + 4}" x2="${x + w - 8}" y2="150"/><rect class="propf" x="${x}" y="${y}" width="${w}" height="7" rx="3"/>`; }
+  if (t === 'bar') { const [x1, x2, y] = a; return `<line class="prop" x1="${x1}" y1="${y}" x2="${x2}" y2="${y}"/><line class="prop" x1="${x1}" y1="${y}" x2="${x1}" y2="150" style="stroke-width:3;opacity:.6"/><line class="prop" x1="${x2}" y1="${y}" x2="${x2}" y2="150" style="stroke-width:3;opacity:.6"/>`; }
+  if (t === 'step') { const [x, y, w] = a; return `<rect class="propf" x="${x}" y="${y}" width="${w}" height="${150 - y}" rx="2"/>`; }
+  return '';
+}
+function figSvg(ex, cls = '') {
+  const an = ex.a;
+  if (!an) return `<svg class="fig ${cls}" viewBox="-10 -36 220 192"><text x="100" y="70" text-anchor="middle" fill="#3a3a3a" font-family="JetBrains Mono" font-size="14">${esc(ex.g)}</text><line class="floor" x1="0" y1="150" x2="200" y2="150"/></svg>`;
+  const L = k => `<line class="b" data-k="${k}"/>`;
+  const props = (an.props || []).map(propSvg).join('');
+  const pul = an.cable ? `<line class="cable" data-k="cab"/><circle class="pul" cx="${an.cable[0]}" cy="${an.cable[1]}" r="5"/>` : '';
+  const eq = an.eq ? `<g data-k="eq">${eqShape(an.eq)}</g>` : '';
+  if (an.front) {
+    return `<svg class="fig ${cls}" viewBox="-10 -36 220 192" data-ex="${ex.id}"><line class="floor" x1="0" y1="150" x2="200" y2="150"/>
+      <g class="glow">${L('to')}${L('sl')}${L('hl')}${['R', 'L'].map(s => L('ua' + s) + L('fa' + s) + L('th' + s) + L('sh' + s) + L('ft' + s)).join('')}<circle class="hd" r="9" data-k="hd"/></g>
+      ${an.eq ? `<g data-k="eqR">${eqShape(an.eq)}</g><g data-k="eqL">${eqShape(an.eq)}</g>` : ''}</svg>`;
+  }
+  return `<svg class="fig ${cls}" viewBox="-10 -36 220 192" data-ex="${ex.id}"><line class="floor" x1="0" y1="150" x2="200" y2="150"/>${props}${pul}
+    <g class="far">${an.A.foot2 ? L('th2') + L('sh2') + L('ft2') : ''}</g>
+    <g class="glow">${L('th')}${L('sh')}${L('ft')}${L('to')}${L('nk')}<circle class="hd" r="9" data-k="hd"/>${L('ua')}${L('fa')}</g>${eq}</svg>`;
+}
+function setL(el, a, b) { if (!el) return; el.setAttribute('x1', a[0].toFixed(1)); el.setAttribute('y1', a[1].toFixed(1)); el.setAttribute('x2', b[0].toFixed(1)); el.setAttribute('y2', b[1].toFixed(1)); }
+function drawFig(svg, ex, p) {
+  const an = ex.a; if (!an) return;
+  const g = svg._k || (svg._k = Object.fromEntries($$('[data-k]', svg).map(e => [e.dataset.k, e])));
+  if (an.front) {
+    const o = solveFront(an, p);
+    setL(g.to, o.H, o.S); setL(g.sl, o.R.Sx, o.L.Sx); setL(g.hl, o.R.Hx, o.L.Hx);
+    g.hd.setAttribute('cx', o.Hd[0]); g.hd.setAttribute('cy', o.Hd[1] + 4);
+    for (const s of ['R', 'L']) {
+      const q = o[s];
+      setL(g['ua' + s], q.Sx, q.E); setL(g['fa' + s], q.E, q.W); setL(g['th' + s], q.Hx, q.K); setL(g['sh' + s], q.K, q.A); setL(g['ft' + s], q.A, q.T);
+      if (g['eq' + s]) g['eq' + s].setAttribute('transform', `translate(${q.W[0].toFixed(1)} ${q.W[1].toFixed(1)})`);
+    }
+    return;
+  }
+  const o = solve(an, p);
+  setL(g.to, o.H, o.S); setL(g.nk, o.S, add(o.S, [(o.Hd[0] - o.S[0]) * .3, (o.Hd[1] - o.S[1]) * .3]));
+  g.hd.setAttribute('cx', o.Hd[0].toFixed(1)); g.hd.setAttribute('cy', o.Hd[1].toFixed(1));
+  setL(g.ua, o.S, o.E); setL(g.fa, o.E, o.W);
+  setL(g.th, o.H, o.K); setL(g.sh, o.K, o.A); setL(g.ft, o.A, o.T);
+  if (o.K2) { setL(g.th2, o.H, o.K2); setL(g.sh2, o.K2, o.A2); setL(g.ft2, o.A2, o.T2); }
+  if (g.cab) setL(g.cab, an.cable, o.W);
+  if (g.eq) { const at = an.eqAt === 'A' ? (an.eq === 'sled' ? o.T : o.A) : o.W; g.eq.setAttribute('transform', `translate(${at[0].toFixed(1)} ${at[1].toFixed(1)})`); }
+}
+const RM = matchMedia('(prefers-reduced-motion: reduce)');
+const PERIOD = 2800;
+function phase(t, off = 0) {
+  if (RM.matches) return 0.65;
+  const x = ((t + off) % PERIOD) / PERIOD;
+  const tri = x < .5 ? x * 2 : (1 - x) * 2;
+  const y = Math.min(1, Math.max(0, (tri - .12) / .76));
+  return y * y * (3 - 2 * y);
+}
+function animLoop(t) {
+  for (const svg of document.querySelectorAll('svg.fig[data-ex]')) {
+    const r = svg.getBoundingClientRect();
+    if (r.bottom < -50 || r.top > innerHeight + 50 || !r.width) continue;
+    const ex = svg._ex || (svg._ex = getEx(svg.dataset.ex));
+    drawFig(svg, ex, svg.classList.contains('static') ? 0.55 : phase(t));
+  }
+  requestAnimationFrame(animLoop);
+}
+
+/* ── Svalová mapa ── */
+const MF = [['traps', 42, 26, 5, 2.5, 28], ['delts', 34, 31, 7, 6, 0], ['chest', 42.5, 39, 8, 6, 0], ['biceps', 29, 48, 4, 8, 8], ['forearms', 25.5, 64, 3.5, 9, 12], ['abs', 50, 58, 6.5, 13, 0], ['obliques', 40, 60, 3, 9, 0], ['quads', 43, 92, 6.5, 16, -4], ['calves', 44, 124, 3.5, 10, 0]];
+const MB = [['traps', 50, 32, 11, 8, 0], ['delts', 34, 31, 7, 6, 0], ['lats', 40.5, 48, 7, 12, 10], ['triceps', 29, 48, 4, 8, 8], ['forearms', 25.5, 64, 3.5, 9, 12], ['lowerback', 50, 64, 6, 7, 0], ['glutes', 44, 78, 7, 7, 0], ['hamstrings', 43, 98, 5.5, 13, -3], ['calves', 44, 124, 4.5, 10, 0]];
+function muscleMap(ex) {
+  const fill = id => ex.m.includes(id) ? 'fill="#39ff88" style="filter:drop-shadow(0 0 4px rgba(57,255,136,.8))"' : (ex.m2 || []).includes(id) ? 'fill="#1d7d46"' : 'fill="#1c1c1c"';
+  const body = (shapes, dx) => {
+    let s = `<g transform="translate(${dx} 0)"><circle cx="50" cy="12" r="8" fill="#141414" stroke="#262626"/><rect x="47" y="19" width="6" height="6" fill="#141414"/><ellipse cx="50" cy="74" rx="13" ry="7" fill="#141414"/>`;
+    for (const sx of [0, 1]) { s += `<circle cx="${sx ? 77 : 23}" cy="76" r="3" fill="#141414"/><ellipse cx="${sx ? 56 : 44}" cy="141" rx="4" ry="2.5" fill="#141414"/>`; }
+    for (const [id, x, y, rx, ry, rot] of shapes) {
+      s += `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" transform="rotate(${rot} ${x} ${y})" ${fill(id)}><title>${MUSCLE[id]}</title></ellipse>`;
+      if (x !== 50) s += `<ellipse cx="${100 - x}" cy="${y}" rx="${rx}" ry="${ry}" transform="rotate(${-rot} ${100 - x} ${y})" ${fill(id)}><title>${MUSCLE[id]}</title></ellipse>`;
+    }
+    return s + '</g>';
+  };
+  return `<svg viewBox="0 0 215 162" role="img" aria-label="Zapojené svaly">${body(MF, 0)}${body(MB, 115)}
+    <text x="50" y="160" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#5c5c5c" letter-spacing="1.5">ZEPŘEDU</text>
+    <text x="165" y="160" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#5c5c5c" letter-spacing="1.5">ZEZADU</text></svg>`;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GRAFY
+   ═══════════════════════════════════════════════════════════════ */
+function niceStep(v) { const p = 10 ** Math.floor(Math.log10(v || 1)); const f = v / p; return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * p; }
+function lineChart(el, pts, unit) {
+  if (!pts.length) { el.innerHTML = '<div class="empty">Zatím žádná data.</div>'; return; }
+  const W = Math.max(280, el.clientWidth || 340), H = 210, m = { l: 40, r: 14, t: 16, b: 26 };
+  const xs = pts.map(p => p.x), ys = pts.map(p => p.y);
+  let x0 = Math.min(...xs), x1 = Math.max(...xs); if (x0 === x1) { x0 -= DAY * 3; x1 += DAY * 3; }
+  let y0 = Math.min(...ys), y1 = Math.max(...ys); const pad = Math.max((y1 - y0) * .15, y1 * .04, 1); y0 -= pad; y1 += pad;
+  const step = niceStep((y1 - y0) / 4); y0 = Math.floor(y0 / step) * step; y1 = Math.ceil(y1 / step) * step; if (y0 < 0 && Math.min(...ys) >= 0) y0 = 0;
+  const X = x => m.l + (x - x0) / (x1 - x0) * (W - m.l - m.r), Y = y => H - m.b - (y - y0) / (y1 - y0) * (H - m.t - m.b);
+  let g = '';
+  for (let v = y0; v <= y1 + 1e-9; v += step) g += `<line class="grid" x1="${m.l}" x2="${W - m.r}" y1="${Y(v)}" y2="${Y(v)}"/><text class="ax" x="${m.l - 6}" y="${Y(v) + 3}" text-anchor="end">${fmt(v, 1)}</text>`;
+  g += `<text class="ax" x="${X(xs[0])}" y="${H - 8}" text-anchor="${pts.length > 1 ? 'start' : 'middle'}">${dShort(xs[0])}</text>`;
+  if (pts.length > 1) g += `<text class="ax" x="${X(xs[xs.length - 1])}" y="${H - 8}" text-anchor="end">${dShort(xs[xs.length - 1])}</text>`;
+  const d = pts.map((p, i) => `${i ? 'L' : 'M'}${X(p.x).toFixed(1)},${Y(p.y).toFixed(1)}`).join('');
+  const area = `${d}L${X(xs[xs.length - 1]).toFixed(1)},${H - m.b}L${X(xs[0]).toFixed(1)},${H - m.b}Z`;
+  const dots = pts.length <= 40 ? pts.map(p => `<circle class="pt${p.f ? ' f' : ''}" cx="${X(p.x)}" cy="${Y(p.y)}" r="4"/>`).join('') : '';
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" height="${H}"><defs><linearGradient id="ga" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#39ff88" stop-opacity=".18"/><stop offset="1" stop-color="#39ff88" stop-opacity="0"/></linearGradient></defs>${g}
+    <path d="${area}" fill="url(#ga)"/><path class="ln" d="${d}"/>${dots}<line class="xh" y1="${m.t}" y2="${H - m.b}" style="display:none"/><circle class="pt f" r="5.5" style="display:none" data-hl/></svg><div class="tt hidden"></div>`;
+  const svg = $('svg', el), xh = $('.xh', el), hl = $('[data-hl]', el), tt = $('.tt', el);
+  const show = ev => {
+    const r = svg.getBoundingClientRect(); const mx = (ev.clientX - r.left) / r.width * W;
+    let best = pts[0]; for (const p of pts) if (Math.abs(X(p.x) - mx) < Math.abs(X(best.x) - mx)) best = p;
+    const cx = X(best.x), cy = Y(best.y);
+    xh.setAttribute('x1', cx); xh.setAttribute('x2', cx); xh.style.display = '';
+    hl.setAttribute('cx', cx); hl.setAttribute('cy', cy); hl.style.display = '';
+    tt.innerHTML = `<b>${fmt(best.y, 1)} ${unit}</b><span>${dShort(best.x)}${best.tip ? ' · ' + best.tip : ''}</span>`;
+    tt.classList.remove('hidden');
+    const px = cx / W * r.width; tt.style.left = Math.min(Math.max(px, 70), r.width - 70) + 'px'; tt.style.top = (cy / H * r.height) + 'px';
+  };
+  const hide = () => { xh.style.display = 'none'; hl.style.display = 'none'; tt.classList.add('hidden'); };
+  svg.addEventListener('pointermove', show); svg.addEventListener('pointerdown', show); svg.addEventListener('pointerleave', hide);
+}
+function weekBars(vals, labels) {
+  const W = 150, H = 64, mx = Math.max(22, ...vals), bw = W / vals.length;
+  const Y = v => H - v / mx * (H - 4);
+  let s = `<svg viewBox="0 0 ${W} ${H + 12}" style="width:100%;display:block;margin-top:6px"><rect x="0" y="${Y(20)}" width="${W}" height="${Y(10) - Y(20)}" fill="rgba(57,255,136,.06)"/><line x1="0" x2="${W}" y1="${Y(10)}" y2="${Y(10)}" stroke="#1d3a28" stroke-dasharray="2 3"/><line x1="0" x2="${W}" y1="${Y(20)}" y2="${Y(20)}" stroke="#1d3a28" stroke-dasharray="2 3"/><line x1="0" x2="${W}" y1="${H}" y2="${H}" stroke="#222"/>`;
+  vals.forEach((v, i) => {
+    const x = i * bw + 2, w = bw - 4, y = Y(v), last = i === vals.length - 1;
+    if (v > 0) s += `<path d="M${x},${H}V${y + 3}a3,3 0 0 1 3,-3h${w - 6}a3,3 0 0 1 3,3V${H}Z" fill="${last ? '#39ff88' : '#1d7d46'}"><title>${labels[i]}: ${v} sérií</title></path>`;
+  });
+  s += `<text x="0" y="${H + 11}" font-family="JetBrains Mono" font-size="8" fill="#5c5c5c">${labels[0]}</text><text x="${W}" y="${H + 11}" text-anchor="end" font-family="JetBrains Mono" font-size="8" fill="#5c5c5c">tento týden</text></svg>`;
+  return s;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   VIEWS
+   ═══════════════════════════════════════════════════════════════ */
+function render() {
+  $$('nav button').forEach(b => b.classList.toggle('on', b.dataset.view === view));
+  $('#btn-set').classList.toggle('on', view === 'set');
+  const m = $('#main');
+  m.innerHTML = ({ train: vTrain, lib: vLib, hist: vHist, prog: vProg, set: vSet })[view]();
+  if (view === 'prog') mountProg();
+  if (view === 'train') tickTimers();
+}
+
+function weekStats() {
+  const ws = startOfWeek(now());
+  const wk = doneWorkouts().filter(w => new Date(w.d).getTime() >= ws);
+  let sets = 0, vol = 0;
+  wk.forEach(w => w.it.forEach(it => doneSets(it).forEach(s => { sets++; vol += s.w * s.r; })));
+  return { n: wk.length, sets, vol };
+}
+function lastByGroup() {
+  const res = {}; for (const g of GROUPS) res[g] = null;
+  for (const w of doneWorkouts()) for (const it of w.it) { const g = getEx(it.ex).g; if (doneSets(it).length && (!res[g] || res[g] < w.d)) res[g] = w.d; }
+  return res;
+}
+function vTrain() {
+  const w = openWorkout();
+  if (!w) {
+    const st = weekStats(), lb = lastByGroup();
+    const rec = GROUPS.map(g => { const d = lb[g] ? Math.floor((startOfDay(now()) - startOfDay(new Date(lb[g]))) / DAY) : null; return { g, d }; }).sort((a, b) => (b.d ?? 999) - (a.d ?? 999));
+    const lastW = doneWorkouts()[0];
+    return `<div class="kicker">${esc(dLong(now()))}</div>
+      <h1 class="title">Jdeme<br>makat<span class="d">.</span></h1>
+      <button class="btn p big wide" data-act="start">▶ Začít trénink</button>
+      <h2 class="sec">Tento týden</h2>
+      <div class="stats"><div class="stat"><div class="v">${st.n}</div><div class="l">tréninky</div></div><div class="stat"><div class="v">${st.sets}</div><div class="l">série</div></div><div class="stat"><div class="v">${st.vol >= 10000 ? fmt(st.vol / 1000, 1) + 't' : fmtInt(st.vol)}</div><div class="l">objem kg</div></div></div>
+      <h2 class="sec">Kdy naposledy</h2>
+      <div class="recency">${rec.map((r, i) => `<div class="rec ${i < 2 ? 'due' : ''}"><b>${r.g}</b><span>${r.d == null ? 'ještě ne' : r.d === 0 ? 'dnes' : r.d === 1 ? 'včera' : `před ${r.d} d`}</span></div>`).join('')}</div>
+      <p class="note" style="margin-top:8px">Zvýrazněné partie máš nejdéle neodcvičené.</p>
+      ${lastW ? `<h2 class="sec">Poslední trénink</h2>${histItem(lastW, false)}` : ''}`;
+  }
+  const items = w.it.map((it, i) => exCard(w, it, i)).join('');
+  return `<div class="wo-head"><div><div class="kicker">Trénink běží</div><div class="timer" id="wo-timer">0:00</div></div>
+      <input type="datetime-local" data-f="wdate" value="${esc(w.d)}" aria-label="Datum tréninku"></div>
+    ${items || '<div class="empty">Přidej první cvik.</div>'}
+    <button class="btn wide big" data-act="pick" style="margin-bottom:10px">＋ Přidat cvik</button>
+    <div class="row"><button class="btn p wide big" data-act="finish">✓ Dokončit trénink</button></div>
+    <div class="row" style="margin-top:8px"><button class="btn ghost wide sm" data-act="discard">Zahodit trénink</button></div>`;
+}
+function exCard(w, it, i) {
+  const ex = getEx(it.ex), rc = recommend(ex, w.id);
+  const u = unitOf(ex);
+  const lastTxt = rc.last ? `Minule ${dShort(rc.last.d)}: ` + rc.last.sets.map(s => `${s.w > 0 ? fmt(s.w, 2) + '×' : ''}${s.r}${s.q === 0 ? '<span class="f-mark">S</span>' : ''}`).join(' · ') : '';
+  const rows = it.s.map((s, j) => `<div class="set ${s.ok ? 'ok' : ''}" data-i="${i}" data-j="${j}">
+      <span class="n">${j + 1}</span>
+      <input inputmode="decimal" data-f="w" value="${s.w ?? ''}" placeholder="${ex.eq === 'bw' ? '+kg' : 'kg'}" aria-label="Váha série ${j + 1}">
+      <input inputmode="numeric" data-f="r" value="${s.r ?? ''}" placeholder="${u === 's' ? 's' : 'op.'}" aria-label="Opakování série ${j + 1}">
+      <div class="rir">${[[0, 'S'], [1, '1'], [2, '2'], [3, '3+']].map(([q, l]) => `<button class="${q === 0 ? 'f ' : ''}${s.q === q ? 'on' : ''}" data-act="q" data-q="${q}" aria-label="${q === 0 ? 'Selhání' : 'Rezerva ' + l}">${l}</button>`).join('')}</div>
+      <button class="chk" data-act="ok" aria-label="Série hotová"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></button>
+    </div>`).join('');
+  return `<div class="exc" data-i="${i}">
+    <div class="exc-h"><button data-act="detail" data-ex="${ex.id}" aria-label="Ukázka cviku">${figSvg(ex, 'fig-mini')}</button>
+      <div class="nm"><b>${esc(ex.n)}</b><span>${ex.g.toUpperCase()} · ${ex.lo}–${ex.hi} ${u} · ${EQ[ex.eq]?.n || ''}</span></div>
+      <button class="icon-btn" data-act="rmex" aria-label="Odebrat cvik">✕</button></div>
+    <div class="reco ${rc.kind === 'down' ? 'down' : rc.kind === 'new' ? 'new' : ''}"><div class="rt"><span class="k">${{ up: '↑ Přidej', reps: '↗ Opakování', hold: '→ Drž', down: '↓ Uber', new: 'Start' }[rc.kind]}</span><b>${esc(rc.head)}</b><span class="mono muted" style="font-size:11px">${rc.n} série</span></div><p>${esc(rc.txt)}</p></div>
+    ${lastTxt ? `<div class="last">${lastTxt}</div>` : ''}
+    <div class="sets"><div class="set-h"><span>#</span><span>${ex.eq === 'bw' ? '+kg' : 'kg'}</span><span>${u === 's' ? 'sek.' : 'opak.'}</span><span>rezerva</span><span></span></div>${rows}</div>
+    <div class="set-actions"><button class="btn sm" data-act="addset">＋ Série</button><button class="btn sm ghost" data-act="rmset">− Série</button></div>
+    ${i === 0 ? '<div class="legend-rir">Rezerva (RIR): S = selhání, 1–3+ = kolik opakování ještě zbývalo.</div>' : ''}
+  </div>`;
+}
+function newSetsFor(ex, w) {
+  const rc = recommend(ex, w.id);
+  const sw = rc.w ?? (ex.eq === 'bw' ? 0 : null);
+  return Array.from({ length: rc.n }, () => ({ w: sw, r: rc.r, q: null, ok: false }));
+}
+
+/* ── Knihovna cviků ── */
+function vLib() {
+  const q = ui.libQ.toLowerCase();
+  const list = allEx().filter(e => (ui.libGroup === 'Vše' || e.g === ui.libGroup) && (!q || e.n.toLowerCase().includes(q)));
+  return `<div class="kicker">${allEx().length} cviků</div><h1 class="title">Cviky<span class="d">.</span></h1>
+    <div class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input data-f="libq" placeholder="Hledat cvik…" value="${esc(ui.libQ)}"></div>
+    <div class="chips" style="margin-bottom:14px">${['Vše', ...GROUPS].map(g => `<button class="chip ${ui.libGroup === g ? 'on' : ''}" data-act="libg" data-g="${g}">${g}</button>`).join('')}</div>
+    <div class="lib">${list.map(e => `<button class="lib-it" data-act="detail" data-ex="${e.id}">${figSvg(e)}<b>${esc(e.n)}</b><span>${e.g.toUpperCase()} · ${e.lo}–${e.hi}</span></button>`).join('') || '<div class="empty">Nic nenalezeno.</div>'}</div>`;
+}
+function detailSheet(id) {
+  const ex = getEx(id), w = openWorkout();
+  const H = sessions(ex.id);
+  const rc = recommend(ex, w && w.id);
+  const best = H.reduce((b, h) => { for (const s of h.sets) { const v = ex.eq === 'bw' && s.w === 0 ? s.r : e1rm(s); if (v > b.v) b = { v, d: h.d }; } return b; }, { v: 0, d: null });
+  const inW = w && w.it.some(i => i.ex === ex.id);
+  openSheet(`<div class="kicker">${ex.g} · ${EQ[ex.eq]?.n || ''}</div><h3>${esc(ex.n)}</h3>
+    <div class="big-fig">${figSvg(ex)}</div>
+    <div class="mmap">${muscleMap(ex)}</div>
+    <div class="mtags">${ex.m.map(m => `<span class="mtag p">${MUSCLE[m]}</span>`).join('')}${(ex.m2 || []).map(m => `<span class="mtag">${MUSCLE[m]}</span>`).join('')}</div>
+    ${ex.tips ? `<h2 class="sec">Technika</h2><ul class="tips">${ex.tips.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}
+    <h2 class="sec">Tvoje data</h2>
+    <div class="kv"><div class="stat"><div class="v">${ex.lo}–${ex.hi}</div><div class="l">rozsah ${unitOf(ex)}</div></div>
+      <div class="stat"><div class="v">${best.v ? fmt(best.v, 1) : '–'}</div><div class="l">${ex.eq === 'bw' ? 'rekord' : 'odhad 1RM'}</div></div>
+      <div class="stat"><div class="v">${H.length}</div><div class="l">tréninků</div></div></div>
+    <div class="reco ${rc.kind === 'down' ? 'down' : rc.kind === 'new' ? 'new' : ''}"><div class="rt"><span class="k">Příště</span><b>${esc(rc.head)}</b><span class="mono muted" style="font-size:11px">${rc.n} série</span></div><p>${esc(rc.txt)}</p></div>
+    <div style="margin-top:16px" class="stack">
+      ${w ? (inW ? '<button class="btn wide" disabled style="opacity:.5">Už je v tréninku</button>' : `<button class="btn p wide big" data-act="addex" data-ex="${ex.id}">＋ Přidat do tréninku</button>`) : `<button class="btn p wide big" data-act="startwith" data-ex="${ex.id}">▶ Začít trénink s tímto cvikem</button>`}
+      ${H.length ? `<button class="btn wide" data-act="toprog" data-ex="${ex.id}">Graf progresu</button>` : ''}
+      ${ex.custom ? `<button class="btn danger wide sm" data-act="delcx" data-ex="${ex.id}">Smazat vlastní cvik</button>` : ''}
+    </div>`);
+}
+function pickSheet() {
+  const w = openWorkout(); if (!w) return;
+  const q = ui.pickQ.toLowerCase();
+  const used = new Set(w.it.map(i => i.ex));
+  const list = allEx().filter(e => !used.has(e.id) && (ui.pickGroup === 'Vše' || e.g === ui.pickGroup) && (!q || e.n.toLowerCase().includes(q)));
+  const html = `<h3>Přidat cvik</h3>
+    <div class="search" style="margin-top:12px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input data-f="pickq" placeholder="Hledat…" value="${esc(ui.pickQ)}"></div>
+    <div class="chips">${['Vše', ...GROUPS].map(g => `<button class="chip ${ui.pickGroup === g ? 'on' : ''}" data-act="pickg" data-g="${g}">${g}</button>`).join('')}</div>
+    <div class="pick-list">${list.map(e => { const rc = recommend(e, w.id); return `<button class="pick" data-act="addex" data-ex="${e.id}">${figSvg(e, 'static')}<div><b>${esc(e.n)}</b><span>${e.g.toUpperCase()}${rc.kind !== 'new' ? ' · příště ' + esc(rc.head) : ''}</span></div></button>`; }).join('') || '<div class="empty">Nic dalšího.</div>'}</div>`;
+    openSheet(html);
+}
+
+/* ── Historie ── */
+function histItem(w, expandable = true) {
+  const t = new Date(w.d);
+  const exs = w.it.filter(i => doneSets(i).length);
+  const sets = exs.reduce((a, i) => a + doneSets(i).length, 0);
+  const vol = exs.reduce((a, i) => a + doneSets(i).reduce((b, s) => b + s.w * s.r, 0), 0);
+  const dur = w.end ? Math.round((w.end - new Date(w.d).getTime()) / 60000) : null;
+  const open = ui.histOpen === w.id;
+  const groups = [...new Set(exs.map(i => getEx(i.ex).g))].join(' · ');
+  return `<div class="hist-it"><button data-act="${expandable ? 'histtog' : 'gohist'}" data-id="${w.id}">
+      <div class="dt"><b>${t.getDate()}</b><span>${t.toLocaleDateString('cs-CZ', { month: 'short' })}</span></div>
+      <div class="sm"><b>${esc(groups || 'Bez cviků')}</b><span>${pl(exs.length, 'cvik', 'cviky', 'cviků')} · ${pl(sets, 'série', 'série', 'sérií')} · ${fmtInt(vol)} kg${dur && dur > 0 && dur < 600 ? ` · ${dur} min` : ''}</span></div>
+      <span class="mono muted" style="font-size:12px">${open ? '−' : '+'}</span></button>
+    ${open ? `<div class="hist-body">${exs.map(i => { const ex = getEx(i.ex); return `<div class="hist-ex"><b>${esc(ex.n)}</b><div>${doneSets(i).map(s => `${s.w > 0 ? fmt(s.w, 2) + ' kg × ' : ''}${s.r}${ex.unit === 's' ? ' s' : ''}${s.q === 0 ? ' <span class="f-mark">selhání</span>' : s.q != null ? ` <span class="muted">RIR ${s.q === 3 ? '3+' : s.q}</span>` : ''}`).join('<br>')}</div></div>`; }).join('')}
+      ${w.note ? `<p class="note" style="margin-top:8px">${esc(w.note)}</p>` : ''}
+      <div class="row" style="margin-top:12px"><button class="btn sm wide" data-act="editw" data-id="${w.id}">Upravit</button><button class="btn sm danger wide" data-act="delw" data-id="${w.id}">Smazat</button></div></div>` : ''}</div>`;
+}
+function vHist() {
+  const ws = doneWorkouts();
+  const weeks = 17, start = startOfWeek(now()) - (weeks - 1) * 7 * DAY;
+  const byDay = {};
+  ws.forEach(w => { const k = startOfDay(new Date(w.d).getTime()); byDay[k] = (byDay[k] || 0) + w.it.reduce((a, i) => a + doneSets(i).length, 0); });
+  const today = startOfDay(now());
+  let cells = '';
+  for (let i = 0; i < weeks * 7; i++) {
+    const t = start + i * DAY; const d = new Date(t); d.setHours(0, 0, 0, 0); const k = d.getTime();
+    const v = byDay[k] || 0; const lv = v === 0 ? '' : v < 8 ? 'l1' : v < 15 ? 'l2' : v < 22 ? 'l3' : 'l4';
+    cells += k > today ? '<i style="background:transparent"></i>' : `<i class="${lv} ${k === today ? 'today' : ''}" title="${dShort(k)}: ${v} sérií"></i>`;
+  }
+  const total = ws.length, last30 = ws.filter(w => now() - new Date(w.d).getTime() < 30 * DAY).length;
+  return `<div class="kicker">${pl(total, 'trénink', 'tréninky', 'tréninků')} celkem · ${last30} za 30 dní</div><h1 class="title">Historie<span class="d">.</span></h1>
+    <div class="card"><div class="heat">${cells}</div>
+    <div class="heat-leg">méně <i style="background:#141414"></i><i style="background:rgba(57,255,136,.25)"></i><i style="background:rgba(57,255,136,.5)"></i><i style="background:rgba(57,255,136,.78)"></i><i style="background:#39ff88"></i> více sérií · posledních ${weeks} týdnů</div></div>
+    <h2 class="sec">Tréninky</h2>
+    ${ws.map(w => histItem(w)).join('') || '<div class="empty">Zatím žádný dokončený trénink.</div>'}`;
+}
+
+/* ── Progres ── */
+function exWithData() {
+  const ids = new Map();
+  doneWorkouts().forEach(w => w.it.forEach(i => { if (doneSets(i).length) ids.set(i.ex, (ids.get(i.ex) || 0) + 1); }));
+  return [...ids.entries()].sort((a, b) => b[1] - a[1]).map(([id]) => getEx(id));
+}
+function vProg() {
+  const list = exWithData();
+  if (!list.length) return `<h1 class="title">Progres<span class="d">.</span></h1><div class="empty">Až dokončíš první trénink, uvidíš tu grafy progresivního přetížení.</div>`;
+  if (!ui.progEx || !list.find(e => e.id === ui.progEx)) ui.progEx = list[0].id;
+  const ex = getEx(ui.progEx), bw = ex.eq === 'bw' && sessions(ex.id).every(h => h.sets.every(s => !s.w));
+  const metrics = bw ? [['reps', ex.unit === 's' ? 'Max výdrž' : 'Max opak.'], ['tot', 'Celkem']] : [['e1', 'Odhad 1RM'], ['top', 'Top váha'], ['vol', 'Objem']];
+  if (!metrics.find(m => m[0] === ui.progMetric)) ui.progMetric = metrics[0][0];
+  const rc = recommend(ex);
+  const H = sessions(ex.id).slice(0, 12);
+  // týdenní série podle partie
+  const ws0 = startOfWeek(now()), nW = 8;
+  const labels = Array.from({ length: nW }, (_, i) => dShort(ws0 - (nW - 1 - i) * 7 * DAY));
+  const per = Object.fromEntries(GROUPS.map(g => [g, Array(nW).fill(0)]));
+  doneWorkouts().forEach(w => { const wi = nW - 1 - Math.round((ws0 - startOfWeek(new Date(w.d).getTime())) / (7 * DAY)); if (wi < 0 || wi >= nW) return; w.it.forEach(i => { const g = getEx(i.ex).g; per[g][wi] += doneSets(i).length; }); });
+  // rekordy
+  const prs = list.map(e => { let b = { v: 0, d: null, s: null }; sessions(e.id).forEach(h => h.sets.forEach(s => { const v = e1rm(s); if (v > b.v) b = { v, d: h.d, s }; })); return { e, ...b }; }).filter(p => p.v > 0).sort((a, b) => b.v - a.v);
+  return `<div class="kicker">Progresivní přetížení</div><h1 class="title">Progres<span class="d">.</span></h1>
+    <select data-f="progex" aria-label="Cvik">${list.map(e => `<option value="${e.id}" ${e.id === ex.id ? 'selected' : ''}>${esc(e.n)}</option>`).join('')}</select>
+    <div class="seg" style="margin-top:10px">${metrics.map(([k, l]) => `<button class="${ui.progMetric === k ? 'on' : ''}" data-act="metric" data-m="${k}">${l}</button>`).join('')}</div>
+    <div class="card" style="margin-top:10px;padding:10px 6px 4px"><div class="chart" id="chart"></div></div>
+    <p class="note" style="margin-top:6px">${ui.progMetric === 'e1' ? 'Odhad 1RM = váha × (1 + (opakování + rezerva) / 30). Plný bod = trénink se selháním.' : ui.progMetric === 'vol' ? 'Objem = součet váha × opakování ve všech sériích.' : 'Plný bod = trénink se selháním.'}</p>
+    <div class="reco ${rc.kind === 'down' ? 'down' : rc.kind === 'new' ? 'new' : ''}" style="margin-top:12px"><div class="rt"><span class="k">Příště</span><b>${esc(rc.head)}</b><span class="mono muted" style="font-size:11px">${rc.n} série</span></div><p>${esc(rc.txt)}</p></div>
+    <h2 class="sec">Tabulka</h2>
+    <div class="card" style="padding:4px 12px"><table class="tbl"><thead><tr><th>Datum</th><th>Série</th><th class="r">${bw ? 'Max' : '1RM'}</th></tr></thead><tbody>
+      ${H.map(h => `<tr><td class="mono">${dShort(h.d)}</td><td>${h.sets.map(s => `${s.w > 0 ? fmt(s.w, 2) + '×' : ''}${s.r}${s.q === 0 ? '<span class="f-mark">S</span>' : ''}`).join(' ')}</td><td class="r">${bw ? Math.max(...h.sets.map(s => s.r)) : fmt(bestE1(h.sets), 1)}</td></tr>`).join('')}
+    </tbody></table></div>
+    <h2 class="sec">Série týdně podle partie</h2>
+    <p class="note" style="margin:-4px 0 10px">Pás = doporučených 10–20 pracovních sérií na partii za týden.</p>
+    <div class="mult">${GROUPS.map(g => { const v = per[g]; const avg = v.slice(0, -1).reduce((a, b) => a + b, 0) / (nW - 1); return `<div class="card"><div class="hdr"><b>${g}</b><span>Ø ${fmt(avg, 1)}</span></div><div class="big">${v[nW - 1]}<small>sérií</small></div>${weekBars(v, labels)}</div>`; }).join('')}</div>
+    ${prs.length ? `<h2 class="sec">Rekordy (odhad 1RM)</h2><div class="card" style="padding:2px 14px">${prs.slice(0, 12).map(p => `<div class="pr"><span class="nm">${esc(p.e.n)}</span><span class="v">${fmt(p.v, 1)} kg</span><span class="d">${dShort(p.d)}</span></div>`).join('')}</div>` : ''}`;
+}
+function mountProg() {
+  const el = $('#chart'); if (!el) return;
+  const ex = getEx(ui.progEx);
+  const H = sessions(ex.id).slice().reverse();
+  const m = ui.progMetric;
+  const pts = H.map(h => {
+    const f = h.sets.some(s => s.q === 0);
+    const x = new Date(h.d).getTime();
+    if (m === 'e1') return { x, y: bestE1(h.sets), f, tip: h.sets.length + ' sérií' };
+    if (m === 'top') { const t = h.sets.reduce((a, s) => s.w > a.w || (s.w === a.w && s.r > a.r) ? s : a, h.sets[0]); return { x, y: t.w, f, tip: `× ${t.r}` }; }
+    if (m === 'vol') return { x, y: h.sets.reduce((a, s) => a + s.w * s.r, 0), f, tip: h.sets.length + ' sérií' };
+    if (m === 'reps') return { x, y: Math.max(...h.sets.map(s => s.r)), f };
+    return { x, y: h.sets.reduce((a, s) => a + s.r, 0), f, tip: h.sets.length + ' sérií' };
+  }).filter(p => p.y > 0);
+  lineChart(el, pts, m === 'reps' || m === 'tot' ? (ex.unit === 's' ? 's' : 'opak.') : 'kg');
+}
+
+/* ── Nastavení ── */
+function vSet() {
+  const g = gh();
+  const custom = S.cx.filter(c => !c.del);
+  return `<div class="kicker">Nastavení</div><h1 class="title">Nastavení<span class="d">.</span></h1>
+    <h2 class="sec">Synchronizace</h2>
+    <div class="card stack">
+      <div class="row"><span class="dot ${g ? (ui.syncMsg ? 'err' : 'ok') : ''}"></span><span style="flex:1">${g ? `GitHub · ${esc(g.owner)}/${esc(g.repo)} · větev <span class="mono">${DATA_BRANCH}</span>` : 'Jen v tomto zařízení'}</span></div>
+      ${ui.syncMsg ? `<div class="err-msg" style="margin:0">${esc(ui.syncMsg)}</div>` : ''}
+      <div class="field" style="margin:0"><label for="s-token">GitHub token</label><input id="s-token" type="password" placeholder="${g ? '•••••••• (uložen)' : 'github_pat_…'}" autocomplete="off">
+      <div class="help">Sdílený s deckem vladaweb. <a href="${tokenUrl()}" target="_blank" rel="noopener">Vytvořit nový ↗</a> (Contents: Read and write)</div></div>
+      <div class="row"><button class="btn sm wide" data-act="savetoken">Uložit token</button><button class="btn sm wide" data-act="syncnow" ${g ? '' : 'disabled'}>Synchronizovat teď</button></div>
+      <p class="note">Data jsou na GitHubu zašifrovaná tvým heslem (AES‑256) – v repozitáři je vidět jen nečitelný blob.</p>
+    </div>
+    <h2 class="sec">Trénink</h2>
+    <div class="card stack">
+      <div class="field" style="margin:0"><label for="s-rest">Pauza mezi sériemi (s)</label><input id="s-rest" inputmode="numeric" data-f="rest" value="${S.set.rest}"></div>
+      <div class="field" style="margin:0"><label>Krok přidávání váhy (kg)</label>
+        <div class="kv" style="grid-template-columns:repeat(2,1fr)">${['barbell', 'dumbbell', 'machine', 'cable'].map(k => `<label class="field" style="margin:0"><span class="help">${EQ[k].n}</span><input inputmode="decimal" data-f="inc" data-k="${k}" value="${fmt(S.set.inc[k] ?? EQ[k].inc, 2)}"></label>`).join('')}</div></div>
+    </div>
+    <h2 class="sec">Vlastní cviky</h2>
+    <div class="card stack">
+      ${custom.map(c => `<div class="row"><span style="flex:1">${esc(c.n)} <span class="mono muted" style="font-size:11px">${c.g} · ${c.lo}–${c.hi}</span></span><button class="btn sm ghost" data-act="delcx" data-ex="${c.id}">✕</button></div>`).join('')}
+      <input id="c-name" placeholder="Název cviku">
+      <div class="row"><select id="c-g">${GROUPS.map(g => `<option>${g}</option>`).join('')}</select><select id="c-eq">${Object.entries(EQ).map(([k, v]) => `<option value="${k}">${v.n}</option>`).join('')}</select></div>
+      <div class="row"><input id="c-lo" inputmode="numeric" placeholder="od (opak.)" value="8"><input id="c-hi" inputmode="numeric" placeholder="do (opak.)" value="12"></div>
+      <button class="btn sm" data-act="addcx">＋ Přidat cvik</button>
+    </div>
+    <h2 class="sec">Data</h2>
+    <div class="card stack">
+      <div class="row"><button class="btn sm wide" data-act="export">Export JSON</button><button class="btn sm wide" data-act="import">Import JSON</button></div>
+      <input type="file" id="imp" accept="application/json,.json" hidden>
+      <div class="field" style="margin:0"><label for="s-pw">Změnit heslo</label><input id="s-pw" type="password" autocomplete="new-password" placeholder="Nové heslo (min. 6 znaků)"></div>
+      <button class="btn sm" data-act="chpw">Změnit heslo</button>
+      <button class="btn sm danger" data-act="logout">Zamknout a zapomenout na tomto zařízení</button>
+    </div>
+    <p class="note" style="margin-top:16px;text-align:center"><a href="../index.html">← zpět na rozcestník</a></p>`;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SHEET, TOAST, ČASOVAČE
+   ═══════════════════════════════════════════════════════════════ */
+let sheetKind = null;
+function openSheet(html, kind = 'x') { $('#sheet-c').innerHTML = html; $('#sheet').classList.add('on'); $('#sheet-bg').classList.add('on'); sheetKind = kind; }
+function closeSheet() { $('#sheet').classList.remove('on'); $('#sheet-bg').classList.remove('on'); sheetKind = null; setTimeout(() => { if (!sheetKind) $('#sheet-c').innerHTML = ''; }, 300); }
+let toastT;
+function toast(msg, ms = 2600) { const t = $('#toast'); t.innerHTML = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), ms); }
+const mmss = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+let restEnd = 0, restTotal = 0, restDone = false;
+function startRest(sec = S.set.rest) { restTotal = sec; restEnd = now() + sec * 1000; restDone = false; $('#rest').classList.remove('hidden', 'done'); tickTimers(); }
+function tickTimers() {
+  if (!S) return;
+  const w = openWorkout(), el = $('#wo-timer');
+  if (w && el) { const st = new Date(w.d).getTime(); el.textContent = mmss(Math.max(0, (now() - st) / 1000)); }
+  if (restEnd) {
+    const left = Math.max(0, (restEnd - now()) / 1000);
+    $('#rest-t').textContent = mmss(Math.ceil(left));
+    $('#rest-bar').style.width = (100 * left / restTotal) + '%';
+    if (left <= 0 && !restDone) { restDone = true; $('#rest').classList.add('done'); try { navigator.vibrate && navigator.vibrate([250, 120, 250]); } catch {} setTimeout(() => { if (restDone) { restEnd = 0; $('#rest').classList.add('hidden'); } }, 6000); }
+  }
+}
+setInterval(tickTimers, 1000);
+let wakeLock = null;
+async function keepAwake() { try { if (openWorkout() && !document.hidden && 'wakeLock' in navigator && !wakeLock) { wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release', () => { wakeLock = null; }); } } catch {} }
+
+/* ═══════════════════════════════════════════════════════════════
+   AKCE
+   ═══════════════════════════════════════════════════════════════ */
+function startWorkout(exId) {
+  const w = { id: uid(), d: localISO(), open: true, it: [], u: now() };
+  S.w.push(w);
+  if (exId) w.it.push({ ex: exId, s: newSetsFor(getEx(exId), w) });
+  view = 'train'; commit(true); keepAwake(); scrollTo(0, 0);
+}
+function finishWorkout() {
+  const w = openWorkout(); if (!w) return;
+  const prev = {};
+  w.it.forEach(i => { prev[i.ex] = Math.max(0, ...sessions(i.ex, w.id).map(h => bestE1(h.sets))); });
+  w.it.forEach(i => { i.s = doneSets(i); });
+  w.it = w.it.filter(i => i.s.length);
+  if (!w.it.length) { if (!confirm('Žádná série není odškrtnutá. Zahodit trénink?')) { return; } w.del = true; touch(w); commit(true); return; }
+  w.open = false; w.end = Math.max(now(), new Date(w.d).getTime()); touch(w);
+  const prs = w.it.filter(i => prev[i.ex] > 0 && bestE1(i.s) > prev[i.ex]).map(i => getEx(i.ex).n);
+  restEnd = 0; $('#rest').classList.add('hidden');
+  if (wakeLock) { wakeLock.release().catch(() => {}); wakeLock = null; }
+  commit(true); schedulePush(300);
+  const sets = w.it.reduce((a, i) => a + i.s.length, 0);
+  toast(prs.length ? `🔥 Nový rekord: <b>${esc(prs.join(', '))}</b>` : `✓ Uloženo – ${pl(w.it.length, 'cvik', 'cviky', 'cviků')}, ${pl(sets, 'série', 'série', 'sérií')}`, 3800);
+}
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-act],[data-view],[data-rest]');
+  if (!b) return;
+  if (b.dataset.view) { view = b.dataset.view; render(); scrollTo(0, 0); return; }
+  if (b.dataset.rest) { const v = b.dataset.rest; if (v === 'x') { restEnd = 0; restDone = false; $('#rest').classList.add('hidden'); } else { restEnd += (+v) * 1000; restTotal = Math.max(restTotal, (restEnd - now()) / 1000); restDone = false; $('#rest').classList.remove('done', 'hidden'); tickTimers(); } return; }
+  const act = b.dataset.act, w = openWorkout();
+  const card = b.closest('.exc'), setEl = b.closest('.set');
+  const it = card && w ? w.it[+card.dataset.i] : null;
+  switch (act) {
+    case 'start': startWorkout(); break;
+    case 'startwith': closeSheet(); startWorkout(b.dataset.ex); break;
+    case 'pick': ui.pickQ = ''; pickSheet(); break;
+    case 'pickg': ui.pickGroup = b.dataset.g; pickSheet(); break;
+    case 'addex': {
+      if (!w) return;
+      const ex = getEx(b.dataset.ex);
+      w.it.push({ ex: ex.id, s: newSetsFor(ex, w) }); touch(w); closeSheet(); view = 'train'; commit(true);
+      setTimeout(() => { const c = $$('.exc').pop(); c && c.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
+      break;
+    }
+    case 'rmex': if (it && confirm(`Odebrat ${getEx(it.ex).n}?`)) { w.it.splice(+card.dataset.i, 1); touch(w); commit(true); } break;
+    case 'addset': { const l = it.s[it.s.length - 1]; it.s.push(l ? { w: l.w, r: l.r, q: null, ok: false } : { w: null, r: null, q: null, ok: false }); touch(w); commit(true); break; }
+    case 'rmset': if (it.s.length) { it.s.pop(); touch(w); commit(true); } break;
+    case 'q': { const s = it.s[+setEl.dataset.j], q = +b.dataset.q; s.q = s.q === q ? null : q; touch(w); commit(); $$('.rir button', setEl).forEach(x => x.classList.toggle('on', +x.dataset.q === s.q)); break; }
+    case 'ok': {
+      const j = +setEl.dataset.j, s = it.s[j];
+      s.w = num($('[data-f=w]', setEl).value); s.r = num($('[data-f=r]', setEl).value);
+      if (!s.ok && !(s.r > 0)) { toast('Zadej počet opakování.'); $('[data-f=r]', setEl).focus(); return; }
+      if (s.w == null) s.w = 0;
+      s.ok = !s.ok; touch(w); commit();
+      setEl.classList.toggle('ok', s.ok);
+      if (s.ok) {
+        // propsat váhu do dalších nevyplněných sérií
+        it.s.slice(j + 1).forEach((n, k) => { if (!n.ok) { n.w = s.w; const row = $(`.set[data-j="${j + 1 + k}"]`, card); if (row) $('[data-f=w]', row).value = s.w; } });
+        if (S.set.rest > 0) startRest();
+      }
+      break;
+    }
+    case 'finish': finishWorkout(); break;
+    case 'discard': if (confirm('Opravdu zahodit celý rozběhnutý trénink?')) { w.del = true; touch(w); restEnd = 0; $('#rest').classList.add('hidden'); commit(true); } break;
+    case 'detail': detailSheet(b.dataset.ex); break;
+    case 'libg': ui.libGroup = b.dataset.g; render(); break;
+    case 'toprog': ui.progEx = b.dataset.ex; closeSheet(); view = 'prog'; render(); scrollTo(0, 0); break;
+    case 'metric': ui.progMetric = b.dataset.m; render(); break;
+    case 'histtog': ui.histOpen = ui.histOpen === b.dataset.id ? null : b.dataset.id; render(); break;
+    case 'gohist': ui.histOpen = b.dataset.id; view = 'hist'; render(); break;
+    case 'delw': { const x = S.w.find(x => x.id === b.dataset.id); if (x && confirm('Smazat tento trénink?')) { x.del = true; touch(x); commit(true); toast('Trénink smazán'); } break; }
+    case 'editw': {
+      if (w) { toast('Nejdřív dokonči rozběhnutý trénink.'); return; }
+      const x = S.w.find(x => x.id === b.dataset.id); x.open = true; x.it.forEach(i => i.s.forEach(s => s.ok = true)); touch(x); view = 'train'; commit(true); scrollTo(0, 0); break;
+    }
+    case 'savetoken': {
+      const t = $('#s-token').value.trim();
+      if (!t) { toast('Vlož token.'); return; }
+      try {
+        const r = await fetch('https://api.github.com/repos/Vladaczech/vladaweb', { headers: { Authorization: 'Bearer ' + t } });
+        if (!r.ok) throw new Error('Token je neplatný nebo nemá přístup k vladaweb.');
+        const perms = (await r.json()).permissions; if (perms && !perms.push) throw new Error('Token nemá právo zapisovat (Contents: Read and write).');
+        const old = (() => { try { return JSON.parse(ls.get(K_GH) || 'null'); } catch { return null; } })() || {};
+        ls.set(K_GH, JSON.stringify({ ...old, token: t, owner: old.owner || 'Vladaczech', repo: old.repo || 'vladaweb' }));
+        ui.syncMsg = ''; toast('Token uložen'); await pull(); render();
+      } catch (er) { toast(esc(er.message), 4000); }
+      break;
+    }
+    case 'syncnow': await pull(); render(); break;
+    case 'addcx': {
+      const n = $('#c-name').value.trim(); if (!n) { toast('Zadej název.'); return; }
+      const lo = Math.max(1, num($('#c-lo').value) || 8), hi = Math.max(lo, num($('#c-hi').value) || 12);
+      S.cx.push({ id: 'c_' + uid(), n, g: $('#c-g').value, eq: $('#c-eq').value, lo, hi, m: [], m2: [], custom: true, u: now() });
+      commit(true); toast('Cvik přidán'); break;
+    }
+    case 'delcx': { const c = S.cx.find(c => c.id === b.dataset.ex); if (c && confirm(`Smazat cvik ${c.n}? Záznamy v historii zůstanou.`)) { c.del = true; c.u = now(); closeSheet(); commit(true); } break; }
+    case 'export': {
+      const blob = new Blob([JSON.stringify(S, null, 1)], { type: 'application/json' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `posilovna-${localISO().slice(0, 10)}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      break;
+    }
+    case 'import': $('#imp').click(); break;
+    case 'chpw': {
+      const pw = $('#s-pw').value;
+      if (pw.length < 6) { toast('Heslo musí mít aspoň 6 znaků.'); return; }
+      if (!confirm('Změnit heslo? Na ostatních zařízeních se pak budeš muset přihlásit novým heslem.')) return;
+      if (gh()) await push();
+      SALT = crypto.getRandomValues(new Uint8Array(16)); KEY = await deriveKey(pw, SALT);
+      if (ls.get(K_KEY)) await rememberKey();
+      ls.set(K_DIRTY, '1'); await saveLocal(); if (gh()) await push();
+      $('#s-pw').value = ''; toast('Heslo změněno'); break;
+    }
+    case 'logout': if (confirm('Zamknout? Na tomto zařízení se pak přihlásíš znovu heslem.' + (ls.get(K_DIRTY) === '1' && gh() ? ' Neodeslané změny se nejdřív zkusí odeslat.' : ''))) { if (ls.get(K_DIRTY) === '1' && gh()) await push(); ls.del(K_KEY); lockApp(); } break;
+  }
+});
+document.addEventListener('input', e => {
+  const f = e.target.dataset.f; if (!f) return;
+  const w = openWorkout();
+  if (f === 'w' || f === 'r') {
+    const setEl = e.target.closest('.set'), card = e.target.closest('.exc'); if (!w || !setEl) return;
+    const s = w.it[+card.dataset.i].s[+setEl.dataset.j];
+    s[f] = num(e.target.value);
+    if (s.ok && !(s.r > 0)) { s.ok = false; setEl.classList.remove('ok'); }
+    touch(w); commit();
+  } else if (f === 'libq') { ui.libQ = e.target.value; const pos = e.target.selectionStart; render(); const i = $('[data-f=libq]'); i.focus(); i.setSelectionRange(pos, pos); }
+  else if (f === 'pickq') { ui.pickQ = e.target.value; const pos = e.target.selectionStart; pickSheet(); const i = $('[data-f=pickq]'); i.focus(); i.setSelectionRange(pos, pos); }
+});
+document.addEventListener('change', e => {
+  const f = e.target.dataset.f; if (!f) return;
+  if (f === 'wdate') { const w = openWorkout(); if (w && e.target.value) { w.d = e.target.value; touch(w); commit(); } }
+  else if (f === 'progex') { ui.progEx = e.target.value; render(); }
+  else if (f === 'rest') { S.set.rest = Math.max(0, Math.round(num(e.target.value) || 0)); S.setU = now(); commit(); toast('Uloženo'); }
+  else if (f === 'inc') { const v = num(e.target.value); if (v > 0) { S.set.inc[e.target.dataset.k] = v; S.setU = now(); commit(); toast('Uloženo'); } }
+});
+document.addEventListener('change', async e => {
+  if (e.target.id !== 'imp') return;
+  const f = e.target.files[0]; if (!f) return;
+  try { const d = JSON.parse(await f.text()); if (!Array.isArray(d.w)) throw 0; S = mergeState(S, d); commit(true); toast('Importováno a sloučeno'); }
+  catch { toast('Soubor není platný export.'); }
+  e.target.value = '';
+});
+$('#btn-set').addEventListener('click', () => { view = view === 'set' ? 'train' : 'set'; render(); scrollTo(0, 0); });
+$('#sheet-bg').addEventListener('click', closeSheet);
+let sy0 = null;
+$('#sheet').addEventListener('touchstart', e => { sy0 = $('#sheet').scrollTop <= 0 ? e.touches[0].clientY : null; }, { passive: true });
+$('#sheet').addEventListener('touchend', e => { if (sy0 != null && e.changedTouches[0].clientY - sy0 > 90) closeSheet(); sy0 = null; }, { passive: true });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
+document.addEventListener('visibilitychange', () => {
+  if (!S) return;
+  if (document.hidden) { saveLocal(); if (ls.get(K_DIRTY) === '1' && gh()) push(); }
+  else { keepAwake(); pull(); tickTimers(); }
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   PŘIHLÁŠENÍ
+   ═══════════════════════════════════════════════════════════════ */
+let newVault = false;
+function showLock(msg = '') {
+  $('#app').classList.add('hidden'); $('#nav').classList.add('hidden'); $('#rest').classList.add('hidden');
+  $('#lock').classList.remove('hidden');
+  $('#f-token').classList.toggle('hidden', !!gh());
+  $('#l-token-link').href = tokenUrl();
+  $('#l-err').textContent = msg;
+  $('#lock-fig').innerHTML = figSvg(EX.find(e => e.id === 'squat'));
+  setTimeout(() => $('#l-pw').focus(), 50);
+}
+function lockApp(msg) { S = null; KEY = null; closeSheet(); showLock(msg); }
+function showApp() {
+  $('#lock').classList.add('hidden'); $('#app').classList.remove('hidden'); $('#nav').classList.remove('hidden');
+  syncStatus(gh() ? (ls.get(K_DIRTY) === '1' ? 'pend' : 'ok') : 'local');
+  render(); keepAwake();
+}
+$('#lock-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const err = $('#l-err'), btn = $('#l-go');
+  const pw = $('#l-pw').value, tok = $('#l-token').value.trim();
+  if (!pw) { err.textContent = 'Zadej heslo.'; return; }
+  btn.disabled = true; btn.textContent = 'Odemykám…'; err.textContent = '';
+  try {
+    if (tok) {
+      const r = await fetch('https://api.github.com/repos/Vladaczech/vladaweb', { headers: { Authorization: 'Bearer ' + tok } });
+      if (!r.ok) throw new Error('Token je neplatný nebo nemá přístup k repozitáři vladaweb.');
+      const old = (() => { try { return JSON.parse(ls.get(K_GH) || 'null'); } catch { return null; } })() || {};
+      ls.set(K_GH, JSON.stringify({ ...old, token: tok, owner: old.owner || 'Vladaczech', repo: old.repo || 'vladaweb' }));
+    }
+    let remote = null;
+    if (gh()) { try { remote = await ghRead(); } catch (er) { if (er.auth) throw er; } }
+    const local = JSON.parse(ls.get(K_VAULT) || 'null');
+    const vault = remote ? remote.vault : local;
+    if (!vault) {
+      if (!newVault) { newVault = true; $('#f-pw2').classList.remove('hidden'); $('#l-pw2').focus(); throw new Error('Nový deník – potvrď heslo.'); }
+      if (pw.length < 6) throw new Error('Heslo musí mít aspoň 6 znaků.');
+      if (pw !== $('#l-pw2').value) throw new Error('Hesla se neshodují.');
+      SALT = crypto.getRandomValues(new Uint8Array(16)); KEY = await deriveKey(pw, SALT);
+      S = blank(); ls.set(K_DIRTY, '1');
+    } else {
+      SALT = unb64(vault.salt); KEY = await deriveKey(pw, SALT);
+      try { S = await decrypt(vault); } catch { throw new Error('Špatné heslo.'); }
+      if (remote) {
+        ls.set(K_LASTCT, remote.vault.ct);
+        if (local && local.ct !== remote.vault.ct && ls.get(K_DIRTY) === '1') {
+          try { const lk = local.salt === vault.salt ? KEY : await deriveKey(pw, unb64(local.salt)); S = mergeState(S, await decrypt(local, lk)); } catch {}
+        }
+      }
+    }
+    await saveLocal();
+    if ($('#l-remember').checked) await rememberKey(); else ls.del(K_KEY);
+    $('#l-pw').value = ''; $('#l-pw2').value = ''; $('#l-token').value = ''; newVault = false; $('#f-pw2').classList.add('hidden');
+    showApp();
+    if (gh() && (ls.get(K_DIRTY) === '1' || !remote)) push();
+  } catch (er) { err.textContent = er.message; }
+  finally { btn.disabled = false; btn.textContent = 'Odemknout'; }
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   START
+   ═══════════════════════════════════════════════════════════════ */
+(async function init() {
+  requestAnimationFrame(animLoop);
+  if (!window.crypto || !crypto.subtle) { showLock('Prohlížeč nepodporuje šifrování – otevři stránku přes https.'); return; }
+  try {
+    const local = JSON.parse(ls.get(K_VAULT) || 'null');
+    if (local && await loadRememberedKey() && b64(SALT) === local.salt) {
+      S = await decrypt(local);
+      S.set = { rest: 120, inc: {}, ...S.set };
+      showApp(); pull(); return;
+    }
+  } catch {}
+  showLock();
+})();
+</script>
+</body>
+</html>

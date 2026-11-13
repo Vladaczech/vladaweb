@@ -12,3 +12,7 @@ Osobní rozcestník projektů na GitHub Pages. `index.html` je deck, `deck-data.
 - Nový projekt = soubor v `projects/` + záznam v příslušném tématu v `deck-data.json` (`nazev`, `popis`, `odkaz: "./projects/…"`, `tagy: []`, `stav: "live"`).
 
 Web při načtení čte deck přímo z GitHub API (Pages mají zpoždění), neodeslané úpravy z prohlížeče slučuje s tím, co mezitím přibylo na GitHubu.
+
+## Posilovna (`projects/posilovna.html`)
+
+Data tréninků ukládá web šifrovaně (AES‑GCM, heslo uživatele) do `posilovna.json` na samostatné větvi `posilovna-data` – do `main` nesahá, takže nekoliduje s deckem ani nespouští build Pages. Token sdílí s deckem (localStorage `vibe-deck-gh`). Tu větev ručně neupravuj.
