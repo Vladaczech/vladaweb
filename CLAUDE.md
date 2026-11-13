@@ -15,4 +15,4 @@ Web při načtení čte deck přímo z GitHub API (Pages mají zpoždění), neo
 
 ## Posilovna (`projects/posilovna.html`)
 
-Přihlášení (jméno + heslo, obnova hesla e-mailem) a data tréninků běží přes Firebase (Auth + Firestore), ne přes GitHub. Konfigurace webové aplikace je v konstantě `FIREBASE_CONFIG` (není tajná; dokud je `null`, aplikace si ji při prvním spuštění vyžádá a uloží do localStorage). Pravidla Firestore jsou v konstantě `RULES` – při jejich změně je potřeba je znovu publikovat ve Firebase konzoli.
+Přihlášení (jméno + heslo, obnova hesla e-mailem) a data tréninků běží přes Firebase (Auth + Firestore), ne přes GitHub. Konfigurace webové aplikace (projekt `posilovna-59716`) je v konstantě `FIREBASE_CONFIG` – není tajná, data chrání pravidla Firestore. Pravidla Firestore jsou v konstantě `RULES` – při jejich změně je potřeba je znovu publikovat ve Firebase konzoli.

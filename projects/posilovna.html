@@ -459,7 +459,14 @@ const doneSets = it => it.s.filter(s => s.ok && s.r > 0);
          usernames/{jméno} → { uid, email } (pro přihlášení jménem)
    ═══════════════════════════════════════════════════════════════ */
 // Konfigurace webové aplikace z Firebase konzole. Není tajná – data chrání pravidla Firestore.
-const FIREBASE_CONFIG = null;
+const FIREBASE_CONFIG = {
+  apiKey: 'AIzaSyAsd042qIzIAXKIXHO3VY6JXIuvdyKLRtU',
+  authDomain: 'posilovna-59716.firebaseapp.com',
+  projectId: 'posilovna-59716',
+  storageBucket: 'posilovna-59716.firebasestorage.app',
+  messagingSenderId: '1097378144969',
+  appId: '1:1097378144969:web:5d38f8e38157910f18a318',
+};
 const K_FB = 'posilovna-fb';
 function fbConfig() { if (FIREBASE_CONFIG) return FIREBASE_CONFIG; try { return JSON.parse(ls.get(K_FB) || 'null'); } catch { return null; } }
 let auth = null, db = null, USER = null, PROFILE = null, unsubs = [], loaded = false;
