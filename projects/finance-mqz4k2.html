@@ -1,0 +1,1854 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Bezpečnost: stránka nesmí navázat žádné síťové spojení (connect-src 'none'),
+     nenačítá žádné cizí skripty ani písma. Data nikdy neopustí prohlížeč. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex, nofollow">
+<title>Finance</title>
+<style>
+:root{
+  color-scheme:light;
+  --bg:#f4f4f1;--surface:#fcfcfb;--surface2:#f0efec;
+  --ink:#0b0b0b;--ink2:#52514e;--muted:#67665f;--axis-ink:#898781;
+  --line:#e1e0d9;--base:#c3c2b7;
+  --s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;
+  --pos:#006300;--accent:#2a78d6;--accent-ink:#fff;--accent-wash:rgba(42,120,214,.10);
+  --hover:rgba(11,11,11,.045);--ring:rgba(11,11,11,.10);--danger:#c62828;
+  --warn-bg:#fff4d6;--warn-ink:#5c4100;
+  --r:12px;--sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0d0d0d;--surface:#1a1a19;--surface2:#242422;
+    --ink:#f0efec;--ink2:#c3c2b7;--muted:#a3a198;--axis-ink:#898781;
+    --line:#2c2c2a;--base:#383835;
+    --s1:#3987e5;--s2:#d95926;--s3:#199e70;
+    --pos:#0ca30c;--accent:#3987e5;--accent-ink:#fff;--accent-wash:rgba(57,135,229,.16);
+    --hover:rgba(255,255,255,.05);--ring:rgba(255,255,255,.10);--danger:#ff6b6b;
+    --warn-bg:#352a0e;--warn-ink:#ffd98a;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0d0d0d;--surface:#1a1a19;--surface2:#242422;
+  --ink:#f0efec;--ink2:#c3c2b7;--muted:#a3a198;--axis-ink:#898781;
+  --line:#2c2c2a;--base:#383835;
+  --s1:#3987e5;--s2:#d95926;--s3:#199e70;
+  --pos:#0ca30c;--accent:#3987e5;--accent-ink:#fff;--accent-wash:rgba(57,135,229,.16);
+  --hover:rgba(255,255,255,.05);--ring:rgba(255,255,255,.10);--danger:#ff6b6b;
+  --warn-bg:#352a0e;--warn-ink:#ffd98a;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:14px/1.5 var(--sans);-webkit-font-smoothing:antialiased;min-height:100vh}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.01em}
+
+.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1180px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:14px}
+.brand{font-weight:650;font-size:16px;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.tabs{display:flex;gap:2px;overflow-x:auto;flex:1;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{border:0;background:none;color:var(--ink2);padding:7px 12px;border-radius:8px;font-weight:500;cursor:pointer;white-space:nowrap}
+.tab:hover{background:var(--hover);color:var(--ink)}
+.tab[aria-current="page"]{background:var(--surface);color:var(--ink);box-shadow:0 0 0 1px var(--ring)}
+.saved{font-size:12px;color:var(--muted);white-space:nowrap}
+.main{max-width:1180px;margin:0 auto;padding:20px 16px 96px}
+@media (max-width:760px){
+  .top-in{flex-wrap:wrap;row-gap:6px}
+  .tabs{order:3;flex-basis:100%}
+  .hide-sm{display:none!important}
+}
+
+.stack{display:grid;gap:16px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr));gap:16px;align-items:start}
+.card{background:var(--surface);border:1px solid var(--ring);border-radius:var(--r);padding:18px;min-width:0}
+.card h2{font-size:15px}
+.sub{color:var(--muted);font-size:13px;margin:2px 0 14px}
+.card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.end{justify-content:flex-end}
+.muted{color:var(--muted)}
+.small{font-size:12.5px}
+.num{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.pos{color:var(--pos)}
+.nowrap{white-space:nowrap}
+
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.tile{background:var(--surface);border:1px solid var(--ring);border-radius:var(--r);padding:14px 16px;min-width:0}
+.tile .l{color:var(--muted);font-size:12.5px}
+.tile .v{font-size:22px;font-weight:650;letter-spacing:-.015em;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .n{color:var(--muted);font-size:12px;margin-top:2px}
+
+.inp{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 10px;min-height:36px;max-width:100%}
+.inp:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:transparent}
+select.inp{padding-right:28px}
+.inp.err{border-color:var(--danger)}
+.btn{font-weight:500;border:1px solid var(--line);background:var(--surface);padding:6px 14px;border-radius:8px;cursor:pointer;min-height:36px;white-space:nowrap}
+.btn:hover{background:var(--surface2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.07);background:var(--accent)}
+.btn.danger{color:var(--danger)}
+.btn.danger.solid{background:var(--danger);border-color:var(--danger);color:#fff}
+.btn.sm{padding:3px 10px;min-height:28px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.link{background:none;border:0;color:var(--accent);cursor:pointer;padding:0;font-size:13px;text-align:left}
+.link:hover{text-decoration:underline}
+.field{display:grid;gap:4px;font-size:12.5px;color:var(--ink2);min-width:0}
+.field .inp{width:100%}
+.form{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;align-items:end}
+.check{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--ink2);cursor:pointer}
+.errtxt{color:var(--danger);font-size:13px}
+.notice{background:var(--warn-bg);color:var(--warn-ink);border-radius:10px;padding:10px 14px;font-size:13px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.notice .btn{color:var(--ink)}
+.pill{display:inline-block;font-size:11.5px;padding:1px 8px;border-radius:20px;background:var(--surface2);color:var(--ink2);white-space:nowrap}
+
+.seg{justify-self:start;display:inline-flex;background:var(--surface2);border-radius:9px;padding:3px;gap:2px}
+.seg button{border:0;background:none;padding:5px 12px;border-radius:7px;cursor:pointer;color:var(--ink2);font-weight:500}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 0 0 1px var(--ring)}
+
+table.t{width:100%;border-collapse:collapse}
+.t th{text-align:left;font-weight:500;color:var(--muted);font-size:12px;padding:8px;border-bottom:1px solid var(--line);white-space:nowrap}
+.t td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.t tr.rw{cursor:pointer}
+.t tr.rw:hover td{background:var(--hover)}
+.t tr.open td{background:var(--hover)}
+.t th.num,.t td.num{text-align:right}
+.cp{font-weight:500;overflow-wrap:anywhere}
+.msg{color:var(--muted);font-size:12.5px;overflow-wrap:anywhere}
+.t select.inp{min-height:30px;padding:2px 24px 2px 6px;font-size:13px;width:170px}
+.detail td{background:var(--surface2)!important;cursor:default}
+.kv{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px 18px;font-size:13px;padding:4px 2px}
+.kv span{display:block;color:var(--muted);font-size:11.5px}
+.scroll{overflow-x:auto}
+
+.chart{position:relative;min-height:60px}
+.chart svg{display:block;overflow:visible;touch-action:pan-y}
+.grid-l{stroke:var(--line);stroke-width:1}
+.base-l{stroke:var(--base);stroke-width:1}
+.ax{fill:var(--axis-ink);font-size:11px;font-variant-numeric:tabular-nums}
+.dl{fill:var(--ink2);font-size:11.5px;font-weight:500}
+.hit{fill:transparent;cursor:pointer;outline:none}
+.wash{fill:var(--hover);opacity:0}
+.wash.on{opacity:1}
+.cross{stroke:var(--base);stroke-width:1}
+.tip{position:absolute;display:none;pointer-events:none;background:var(--surface);border:1px solid var(--ring);box-shadow:0 8px 28px rgba(0,0,0,.14);border-radius:9px;padding:8px 10px;font-size:12.5px;min-width:150px;z-index:5}
+.tip-t{color:var(--muted);margin-bottom:4px}
+.tip-r{display:flex;align-items:center;gap:8px;line-height:1.7}
+.tip-r b{font-variant-numeric:tabular-nums;font-weight:650}
+.tip-r .n{color:var(--ink2)}
+.key{display:inline-block;width:12px;height:3px;border-radius:2px;flex:none}
+.key.box{height:10px;width:10px;border-radius:3px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--ink2);margin-bottom:10px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+details.tbl{margin-top:10px;font-size:13px}
+details.tbl summary{cursor:pointer;color:var(--accent);font-size:13px;width:max-content}
+details.tbl table{margin-top:8px}
+
+.cats{display:grid;gap:1px}
+.catrow{display:grid;grid-template-columns:minmax(96px,170px) minmax(40px,1fr) auto;gap:12px;align-items:center;padding:6px 8px;border-radius:8px;cursor:pointer;border:0;background:none;text-align:left;width:100%}
+.catrow:hover{background:var(--hover)}
+.catrow .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.track{height:10px;background:var(--surface2);border-radius:5px;overflow:hidden}
+.fill{height:100%;background:var(--s1);border-radius:0 4px 4px 0;min-width:2px}
+.catrow .amt{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;min-width:118px}
+.catrow .share{color:var(--muted);font-size:12px;display:inline-block;min-width:40px;text-align:right}
+
+.drop{border:1.5px dashed var(--base);border-radius:var(--r);padding:44px 20px;text-align:center;cursor:pointer;background:var(--surface);transition:background .15s,border-color .15s}
+.drop:hover,.drop.over{border-color:var(--accent);background:var(--accent-wash)}
+.drop-t{font-size:16px;font-weight:600;margin-bottom:4px}
+.map{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.req::after{content:" *";color:var(--danger)}
+.sample{font-size:11.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.steps{margin:0;padding-left:18px;color:var(--ink2);font-size:13px;display:grid;gap:6px}
+
+.acc-list{display:grid;gap:8px}
+.acc{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 14px;border:1px solid var(--line);border-radius:10px}
+.acc b{font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:20px;padding:3px 4px 3px 10px;font-size:13px;background:var(--surface)}
+.chip button{border:0;background:none;cursor:pointer;color:var(--muted);border-radius:12px;padding:0 6px;font-size:13px}
+.chip button:hover{background:var(--hover);color:var(--ink)}
+.chip .c{color:var(--muted);font-size:12px}
+
+.lock{min-height:100vh;display:grid;place-items:center;padding:16px}
+.lock-card{width:min(430px,100%);display:grid;gap:14px;padding:28px}
+.lock-card form{display:grid;gap:10px}
+.lock-card .inp{width:100%}
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.42);display:grid;place-items:center;padding:16px;z-index:50}
+.modal{width:min(460px,100%);display:grid;gap:12px}
+.modal h3{font-size:16px}
+.modal p{margin:0;color:var(--ink2)}
+.modal .inp{width:100%}
+#toasts{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:grid;gap:8px;z-index:60;width:min(600px,calc(100% - 32px))}
+.toast{background:var(--ink);color:var(--bg);border-radius:10px;padding:10px 10px 10px 14px;display:flex;gap:10px;align-items:center;box-shadow:0 10px 32px rgba(0,0,0,.28);font-size:13.5px}
+.toast span{flex:1}
+.toast .btn{background:transparent;color:var(--bg);border-color:color-mix(in srgb,var(--bg) 45%,transparent)}
+.toast .x{background:none;border:0;color:var(--bg);font-size:18px;cursor:pointer;opacity:.7;padding:0 6px}
+.empty{text-align:center;padding:48px 20px}
+.empty h2{font-size:19px;margin-bottom:4px}
+.empty .sub{max-width:520px;margin:6px auto 18px}
+.info p{margin:0 0 8px;color:var(--ink2);font-size:13px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toasts" aria-live="polite"></div>
+<script>
+(() => {
+'use strict';
+
+/* ================================================================
+   Pomocné funkce
+   ================================================================ */
+const $ = (s, r = document) => r.querySelector(s);
+const app = $('#app');
+
+function h(tag, props, ...kids) {
+  const el = document.createElement(tag);
+  for (const c of kids.flat(Infinity)) {
+    if (c == null || c === false) continue;
+    el.append(c instanceof Node ? c : document.createTextNode(String(c)));
+  }
+  if (props) for (const [k, v] of Object.entries(props)) {
+    if (v == null || v === false) continue;
+    if (k === 'class') el.className = v;
+    else if (k === 'text') el.textContent = v;
+    else if (k === 'style') el.style.cssText = v;
+    else if (k.startsWith('on') && typeof v === 'function') el.addEventListener(k.slice(2).toLowerCase(), v);
+    else if (k === 'value' || k === 'checked' || k === 'disabled' || k === 'hidden') el[k] = v;
+    else el.setAttribute(k, v === true ? '' : String(v));
+  }
+  return el;
+}
+const SVGNS = 'http://www.w3.org/2000/svg';
+function sv(tag, attrs, ...kids) {
+  const el = document.createElementNS(SVGNS, tag);
+  if (attrs) for (const [k, v] of Object.entries(attrs)) if (v != null) el.setAttribute(k, v);
+  for (const c of kids.flat()) if (c != null) el.append(c instanceof Node ? c : document.createTextNode(String(c)));
+  return el;
+}
+
+const MES = ['led','úno','bře','dub','kvě','čvn','čvc','srp','zář','říj','lis','pro'];
+const MES_FULL = ['leden','únor','březen','duben','květen','červen','červenec','srpen','září','říjen','listopad','prosinec'];
+const pad = n => String(n).padStart(2, '0');
+const todayStr = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const norm = s => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+const nf0 = new Intl.NumberFormat('cs-CZ', { maximumFractionDigits: 0 });
+const nf2 = new Intl.NumberFormat('cs-CZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const pl = (n, one, few, many) => `${nf0.format(n)} ${n === 1 ? one : n >= 2 && n <= 4 ? few : many}`;
+const kc = (n, dec) => (n < 0 ? '−' : '') + (dec ? nf2 : nf0).format(Math.abs(n)) + ' Kč';
+const kcSigned = n => (n > 0 ? '+' : n < 0 ? '−' : '') + nf2.format(Math.abs(n)) + ' Kč';
+function compact(n) {
+  const a = Math.abs(n), s = n < 0 ? '−' : '';
+  if (a >= 1e6) return s + (a / 1e6).toLocaleString('cs-CZ', { maximumFractionDigits: 1 }) + ' mil.';
+  if (a >= 1e3) return s + (a / 1e3).toLocaleString('cs-CZ', { maximumFractionDigits: a >= 1e4 ? 0 : 1 }) + ' tis.';
+  return s + nf0.format(a);
+}
+const fmtDate = d => { if (!d) return ''; const [y, m, dd] = d.split('-'); return `${+dd}. ${+m}. ${y}`; };
+const monthKey = d => d.slice(0, 7);
+const monthLabel = (k, long) => { const [y, m] = k.split('-'); return long ? `${MES_FULL[+m - 1]} ${y}` : `${MES[+m - 1]} ${y.slice(2)}`; };
+function addMonths(k, n) { let [y, m] = k.split('-').map(Number); m += n; while (m > 12) { m -= 12; y++; } while (m < 1) { m += 12; y--; } return `${y}-${pad(m)}`; }
+function monthsBetween(a, b) { const out = []; let k = a, g = 0; while (k <= b && g++ < 1200) { out.push(k); k = addMonths(k, 1); } return out; }
+function lastDay(k) { const [y, m] = k.split('-').map(Number); return `${k}-${pad(new Date(y, m, 0).getDate())}`; }
+const dayNum = d => { const [y, m, dd] = d.split('-').map(Number); return Date.UTC(y, m - 1, dd) / 864e5; };
+const minStr = (a, b) => a < b ? a : b;
+
+/* ================================================================
+   Šifrované úložiště (AES-256-GCM, klíč z hesla přes PBKDF2)
+   ================================================================ */
+const ITER = 310000;
+const te = new TextEncoder(), td = new TextDecoder();
+function b64(buf) { const b = new Uint8Array(buf); let s = ''; for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s); }
+const unb64 = str => Uint8Array.from(atob(str), c => c.charCodeAt(0));
+async function deriveKey(pw, salt, iter = ITER) {
+  const base = await crypto.subtle.importKey('raw', te.encode(pw), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: iter, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+}
+async function seal(obj, key, salt) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, te.encode(JSON.stringify(obj)));
+  return { app: 'finance', v: 1, kdf: 'PBKDF2-SHA256', iter: ITER, salt: b64(salt), iv: b64(iv), ct: b64(ct), saved: new Date().toISOString() };
+}
+async function openVault(vault, pw) {
+  if (!vault || vault.app !== 'finance' || !vault.ct) throw new Error('Neplatný soubor.');
+  const salt = unb64(vault.salt);
+  const key = await deriveKey(pw, salt, vault.iter || ITER);
+  const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(vault.iv) }, key, unb64(vault.ct));
+  return { key, salt, data: JSON.parse(td.decode(pt)) };
+}
+
+const DBN = 'finance-app', ST = 'kv', VK = 'vault';
+function idbOpen() {
+  return new Promise((res, rej) => {
+    let r; try { r = indexedDB.open(DBN, 1); } catch (e) { rej(e); return; }
+    r.onupgradeneeded = () => r.result.createObjectStore(ST);
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+}
+async function kvGet(k) {
+  try {
+    const db = await idbOpen();
+    const v = await new Promise((res, rej) => { const q = db.transaction(ST, 'readonly').objectStore(ST).get(k); q.onsuccess = () => res(q.result ?? null); q.onerror = () => rej(q.error); });
+    if (v) return v;
+  } catch (e) { /* zkusíme localStorage */ }
+  try { const v = localStorage.getItem('finance:' + k); return v ? JSON.parse(v) : null; } catch (e) { return null; }
+}
+async function kvSet(k, v) {
+  try {
+    const db = await idbOpen();
+    await new Promise((res, rej) => { const tx = db.transaction(ST, 'readwrite'); tx.objectStore(ST).put(v, k); tx.oncomplete = res; tx.onerror = () => rej(tx.error); tx.onabort = () => rej(tx.error); });
+  } catch (e) {
+    localStorage.setItem('finance:' + k, JSON.stringify(v));
+  }
+}
+async function kvDel(k) {
+  try { const db = await idbOpen(); await new Promise((res, rej) => { const tx = db.transaction(ST, 'readwrite'); tx.objectStore(ST).delete(k); tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); } catch (e) {}
+  try { localStorage.removeItem('finance:' + k); } catch (e) {}
+}
+
+let S = null, KEY = null, SALT = null;
+let saveTimer = null, saving = Promise.resolve(), dirty = false;
+function markDirty() { dirty = true; setSaved('Ukládám…'); clearTimeout(saveTimer); saveTimer = setTimeout(flush, 300); }
+function flush() {
+  clearTimeout(saveTimer);
+  if (!dirty || !S || !KEY) return saving;
+  dirty = false;
+  const snap = S, key = KEY, salt = SALT;
+  saving = saving.then(async () => {
+    try { await kvSet(VK, await seal(snap, key, salt)); setSaved('Uloženo'); }
+    catch (e) { dirty = true; setSaved('Neuloženo!'); toast('Data se nepodařilo uložit: ' + (e && e.message || e)); }
+  });
+  return saving;
+}
+function setSaved(t) { const el = $('#saved'); if (el) el.textContent = t; }
+
+/* ================================================================
+   Kategorie a pravidla
+   ================================================================ */
+const DEFAULT_CATS = [
+  ['potraviny','Potraviny','exp'],['jidlo','Jídlo venku','exp'],['bydleni','Bydlení','exp'],
+  ['energie','Energie a voda','exp'],['telefon','Telefon a internet','exp'],['doprava','Doprava a palivo','exp'],
+  ['auto','Auto','exp'],['nakupy','Nákupy a drogerie','exp'],['obleceni','Oblečení','exp'],['krasa','Krása','exp'],['zdravi','Zdraví','exp'],
+  ['sport','Sport','exp'],['zabava','Zábava','exp'],['predplatne','Předplatné a aplikace','exp'],
+  ['cestovani','Cestování','exp'],['vzdelavani','Vzdělávání','exp'],['mazlicci','Domácí mazlíčci','exp'],
+  ['darky','Dárky','exp'],['pojisteni','Pojištění','exp'],['poplatky','Poplatky a daně','exp'],
+  ['hotovost','Výběry hotovosti','exp'],['ostatni-vydaje','Ostatní výdaje','exp'],
+  ['mzda','Mzda','inc'],['uroky','Úroky','inc'],['ostatni-prijmy','Ostatní příjmy','inc'],
+  ['sporeni','Spoření a investice','save'],['prevod','Převod mezi vlastními účty','transfer'],
+];
+const PROTECTED = new Set(['ostatni-vydaje','ostatni-prijmy','prevod']);
+const KIND_LABEL = { exp: 'Výdaje', inc: 'Příjmy', save: 'Spoření a investice', transfer: 'Převody (nezapočítávají se)' };
+
+// Vestavěná pravidla: první shoda vyhrává. Kategorie typu příjem/výdaj se použijí jen na platby se správným znaménkem.
+const DEFAULT_RULES = [
+  ['uroky', ['pripsany urok','kreditni urok','urok','interest']],
+  ['mzda', ['mzda','vyplata','salary','skoda auto']],
+  ['poplatky', ['poplatek','vedeni uctu','srazkova dan','dan z uroku','financni urad','pokuta']],
+  ['hotovost', ['vyber z bankomatu','vyber hotovosti','bankomat','atm','cash withdrawal']],
+  ['sporeni', ['partners','penzijni','doplnkove penzijni','penzijko','portu','fondee','conseq','amundi','stavebni sporeni','modra pyramida','burinka','xtb','trading 212','investown','raiffeisen investicni','erste asset','investicni']],
+  ['jidlo', ['mcdonald','kfc','burger king','wolt','foodora','bolt food','damejidlo','dame jidlo','starbucks','costa coffee','restaurace','restaurant','pizzeria','pizza','bistro','kavarna','cafe','subway','bageterie','paul','ugo','sushi','kebab','hospoda','pivnice','menza']],
+  ['potraviny', ['albert','lidl','kaufland','tesco','billa','penny','globus','rohlik','kosik','makro','coop','norma','hruska','zabka','flop','jednota','potraviny','vecerka','pekarna','reznictvi']],
+  ['predplatne', ['netflix','spotify','hbo','disney','youtube','apple.com','icloud','google one','google storage','microsoft','adobe','openai','chatgpt','anthropic','claude.ai','voyo','oneplay','skylink','audible','storytel','patreon','github']],
+  ['telefon', ['o2','t-mobile','tmobile','vodafone','nordic telecom','upc','poda','starnet']],
+  ['energie', ['cez','innogy','pre','e.on','eon','bohemia energy','centropol','ppas','vodovody','vodarny','teplarny','scvk','vak']],
+  ['bydleni', ['najem','najemne','svj','hypoteka','hypotecni','sipo','sprava domu']],
+  ['pojisteni', ['pojistovna','kooperativa','allianz','generali','uniqa','cpp','koop','direct pojistovna','pojisteni','pillow']],
+  ['doprava', ['shell','omv','mol','benzina','orlen','eurooil','tank ono','robin oil','cerpaci stanice','ceske drahy','cd.cz','regiojet','leo express','arriva','pid','dpp','litacka','bolt','uber','liftago','parkovani','parking','edalnice','dalnicni']],
+  ['auto', ['pneu','autoservis','stk','autodily','autocentrum','myci linka','car wash']],
+  ['zdravi', ['lekarna','dr.max','dr max','benu','pharmos','zubni','stomatolog','poliklinika','nemocnice','ordinace','optika']],
+  ['krasa', ['kadernictvi','kadernik','kadernice','barber','holicstvi','kosmetika','kosmeticky salon','kosmeticke studio','manikura','pedikura','nehtove studio','nehty','beauty','sephora','douglas','marionnaud','notino','fann parfumerie','parfumerie','solarium','lash','obocí','depilace']],
+  ['sport', ['decathlon','sportisimo','a3 sport','hervis','multisport','fitness','posilovna','gym','bazen','garmin','strava']],
+  ['obleceni', ['h&m','zara','reserved','deichmann','ccc','c&a','new yorker','primark','about you','zalando','answear','bershka','pull&bear','lindex']],
+  ['mazlicci', ['zverimex','super zoo','superzoo','zoohit','zooplus','veterin','krmiva','granule']],
+  ['cestovani', ['booking.com','airbnb','ryanair','wizz','smartwings','letenky','hotel','invia','cedok','fischer','expedia','letiste']],
+  ['vzdelavani', ['cvut','kurz','skoleni','knihkupectvi','luxor','kosmas','martinus','udemy','coursera','duolingo']],
+  ['zabava', ['cinema city','cinestar','kino','ticketportal','goout','ticketmaster','ticketstream','steam','playstation','xbox','nintendo','divadlo','koncert']],
+  ['nakupy', ['alza','mall.cz','amazon','aliexpress','temu','shein','datart','czc','ikea','hornbach','obi','bauhaus','tchibo','dm drogerie','dm-drogerie','rossmann','teta','pepco','action','kik','tedi','okay','electro world','allegro','vinted','sconto','jysk','mountfield']],
+];
+const COMPILED_DEFAULTS = DEFAULT_RULES.map(([cat, pats]) => [cat, pats.map(norm)]);
+
+function patMatch(text, p) {
+  if (!p) return false;
+  let i = text.indexOf(p);
+  while (i > -1) {
+    const before = i === 0 || !/[a-z0-9]/.test(text[i - 1]);
+    const after = p.length > 3 || i + p.length >= text.length || !/[a-z0-9]/.test(text[i + p.length]);
+    if (before && after) return true;
+    i = text.indexOf(p, i + 1);
+  }
+  return false;
+}
+
+let catIdx = new Map(), ownCores = new Map();
+function refreshIdx() {
+  catIdx = new Map(S.categories.map(c => [c.id, c]));
+  ownCores = new Map();
+  for (const a of S.accounts) { const c = accCore(a.number); if (c.length >= 5) ownCores.set(c, a.id); }
+}
+const kindOf = id => (catIdx.get(id) || { kind: 'exp' }).kind;
+const catName = id => (catIdx.get(id) || { name: 'Bez kategorie' }).name;
+const accName = id => (S.accounts.find(a => a.id === id) || { name: '?' }).name;
+
+function accCore(s) {
+  s = String(s || '').toUpperCase().replace(/\s+/g, '');
+  if (!s) return '';
+  const m = /^CZ\d{2}\d{4}(\d{6})(\d{10})$/.exec(s);
+  if (m) return m[2].replace(/^0+/, '');
+  s = s.split('/')[0];
+  if (s.includes('-')) s = s.split('-').pop();
+  s = s.replace(/\D/g, '');
+  if (s.length > 10) s = s.slice(-10);
+  return s.replace(/^0+/, '');
+}
+
+function txText(t) { return norm((t.cp || '') + ' | ' + (t.msg || '')); }
+function autoCat(t) {
+  if (t.cpAcc) {
+    const own = ownCores.get(accCore(t.cpAcc));
+    if (own && own !== t.acc) return 'prevod';
+  }
+  const text = txText(t);
+  for (const r of S.rules) if (catIdx.has(r.cat) && patMatch(text, r.pat)) return r.cat;
+  for (const [cat, pats] of COMPILED_DEFAULTS) {
+    if (!catIdx.has(cat)) continue;
+    const k = kindOf(cat);
+    if (k === 'inc' && t.amt <= 0) continue;
+    if (k === 'exp' && t.amt >= 0) continue;
+    if (pats.some(p => patMatch(text, p))) return cat;
+  }
+  return t.amt >= 0 ? 'ostatni-prijmy' : 'ostatni-vydaje';
+}
+function applyCategories() {
+  refreshIdx();
+  for (const t of S.tx) if (t.cs !== 'm') t.cat = autoCat(t);
+  pairTransfers();
+}
+// Párování převodů mezi vlastními účty: stejná částka, opačné znaménko, jiný vlastní účet, do 3 dnů.
+function pairTransfers() {
+  if (S.accounts.length < 2) return;
+  const fb = new Set(['ostatni-prijmy', 'ostatni-vydaje', 'prevod']);
+  const groups = new Map();
+  for (const t of S.tx) {
+    if (t.cs === 'm' || !fb.has(t.cat)) continue;
+    const k = Math.round(Math.abs(t.amt) * 100);
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(t);
+  }
+  for (const list of groups.values()) {
+    const neg = list.filter(t => t.amt < 0), posL = list.filter(t => t.amt > 0);
+    const used = new Set();
+    for (const n of neg) {
+      const dn = dayNum(n.date);
+      const m = posL.find(p => !used.has(p) && p.acc !== n.acc && !(p.cat === 'prevod' && n.cat === 'prevod') && Math.abs(dayNum(p.date) - dn) <= 3)
+        || posL.find(p => !used.has(p) && p.acc !== n.acc && Math.abs(dayNum(p.date) - dn) <= 3);
+      if (m) { used.add(m); n.cat = 'prevod'; m.cat = 'prevod'; }
+    }
+  }
+}
+function rulePattern(t) {
+  const src = norm(t.cp || t.msg || '');
+  const toks = [];
+  for (const tok of src.split(/[\s*,;:|]+/)) { if (!tok || /\d/.test(tok)) break; toks.push(tok); if (toks.length >= 2) break; }
+  const p = toks.join(' ').trim();
+  return p.length >= 3 ? p : '';
+}
+
+/* ================================================================
+   Data
+   ================================================================ */
+function freshData() {
+  return { v: 1, accounts: [], tx: [], categories: DEFAULT_CATS.map(([id, name, kind]) => ({ id, name, kind })),
+    rules: [], imports: [], mappings: {}, settings: { lockMin: 15 }, lastBackup: null, created: todayStr() };
+}
+function migrate(d) {
+  const f = freshData();
+  for (const k of Object.keys(f)) if (d[k] == null) d[k] = f[k];
+  for (const c of f.categories) if (!d.categories.some(x => x.id === c.id) && PROTECTED.has(c.id)) d.categories.push(c);
+  d.settings = Object.assign({ lockMin: 15 }, d.settings);
+  return d;
+}
+function sortTx() { S.tx.sort((a, b) => a.date < b.date ? 1 : a.date > b.date ? -1 : 0); }
+function addAccount(o) {
+  const used = new Set(S.accounts.map(a => a.slot));
+  let slot = 0; while (used.has(slot)) slot++;
+  const a = { id: uid(), name: o.name.trim() || 'Účet', bank: o.bank || '', number: (o.number || '').trim(), type: o.type || 'bezny', rate: o.rate ?? null, anchor: o.anchor || null, slot };
+  S.accounts.push(a);
+  refreshIdx();
+  return a.id;
+}
+function balanceAt(a, d) {
+  if (!a.anchor) return null;
+  let b = a.anchor.amount; const ad = a.anchor.date;
+  for (const t of S.tx) {
+    if (t.acc !== a.id) continue;
+    if (d > ad) { if (t.date > ad && t.date <= d) b += t.amt; }
+    else if (d < ad) { if (t.date > d && t.date <= ad) b -= t.amt; }
+  }
+  return Math.round(b * 100) / 100;
+}
+function firstTxDate(accId) { let m = null; for (const t of S.tx) if (t.acc === accId && (!m || t.date < m)) m = t.date; return m; }
+
+/* ================================================================
+   Načítání souborů z banky
+   ================================================================ */
+function ymd(y, mo, d) {
+  y = +y; mo = +mo; d = +d;
+  if (!(mo >= 1 && mo <= 12 && d >= 1 && d <= 31 && y > 1990 && y < 2100)) return null;
+  return `${y}-${pad(mo)}-${pad(d)}`;
+}
+function parseDate(v) {
+  if (v == null || v === '') return null;
+  if (typeof v === 'number' || /^\d{5}(\.\d+)?$/.test(String(v).trim())) {
+    const n = +v;
+    if (n > 20000 && n < 80000) return new Date(Date.UTC(1899, 11, 30) + Math.floor(n) * 864e5).toISOString().slice(0, 10);
+  }
+  const s = String(v).trim(); let m;
+  if ((m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/))) return ymd(m[1], m[2], m[3]);
+  if ((m = s.match(/^(\d{1,2})\s*[.\/-]\s*(\d{1,2})\s*[.\/-]\s*(\d{2,4})/))) { let y = +m[3]; if (y < 100) y += 2000; return ymd(y, m[2], m[1]); }
+  if ((m = s.match(/^(\d{4})(\d{2})(\d{2})$/))) return ymd(m[1], m[2], m[3]);
+  if ((m = s.match(/^(\d{4})\.(\d{1,2})\.(\d{1,2})/))) return ymd(m[1], m[2], m[3]);
+  return null;
+}
+function parseAmount(v) {
+  if (typeof v === 'number') return v;
+  if (v == null) return NaN;
+  let s = String(v).trim().replace(/[   ]/g, ' ').replace(/[−–]/g, '-');
+  if (!s) return NaN;
+  s = s.replace(/czk|kč|kc|eur|usd|€|\$/gi, '').replace(/\s+/g, '');
+  let neg = false;
+  if (/^\(.*\)$/.test(s)) { neg = true; s = s.slice(1, -1); }
+  if (s.endsWith('-')) { neg = true; s = s.slice(0, -1); }
+  if (s.startsWith('-')) { neg = !neg; s = s.slice(1); }
+  if (s.startsWith('+')) s = s.slice(1);
+  const lc = s.lastIndexOf(','), ld = s.lastIndexOf('.');
+  const nc = (s.match(/,/g) || []).length, nd = (s.match(/\./g) || []).length;
+  if (lc > -1 && ld > -1) s = lc > ld ? s.replace(/\./g, '').replace(',', '.') : s.replace(/,/g, '');
+  else if (lc > -1) s = nc > 1 ? s.replace(/,/g, '') : s.replace(',', '.');
+  else if (nd > 1) s = s.replace(/\./g, '');
+  if (!/^\d*\.?\d+$/.test(s)) return NaN;
+  const n = parseFloat(s);
+  return neg ? -n : n;
+}
+function decodeText(u8) {
+  if (u8[0] === 0xFF && u8[1] === 0xFE) return new TextDecoder('utf-16le').decode(u8).replace(/^﻿/, '');
+  if (u8[0] === 0xFE && u8[1] === 0xFF) return new TextDecoder('utf-16be').decode(u8).replace(/^﻿/, '');
+  let s;
+  try { s = new TextDecoder('utf-8', { fatal: true }).decode(u8); }
+  catch (e) { try { s = new TextDecoder('windows-1250').decode(u8); } catch (_) { s = new TextDecoder().decode(u8); } }
+  return s.replace(/^﻿/, '');
+}
+function parseCsv(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim()).slice(0, 30);
+  let d = ';', best = -1;
+  for (const c of [';', ',', '\t', '|']) {
+    const counts = lines.map(l => l.split(c).length - 1).sort((a, b) => a - b);
+    const med = counts.length ? counts[Math.floor(counts.length * 0.6)] : 0;
+    if (med > best) { best = med; d = c; }
+  }
+  const rows = []; let row = [], f = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (q) {
+      if (ch === '"') { if (text[i + 1] === '"') { f += '"'; i++; } else q = false; }
+      else f += ch;
+    } else if (ch === '"' && f.trim() === '') { q = true; f = ''; }
+    else if (ch === d) { row.push(f); f = ''; }
+    else if (ch === '\n' || ch === '\r') { if (ch === '\r' && text[i + 1] === '\n') i++; row.push(f); rows.push(row); row = []; f = ''; }
+    else f += ch;
+  }
+  if (f !== '' || row.length) { row.push(f); rows.push(row); }
+  return rows.map(r => r.map(c => c.trim()));
+}
+
+// --- XLSX bez knihoven: rozbalení ZIPu přes DecompressionStream a čtení XML
+async function unzip(buf) {
+  const dv = new DataView(buf), u8 = new Uint8Array(buf);
+  let eocd = -1;
+  for (let i = u8.length - 22; i >= Math.max(0, u8.length - 65558); i--) if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+  if (eocd < 0) throw new Error('Soubor není platný Excel (.xlsx).');
+  const cnt = dv.getUint16(eocd + 10, true); let off = dv.getUint32(eocd + 16, true);
+  const files = new Map();
+  for (let i = 0; i < cnt; i++) {
+    if (dv.getUint32(off, true) !== 0x02014b50) break;
+    const method = dv.getUint16(off + 10, true), csize = dv.getUint32(off + 20, true);
+    const nlen = dv.getUint16(off + 28, true), xlen = dv.getUint16(off + 30, true), clen = dv.getUint16(off + 32, true);
+    const lho = dv.getUint32(off + 42, true);
+    const name = td.decode(u8.subarray(off + 46, off + 46 + nlen));
+    files.set(name.toLowerCase(), { method, csize, lho });
+    off += 46 + nlen + xlen + clen;
+  }
+  return {
+    names: [...files.keys()],
+    async read(name) {
+      const f = files.get(name.toLowerCase().replace(/^\//, ''));
+      if (!f) return null;
+      const start = f.lho + 30 + dv.getUint16(f.lho + 26, true) + dv.getUint16(f.lho + 28, true);
+      const data = u8.subarray(start, start + f.csize);
+      if (f.method === 0) return td.decode(data);
+      if (f.method !== 8) throw new Error('Nepodporovaná komprese v souboru.');
+      if (typeof DecompressionStream === 'undefined') throw new Error('Tento prohlížeč neumí otevřít .xlsx. Použijte prosím CSV nebo novější prohlížeč.');
+      const out = await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer();
+      return td.decode(out);
+    }
+  };
+}
+const xmlDoc = s => new DOMParser().parseFromString(s, 'application/xml');
+const byTag = (el, name) => [...el.getElementsByTagNameNS('*', name)];
+function colIdx(letters) { let n = 0; for (const ch of letters) n = n * 26 + (ch.charCodeAt(0) - 64); return n - 1; }
+async function readXlsx(buf) {
+  const z = await unzip(buf);
+  const ssXml = await z.read('xl/sharedStrings.xml');
+  const ss = [];
+  if (ssXml) for (const si of byTag(xmlDoc(ssXml), 'si')) {
+    let s = '';
+    for (const t of byTag(si, 't')) { let p = t.parentNode, skip = false; while (p && p !== si) { if (p.localName === 'rPh') skip = true; p = p.parentNode; } if (!skip) s += t.textContent; }
+    ss.push(s);
+  }
+  let sheetPaths = [];
+  try {
+    const wb = xmlDoc(await z.read('xl/workbook.xml'));
+    const rels = xmlDoc(await z.read('xl/_rels/workbook.xml.rels'));
+    const relMap = new Map(byTag(rels, 'Relationship').map(r => [r.getAttribute('Id'), r.getAttribute('Target')]));
+    for (const sh of byTag(wb, 'sheet')) {
+      const rid = [...sh.attributes].find(a => a.localName === 'id')?.value;
+      let t = relMap.get(rid); if (!t) continue;
+      t = t.replace(/^\//, ''); if (!t.startsWith('xl/')) t = 'xl/' + t;
+      sheetPaths.push(t);
+    }
+  } catch (e) {}
+  if (!sheetPaths.length) sheetPaths = z.names.filter(n => /^xl\/worksheets\/sheet\d+\.xml$/.test(n)).sort();
+  let best = [];
+  for (const p of sheetPaths) {
+    const x = await z.read(p); if (!x) continue;
+    const rows = [];
+    for (const r of byTag(xmlDoc(x), 'row')) {
+      const ri = (+r.getAttribute('r') || rows.length + 1) - 1;
+      const arr = []; let ci = 0;
+      for (const c of r.children) {
+        if (c.localName !== 'c') continue;
+        const ref = c.getAttribute('r'); if (ref) { const m = /^([A-Z]+)/.exec(ref); if (m) ci = colIdx(m[1]); }
+        const t = c.getAttribute('t');
+        const v = [...c.children].find(x => x.localName === 'v')?.textContent;
+        let val;
+        if (t === 's') val = ss[+v] ?? '';
+        else if (t === 'inlineStr') val = byTag(c, 't').map(x => x.textContent).join('');
+        else if (t === 'b') val = v === '1' ? 'ANO' : 'NE';
+        else if (t === 'str' || t === 'e') val = v ?? '';
+        else val = v == null ? '' : (v.trim() !== '' && isFinite(+v) ? +v : v);
+        arr[ci] = val; ci++;
+      }
+      rows[ri] = arr;
+    }
+    const full = Array.from(rows, r => r ? Array.from(r, c => c ?? '') : []);
+    if (full.filter(r => r.length).length > best.filter(r => r.length).length) best = full;
+    if (best.length > 3) break;
+  }
+  if (!best.length) throw new Error('V Excelu jsem nenašel žádná data.');
+  return best;
+}
+
+// --- XML: ISO 20022 camt.053/052 i obecné XML se seznamem pohybů
+const first = (el, ...path) => { let cur = el; for (const p of path) { if (!cur) return null; cur = cur.getElementsByTagNameNS('*', p)[0] || null; } return cur; };
+const txt = (el, ...path) => { const e = first(el, ...path); return e ? e.textContent.trim() : ''; };
+const kid = (el, name) => [...el.children].find(c => c.localName === name);
+function parseCamt(doc) {
+  const acct = first(doc, 'Acct');
+  const accNumber = acct ? (txt(acct, 'IBAN') || txt(acct, 'Othr', 'Id')) : '';
+  let anchor = null;
+  for (const b of byTag(doc, 'Bal')) {
+    if (txt(b, 'Tp', 'Cd') !== 'CLBD') continue;
+    let a = parseFloat(txt(b, 'Amt')); if (!isFinite(a)) continue;
+    if (txt(b, 'CdtDbtInd') === 'DBIT') a = -a;
+    const dEl = kid(b, 'Dt'); const d = dEl ? parseDate(txt(dEl, 'Dt') || txt(dEl, 'DtTm')) : null;
+    if (d && (!anchor || d >= anchor.date)) anchor = { date: d, amount: a };
+  }
+  const rows = []; let invalid = 0;
+  for (const n of byTag(doc, 'Ntry')) {
+    const amtEl = kid(n, 'Amt');
+    let amt = parseFloat(amtEl ? amtEl.textContent : txt(n, 'Amt'));
+    const dbit = (kid(n, 'CdtDbtInd')?.textContent.trim()) === 'DBIT';
+    if (dbit) amt = -amt;
+    if (kid(n, 'RvslInd')?.textContent.trim() === 'true') amt = -amt;
+    const bd = kid(n, 'BookgDt') || kid(n, 'ValDt');
+    const date = bd ? parseDate(txt(bd, 'Dt') || txt(bd, 'DtTm')) : null;
+    if (!date || !isFinite(amt)) { invalid++; continue; }
+    const tdl = first(n, 'TxDtls');
+    let cp = '', cpAcc = '';
+    const rp = tdl ? first(tdl, 'RltdPties') : null;
+    if (rp) {
+      const party = dbit ? (kid(rp, 'Cdtr') || first(rp, 'Cdtr')) : (kid(rp, 'Dbtr') || first(rp, 'Dbtr'));
+      if (party) cp = txt(party, 'Nm');
+      const pacc = dbit ? first(rp, 'CdtrAcct') : first(rp, 'DbtrAcct');
+      if (pacc) cpAcc = txt(pacc, 'IBAN') || txt(pacc, 'Othr', 'Id');
+    }
+    const msgs = [];
+    if (tdl) { for (const u of byTag(tdl, 'Ustrd')) if (u.textContent.trim()) msgs.push(u.textContent.trim()); const ai = txt(tdl, 'AddtlTxInf'); if (ai) msgs.push(ai); }
+    const an = kid(n, 'AddtlNtryInf')?.textContent.trim(); if (an) msgs.push(an);
+    if (!cp && msgs.length) { cp = msgs.shift(); }
+    const e2e = tdl ? txt(tdl, 'Refs', 'EndToEndId') : '';
+    let vs = ''; const m = /VS[:\s/]*(\d{1,10})/i.exec(e2e + ' ' + msgs.join(' '));
+    if (m) vs = m[1]; else if (/^\d{1,10}$/.test(e2e)) vs = e2e;
+    const ref = kid(n, 'AcctSvcrRef')?.textContent.trim() || kid(n, 'NtryRef')?.textContent.trim() || (tdl ? txt(tdl, 'Refs', 'AcctSvcrRef') : '');
+    rows.push({ date, amt: Math.round(amt * 100) / 100, cur: amtEl?.getAttribute('Ccy') || 'CZK', cp, cpAcc, msg: [...new Set(msgs)].join(' · '), vs: vs.replace(/^0+/, ''), ref, bal: NaN });
+  }
+  return { kind: 'norm', format: 'XML (ISO 20022)', rows, invalid, accNumber, anchor };
+}
+function xmlTable(doc) {
+  const all = [...doc.getElementsByTagName('*')];
+  const sig = el => (el.parentNode?.nodeName || '') + '>' + el.nodeName;
+  const cnt = new Map();
+  for (const el of all) {
+    const leaves = [...el.children].filter(c => c.children.length === 0).length + el.attributes.length;
+    if (leaves >= 3) cnt.set(sig(el), (cnt.get(sig(el)) || 0) + 1);
+  }
+  let bestK = null, bc = 0;
+  for (const [k, c] of cnt) if (c > bc) { bc = c; bestK = k; }
+  if (!bestK) throw new Error('V XML souboru jsem nenašel seznam pohybů.');
+  const headers = [], hIdx = new Map(), rows = [];
+  const add = (row, name, val) => { if (!hIdx.has(name)) { hIdx.set(name, headers.length); headers.push(name); } const i = hIdx.get(name); row[i] = row[i] ? row[i] + ' ' + val : val; };
+  for (const el of all.filter(e => sig(e) === bestK)) {
+    const row = [];
+    for (const a of el.attributes) add(row, a.localName, a.value);
+    const walk = (node, prefix) => {
+      for (const c of node.children) {
+        const nm = prefix ? prefix + '/' + c.localName : c.localName;
+        for (const a of c.attributes) add(row, nm + ' ' + a.localName, a.value);
+        if (c.children.length) walk(c, nm); else { const v = c.textContent.trim(); if (v) add(row, nm, v); }
+      }
+    };
+    walk(el, '');
+    rows.push(row);
+  }
+  return [headers, ...rows.map(r => Array.from({ length: headers.length }, (_, i) => r[i] ?? ''))];
+}
+
+// --- GPC / ABO (formát pro účetní programy, nabízí ho mj. Raiffeisenbank)
+function parseGpc(text) {
+  const ddmmyy = s => /^\d{6}$/.test(s) ? ymd(2000 + +s.slice(4, 6), s.slice(2, 4), s.slice(0, 2)) : null;
+  const rows = []; let accNumber = '', anchor = null, invalid = 0;
+  for (const L of text.split(/\r?\n/)) {
+    const t = L.replace(/\s+$/, ''); const typ = t.slice(0, 3);
+    if (typ === '074') {
+      accNumber = t.slice(3, 19).trim();
+      const nb = parseInt(t.slice(60, 74), 10), d = ddmmyy(t.slice(108, 114));
+      if (isFinite(nb) && d && (!anchor || d >= anchor.date)) anchor = { date: d, amount: (t[74] === '-' ? -1 : 1) * nb / 100 };
+    } else if (typ === '075') {
+      const a = parseInt(t.slice(48, 60), 10) / 100, code = t[60];
+      const sign = (code === '1' || code === '5') ? -1 : 1;
+      const d = ddmmyy(t.slice(122, 128)) || ddmmyy(t.slice(91, 97));
+      if (!d || !isFinite(a)) { invalid++; continue; }
+      const cpA = t.slice(19, 35).replace(/^0+/, ''), bank = t.slice(73, 77);
+      rows.push({ date: d, amt: Math.round(sign * a * 100) / 100, cur: 'CZK', cp: t.slice(97, 117).trim(),
+        cpAcc: cpA ? cpA + (/^\d{4}$/.test(bank) && bank !== '0000' ? '/' + bank : '') : '',
+        msg: '', vs: t.slice(61, 71).replace(/^0+/, ''), ref: t.slice(35, 48).replace(/^0+/, ''), bal: NaN });
+    } else if ((typ === '078' || typ === '079') && rows.length) {
+      const m = t.slice(3).trim(); const last = rows[rows.length - 1];
+      if (m) last.msg = last.msg ? last.msg + ' ' + m : m;
+    }
+  }
+  return { kind: 'norm', format: 'GPC (ABO)', rows, invalid, accNumber, anchor };
+}
+
+// --- Rozpoznání sloupců v tabulce (CSV, Excel, obecné XML)
+const FIELDS = [
+  { k: 'date', label: 'Datum', req: true, kw: ['datum zauctovani','zauctovano','datum provedeni','datum transakce','datum pohybu','datum platby','datum','booking date','transaction date','value date','date','splatnost','valuta'], neg: ['narozeni','zalozeni'] },
+  { k: 'amount', label: 'Částka', req: true, kw: ['castka v mene uctu','zauctovana castka','castka','objem','amount','suma','prijem','kredit','kc'], neg: ['puvodni','poplatek','zustatek','balance','debet','debit','indicator'] },
+  { k: 'amountOut', label: 'Výdaj (samostatný sloupec)', kw: ['vydaj','debet','debit','odchozi castka','ma dati'], neg: ['typ','smer','indicator','ind','kredit','credit'] },
+  { k: 'dir', label: 'Směr (příchozí / odchozí)', kw: ['smer','typ pohybu','kredit debet','prichozi odchozi','debit credit','credit debit indicator','cdt dbt ind','d c'], neg: [] },
+  { k: 'cur', label: 'Měna', kw: ['mena uctu','mena','currency','ccy'], neg: ['puvodni','kurz'] },
+  { k: 'cpAcc', label: 'Číslo protiúčtu', kw: ['cislo protiuctu','protiucet','ucet protistrany','cislo uctu protistrany','iban protistrany','iban protiuctu','counter account','counterparty account'], neg: ['nazev','banky'] },
+  { k: 'cp', label: 'Protistrana / obchodník', kw: ['nazev protiuctu','nazev protistrany','protistrana','nazev obchodnika','obchodnik','misto transakce','misto','prijemce','platce','partner','counterparty','merchant','nazev','name'], neg: ['cislo','ucet','iban','banky','kod','swift'] },
+  { k: 'msg', label: 'Zpráva / popis', kw: ['zprava pro prijemce','zprava','popis transakce','popis','informace k platbe','detail','message','description','poznamka','typ transakce','typ'], neg: ['cislo'] },
+  { k: 'msg2', label: 'Další popis', kw: [], neg: [] },
+  { k: 'vs', label: 'Variabilní symbol', kw: ['variabilni symbol','variabilni','vs'], neg: [] },
+  { k: 'ref', label: 'ID transakce', kw: ['id transakce','id pohybu','identifikace transakce','referencni cislo','reference banky','reference','kod transakce','transaction id','cislo transakce'], neg: [] },
+  { k: 'bal', label: 'Zůstatek po pohybu', kw: ['zustatek po','zustatek','balance'], neg: ['disponibilni'] },
+  { k: 'ownAcc', label: 'Vlastní účet', kw: ['cislo uctu','vlastni ucet','muj ucet','iban','account number','ucet'], neg: ['proti','protistran','nazev','banky'] },
+];
+const hNorm = s => norm(String(s ?? '').replace(/([a-z])([A-Z])/g, '$1 $2')).replace(/[_\-.\/@:()]+/g, ' ').replace(/\s+/g, ' ').trim();
+function fieldScore(f, hn) {
+  if (!hn || f.neg.some(n => hn.includes(n))) return 0;
+  let best = 0;
+  f.kw.forEach((kw, i) => { if (hn === kw) best = Math.max(best, 200 - i); else if (patMatch(hn, kw)) best = Math.max(best, 100 - i); });
+  return best;
+}
+function guessMap(headers) {
+  const hn = headers.map(hNorm), used = new Set(), map = {};
+  for (const f of FIELDS) {
+    if (f.k === 'msg2') continue;
+    let bi = -1, bs = 0;
+    hn.forEach((x, i) => { if (used.has(i)) return; const s = fieldScore(f, x); if (s > bs) { bs = s; bi = i; } });
+    map[f.k] = bi; if (bi >= 0) used.add(bi);
+  }
+  const fm = FIELDS.find(f => f.k === 'msg'); let bi = -1, bs = 0;
+  hn.forEach((x, i) => { if (used.has(i)) return; const s = fieldScore(fm, x); if (s > bs) { bs = s; bi = i; } });
+  map.msg2 = bi;
+  // samostatné sloupce příjem/výdaj: "příjem" patří k částce jen tehdy, když existuje i sloupec výdaje
+  return map;
+}
+function detectHeader(rows) {
+  let best = 0, bs = 0;
+  for (let i = 0; i < Math.min(rows.length, 40); i++) {
+    const hn = (rows[i] || []).map(hNorm);
+    let s = 0; for (const f of FIELDS) if (hn.some(x => fieldScore(f, x) > 0)) s++;
+    if (s > bs) { bs = s; best = i; }
+  }
+  return best;
+}
+function dirSign(v) {
+  const s = norm(v); if (!s) return 0;
+  if (/odchoz|debet|dbit|vydaj|debit|odepsan|^d$|^-$/.test(s)) return -1;
+  if (/prichoz|kredit|crdt|prijem|credit|pripsan|^c$|^k$|^\+$/.test(s)) return 1;
+  return 0;
+}
+function normTable(cur) {
+  const m = cur.map, out = []; let invalid = 0;
+  const g = (r, k) => m[k] >= 0 ? r[m[k]] : '';
+  const gs = (r, k) => { const v = g(r, k); return v == null ? '' : String(v).trim(); };
+  for (let i = cur.hi + 1; i < cur.rows.length; i++) {
+    const r = cur.rows[i];
+    if (!r || r.every(c => String(c ?? '').trim() === '')) continue;
+    const date = parseDate(g(r, 'date'));
+    let amt = m.amount >= 0 ? parseAmount(g(r, 'amount')) : NaN;
+    if (m.amountOut >= 0) {
+      const o = parseAmount(g(r, 'amountOut'));
+      if (isFinite(amt) || isFinite(o)) amt = (isFinite(amt) ? amt : 0) - (isFinite(o) ? Math.abs(o) : 0);
+    }
+    if (m.dir >= 0 && isFinite(amt)) { const s = dirSign(g(r, 'dir')); if (s) amt = s * Math.abs(amt); }
+    if (!date || !isFinite(amt)) { invalid++; continue; }
+    out.push({ date, amt: Math.round(amt * 100) / 100, cur: gs(r, 'cur') || 'CZK', cp: gs(r, 'cp'), cpAcc: gs(r, 'cpAcc'),
+      msg: [gs(r, 'msg'), gs(r, 'msg2')].filter(Boolean).filter((x, j, a) => a.indexOf(x) === j).join(' · '),
+      vs: gs(r, 'vs').replace(/^0+/, ''), ref: gs(r, 'ref'), bal: m.bal >= 0 ? parseAmount(g(r, 'bal')) : NaN, own: gs(r, 'ownAcc') });
+  }
+  return { rows: out, invalid };
+}
+function anchorFromRows(rows) {
+  const wb = rows.filter(r => isFinite(r.bal));
+  if (!wb.length) return null;
+  const maxD = wb.reduce((a, r) => r.date > a ? r.date : a, '');
+  const desc = rows.length > 1 && rows[0].date > rows[rows.length - 1].date;
+  const same = wb.filter(r => r.date === maxD);
+  const pick = desc ? same[0] : same[same.length - 1];
+  return { date: maxD, amount: pick.bal };
+}
+const BANK_CODES = { '0800': 'Česká spořitelna', '5500': 'Raiffeisenbank', '0100': 'Komerční banka', '0300': 'ČSOB', '2010': 'Fio banka', '3030': 'Air Bank', '0600': 'MONETA', '6210': 'mBank', '2700': 'UniCredit', '6100': 'Equa bank', '2250': 'Creditas' };
+const BANKS = ['Česká spořitelna', 'Raiffeisenbank', 'Komerční banka', 'ČSOB', 'Fio banka', 'Air Bank', 'MONETA', 'mBank', 'UniCredit', 'Jiná banka'];
+function bankFromNumber(num, fileName) {
+  const s = String(num || '').replace(/\s/g, '').toUpperCase();
+  let code = null;
+  if (/^CZ\d{22}$/.test(s)) code = s.slice(4, 8); else { const m = /\/(\d{4})$/.exec(s); if (m) code = m[1]; }
+  if (code && BANK_CODES[code]) return BANK_CODES[code];
+  const f = norm(fileName);
+  if (/george|sporitelna|csas/.test(f)) return 'Česká spořitelna';
+  if (/raiffeisen|^rb[\s_-]|[\s_-]rb[\s_.-]/.test(f)) return 'Raiffeisenbank';
+  return '';
+}
+
+async function parseFile(file) {
+  const buf = await file.arrayBuffer(); const u8 = new Uint8Array(buf);
+  const name = file.name, ext = (name.split('.').pop() || '').toLowerCase();
+  if (u8[0] === 0x50 && u8[1] === 0x4b) return tableCur(name, 'Excel (.xlsx)', await readXlsx(buf));
+  if (u8[0] === 0xD0 && u8[1] === 0xCF) throw new Error('Starý formát Excelu (.xls) neumím přečíst. Otevřete ho a uložte jako .xlsx, nebo stáhněte z banky CSV.');
+  if (u8[0] === 0x25 && u8[1] === 0x50 && u8[2] === 0x44 && u8[3] === 0x46) throw new Error('PDF výpis nejde spolehlivě načíst. Stáhněte prosím z banky CSV, Excel, XML nebo GPC.');
+  const text = decodeText(u8); const t = text.trimStart();
+  if (t.startsWith('<')) {
+    const doc = xmlDoc(t);
+    if (doc.getElementsByTagName('parsererror').length) throw new Error('XML soubor se nepodařilo přečíst.');
+    const res = byTag(doc, 'Ntry').length ? parseCamt(doc) : tableCur(name, 'XML', xmlTable(doc));
+    return finishCur(Object.assign(res, { name }));
+  }
+  if (/^074/.test(t) || ext === 'gpc' || ext === 'abo') return finishCur(Object.assign(parseGpc(text), { name }));
+  return tableCur(name, 'CSV', parseCsv(text));
+}
+function tableCur(name, format, rows) {
+  while (rows.length && (rows[rows.length - 1] || []).every(c => String(c ?? '').trim() === '')) rows.pop();
+  if (!rows.length) throw new Error('Soubor je prázdný.');
+  const hi = detectHeader(rows);
+  const width = Math.max(...rows.slice(hi, hi + 50).map(r => (r || []).length));
+  const headers = Array.from({ length: width }, (_, j) => String(rows[hi]?.[j] ?? '').trim() || `Sloupec ${j + 1}`);
+  const sig = headers.map(hNorm).join('|');
+  const saved = S.mappings[sig];
+  const cur = { kind: 'table', format, name, rows, hi, headers, sig, map: saved ? Object.assign({}, saved.map) : guessMap(headers), savedAcc: saved?.acc || null, remembered: !!saved };
+  return finishCur(cur);
+}
+function finishCur(cur) {
+  const rowsNow = cur.kind === 'table' ? normTable(cur).rows : cur.rows;
+  let num = cur.accNumber || '';
+  if (!num && cur.kind === 'table') {
+    const cnt = new Map(); for (const r of rowsNow) if (r.own) cnt.set(r.own, (cnt.get(r.own) || 0) + 1);
+    let b = 0; for (const [k, c] of cnt) if (c > b) { b = c; num = k; }
+  }
+  if (!num && cur.kind === 'table') {
+    const pre = cur.rows.slice(0, cur.hi).map(r => (r || []).join(' ')).join(' ');
+    const m = /\b(CZ\d{2}(?:\s?\d{4}){5})\b/i.exec(pre) || /(?:^|[^\d])((?:\d{1,6}-)?\d{2,10}\/\d{4})(?!\d)/.exec(pre);
+    if (m) num = m[1].replace(/\s/g, '');
+  }
+  cur.detectedNumber = num;
+  const core = accCore(num);
+  const match = core.length >= 5 ? S.accounts.find(a => accCore(a.number) === core) : null;
+  cur.accSel = match?.id || (cur.savedAcc && S.accounts.some(a => a.id === cur.savedAcc) ? cur.savedAcc : null) || (S.accounts.length === 1 ? S.accounts[0].id : (S.accounts.length ? '' : '__new'));
+  const bank = bankFromNumber(num, cur.name);
+  const sample = norm(cur.name + ' ' + (cur.kind === 'table' ? cur.rows.slice(0, cur.hi + 4).map(r => (r || []).join(' ')).join(' ') : ''));
+  const sav = /sporic|savings/.test(sample);
+  cur.newAcc = { name: bank ? `${bank} – ${sav ? 'spořicí' : 'běžný'} účet` : '', bank: bank || '', number: num, type: sav ? 'sporici' : 'bezny' };
+  return cur;
+}
+
+function commitImport(cur, accId) {
+  const nr = cur.kind === 'table' ? normTable(cur) : { rows: cur.rows, invalid: cur.invalid || 0 };
+  const rows = nr.rows;
+  const impId = uid();
+  const fine = r => r.ref ? 'R' + norm(r.ref) : 'T' + norm(r.cp).slice(0, 30) + '|' + norm(r.msg).slice(0, 30);
+  const gk = r => r.date + '|' + Math.round(r.amt * 100);
+  const exist = new Map();
+  for (const t of S.tx) if (t.acc === accId) { const k = gk(t); if (!exist.has(k)) exist.set(k, []); exist.get(k).push(t); }
+  const groups = new Map();
+  for (const r of rows) { const k = gk(r); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(r); }
+  let added = 0, skipped = 0; const newTx = [];
+  for (const [k, list] of groups) {
+    const ex = exist.get(k) || [];
+    const exCount = new Map(); for (const t of ex) exCount.set(fine(t), (exCount.get(fine(t)) || 0) + 1);
+    const unmatched = [];
+    for (const r of list) { const f = fine(r); if ((exCount.get(f) || 0) > 0) { exCount.set(f, exCount.get(f) - 1); skipped++; } else unmatched.push(r); }
+    let rest = 0; for (const v of exCount.values()) rest += v;
+    for (const r of unmatched) {
+      if (rest > 0) { rest--; skipped++; continue; }
+      const t = { id: uid(), acc: accId, date: r.date, amt: r.amt, cur: r.cur || 'CZK', cp: r.cp || '', cpAcc: r.cpAcc || '', msg: r.msg || '', vs: r.vs || '', ref: r.ref || '', cat: '', cs: 'a', note: '', imp: impId };
+      newTx.push(t); added++;
+    }
+  }
+  S.tx.push(...newTx);
+  const acc = S.accounts.find(a => a.id === accId);
+  const anchor = cur.anchor || (cur.kind === 'table' ? anchorFromRows(rows) : null);
+  if (acc && anchor && (!acc.anchor || anchor.date >= acc.anchor.date)) acc.anchor = anchor;
+  if (acc && !acc.number && cur.detectedNumber) acc.number = cur.detectedNumber;
+  applyCategories();
+  sortTx();
+  if (cur.kind === 'table') S.mappings[cur.sig] = { map: Object.assign({}, cur.map), acc: accId };
+  const dates = rows.map(r => r.date).sort();
+  const rec = { id: impId, file: cur.name, at: new Date().toISOString(), acc: accId, added, skipped, invalid: nr.invalid, from: dates[0] || null, to: dates[dates.length - 1] || null };
+  S.imports.unshift(rec);
+  markDirty();
+  return rec;
+}
+
+/* ================================================================
+   Stav rozhraní
+   ================================================================ */
+const ui = {
+  tab: 'prehled', period: '12m', from: '', to: '', acc: 'all',
+  txSearch: '', txCat: '', txType: '', txLimit: 200, openTx: null,
+  editAcc: null, accDraft: null,
+  imp: { queue: [], cur: null, result: null, busy: false, error: '' },
+  calc: { mode: 'proj', p: 100000, m: 5000, r: 4, y: 10, comp: 'm', tax: true, infl: 2.5, useB: false, rB: 7, taxB: false, gT: 300000, gY: 5, gP: 0, gR: 4, gTax: true },
+};
+const PERIODS = [['month','Tento měsíc'],['prevmonth','Minulý měsíc'],['3m','Poslední 3 měsíce'],['6m','Posledních 6 měsíců'],['12m','Posledních 12 měsíců'],['year','Letos'],['prevyear','Loni'],['all','Celé období'],['custom','Vlastní rozsah…']];
+function range() {
+  const t = todayStr(), cm = monthKey(t); let from, to = t;
+  switch (ui.period) {
+    case 'month': from = cm + '-01'; break;
+    case 'prevmonth': { const p = addMonths(cm, -1); from = p + '-01'; to = lastDay(p); break; }
+    case '3m': from = addMonths(cm, -2) + '-01'; break;
+    case '6m': from = addMonths(cm, -5) + '-01'; break;
+    case '12m': from = addMonths(cm, -11) + '-01'; break;
+    case 'year': from = t.slice(0, 4) + '-01-01'; break;
+    case 'prevyear': { const y = +t.slice(0, 4) - 1; from = y + '-01-01'; to = y + '-12-31'; break; }
+    case 'all': {
+      let mn = null, mx = null; for (const x of S.tx) { if (!mn || x.date < mn) mn = x.date; if (!mx || x.date > mx) mx = x.date; }
+      from = mn || t; to = mx || t; break;
+    }
+    case 'custom': from = ui.from || t; to = ui.to || t; if (from > to) [from, to] = [to, from]; break;
+    default: from = addMonths(cm, -11) + '-01';
+  }
+  return { from, to };
+}
+const txIn = (from, to, acc) => S.tx.filter(t => t.date >= from && t.date <= to && (acc === 'all' || t.acc === acc));
+function stats(list) {
+  let inc = 0, exp = 0, save = 0;
+  for (const t of list) { const k = kindOf(t.cat); if (k === 'inc') inc += t.amt; else if (k === 'exp') exp -= t.amt; else if (k === 'save') save -= t.amt; }
+  return { inc, exp, save };
+}
+
+/* ================================================================
+   Drobné UI prvky
+   ================================================================ */
+function toast(msg, action) {
+  const t = h('div', { class: 'toast', role: 'status' }, h('span', null, msg),
+    action ? h('button', { class: 'btn sm', onclick: () => { t.remove(); action.fn(); } }, action.label) : null,
+    h('button', { class: 'x', 'aria-label': 'Zavřít', onclick: () => t.remove() }, '×'));
+  $('#toasts').append(t);
+  setTimeout(() => t.remove(), action ? 12000 : 4500);
+}
+function ask({ title, text, ok = 'Potvrdit', danger = false, typed = null, input = null }) {
+  return new Promise(res => {
+    const inp = typed ? h('input', { class: 'inp', autocomplete: 'off', placeholder: typed })
+      : input ? h('input', { class: 'inp', type: input.type || 'text', value: input.value || '', placeholder: input.placeholder || '', autocomplete: input.type === 'password' ? 'new-password' : 'off' }) : null;
+    const inp2 = input && input.confirm ? h('input', { class: 'inp', type: 'password', placeholder: 'Heslo znovu', autocomplete: 'new-password' }) : null;
+    const err = h('div', { class: 'errtxt' });
+    const okB = h('button', { class: 'btn ' + (danger ? 'danger solid' : 'primary') }, ok);
+    const cancel = h('button', { class: 'btn' }, 'Zrušit');
+    const ov = h('div', { class: 'modal-ov' }, h('div', { class: 'modal card', role: 'dialog', 'aria-modal': 'true', 'aria-label': title },
+      h('h3', null, title), text ? h('p', null, text) : null,
+      typed ? h('p', { class: 'small muted' }, `Pro potvrzení napište ${typed}.`) : null, inp, inp2, err,
+      h('div', { class: 'row end' }, cancel, okB)));
+    const close = v => { ov.remove(); res(v); };
+    cancel.onclick = () => close(false);
+    ov.addEventListener('click', e => { if (e.target === ov) close(false); });
+    const submit = () => {
+      if (typed && inp.value.trim() !== typed) { inp.classList.add('err'); inp.focus(); return; }
+      if (input) {
+        if (input.min && inp.value.length < input.min) { err.textContent = `Alespoň ${input.min} znaků.`; inp.focus(); return; }
+        if (inp2 && inp.value !== inp2.value) { err.textContent = 'Hesla se neshodují.'; inp2.focus(); return; }
+        if (!input.allowEmpty && !inp.value.trim()) { inp.classList.add('err'); inp.focus(); return; }
+        close(inp.value); return;
+      }
+      close(true);
+    };
+    okB.onclick = submit;
+    ov.addEventListener('keydown', e => { if (e.key === 'Escape') close(false); if (e.key === 'Enter' && e.target.tagName === 'INPUT') submit(); });
+    document.body.append(ov);
+    (inp || okB).focus();
+  });
+}
+function download(name, text, type = 'application/json') {
+  const url = URL.createObjectURL(new Blob([text], { type }));
+  const a = h('a', { href: url, download: name }); document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 3000);
+}
+function pickFile(accept) {
+  return new Promise(res => {
+    const i = h('input', { type: 'file', accept, hidden: true, onchange: () => { res(i.files[0] || null); i.remove(); } });
+    document.body.append(i); i.click();
+  });
+}
+const opt = (v, l) => h('option', { value: v }, l);
+function catOptions() {
+  return ['exp', 'inc', 'save', 'transfer'].map(k => {
+    const cs = S.categories.filter(c => c.kind === k);
+    return cs.length ? h('optgroup', { label: KIND_LABEL[k] }, cs.map(c => opt(c.id, c.name))) : null;
+  });
+}
+function tile(label, value, note) { return h('div', { class: 'tile' }, h('div', { class: 'l' }, label), h('div', { class: 'v', title: value }, value), note ? h('div', { class: 'n' }, note) : null); }
+function logo() {
+  return sv('svg', { width: 22, height: 22, viewBox: '0 0 24 24', 'aria-hidden': 'true' },
+    sv('rect', { x: 1, y: 1, width: 22, height: 22, rx: 6, style: 'fill:var(--accent)' }),
+    sv('rect', { x: 6, y: 12, width: 3, height: 6, rx: 1.2, fill: '#fff' }),
+    sv('rect', { x: 10.5, y: 8, width: 3, height: 10, rx: 1.2, fill: '#fff' }),
+    sv('rect', { x: 15, y: 5, width: 3, height: 13, rx: 1.2, fill: '#fff' }));
+}
+function legend(series, box) {
+  return h('div', { class: 'legend' }, series.map(s => h('span', null, h('i', { class: 'key' + (box ? ' box' : ''), style: `background:${s.color}` }), s.name)));
+}
+function dataTable(head, rows, numCols = []) {
+  return h('details', { class: 'tbl' }, h('summary', null, 'Zobrazit jako tabulku'),
+    h('div', { class: 'scroll' }, h('table', { class: 't' },
+      h('thead', null, h('tr', null, head.map((x, i) => h('th', { class: numCols.includes(i) ? 'num' : null }, x)))),
+      h('tbody', null, rows.map(r => h('tr', null, r.map((c, i) => h('td', { class: numCols.includes(i) ? 'num' : null }, c))))))));
+}
+
+/* ================================================================
+   Grafy (SVG, bez knihoven)
+   ================================================================ */
+function niceRange(lo, hi, count = 4) {
+  if (lo === hi) { hi = lo + (Math.abs(lo) || 1); }
+  const raw = (hi - lo) / count, p = Math.pow(10, Math.floor(Math.log10(raw))), m = raw / p;
+  const step = (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p;
+  const a = Math.floor(lo / step) * step, b = Math.ceil(hi / step) * step;
+  const ticks = []; for (let v = a; v <= b + step / 2; v += step) ticks.push(Math.round(v / step) * step);
+  return { lo: a, hi: b, ticks };
+}
+function makeTip(wrap) {
+  const tip = h('div', { class: 'tip' }); wrap.append(tip);
+  return {
+    show(x, y, title, rows) {
+      tip.replaceChildren(h('div', { class: 'tip-t' }, title), ...rows.map(r => h('div', { class: 'tip-r' }, h('i', { class: 'key', style: `background:${r.color}` }), h('b', null, r.value), h('span', { class: 'n' }, r.name))));
+      tip.style.display = 'block';
+      const W = wrap.clientWidth, tw = tip.offsetWidth;
+      let left = x + 14; if (left + tw > W) left = x - tw - 14; if (left < 0) left = Math.max(0, Math.min(W - tw, x - tw / 2));
+      tip.style.left = left + 'px'; tip.style.top = Math.max(0, y - 8) + 'px';
+    },
+    hide() { tip.style.display = 'none'; }
+  };
+}
+function roundedTop(x, y, w, hh, r) {
+  r = Math.max(0, Math.min(r, w / 2, hh));
+  return `M${x},${y + hh}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + hh}Z`;
+}
+function drawBars(wrap, o) {
+  wrap.replaceChildren();
+  const W = Math.max(260, wrap.clientWidth), H = o.height || 250;
+  const m = { l: 50, r: 6, t: 10, b: 26 }, pw = W - m.l - m.r, ph = H - m.t - m.b;
+  const n = o.labels.length, ns = o.series.length;
+  let max = 0; o.series.forEach(s => s.values.forEach(v => { if (v > max) max = v; }));
+  const { ticks, hi } = niceRange(0, max || 1);
+  const y = v => m.t + ph - (v / hi) * ph;
+  const gw = pw / n, bw = Math.max(2, Math.min(24, (gw * 0.72 - (ns - 1) * 2) / ns));
+  const svg = sv('svg', { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': o.aria || '' });
+  for (const t of ticks) {
+    svg.append(sv('line', { class: t === 0 ? 'base-l' : 'grid-l', x1: m.l, x2: W - m.r, y1: y(t), y2: y(t) }));
+    svg.append(sv('text', { class: 'ax', x: m.l - 8, y: y(t) + 4, 'text-anchor': 'end' }, compact(t)));
+  }
+  const washes = [];
+  for (let i = 0; i < n; i++) { const w = sv('rect', { class: 'wash', x: m.l + gw * i + 1, y: m.t, width: Math.max(0, gw - 2), height: ph, rx: 6 }); washes.push(w); svg.append(w); }
+  for (let i = 0; i < n; i++) {
+    const x0 = m.l + gw * i + (gw - (ns * bw + (ns - 1) * 2)) / 2;
+    o.series.forEach((s, si) => {
+      const v = s.values[i]; if (!(v > 0)) return;
+      const hh = y(0) - y(v); if (hh < 0.5) return;
+      svg.append(sv('path', { d: roundedTop(x0 + si * (bw + 2), y(v), bw, hh, 4), style: `fill:${s.color}` }));
+    });
+  }
+  const step = Math.max(1, Math.ceil(n / Math.max(1, Math.floor(pw / 52))));
+  for (let i = 0; i < n; i += step) svg.append(sv('text', { class: 'ax', x: m.l + gw * (i + 0.5), y: H - 8, 'text-anchor': 'middle' }, o.labels[i]));
+  wrap.append(svg);
+  const tip = makeTip(wrap);
+  for (let i = 0; i < n; i++) {
+    const r = sv('rect', { class: 'hit', x: m.l + gw * i, y: m.t, width: gw, height: ph, tabindex: 0, role: 'button', 'aria-label': `${o.tipTitles[i]}: ` + o.series.map(s => `${s.name} ${kc(s.values[i])}`).join(', ') });
+    const show = () => {
+      washes.forEach((w, j) => w.classList.toggle('on', j === i));
+      const top = Math.min(...o.series.map(s => y(s.values[i] || 0)));
+      tip.show(m.l + gw * (i + 0.5), Math.max(m.t, top - 40), o.tipTitles[i], o.series.map(s => ({ name: s.name, color: s.color, value: kc(s.values[i]) })).concat(o.extra ? [o.extra(i)] : []));
+    };
+    const hide = () => { washes[i].classList.remove('on'); tip.hide(); };
+    r.addEventListener('pointerenter', show); r.addEventListener('pointerleave', hide);
+    r.addEventListener('focus', show); r.addEventListener('blur', hide);
+    if (o.onClick) { r.addEventListener('click', () => o.onClick(i)); r.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); o.onClick(i); } }); }
+    svg.append(r);
+  }
+}
+function drawLines(wrap, o) {
+  wrap.replaceChildren();
+  const W = Math.max(260, wrap.clientWidth), H = o.height || 250;
+  const ser = o.series.filter(s => s.values.some(v => v != null));
+  const labelW = ser.length <= 4 ? Math.min(110, Math.max(60, W * 0.18)) : 8;
+  const m = { l: 56, r: labelW, t: 12, b: 26 }, pw = W - m.l - m.r, ph = H - m.t - m.b;
+  const n = o.labels.length;
+  let lo = Infinity, hi = -Infinity;
+  ser.forEach(s => s.values.forEach(v => { if (v != null) { if (v < lo) lo = v; if (v > hi) hi = v; } }));
+  if (!isFinite(lo)) { lo = 0; hi = 1; }
+  if (o.zero !== false) lo = Math.min(0, lo);
+  const nr = niceRange(lo, hi);
+  const x = i => m.l + (n === 1 ? pw / 2 : i * pw / (n - 1));
+  const y = v => m.t + ph - (v - nr.lo) / (nr.hi - nr.lo) * ph;
+  const svg = sv('svg', { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': o.aria || '' });
+  for (const t of nr.ticks) {
+    svg.append(sv('line', { class: t === 0 ? 'base-l' : 'grid-l', x1: m.l, x2: m.l + pw, y1: y(t), y2: y(t) }));
+    svg.append(sv('text', { class: 'ax', x: m.l - 8, y: y(t) + 4, 'text-anchor': 'end' }, compact(t)));
+  }
+  const step = Math.max(1, Math.ceil(n / Math.max(1, Math.floor(pw / 56))));
+  for (let i = 0; i < n; i += step) svg.append(sv('text', { class: 'ax', x: x(i), y: H - 8, 'text-anchor': n === 1 ? 'middle' : i === 0 ? 'start' : 'middle' }, o.labels[i]));
+  const ends = [];
+  for (const s of ser) {
+    let d = '', pen = false;
+    s.values.forEach((v, i) => { if (v == null) { pen = false; return; } d += (pen ? 'L' : 'M') + x(i).toFixed(1) + ',' + y(v).toFixed(1); pen = true; });
+    svg.append(sv('path', { d, fill: 'none', style: `stroke:${s.color}`, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round', 'stroke-dasharray': s.dash ? '5 4' : null }));
+    if (n === 1) { const v = s.values[0]; if (v != null) svg.append(sv('circle', { cx: x(0), cy: y(v), r: 4, style: `fill:${s.color}` })); }
+    let li = -1; s.values.forEach((v, i) => { if (v != null) li = i; });
+    if (li >= 0) ends.push({ s, y: y(s.values[li]), x: x(li) });
+  }
+  if (labelW > 10) {
+    ends.sort((a, b) => a.y - b.y);
+    for (let i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 14) ends[i].y = ends[i - 1].y + 14;
+    for (const e of ends) { const nm = e.s.name.length > 14 ? e.s.name.slice(0, 13) + '…' : e.s.name; svg.append(sv('text', { class: 'dl', x: e.x + 8, y: e.y + 4 }, nm)); }
+  }
+  const cross = sv('line', { class: 'cross', x1: 0, x2: 0, y1: m.t, y2: m.t + ph, visibility: 'hidden' });
+  svg.append(cross);
+  const dots = ser.map(s => { const c = sv('circle', { r: 4.5, style: `fill:${s.color};stroke:var(--surface)`, 'stroke-width': 2, visibility: 'hidden' }); svg.append(c); return c; });
+  const ov = sv('rect', { class: 'hit', x: m.l, y: m.t, width: pw, height: ph, tabindex: 0, style: 'cursor:crosshair', 'aria-label': o.aria || '' });
+  svg.append(ov);
+  wrap.append(svg);
+  const tip = makeTip(wrap);
+  let cur = n - 1;
+  const showAt = i => {
+    cur = Math.max(0, Math.min(n - 1, i));
+    cross.setAttribute('x1', x(cur)); cross.setAttribute('x2', x(cur)); cross.setAttribute('visibility', 'visible');
+    ser.forEach((s, j) => { const v = s.values[cur]; if (v == null) dots[j].setAttribute('visibility', 'hidden'); else { dots[j].setAttribute('cx', x(cur)); dots[j].setAttribute('cy', y(v)); dots[j].setAttribute('visibility', 'visible'); } });
+    const ys = ser.map(s => s.values[cur]).filter(v => v != null).map(y);
+    tip.show(x(cur), Math.max(m.t, (ys.length ? Math.min(...ys) : m.t) - 50), o.tipTitles[cur], ser.map(s => ({ name: s.name, color: s.color, value: s.values[cur] == null ? '—' : kc(s.values[cur]) })));
+  };
+  const hide = () => { cross.setAttribute('visibility', 'hidden'); dots.forEach(d => d.setAttribute('visibility', 'hidden')); tip.hide(); };
+  ov.addEventListener('pointermove', e => { const r = svg.getBoundingClientRect(); const px = (e.clientX - r.left) * (W / r.width); showAt(n === 1 ? 0 : Math.round((px - m.l) / (pw / (n - 1)))); });
+  ov.addEventListener('pointerleave', hide);
+  ov.addEventListener('focus', () => showAt(cur)); ov.addEventListener('blur', hide);
+  ov.addEventListener('keydown', e => { if (e.key === 'ArrowLeft') { e.preventDefault(); showAt(cur - 1); } if (e.key === 'ArrowRight') { e.preventDefault(); showAt(cur + 1); } });
+}
+
+/* ================================================================
+   Zámek
+   ================================================================ */
+function renderLock(hasVault) {
+  S = null; KEY = null; SALT = null;
+  const err = h('div', { class: 'errtxt', role: 'alert' });
+  const card = h('div', { class: 'card lock-card' }, h('div', { class: 'brand', style: 'font-size:20px' }, logo(), 'Finance'));
+  if (hasVault) {
+    const pw = h('input', { class: 'inp', type: 'password', placeholder: 'Heslo', autocomplete: 'current-password', 'aria-label': 'Heslo' });
+    const btn = h('button', { class: 'btn primary', type: 'submit' }, 'Odemknout');
+    card.append(
+      h('p', { class: 'sub', style: 'margin:0' }, 'Data jsou zašifrovaná a uložená jen v tomto prohlížeči.'),
+      h('form', { onsubmit: async e => {
+        e.preventDefault(); btn.disabled = true; btn.textContent = 'Odemykám…'; err.textContent = '';
+        try { const r = await openVault(await kvGet(VK), pw.value); KEY = r.key; SALT = r.salt; startApp(r.data); }
+        catch (ex) { err.textContent = 'Nesprávné heslo.'; btn.disabled = false; btn.textContent = 'Odemknout'; pw.select(); }
+      } }, pw, err, btn),
+      h('button', { class: 'link', onclick: async () => {
+        const ok = await ask({ title: 'Zapomenuté heslo', text: 'Heslo nejde obnovit, data jsou jím zašifrovaná. Můžete smazat data v tomto prohlížeči a začít znovu (případně potom obnovit zálohu, pokud znáte její heslo).', ok: 'Smazat data', danger: true, typed: 'SMAZAT' });
+        if (ok) { await kvDel(VK); renderLock(false); }
+      } }, 'Zapomněl(a) jsem heslo'));
+    app.replaceChildren(h('div', { class: 'lock' }, card)); pw.focus();
+  } else {
+    const p1 = h('input', { class: 'inp', type: 'password', placeholder: 'Nové heslo (min. 8 znaků)', autocomplete: 'new-password', 'aria-label': 'Nové heslo' });
+    const p2 = h('input', { class: 'inp', type: 'password', placeholder: 'Heslo znovu', autocomplete: 'new-password', 'aria-label': 'Heslo znovu' });
+    const btn = h('button', { class: 'btn primary', type: 'submit' }, 'Vytvořit šifrovaný trezor');
+    card.append(
+      h('div', { class: 'info' },
+        h('p', null, 'Aplikace jen čte výpisy, které do ní sami nahrajete. Do banky nemá žádný přístup a nikam nic neodesílá.'),
+        h('p', null, 'Zvolte heslo, kterým se data zašifrují. Heslo nejde obnovit, proto si ho dobře zapamatujte.')),
+      h('form', { onsubmit: async e => {
+        e.preventDefault(); err.textContent = '';
+        if (p1.value.length < 8) { err.textContent = 'Heslo musí mít alespoň 8 znaků.'; p1.focus(); return; }
+        if (p1.value !== p2.value) { err.textContent = 'Hesla se neshodují.'; p2.focus(); return; }
+        btn.disabled = true; btn.textContent = 'Vytvářím…';
+        try {
+          SALT = crypto.getRandomValues(new Uint8Array(16)); KEY = await deriveKey(p1.value, SALT);
+          S = freshData(); dirty = true; await flush(); startApp(S);
+        } catch (ex) { err.textContent = 'Nepodařilo se vytvořit trezor: ' + ex.message; btn.disabled = false; btn.textContent = 'Vytvořit šifrovaný trezor'; }
+      } }, p1, p2, err, btn),
+      h('button', { class: 'link', onclick: () => restoreBackup(true) }, 'Mám zálohu – obnovit ze souboru'));
+    app.replaceChildren(h('div', { class: 'lock' }, card)); p1.focus();
+  }
+}
+async function restoreBackup(fromLock) {
+  const f = await pickFile('.json,application/json'); if (!f) return;
+  let vault; try { vault = JSON.parse(await f.text()); } catch (e) { toast('Soubor není záloha z této aplikace.'); return; }
+  if (!vault || vault.app !== 'finance') { toast('Soubor není záloha z této aplikace.'); return; }
+  const pw = await ask({ title: 'Heslo zálohy', text: 'Zadejte heslo, které platilo v době vytvoření zálohy.', ok: 'Otevřít', input: { type: 'password', placeholder: 'Heslo' } });
+  if (pw === false) return;
+  let r; try { r = await openVault(vault, pw); } catch (e) { toast('Nesprávné heslo nebo poškozená záloha.'); return; }
+  const d = r.data;
+  if (!fromLock) {
+    const ok = await ask({ title: 'Nahradit data zálohou?', text: `Současná data v aplikaci (${S.tx.length} transakcí) se nahradí zálohou (${(d.tx || []).length} transakcí). Heslo bude od teď stejné jako heslo zálohy.`, ok: 'Nahradit', danger: true });
+    if (!ok) return;
+  }
+  KEY = r.key; SALT = r.salt; S = migrate(d); dirty = true; await flush();
+  startApp(S); toast('Záloha obnovena.');
+}
+function startApp(data) {
+  S = migrate(data); refreshIdx();
+  ui.tab = S.tx.length ? 'prehled' : 'import';
+  render();
+  try { navigator.storage && navigator.storage.persist && navigator.storage.persist().catch(() => {}); } catch (e) {}
+}
+async function lock() {
+  await flush();
+  ui.imp = { queue: [], cur: null, result: null, busy: false, error: '' };
+  document.querySelectorAll('.modal-ov').forEach(x => x.remove());
+  renderLock(!!(await kvGet(VK)));
+}
+let lastAct = Date.now();
+['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(ev => addEventListener(ev, () => { lastAct = Date.now(); }, { passive: true }));
+setInterval(() => { if (S && KEY && Date.now() - lastAct > (S.settings.lockMin || 15) * 60000) lock(); }, 20000);
+document.addEventListener('visibilitychange', () => { if (document.hidden) flush(); });
+addEventListener('pagehide', () => { flush(); });
+let lastW = innerWidth, rz;
+addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (Math.abs(innerWidth - lastW) > 20 && S) { lastW = innerWidth; if (ui.tab === 'prehled' || ui.tab === 'kalkulacka') render(); } }, 200); });
+
+/* ================================================================
+   Hlavní vykreslení
+   ================================================================ */
+function render() {
+  if (!S) return;
+  refreshIdx();
+  if (ui.acc !== 'all' && !S.accounts.some(a => a.id === ui.acc)) ui.acc = 'all';
+  if (ui.txCat && !catIdx.has(ui.txCat)) ui.txCat = '';
+  const after = [];
+  const views = { prehled: viewOverview, transakce: viewTx, import: viewImport, kalkulacka: viewCalc, nastaveni: viewSettings };
+  const view = (views[ui.tab] || viewOverview)(f => after.push(f));
+  app.replaceChildren(header(), h('main', { class: 'main' }, view));
+  after.forEach(f => f());
+}
+function goTab(t) { ui.tab = t; render(); scrollTo(0, 0); }
+function header() {
+  const tabs = [['prehled', 'Přehled'], ['transakce', 'Transakce'], ['import', 'Import'], ['kalkulacka', 'Kalkulačka'], ['nastaveni', 'Nastavení']];
+  return h('header', { class: 'top' }, h('div', { class: 'top-in' },
+    h('div', { class: 'brand' }, logo(), 'Finance'),
+    h('nav', { class: 'tabs', 'aria-label': 'Sekce' }, tabs.map(([k, l]) => h('button', { class: 'tab', 'aria-current': ui.tab === k ? 'page' : null, onclick: () => goTab(k) }, l))),
+    h('span', { class: 'saved', id: 'saved' }, dirty ? 'Ukládám…' : 'Uloženo'),
+    h('button', { class: 'btn sm', onclick: lock, title: 'Zamknout aplikaci' }, 'Zamknout')));
+}
+function periodControls(onChange) {
+  const sel = h('select', { class: 'inp', 'aria-label': 'Období', onchange: e => { ui.period = e.target.value; if (ui.period === 'custom' && !ui.from) { const t = todayStr(); ui.from = addMonths(monthKey(t), -2) + '-01'; ui.to = t; } ui.txLimit = 200; onChange(); } }, PERIODS.map(([v, l]) => opt(v, l)));
+  sel.value = ui.period;
+  const els = [sel];
+  if (ui.period === 'custom') els.push(
+    h('input', { class: 'inp', type: 'date', value: ui.from, 'aria-label': 'Od', onchange: e => { ui.from = e.target.value; onChange(); } }),
+    h('span', { class: 'muted' }, '–'),
+    h('input', { class: 'inp', type: 'date', value: ui.to, 'aria-label': 'Do', onchange: e => { ui.to = e.target.value; onChange(); } }));
+  if (S.accounts.length > 1) {
+    const acc = h('select', { class: 'inp', 'aria-label': 'Účet', onchange: e => { ui.acc = e.target.value; ui.txLimit = 200; onChange(); } }, opt('all', 'Všechny účty'), S.accounts.map(a => opt(a.id, a.name)));
+    acc.value = ui.acc; els.push(acc);
+  }
+  return els;
+}
+function backupNotice() {
+  if (!S.tx.length) return null;
+  const days = S.lastBackup ? (Date.now() - new Date(S.lastBackup).getTime()) / 864e5 : Infinity;
+  if (days < 30) return null;
+  return h('div', { class: 'notice' }, h('span', null, S.lastBackup ? `Poslední záloha je ${Math.floor(days)} dní stará. Data jsou jen v tomto prohlížeči, zálohu doporučuji alespoň jednou měsíčně.` : 'Zatím nemáte zálohu. Data jsou jen v tomto prohlížeči. Když se vymaže, zachrání vás jen záloha.'),
+    h('button', { class: 'btn sm', onclick: downloadBackup }, 'Stáhnout zálohu'));
+}
+
+/* ---------------- Přehled ---------------- */
+function viewOverview(after) {
+  const root = h('div', { class: 'stack' });
+  root.append(h('div', { class: 'filters' }, periodControls(render)));
+  const bn = backupNotice(); if (bn) root.append(bn);
+  if (!S.tx.length) {
+    root.append(h('div', { class: 'card empty' }, h('h2', null, 'Zatím tu nejsou žádné transakce'),
+      h('p', { class: 'sub' }, 'Začněte importem výpisu z internetového bankovnictví. Každý další výpis se jen přidá a pohyby, které už v aplikaci jsou, se samy přeskočí.'),
+      h('button', { class: 'btn primary', onclick: () => goTab('import') }, 'Importovat výpis')));
+    return root;
+  }
+  const { from, to } = range();
+  const list = txIn(from, to, ui.acc);
+  const st = stats(list);
+  const activeM = new Set(list.map(t => monthKey(t.date))).size || 1;
+  const net = st.inc - st.exp;
+  const endD = minStr(to, todayStr());
+  const accs = ui.acc === 'all' ? S.accounts : S.accounts.filter(a => a.id === ui.acc);
+  const withBal = accs.filter(a => a.anchor);
+  const totalBal = withBal.length ? withBal.reduce((s, a) => s + balanceAt(a, endD), 0) : null;
+
+  root.append(h('div', { class: 'tiles' },
+    tile('Příjmy', kc(st.inc), `${fmtDate(from)} – ${fmtDate(to)}`),
+    tile('Výdaje', kc(st.exp), `průměrně ${kc(st.exp / activeM)} za měsíc`),
+    tile('Bilance', (net >= 0 ? '+' : '') + kc(net), st.inc > 0 ? `ušetříte ${Math.round(net / st.inc * 100)} % příjmů` : ''),
+    st.save ? tile('Do spoření a investic', kc(st.save), 'odešlo z účtů') : null,
+    tile('Zůstatek na účtech', totalBal != null ? kc(totalBal) : '—', totalBal != null ? `k ${fmtDate(endD)}` + (withBal.length < accs.length ? ' (bez některých účtů)' : '') : 'nastavte zůstatek v Nastavení')));
+
+  if (!list.length) { root.append(h('div', { class: 'card empty' }, h('h2', null, 'V tomto období nejsou žádné pohyby'), h('p', { class: 'sub' }, 'Zkuste jiné období.'))); return root; }
+
+  // Měsíční příjmy a výdaje
+  const months = monthsBetween(monthKey(from), monthKey(to));
+  const mi = new Map(months.map((k, i) => [k, i]));
+  const mInc = months.map(() => 0), mExp = months.map(() => 0);
+  for (const t of list) { const i = mi.get(monthKey(t.date)); if (i == null) continue; const k = kindOf(t.cat); if (k === 'inc') mInc[i] += t.amt; else if (k === 'exp') mExp[i] -= t.amt; }
+  const ser = [{ name: 'Příjmy', color: 'var(--s1)', values: mInc.map(v => Math.max(0, v)) }, { name: 'Výdaje', color: 'var(--s2)', values: mExp.map(v => Math.max(0, v)) }];
+  const barBox = h('div', { class: 'chart' });
+  root.append(h('div', { class: 'card' },
+    h('h2', null, 'Příjmy a výdaje po měsících'),
+    h('p', { class: 'sub' }, months.length > 1 ? 'Kliknutím na měsíc zobrazíte jeho detail.' : monthLabel(months[0], true)),
+    legend(ser, true), barBox,
+    dataTable(['Měsíc', 'Příjmy', 'Výdaje', 'Bilance'], months.map((k, i) => [monthLabel(k, true), kc(mInc[i]), kc(mExp[i]), kc(mInc[i] - mExp[i])]), [1, 2, 3])));
+  after(() => drawBars(barBox, { labels: months.map(k => monthLabel(k)), tipTitles: months.map(k => monthLabel(k, true)), series: ser, aria: 'Příjmy a výdaje po měsících',
+    extra: i => ({ name: 'bilance', color: 'transparent', value: (mInc[i] - mExp[i] >= 0 ? '+' : '') + kc(mInc[i] - mExp[i]) }),
+    onClick: months.length > 1 ? i => { ui.period = 'custom'; ui.from = months[i] + '-01'; ui.to = lastDay(months[i]); render(); scrollTo(0, 0); } : null }));
+
+  // Kategorie a obchodníci
+  const byCat = new Map();
+  for (const t of list) if (kindOf(t.cat) === 'exp') byCat.set(t.cat, (byCat.get(t.cat) || 0) - t.amt);
+  const cats = [...byCat].filter(([, v]) => v > 0.5).sort((a, b) => b[1] - a[1]);
+  const catTotal = cats.reduce((s, [, v]) => s + v, 0), catMax = cats.length ? cats[0][1] : 1;
+  const catCard = h('div', { class: 'card' }, h('h2', null, 'Za co utrácíte'), h('p', { class: 'sub' }, 'Kliknutím na kategorii zobrazíte její platby.'),
+    cats.length ? h('div', { class: 'cats' }, cats.map(([id, v]) => h('button', { class: 'catrow', onclick: () => { ui.txCat = id; ui.txSearch = ''; ui.txType = ''; goTab('transakce'); } },
+      h('span', { class: 'nm', title: catName(id) }, catName(id)),
+      h('span', { class: 'track' }, h('span', { class: 'fill', style: `display:block;width:${(v / catMax * 100).toFixed(1)}%` })),
+      h('span', { class: 'amt' }, kc(v), h('span', { class: 'share' }, Math.round(v / catTotal * 100) + ' %'))))) : h('p', { class: 'muted' }, 'Žádné výdaje.'));
+  const byM = new Map();
+  for (const t of list) {
+    if (kindOf(t.cat) !== 'exp') continue;
+    const key = norm(t.cp) || norm(t.msg).slice(0, 40) || '(bez popisu)';
+    if (!byM.has(key)) byM.set(key, { name: t.cp || t.msg || '(bez popisu)', n: 0, sum: 0 });
+    const o = byM.get(key); o.n++; o.sum -= t.amt;
+  }
+  const top = [...byM.values()].filter(o => o.sum > 0).sort((a, b) => b.sum - a.sum).slice(0, 10);
+  const merCard = h('div', { class: 'card' }, h('h2', null, 'Kde utrácíte nejvíc'), h('p', { class: 'sub' }, 'Deset obchodníků a příjemců s nejvyšší útratou.'),
+    top.length ? h('table', { class: 't' }, h('thead', null, h('tr', null, h('th', null, 'Příjemce'), h('th', { class: 'num' }, 'Plateb'), h('th', { class: 'num' }, 'Celkem'))),
+      h('tbody', null, top.map(o => h('tr', { class: 'rw', onclick: () => { ui.txSearch = o.name; ui.txCat = ''; ui.txType = ''; goTab('transakce'); } },
+        h('td', { class: 'cp' }, o.name), h('td', { class: 'num' }, nf0.format(o.n)), h('td', { class: 'num' }, kc(o.sum)))))) : h('p', { class: 'muted' }, 'Žádné výdaje.'));
+  root.append(h('div', { class: 'grid2' }, catCard, merCard));
+
+  // Zůstatky
+  const balCard = h('div', { class: 'card' }, h('h2', null, 'Vývoj zůstatku'));
+  if (!withBal.length) {
+    balCard.append(h('p', { class: 'sub' }, 'Pro graf zůstatku potřebuji znát zůstatek účtu k nějakému dni. Doplní se sám, pokud výpis obsahuje sloupec se zůstatkem, nebo ho zadejte ručně.'),
+      h('button', { class: 'btn', onclick: () => goTab('nastaveni') }, 'Nastavit zůstatek účtu'));
+  } else {
+    const t0 = todayStr();
+    const ends = months.map(k => minStr(lastDay(k), t0));
+    const slotsOk = withBal.length <= 3 && withBal.every(a => a.slot <= 2);
+    const series = slotsOk
+      ? withBal.map(a => { const f = firstTxDate(a.id); return { name: a.name, color: `var(--s${a.slot + 1})`, values: ends.map(d => (f && d < f && d < a.anchor.date) ? null : balanceAt(a, d)) }; })
+      : [{ name: 'Celkem', color: 'var(--s1)', values: ends.map(d => withBal.reduce((s, a) => s + balanceAt(a, d), 0)) }];
+    const box = h('div', { class: 'chart' });
+    balCard.append(h('div', null, h('p', { class: 'sub' }, 'Zůstatek ke konci každého měsíce.'), series.length > 1 ? legend(series) : null), box,
+      dataTable(['Měsíc', ...series.map(s => s.name)], months.map((k, i) => [monthLabel(k, true), ...series.map(s => s.values[i] == null ? '—' : kc(s.values[i]))]), series.map((_, i) => i + 1)));
+    after(() => drawLines(box, { labels: months.map(k => monthLabel(k)), tipTitles: months.map(k => monthLabel(k, true)), series, aria: 'Vývoj zůstatku na účtech', zero: false }));
+  }
+  root.append(balCard);
+  return root;
+}
+
+/* ---------------- Transakce ---------------- */
+function currentTxList() {
+  const { from, to } = range(); const q = norm(ui.txSearch);
+  return S.tx.filter(t => t.date >= from && t.date <= to && (ui.acc === 'all' || t.acc === ui.acc) && (!ui.txCat || t.cat === ui.txCat)
+    && (!ui.txType || (ui.txType === 'in' ? t.amt > 0 : t.amt < 0))
+    && (!q || norm(t.cp + ' ' + t.msg + ' ' + t.vs + ' ' + t.note + ' ' + t.cpAcc + ' ' + nf2.format(Math.abs(t.amt))).includes(q)));
+}
+function viewTx() {
+  const root = h('div', { class: 'stack' });
+  const box = h('div');
+  const upd = () => box.replaceChildren(txList(upd));
+  const search = h('input', { class: 'inp', type: 'search', placeholder: 'Hledat obchodníka, zprávu, VS, částku…', value: ui.txSearch, style: 'flex:1;min-width:220px', 'aria-label': 'Hledat', oninput: e => { ui.txSearch = e.target.value; ui.txLimit = 200; upd(); } });
+  const catSel = h('select', { class: 'inp', 'aria-label': 'Kategorie', onchange: e => { ui.txCat = e.target.value; ui.txLimit = 200; upd(); } }, opt('', 'Všechny kategorie'), catOptions());
+  catSel.value = ui.txCat;
+  const typeSel = h('select', { class: 'inp', 'aria-label': 'Typ', onchange: e => { ui.txType = e.target.value; ui.txLimit = 200; upd(); } }, opt('', 'Příjmy i výdaje'), opt('out', 'Jen výdaje'), opt('in', 'Jen příjmy'));
+  typeSel.value = ui.txType;
+  root.append(h('div', { class: 'filters' }, periodControls(render), catSel, typeSel),
+    h('div', { class: 'filters' }, search, h('button', { class: 'btn', onclick: exportCsv }, 'Export do CSV')), box);
+  upd();
+  return root;
+}
+function txList(upd) {
+  const list = currentTxList();
+  const sum = list.reduce((a, t) => a + t.amt, 0);
+  const card = h('div', { class: 'card', style: 'padding:10px 8px' });
+  card.append(h('div', { class: 'row', style: 'justify-content:space-between;padding:4px 8px 8px' },
+    h('span', { class: 'muted small' }, `${pl(list.length, 'transakce', 'transakce', 'transakcí')} · součet ${kcSigned(sum)}`),
+    (ui.txCat || ui.txSearch || ui.txType) ? h('button', { class: 'link', onclick: () => { ui.txCat = ''; ui.txSearch = ''; ui.txType = ''; render(); } }, 'Zrušit filtry') : null));
+  if (!S.tx.length) { card.append(h('div', { class: 'empty' }, h('p', { class: 'sub' }, 'Zatím žádné transakce.'), h('button', { class: 'btn primary', onclick: () => goTab('import') }, 'Importovat výpis'))); return card; }
+  if (!list.length) { card.append(h('p', { class: 'muted', style: 'padding:16px 8px' }, 'Žádné transakce neodpovídají filtru.')); return card; }
+  const tbody = h('tbody');
+  const multi = S.accounts.length > 1;
+  for (const t of list.slice(0, ui.txLimit)) {
+    const sel = h('select', { class: 'inp', 'aria-label': 'Kategorie transakce', onclick: e => e.stopPropagation(), onchange: e => setCat(t, e.target.value, upd) }, catOptions());
+    sel.value = t.cat;
+    const tr = h('tr', { class: 'rw' + (ui.openTx === t.id ? ' open' : ''), onclick: () => { ui.openTx = ui.openTx === t.id ? null : t.id; upd(); } },
+      h('td', { class: 'nowrap small' }, fmtDate(t.date)),
+      multi ? h('td', { class: 'small muted hide-sm' }, accName(t.acc)) : null,
+      h('td', null, h('div', { class: 'cp' }, t.cp || t.msg || '—'), (t.cp && t.msg) ? h('div', { class: 'msg' }, t.msg) : null, t.note ? h('div', { class: 'msg' }, '✎ ' + t.note) : null),
+      h('td', null, sel),
+      h('td', { class: 'num' + (t.amt > 0 ? ' pos' : '') }, kcSigned(t.amt)));
+    tbody.append(tr);
+    if (ui.openTx === t.id) tbody.append(txDetail(t, multi ? 5 : 4, upd));
+  }
+  card.append(h('div', { class: 'scroll' }, h('table', { class: 't' },
+    h('thead', null, h('tr', null, h('th', null, 'Datum'), multi ? h('th', { class: 'hide-sm' }, 'Účet') : null, h('th', null, 'Popis'), h('th', null, 'Kategorie'), h('th', { class: 'num' }, 'Částka'))), tbody)));
+  if (list.length > ui.txLimit) card.append(h('div', { class: 'row', style: 'justify-content:center;padding:12px' }, h('button', { class: 'btn', onclick: () => { ui.txLimit += 300; upd(); } }, `Zobrazit další (${nf0.format(list.length - ui.txLimit)})`)));
+  return card;
+}
+function txDetail(t, cols, upd) {
+  const imp = S.imports.find(i => i.id === t.imp);
+  const note = h('input', { class: 'inp', value: t.note || '', placeholder: 'Vlastní poznámka', style: 'width:100%', onchange: e => { t.note = e.target.value.trim(); markDirty(); upd(); } });
+  return h('tr', { class: 'detail' }, h('td', { colspan: cols },
+    h('div', { class: 'kv' },
+      h('div', null, h('span', null, 'Účet'), accName(t.acc)),
+      h('div', null, h('span', null, 'Protiúčet'), t.cpAcc || '—'),
+      h('div', null, h('span', null, 'Variabilní symbol'), t.vs || '—'),
+      h('div', null, h('span', null, 'ID v bance'), t.ref || '—'),
+      h('div', null, h('span', null, 'Kategorie'), t.cs === 'm' ? 'nastavena ručně' : 'automaticky'),
+      h('div', null, h('span', null, 'Import'), imp ? imp.file : '—')),
+    h('div', { class: 'row', style: 'margin-top:10px' }, h('div', { style: 'flex:1;min-width:200px' }, note),
+      t.cs === 'm' ? h('button', { class: 'btn sm', onclick: () => { t.cs = 'a'; t.cat = autoCat(t); markDirty(); upd(); } }, 'Vrátit automatickou kategorii') : null,
+      h('button', { class: 'btn sm danger', onclick: async () => {
+        if (await ask({ title: 'Smazat transakci?', text: `${fmtDate(t.date)} · ${t.cp || t.msg || ''} · ${kcSigned(t.amt)}. Smaže se jen z této aplikace, v bance se nic nemění.`, ok: 'Smazat', danger: true })) {
+          S.tx = S.tx.filter(x => x !== t); markDirty(); upd();
+        } } }, 'Smazat'))));
+}
+function setCat(t, v, upd) {
+  t.cat = v; t.cs = 'm'; markDirty();
+  const pat = rulePattern(t);
+  if (!pat || S.rules.some(r => r.pat === pat && r.cat === v)) { upd(); return; }
+  const others = S.tx.filter(x => x !== t && x.cs !== 'm' && x.cat !== v && patMatch(txText(x), pat)).length;
+  upd();
+  toast(`Zařazovat platby obsahující „${pat}“ vždy do kategorie ${catName(v)}?` + (others ? ` Změní se i ${pl(others, 'další platba', 'další platby', 'dalších plateb')}.` : ''), { label: 'Ano, vytvořit pravidlo', fn: () => {
+    S.rules.unshift({ id: uid(), pat, cat: v }); applyCategories(); markDirty(); render(); toast('Pravidlo vytvořeno. Upravit ho můžete v Nastavení.');
+  } });
+}
+function exportCsv() {
+  const list = currentTxList();
+  const esc = (v, text) => { v = String(v ?? ''); if (text && /^[=+\-@\t\r]/.test(v)) v = "'" + v; return /[";\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+  const lines = [['Datum', 'Účet', 'Částka', 'Měna', 'Protistrana', 'Protiúčet', 'Zpráva', 'VS', 'Kategorie', 'Poznámka'].join(';')];
+  for (const t of list) lines.push([t.date, esc(accName(t.acc), 1), String(t.amt).replace('.', ','), t.cur, esc(t.cp, 1), esc(t.cpAcc, 1), esc(t.msg, 1), esc(t.vs, 1), esc(catName(t.cat), 1), esc(t.note, 1)].join(';'));
+  download(`finance-transakce-${todayStr()}.csv`, '﻿' + lines.join('\r\n'), 'text/csv;charset=utf-8');
+  toast('Export hotový. Pozor, CSV soubor není šifrovaný.');
+}
+
+/* ---------------- Import ---------------- */
+async function handleFiles(files) {
+  ui.imp.queue = files.slice(); ui.imp.result = null; ui.imp.error = '';
+  await nextFile();
+}
+async function nextFile() {
+  ui.imp.cur = null;
+  const f = ui.imp.queue.shift();
+  if (!f) { render(); return; }
+  ui.imp.busy = true; render();
+  try { ui.imp.cur = await parseFile(f); ui.imp.error = ''; }
+  catch (e) { ui.imp.error = `${f.name}: ${e.message || e}`; ui.imp.cur = null; ui.imp.busy = false; if (ui.imp.queue.length) return nextFile(); }
+  ui.imp.busy = false; render();
+}
+function viewImport() {
+  const root = h('div', { class: 'stack' });
+  const I = ui.imp;
+  if (I.result) {
+    const r = I.result;
+    root.append(h('div', { class: 'card', style: 'border-color:var(--pos)' }, h('h2', null, `Import hotový: ${r.file}`),
+      h('p', { class: 'sub', style: 'margin-bottom:0' }, `Přidáno ${r.added === 0 ? 'nic nového' : pl(r.added, 'nový pohyb', 'nové pohyby', 'nových pohybů')}` + (r.skipped ? `, přeskočeno ${pl(r.skipped, 'pohyb, který', 'pohyby, které', 'pohybů, které')} už v aplikaci ${r.skipped === 1 ? 'byl' : r.skipped <= 4 ? 'byly' : 'byly'}` : '') + (r.invalid ? `, vynecháno ${pl(r.invalid, 'řádek', 'řádky', 'řádků')} bez data nebo částky` : '') + `. Účet: ${accName(r.acc)}` + (r.from ? `, období ${fmtDate(r.from)} – ${fmtDate(r.to)}.` : '.')),
+      h('div', { class: 'row', style: 'margin-top:12px' }, h('button', { class: 'btn primary', onclick: () => { I.result = null; goTab('prehled'); } }, 'Zobrazit přehled'), h('button', { class: 'btn', onclick: () => { I.result = null; ui.period = 'all'; goTab('transakce'); } }, 'Zkontrolovat transakce'))));
+  }
+  if (I.error) root.append(h('div', { class: 'notice', role: 'alert' }, h('span', null, I.error), h('button', { class: 'btn sm', onclick: () => { I.error = ''; render(); } }, 'OK')));
+  if (I.busy) root.append(h('div', { class: 'card' }, h('p', { class: 'muted', style: 'margin:0' }, 'Načítám soubor…')));
+  else if (I.cur) root.append(importPanel(I.cur));
+  else {
+    const input = h('input', { type: 'file', accept: '.csv,.txt,.xlsx,.xml,.gpc,.abo', multiple: true, hidden: true, onchange: e => handleFiles([...e.target.files]) });
+    const drop = h('div', { class: 'drop', tabindex: 0, role: 'button', 'aria-label': 'Vybrat soubor s výpisem', onclick: () => input.click(), onkeydown: e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); } } },
+      h('div', { class: 'drop-t' }, 'Přetáhněte sem výpis z banky'),
+      h('div', { class: 'muted' }, 'nebo klikněte a vyberte soubor · CSV, Excel (.xlsx), XML, GPC/ABO · klidně několik najednou'), input);
+    drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
+    drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+    drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('over'); const fs = [...(e.dataTransfer?.files || [])]; if (fs.length) handleFiles(fs); });
+    root.append(drop);
+  }
+  root.append(h('div', { class: 'grid2' },
+    h('div', { class: 'card' }, h('h2', null, 'Jak stáhnout výpis'), h('p', { class: 'sub' }, 'Aplikace do banky nevidí. Pracuje jen se soubory, které sem sami nahrajete.'),
+      h('ol', { class: 'steps' },
+        h('li', null, h('b', null, 'Česká spořitelna (George): '), 'otevřete účet, v historii transakcí nastavte období (George ukazuje až 7 let zpátky) a použijte export do Excelu nebo CSV.'),
+        h('li', null, h('b', null, 'Raiffeisenbank: '), 'v internetovém bankovnictví stáhněte pohyby nebo výpisy za zvolené období ve formátu CSV, XML nebo GPC.'),
+        h('li', null, 'Poprvé stáhněte co nejdelší historii. Potom stačí čas od času stáhnout poslední měsíc. Co už v aplikaci je, se přeskočí.'))),
+    h('div', { class: 'card' }, h('h2', null, 'Co se děje při importu'),
+      h('ol', { class: 'steps' },
+        h('li', null, 'Soubor se přečte přímo v prohlížeči, nikam se neodesílá.'),
+        h('li', null, 'Poprvé zkontrolujete, které sloupce jsou datum, částka a popis. Pro další výpisy stejného formátu si to aplikace pamatuje.'),
+        h('li', null, 'Nové pohyby se přidají k existujícím. Duplicity (stejný účet, den, částka a popis) se přeskočí.'),
+        h('li', null, 'Platby se samy zařadí do kategorií. Opravy, které uděláte ručně, mají vždy přednost.')))));
+  if (S.imports.length) {
+    root.append(h('div', { class: 'card' }, h('h2', null, 'Historie importů'), h('p', { class: 'sub' }, 'Omylem nahraný soubor můžete vrátit. Smažou se jen pohyby, které tímto importem přibyly.'),
+      h('div', { class: 'scroll' }, h('table', { class: 't' },
+        h('thead', null, h('tr', null, h('th', null, 'Kdy'), h('th', null, 'Soubor'), h('th', { class: 'hide-sm' }, 'Účet'), h('th', { class: 'hide-sm' }, 'Období'), h('th', { class: 'num' }, 'Přidáno'), h('th', { class: 'num hide-sm' }, 'Přeskočeno'), h('th', null, ''))),
+        h('tbody', null, S.imports.map(r => h('tr', null,
+          h('td', { class: 'small nowrap' }, fmtDate(r.at.slice(0, 10))), h('td', { class: 'small', style: 'overflow-wrap:anywhere' }, r.file), h('td', { class: 'small hide-sm' }, accName(r.acc)),
+          h('td', { class: 'small nowrap hide-sm' }, r.from ? `${fmtDate(r.from)} – ${fmtDate(r.to)}` : '—'), h('td', { class: 'num' }, nf0.format(r.added)), h('td', { class: 'num hide-sm' }, nf0.format(r.skipped)),
+          h('td', { class: 'num' }, h('button', { class: 'btn sm danger', onclick: async () => {
+            const n = S.tx.filter(t => t.imp === r.id).length;
+            if (await ask({ title: 'Vrátit import?', text: `Z aplikace se odstraní ${pl(n, 'pohyb', 'pohyby', 'pohybů')} z importu „${r.file}“. Ostatní data zůstanou. V bance se nic nemění.`, ok: 'Vrátit import', danger: true })) {
+              S.tx = S.tx.filter(t => t.imp !== r.id); S.imports = S.imports.filter(x => x !== r); markDirty(); render(); toast('Import vrácen.');
+            } } }, 'Vrátit')))))))));
+  }
+  return root;
+}
+function importPanel(cur) {
+  const card = h('div', { class: 'card stack' });
+  const nr = cur.kind === 'table' ? normTable(cur) : { rows: cur.rows, invalid: cur.invalid || 0 };
+  const rows = nr.rows;
+  card.append(h('div', null, h('h2', null, `Import: ${cur.name}`),
+    h('p', { class: 'sub', style: 'margin-bottom:0' }, `Formát ${cur.format} · nalezeno ${pl(rows.length, 'pohyb', 'pohyby', 'pohybů')}` + (ui.imp.queue.length ? ` · ve frontě dalších ${ui.imp.queue.length} souborů` : ''))));
+  if (cur.kind === 'table') {
+    const sampleRow = cur.rows[cur.hi + 1] || [];
+    card.append(h('div', null,
+      h('h3', { style: 'font-size:14px;margin-bottom:2px' }, 'Přiřazení sloupců'),
+      h('p', { class: 'sub' }, cur.remembered ? 'Tento formát už znám, sloupce jsem nastavil podle minula.' : 'Zkontrolujte, že sloupce sedí. Pro další výpisy stejného formátu si nastavení zapamatuji.'),
+      h('div', { class: 'map' }, FIELDS.map(f => {
+        const sel = h('select', { class: 'inp', onchange: e => { cur.map[f.k] = +e.target.value; render(); } }, opt('-1', '— nepoužít —'), cur.headers.map((hd, i) => opt(String(i), hd)));
+        sel.value = String(cur.map[f.k] ?? -1);
+        const smp = cur.map[f.k] >= 0 ? String(sampleRow[cur.map[f.k]] ?? '') : '';
+        return h('label', { class: 'field' }, h('span', { class: f.req ? 'req' : null }, f.label), sel, h('span', { class: 'sample', title: smp }, smp ? 'např. ' + smp : ' '));
+      }))));
+  }
+  const missing = cur.kind === 'table' && (cur.map.date < 0 || (cur.map.amount < 0 && cur.map.amountOut < 0));
+  if (missing) card.append(h('div', { class: 'errtxt' }, 'Vyberte sloupec s datem a s částkou.'));
+  if (rows.length) {
+    const dates = rows.map(r => r.date).sort();
+    const inc = rows.filter(r => r.amt > 0).length;
+    card.append(h('div', null,
+      h('h3', { style: 'font-size:14px;margin-bottom:2px' }, 'Náhled'),
+      h('p', { class: 'sub' }, `Období ${fmtDate(dates[0])} – ${fmtDate(dates[dates.length - 1])} · ${inc} příchozích, ${rows.length - inc} odchozích` + (nr.invalid ? ` · ${nr.invalid} řádků bez data nebo částky se vynechá` : '') + '. Zkontrolujte hlavně, že výdaje mají minus.'),
+      h('div', { class: 'scroll' }, h('table', { class: 't' },
+        h('thead', null, h('tr', null, h('th', null, 'Datum'), h('th', null, 'Protistrana'), h('th', { class: 'hide-sm' }, 'Zpráva'), h('th', { class: 'num' }, 'Částka'))),
+        h('tbody', null, rows.slice(0, 8).map(r => h('tr', null, h('td', { class: 'small nowrap' }, fmtDate(r.date)), h('td', { class: 'cp small' }, r.cp || '—'), h('td', { class: 'msg hide-sm' }, r.msg), h('td', { class: 'num' + (r.amt > 0 ? ' pos' : '') }, kcSigned(r.amt)))))))));
+  } else if (!missing) card.append(h('p', { class: 'errtxt' }, 'V souboru jsem nenašel žádné pohyby. Zkontrolujte přiřazení sloupců.'));
+
+  // Výběr účtu
+  const accSel = h('select', { class: 'inp', onchange: e => { cur.accSel = e.target.value; render(); } },
+    S.accounts.length ? opt('', '— vyberte účet —') : null, S.accounts.map(a => opt(a.id, a.name + (a.number ? ` (${a.number})` : ''))), opt('__new', '+ Nový účet…'));
+  accSel.value = cur.accSel ?? '';
+  const accBox = h('div', { class: 'stack', style: 'gap:10px' },
+    h('h3', { style: 'font-size:14px' }, 'Na který účet'),
+    h('div', { class: 'form' }, h('label', { class: 'field' }, 'Účet', accSel),
+      cur.detectedNumber ? h('div', { class: 'small muted', style: 'padding-bottom:8px' }, `Ve výpisu je účet ${cur.detectedNumber}`) : null));
+  const err = h('div', { class: 'errtxt' });
+  if (cur.accSel === '__new') {
+    const n = cur.newAcc;
+    const bankSel = h('select', { class: 'inp', onchange: e => { n.bank = e.target.value; } }, opt('', '— banka —'), BANKS.map(b => opt(b, b)));
+    bankSel.value = n.bank;
+    const typeSel = h('select', { class: 'inp', onchange: e => { n.type = e.target.value; } }, opt('bezny', 'Běžný účet'), opt('sporici', 'Spořicí účet'), opt('jiny', 'Jiný'));
+    typeSel.value = n.type;
+    accBox.append(h('div', { class: 'form' },
+      h('label', { class: 'field' }, h('span', { class: 'req' }, 'Název účtu'), h('input', { class: 'inp', value: n.name, placeholder: 'např. Spořitelna – běžný', oninput: e => { n.name = e.target.value; } })),
+      h('label', { class: 'field' }, 'Banka', bankSel),
+      h('label', { class: 'field' }, 'Číslo účtu (nepovinné)', h('input', { class: 'inp', value: n.number, placeholder: '123456789/0800', oninput: e => { n.number = e.target.value; } })),
+      h('label', { class: 'field' }, 'Typ', typeSel)),
+      h('p', { class: 'small muted', style: 'margin:0' }, 'Číslo účtu pomáhá poznat převody mezi vašimi účty, aby se nepočítaly jako výdaj.'));
+  }
+  card.append(accBox, err);
+  card.append(h('div', { class: 'row' },
+    h('button', { class: 'btn primary', disabled: missing || !rows.length, onclick: () => {
+      let accId = cur.accSel;
+      if (!accId) { err.textContent = 'Vyberte účet.'; return; }
+      if (accId === '__new') { if (!cur.newAcc.name.trim()) { err.textContent = 'Zadejte název účtu.'; return; } accId = addAccount(cur.newAcc); }
+      ui.imp.result = commitImport(cur, accId);
+      nextFile();
+    } }, `Importovat ${pl(rows.length, 'pohyb', 'pohyby', 'pohybů')}`),
+    h('button', { class: 'btn', onclick: () => nextFile() }, ui.imp.queue.length ? 'Přeskočit soubor' : 'Zrušit')));
+  return card;
+}
+
+/* ---------------- Kalkulačka ---------------- */
+function simulate(p, m, ratePct, years, tax, comp) {
+  const r = ratePct / 100 / 12, months = Math.round(Math.min(Math.max(years, 0), 60) * 12);
+  let bal = p, dep = p, intNet = 0, pending = 0;
+  const rows = [{ y: 0, bal, dep, int: 0 }];
+  for (let i = 1; i <= months; i++) {
+    bal += m; dep += m;
+    const net = bal * r * (tax ? 0.85 : 1);
+    if (comp === 'm') { bal += net; intNet += net; }
+    else { pending += net; if (i % 12 === 0 || i === months) { bal += pending; intNet += pending; pending = 0; } }
+    if (i % 12 === 0 || i === months) rows.push({ y: Math.round(i / 12 * 10) / 10, bal, dep, int: intNet });
+  }
+  return rows;
+}
+function viewCalc(after) {
+  const c = ui.calc, root = h('div', { class: 'stack' });
+  root.append(h('div', { class: 'seg', role: 'group', 'aria-label': 'Typ výpočtu' },
+    [['proj', 'Vývoj spoření'], ['goal', 'Spoření na cíl']].map(([v, l]) => h('button', { 'aria-pressed': String(c.mode === v), onclick: () => { c.mode = v; render(); } }, l))));
+  const res = h('div', { class: 'stack' });
+  const num = (key, label, o = {}) => h('label', { class: 'field' }, label, h('input', { class: 'inp', type: 'number', inputmode: 'decimal', step: o.step || 'any', min: o.min ?? 0, max: o.max ?? null, value: c[key],
+    oninput: e => { const v = parseFloat(String(e.target.value).replace(',', '.')); c[key] = isFinite(v) ? v : 0; upd(); } }));
+  const chk = (key, label, rerender) => h('label', { class: 'check' }, h('input', { type: 'checkbox', checked: c[key], onchange: e => { c[key] = e.target.checked; rerender ? render() : upd(); } }), label);
+  const accs = S.accounts.filter(a => a.anchor);
+  const prefill = (keyP, keyR) => accs.length ? h('label', { class: 'field' }, 'Načíst z účtu', h('select', { class: 'inp', onchange: e => {
+    const a = S.accounts.find(x => x.id === e.target.value); if (!a) return;
+    c[keyP] = Math.round(balanceAt(a, todayStr())); if (a.rate != null) c[keyR] = a.rate; render();
+  } }, opt('', '— vyberte účet —'), accs.map(a => opt(a.id, `${a.name} (${kc(balanceAt(a, todayStr()))})`)))) : null;
+  let upd;
+  if (c.mode === 'proj') {
+    const compSel = h('select', { class: 'inp', onchange: e => { c.comp = e.target.value; upd(); } }, opt('m', 'měsíčně'), opt('y', 'ročně'));
+    compSel.value = c.comp;
+    root.append(h('div', { class: 'card' }, h('h2', null, 'Jak poroste spořicí účet'), h('p', { class: 'sub' }, 'Vklady na začátku každého měsíce, úrok se počítá z aktuálního zůstatku.'),
+      h('div', { class: 'form' },
+        prefill('p', 'r'),
+        num('p', 'Počáteční částka (Kč)', { step: 1000 }), num('m', 'Měsíční vklad (Kč)', { step: 500 }),
+        num('r', 'Úrok / výnos (% ročně)', { step: 0.1 }), num('y', 'Doba (roky)', { step: 1, min: 1, max: 60 }),
+        h('label', { class: 'field' }, 'Připisování úroků', compSel), num('infl', 'Očekávaná inflace (% ročně)', { step: 0.1 })),
+      h('div', { class: 'row', style: 'margin-top:12px;gap:18px' }, chk('tax', 'Odečíst 15% daň z úroků'), chk('useB', 'Porovnat se scénářem B', true)),
+      c.useB ? h('div', { class: 'form', style: 'margin-top:12px' }, num('rB', 'Scénář B: úrok / výnos (% ročně)', { step: 0.1 }), h('div', { style: 'padding-bottom:8px' }, chk('taxB', 'Scénář B: odečíst 15% daň'))) : null));
+    upd = () => {
+      const A = simulate(c.p, c.m, c.r, c.y, c.tax, c.comp), fa = A[A.length - 1];
+      const B = c.useB ? simulate(c.p, c.m, c.rB, c.y, c.taxB, c.comp) : null, fb = B && B[B.length - 1];
+      const real = fa.bal / Math.pow(1 + c.infl / 100, fa.y);
+      const tiles = h('div', { class: 'tiles' },
+        tile(`Za ${fa.y} let budete mít`, kc(fa.bal), c.useB ? 'scénář A' : ''),
+        tile('Vložíte celkem', kc(fa.dep), `${kc(c.p)} + ${nf0.format(Math.round(fa.y * 12))} × ${kc(c.m)}`),
+        tile('Úroky' + (c.tax ? ' po zdanění' : ''), kc(fa.int), fa.dep > 0 ? `${Math.round(fa.int / fa.dep * 100)} % navíc k vkladům` : ''),
+        tile('V dnešních penězích', kc(real), `při inflaci ${nf2.format(c.infl).replace(/,00$/, '')} % ročně`),
+        fb ? tile('Scénář B', kc(fb.bal), `o ${kc(Math.abs(fb.bal - fa.bal))} ${fb.bal >= fa.bal ? 'více' : 'méně'} než A`) : null);
+      const series = [{ name: c.useB ? `Scénář A (${nf2.format(c.r).replace(/,00$/, '')} %)` : 'Zůstatek', color: 'var(--s1)', values: A.map(r => Math.round(r.bal)) }];
+      if (B) series.push({ name: `Scénář B (${nf2.format(c.rB).replace(/,00$/, '')} %)`, color: 'var(--s2)', values: B.map(r => Math.round(r.bal)) });
+      series.push({ name: 'Vložené peníze', color: 'var(--s3)', values: A.map(r => Math.round(r.dep)), dash: true });
+      const box = h('div', { class: 'chart' });
+      const head = ['Rok', c.useB ? 'Zůstatek A' : 'Zůstatek', ...(B ? ['Zůstatek B'] : []), 'Vloženo', 'Úroky A'];
+      res.replaceChildren(tiles, h('div', { class: 'card' }, h('h2', null, 'Vývoj v čase'), h('p', { class: 'sub' }, 'Orientační výpočet. Skutečný úrok spořicího účtu se může měnit.'), legend(series), box,
+        dataTable(head, A.map((r, i) => [String(r.y), kc(r.bal), ...(B ? [kc(B[i].bal)] : []), kc(r.dep), kc(r.int)]), head.map((_, i) => i).slice(1))));
+      if (box.isConnected) drawLines(box, { labels: A.map(r => r.y === 0 ? 'dnes' : `${r.y}. rok`), tipTitles: A.map(r => r.y === 0 ? 'Dnes' : `Po ${r.y} ${r.y === 1 ? 'roce' : 'letech'}`), series, aria: 'Vývoj zůstatku spoření' });
+      else after(() => drawLines(box, { labels: A.map(r => r.y === 0 ? 'dnes' : `${r.y}. rok`), tipTitles: A.map(r => r.y === 0 ? 'Dnes' : `Po ${r.y} ${r.y === 1 ? 'roce' : 'letech'}`), series, aria: 'Vývoj zůstatku spoření' }));
+    };
+  } else {
+    root.append(h('div', { class: 'card' }, h('h2', null, 'Kolik měsíčně spořit'), h('p', { class: 'sub' }, 'Spočítá potřebný měsíční vklad, abyste cílovou částku měli včas.'),
+      h('div', { class: 'form' }, prefill('gP', 'gR'),
+        num('gT', 'Cílová částka (Kč)', { step: 10000 }), num('gY', 'Za kolik let', { step: 1, min: 0.5, max: 60 }),
+        num('gP', 'Už mám naspořeno (Kč)', { step: 1000 }), num('gR', 'Úrok / výnos (% ročně)', { step: 0.1 })),
+      h('div', { class: 'row', style: 'margin-top:12px' }, chk('gTax', 'Odečíst 15% daň z úroků'))));
+    upd = () => {
+      const r = c.gR / 100 / 12 * (c.gTax ? 0.85 : 1), n = Math.round(c.gY * 12);
+      let M;
+      if (n <= 0) M = NaN;
+      else { const g = Math.pow(1 + r, n); M = r > 0 ? (c.gT - c.gP * g) * r / ((g - 1) * (1 + r)) : (c.gT - c.gP) / n; }
+      const box = h('div');
+      if (!isFinite(M)) box.append(h('p', { class: 'muted' }, 'Zadejte dobu spoření.'));
+      else if (M <= 0) {
+        const fv = simulate(c.gP, 0, c.gR, c.gY, c.gTax, 'm').pop().bal;
+        box.append(h('div', { class: 'tiles' }, tile('Měsíční vklad', '0 Kč', 'cíle dosáhnete i bez dalších vkladů'), tile(`Za ${c.gY} let budete mít`, kc(fv), '')));
+      } else {
+        const sim = simulate(c.gP, M, c.gR, c.gY, c.gTax, 'm').pop();
+        box.append(h('div', { class: 'tiles' },
+          tile('Potřebný měsíční vklad', kc(Math.ceil(M)), `po dobu ${nf0.format(n)} měsíců`),
+          tile('Vložíte celkem', kc(sim.dep), ''),
+          tile('Úroky' + (c.gTax ? ' po zdanění' : ''), kc(sim.int), ''),
+          tile('Bez úroků byste museli dávat', kc(Math.ceil((c.gT - c.gP) / n)), 'měsíčně')));
+      }
+      res.replaceChildren(box);
+    };
+  }
+  root.append(res);
+  upd();
+  return root;
+}
+
+/* ---------------- Nastavení ---------------- */
+async function downloadBackup() {
+  await flush();
+  const v = await seal(S, KEY, SALT);
+  download(`finance-zaloha-${todayStr()}.json`, JSON.stringify(v));
+  S.lastBackup = new Date().toISOString(); markDirty();
+  toast('Záloha stažena. Je zašifrovaná vaším heslem.');
+  if (ui.tab !== 'transakce') render();
+}
+function viewSettings() {
+  const root = h('div', { class: 'stack' });
+  const today = todayStr();
+
+  // Účty
+  const accCard = h('div', { class: 'card' }, h('div', { class: 'card-head' }, h('div', null, h('h2', null, 'Účty'), h('p', { class: 'sub' }, 'Zůstatek k datu stačí zadat jednou. Další zůstatky se dopočítají z pohybů.')),
+    h('button', { class: 'btn', onclick: () => { ui.editAcc = 'new'; ui.accDraft = { name: '', bank: '', number: '', type: 'bezny', rate: '', balAmt: '', balDate: today }; render(); } }, '+ Přidat účet')));
+  const list = h('div', { class: 'acc-list' });
+  const editor = (a) => {
+    const d = ui.accDraft;
+    const bankSel = h('select', { class: 'inp', onchange: e => d.bank = e.target.value }, opt('', '— banka —'), BANKS.map(b => opt(b, b))); bankSel.value = d.bank || '';
+    const typeSel = h('select', { class: 'inp', onchange: e => d.type = e.target.value }, opt('bezny', 'Běžný účet'), opt('sporici', 'Spořicí účet'), opt('jiny', 'Jiný')); typeSel.value = d.type;
+    const err = h('div', { class: 'errtxt' });
+    return h('div', { class: 'acc', style: 'display:block' },
+      h('div', { class: 'form' },
+        h('label', { class: 'field' }, h('span', { class: 'req' }, 'Název'), h('input', { class: 'inp', value: d.name, oninput: e => d.name = e.target.value })),
+        h('label', { class: 'field' }, 'Banka', bankSel),
+        h('label', { class: 'field' }, 'Číslo účtu', h('input', { class: 'inp', value: d.number, placeholder: '123456789/0800', oninput: e => d.number = e.target.value })),
+        h('label', { class: 'field' }, 'Typ', typeSel),
+        h('label', { class: 'field' }, 'Úroková sazba (% ročně)', h('input', { class: 'inp', type: 'number', step: 0.01, value: d.rate, placeholder: 'u spořicího účtu', oninput: e => d.rate = e.target.value })),
+        h('label', { class: 'field' }, 'Zůstatek (Kč)', h('input', { class: 'inp', type: 'number', step: 0.01, value: d.balAmt, placeholder: 'např. 25000', oninput: e => d.balAmt = e.target.value })),
+        h('label', { class: 'field' }, 'ke dni (na konci dne)', h('input', { class: 'inp', type: 'date', value: d.balDate, oninput: e => d.balDate = e.target.value }))),
+      err,
+      h('div', { class: 'row', style: 'margin-top:12px' },
+        h('button', { class: 'btn primary', onclick: () => {
+          if (!d.name.trim()) { err.textContent = 'Zadejte název.'; return; }
+          const bal = d.balAmt === '' ? null : parseFloat(String(d.balAmt).replace(',', '.'));
+          if (bal != null && (!isFinite(bal) || !d.balDate)) { err.textContent = 'Zkontrolujte zůstatek a datum.'; return; }
+          const rate = d.rate === '' ? null : parseFloat(String(d.rate).replace(',', '.'));
+          const anchor = bal != null ? { date: d.balDate, amount: bal } : null;
+          if (a) { Object.assign(a, { name: d.name.trim(), bank: d.bank, number: d.number.trim(), type: d.type, rate: isFinite(rate) ? rate : null }); if (anchor) a.anchor = anchor; else if (d.balAmt === '' && d.hadAnchor) a.anchor = null; }
+          else addAccount({ name: d.name, bank: d.bank, number: d.number, type: d.type, rate: isFinite(rate) ? rate : null, anchor });
+          ui.editAcc = null; applyCategories(); markDirty(); render();
+        } }, 'Uložit'),
+        h('button', { class: 'btn', onclick: () => { ui.editAcc = null; render(); } }, 'Zrušit')));
+  };
+  for (const a of S.accounts) {
+    if (ui.editAcc === a.id) { list.append(editor(a)); continue; }
+    const n = S.tx.filter(t => t.acc === a.id).length;
+    const bal = a.anchor ? balanceAt(a, today) : null;
+    list.append(h('div', { class: 'acc' },
+      h('div', null, h('b', null, a.name), h('div', { class: 'small muted' }, [a.bank, a.number, { bezny: 'běžný účet', sporici: 'spořicí účet', jiny: 'jiný' }[a.type], a.rate != null ? `úrok ${nf2.format(a.rate).replace(/,00$/, '')} %` : null, pl(n, 'pohyb', 'pohyby', 'pohybů')].filter(Boolean).join(' · '))),
+      h('div', { class: 'row' }, h('span', { class: 'num', style: 'font-weight:600;margin-right:6px' }, bal != null ? kc(bal, true) : h('span', { class: 'muted small' }, 'zůstatek nenastaven')),
+        h('button', { class: 'btn sm', onclick: () => { ui.editAcc = a.id; ui.accDraft = { name: a.name, bank: a.bank || '', number: a.number || '', type: a.type || 'bezny', rate: a.rate ?? '', balAmt: a.anchor ? a.anchor.amount : '', balDate: a.anchor ? a.anchor.date : today, hadAnchor: !!a.anchor }; render(); } }, 'Upravit'),
+        h('button', { class: 'btn sm danger', onclick: async () => {
+          if (await ask({ title: `Smazat účet „${a.name}“?`, text: `Z aplikace se odstraní účet a ${pl(n, 'jeho pohyb', 'jeho pohyby', 'jeho pohybů')}. V bance se nic nemění. Akci nejde vrátit (leda obnovou zálohy).`, ok: 'Smazat účet', danger: true, typed: n ? 'SMAZAT' : null })) {
+            S.tx = S.tx.filter(t => t.acc !== a.id); S.imports = S.imports.filter(i => i.acc !== a.id); S.accounts = S.accounts.filter(x => x !== a);
+            for (const k of Object.keys(S.mappings)) if (S.mappings[k].acc === a.id) S.mappings[k].acc = null;
+            applyCategories(); markDirty(); render();
+          } } }, 'Smazat'))));
+  }
+  if (ui.editAcc === 'new') list.append(editor(null));
+  if (!S.accounts.length && ui.editAcc !== 'new') list.append(h('p', { class: 'muted', style: 'margin:0' }, 'Zatím žádný účet. Vytvoří se i při prvním importu.'));
+  accCard.append(list);
+  root.append(accCard);
+
+  // Kategorie
+  const counts = new Map(); for (const t of S.tx) counts.set(t.cat, (counts.get(t.cat) || 0) + 1);
+  const newName = h('input', { class: 'inp', placeholder: 'Název nové kategorie' });
+  const newKind = h('select', { class: 'inp' }, opt('exp', 'Výdaj'), opt('inc', 'Příjem'), opt('save', 'Spoření a investice'), opt('transfer', 'Převod (nezapočítává se)'));
+  root.append(h('div', { class: 'card' }, h('h2', null, 'Kategorie'), h('p', { class: 'sub' }, '„Spoření a investice“ a „Převody“ se nezapočítávají do výdajů.'),
+    h('div', { class: 'stack', style: 'gap:12px' }, ['exp', 'inc', 'save', 'transfer'].map(k => {
+      const cs = S.categories.filter(c => c.kind === k); if (!cs.length) return null;
+      return h('div', null, h('div', { class: 'small muted', style: 'margin-bottom:6px' }, KIND_LABEL[k]), h('div', { class: 'chips' }, cs.map(c => h('span', { class: 'chip' }, c.name, h('span', { class: 'c' }, nf0.format(counts.get(c.id) || 0)),
+        h('button', { title: 'Přejmenovat', 'aria-label': `Přejmenovat ${c.name}`, onclick: async () => { const v = await ask({ title: 'Přejmenovat kategorii', ok: 'Uložit', input: { value: c.name } }); if (v && v.trim()) { c.name = v.trim(); markDirty(); render(); } } }, '✎'),
+        PROTECTED.has(c.id) ? null : h('button', { title: 'Smazat', 'aria-label': `Smazat ${c.name}`, onclick: async () => {
+          const n = counts.get(c.id) || 0;
+          if (await ask({ title: `Smazat kategorii „${c.name}“?`, text: n ? `${pl(n, 'pohyb', 'pohyby', 'pohybů')} se znovu automaticky zařadí (ručně zařazené půjdou do Ostatních).` : 'Kategorie je prázdná.', ok: 'Smazat', danger: true })) {
+            S.categories = S.categories.filter(x => x !== c); S.rules = S.rules.filter(r => r.cat !== c.id);
+            for (const t of S.tx) if (t.cat === c.id) { t.cs = 'a'; }
+            applyCategories(); markDirty(); render();
+          } } }, '×')))));
+    })),
+    h('div', { class: 'row', style: 'margin-top:14px' }, newName, newKind, h('button', { class: 'btn', onclick: () => {
+      const nm = newName.value.trim(); if (!nm) { newName.focus(); return; }
+      S.categories.push({ id: 'c-' + uid(), name: nm, kind: newKind.value }); markDirty(); render(); toast(`Kategorie „${nm}“ přidána.`);
+    } }, 'Přidat kategorii'))));
+
+  // Pravidla
+  const rPat = h('input', { class: 'inp', placeholder: 'Text v popisu, např. benzina', style: 'flex:1;min-width:180px' });
+  const rCat = h('select', { class: 'inp' }, catOptions());
+  root.append(h('div', { class: 'card' }, h('h2', null, 'Pravidla pro kategorie'),
+    h('p', { class: 'sub' }, `Vestavěná pravidla poznají ${COMPILED_DEFAULTS.reduce((s, [, p]) => s + p.length, 0)} běžných obchodů a služeb (Albert, Lidl, Shell, Netflix…). Vaše pravidla mají přednost a ručně zařazené platby se nemění.`),
+    S.rules.length ? h('table', { class: 't' }, h('tbody', null, S.rules.map(r => {
+      const sel = h('select', { class: 'inp', onchange: e => { r.cat = e.target.value; applyCategories(); markDirty(); } }, catOptions()); sel.value = r.cat;
+      return h('tr', null, h('td', null, 'obsahuje ', h('b', null, `„${r.pat}“`)), h('td', null, sel), h('td', { class: 'num' }, h('button', { class: 'btn sm danger', onclick: async () => {
+        if (await ask({ title: 'Smazat pravidlo?', text: `„${r.pat}“ → ${catName(r.cat)}. Automaticky zařazené platby se přepočítají.`, ok: 'Smazat', danger: true })) { S.rules = S.rules.filter(x => x !== r); applyCategories(); markDirty(); render(); }
+      } }, 'Smazat')));
+    }))) : h('p', { class: 'muted small' }, 'Zatím nemáte vlastní pravidla. Vznikají i samy, když v transakcích změníte kategorii.'),
+    h('div', { class: 'row', style: 'margin-top:12px' }, rPat, rCat, h('button', { class: 'btn', onclick: () => {
+      const p = norm(rPat.value); if (p.length < 2) { rPat.focus(); return; }
+      S.rules.unshift({ id: uid(), pat: p, cat: rCat.value }); applyCategories(); markDirty(); render(); toast('Pravidlo přidáno a použito na existující platby.');
+    } }, 'Přidat pravidlo'),
+      h('button', { class: 'btn', onclick: () => { applyCategories(); markDirty(); render(); toast('Automaticky zařazené platby jsou přepočítané.'); } }, 'Znovu zařadit vše'))));
+
+  // Záloha a bezpečnost
+  const lockSel = h('select', { class: 'inp', onchange: e => { S.settings.lockMin = +e.target.value; markDirty(); } }, [5, 15, 30, 60].map(m => opt(String(m), `po ${m} minutách nečinnosti`)));
+  lockSel.value = String(S.settings.lockMin || 15);
+  root.append(h('div', { class: 'grid2' },
+    h('div', { class: 'card' }, h('h2', null, 'Záloha'), h('p', { class: 'sub' }, S.lastBackup ? `Poslední záloha ${fmtDate(S.lastBackup.slice(0, 10))}.` : 'Zatím žádná záloha.'),
+      h('div', { class: 'info' }, h('p', null, 'Data jsou jen v tomto prohlížeči. Záloha je soubor zašifrovaný vaším heslem. Uložte si ho třeba na OneDrive. Přes zálohu také přenesete data do jiného zařízení.')),
+      h('div', { class: 'row' }, h('button', { class: 'btn primary', onclick: downloadBackup }, 'Stáhnout zálohu'), h('button', { class: 'btn', onclick: () => restoreBackup(false) }, 'Obnovit ze zálohy…'))),
+    h('div', { class: 'card' }, h('h2', null, 'Zabezpečení'), h('p', { class: 'sub' }, 'Aplikace se sama zamkne:'),
+      h('div', { class: 'row' }, lockSel),
+      h('div', { class: 'row', style: 'margin-top:12px' }, h('button', { class: 'btn', onclick: async () => {
+        const pw = await ask({ title: 'Změnit heslo', text: 'Nové heslo, alespoň 8 znaků. Starší zálohy zůstanou na starém hesle.', ok: 'Změnit heslo', input: { type: 'password', placeholder: 'Nové heslo', min: 8, confirm: true } });
+        if (!pw) return;
+        SALT = crypto.getRandomValues(new Uint8Array(16)); KEY = await deriveKey(pw, SALT); dirty = true; await flush(); toast('Heslo změněno.');
+      } }, 'Změnit heslo'), h('button', { class: 'btn', onclick: lock }, 'Zamknout nyní')))));
+
+  root.append(h('div', { class: 'card info' }, h('h2', null, 'Jak je aplikace zabezpečená'), h('div', { style: 'height:8px' }),
+    h('p', null, 'Do banky nemá žádný přístup. Nezná přihlašovací údaje a nemůže zadat platbu. Pracuje jen s výpisy, které sem sami nahrajete.'),
+    h('p', null, 'Nemá povolené žádné síťové spojení (Content-Security-Policy connect-src \'none\'), takže data nemůže nikam odeslat. Nenačítá žádné cizí skripty.'),
+    h('p', null, 'Data jsou uložená jen v tomto prohlížeči a zašifrovaná algoritmem AES-256-GCM. Klíč se odvozuje z hesla (PBKDF2-SHA256, 310 000 iterací) a nikde se neukládá.'),
+    h('p', null, 'Smazáním dat prohlížeče (cookies a dat webů) o data přijdete. Proto si stahujte zálohu.')));
+
+  root.append(h('div', { class: 'card' }, h('h2', null, 'Smazat všechna data'), h('p', { class: 'sub' }, 'Odstraní z tohoto prohlížeče všechny účty, transakce a nastavení. V bance se nic nemění.'),
+    h('button', { class: 'btn danger', onclick: async () => {
+      if (await ask({ title: 'Smazat všechna data?', text: `Z tohoto prohlížeče se odstraní ${pl(S.accounts.length, 'účet', 'účty', 'účtů')} a ${pl(S.tx.length, 'transakce', 'transakce', 'transakcí')}. Bez zálohy je nepůjde obnovit.`, ok: 'Smazat vše', danger: true, typed: 'SMAZAT' })) {
+        clearTimeout(saveTimer); dirty = false; await saving; await kvDel(VK); renderLock(false); toast('Data smazána.');
+      } } }, 'Smazat všechna data…')));
+  return root;
+}
+
+/* ================================================================
+   Start
+   ================================================================ */
+async function boot() {
+  if (!window.crypto || !crypto.subtle) {
+    app.replaceChildren(h('div', { class: 'lock' }, h('div', { class: 'card lock-card' }, h('h2', null, 'Prohlížeč nepodporuje šifrování'), h('p', { class: 'sub' }, 'Otevřete stránku přes https (např. GitHub Pages) v aktuálním prohlížeči.'))));
+    return;
+  }
+  renderLock(!!(await kvGet(VK)));
+}
+boot();
+})();
+</script>
+</body>
+</html>
