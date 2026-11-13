@@ -534,7 +534,49 @@ function saveLocal() {
 }
 function save() {
   saveLocal();
+  setDirty(true);
   scheduleSyncDeck();
+}
+
+/* ── Stav synchronizace ────────────────────────────────
+   BASE_KEY = poslední verze decku, na které se web a GitHub shodly.
+   DIRTY_KEY = v tomto prohlížeči jsou úpravy, které ještě nejsou na GitHubu.
+   Díky tomu refresh nepřepíše neodeslané úpravy a změny z GitHubu (např. od Clauda)
+   se s nimi sloučí. */
+const BASE_KEY = 'vibe-deck-base';
+const DIRTY_KEY = 'vibe-deck-dirty';
+const stripDeck = d => d.map(t => ({ ...t, projekty: t.projekty.map(({ html, ...rest }) => rest) }));
+function isDirty() { try { return localStorage.getItem(DIRTY_KEY) === '1'; } catch { return false; } }
+function setDirty(v) { try { v ? localStorage.setItem(DIRTY_KEY, '1') : localStorage.removeItem(DIRTY_KEY); } catch {} }
+function getBase() { try { return JSON.parse(localStorage.getItem(BASE_KEY) || 'null'); } catch { return null; } }
+function setBase(d) { try { localStorage.setItem(BASE_KEY, JSON.stringify(stripDeck(d))); } catch {} }
+
+// Třícestné sloučení: lokální úpravy mají přednost, z remote se převezmou
+// nová témata/weby a změny položek, které lokálně nikdo neměnil.
+function mergeDecks(base, local, remote) {
+  base = base || [];
+  const pk = p => p.odkaz || p.nazev;
+  const js = x => JSON.stringify(x);
+  const out = JSON.parse(JSON.stringify(local));
+  for (const rt of remote) {
+    const bt = base.find(t => t.id === rt.id);
+    const lt = out.find(t => t.id === rt.id);
+    if (!lt) { if (!bt) out.push(JSON.parse(JSON.stringify(rt))); continue; }
+    // vlastnosti tématu (název, ikona, popis)
+    for (const f of ['nazev', 'popis', 'ikona']) {
+      if (bt && lt[f] === bt[f] && rt[f] !== bt[f]) lt[f] = rt[f];
+    }
+    const bp = bt ? bt.projekty : [];
+    for (const rp of rt.projekty) {
+      const k = pk(rp);
+      const li = lt.projekty.findIndex(p => pk(p) === k);
+      const b = bp.find(p => pk(p) === k);
+      if (li < 0) { if (!b) lt.projekty.push({ ...rp }); continue; }
+      const { html, htmlKey, ...lClean } = lt.projekty[li];
+      if (b && js(lClean) === js(b) && js(rp) !== js(b)) lt.projekty[li] = { ...rp, ...(htmlKey ? { htmlKey } : {}) };
+    }
+  }
+  return out;
 }
 function load() {
   try { const r = localStorage.getItem(KEY); return r ? JSON.parse(r) : null; }
@@ -819,17 +861,16 @@ document.getElementById('gh-save').addEventListener('click', async () => {
     document.getElementById('gh-err').textContent = 'Načítám aktuální deck…';
     // Nejdřív stáhnout to, co je na GitHubu. Nahrávat jen pokud tam deck ještě není
     // nebo pokud tu jsou projekty uložené jen v tomto prohlížeči.
-    const fr = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/deck-data.json`, { headers: { 'Authorization': `Bearer ${token}` } });
-    if (fr.status === 404) {
+    const remote = await readDeckFromApi();
+    if (!remote) {
+      setDirty(true);
       await ghSyncDeck();
-    } else if (fr.ok) {
-      const f = await fr.json();
-      deckSha = f.sha;
-      const remote = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(f.content.replace(/\s/g, '')), c => c.charCodeAt(0))));
-      const added = adoptRemoteDeck(remote);
-      if (added) await ghSyncDeck();
     } else {
-      throw new Error('Deck se nepodařilo načíst (HTTP ' + fr.status + ').');
+      deckSha = remote.sha;
+      applyRemoteDeck(remote.data);
+      await attachLocalHtml();
+      render();
+      if (isDirty()) await ghSyncDeck();
     }
     close('ov-settings');
   } catch (e) { document.getElementById('gh-err').textContent = e.message; }
@@ -847,44 +888,75 @@ function setStatus(text, editDot) {
   if (editDot !== undefined) document.getElementById('status-dot').classList.toggle('edit', editDot);
 }
 
-async function ghSyncDeck() {
-  if (!ghOk()) return;
+let syncing = null;
+function ghSyncDeck() {
+  if (!ghOk()) return Promise.resolve();
+  clearTimeout(syncTimer);
+  // Jedna synchronizace naráz; další úpravy se odešlou hned po ní
+  syncing = (syncing || Promise.resolve()).then(doSyncDeck).finally(() => { syncing = null; });
+  return syncing;
+}
+
+async function putDeck(clean, sha) {
   const { token, owner, repo } = ghCfg;
-  const clean = DECK.map(t => ({ ...t, projekty: t.projekty.map(p => { const { html, ...rest } = p; return rest; }) }));
-  if (!deckSha) deckSha = await getFileSha();
-  const body = { message: 'Sync deck', content: toB64(JSON.stringify(clean)) };
-  if (deckSha) body.sha = deckSha;
-  setStatus('Synchronizuji…');
+  const body = { message: 'Sync deck (web)', content: toB64(JSON.stringify(clean)) };
+  if (sha) body.sha = sha;
+  return fetch(`https://api.github.com/repos/${owner}/${repo}/contents/deck-data.json`, {
+    method: 'PUT',
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+}
+
+async function doSyncDeck() {
+  if (!ghOk() || !isDirty()) return;
+  setStatus('Ukládám na GitHub…');
   try {
-    const r = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/deck-data.json`, {
-      method: 'PUT',
-      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
+    if (!deckSha) deckSha = await getFileSha();
+    let r = await putDeck(stripDeck(DECK), deckSha);
     if (r.status === 409 || r.status === 422) {
-      // SHA conflict — refetch and retry
-      const fr = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/deck-data.json`, { headers: { 'Authorization': `Bearer ${token}` } });
-      if (fr.ok) { deckSha = (await fr.json()).sha; body.sha = deckSha; }
-      const r2 = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/deck-data.json`, {
-        method: 'PUT', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-      if (!r2.ok) throw new Error();
-      deckSha = (await r2.json()).content.sha;
-    } else if (!r.ok) { throw new Error(); }
-    else { deckSha = (await r.json()).content.sha; }
-    setStatus(editMode ? 'Režim úprav' : 'Systém online', editMode);
-  } catch {
-    setStatus('Chyba synchronizace');
-    setTimeout(() => setStatus(editMode ? 'Režim úprav' : 'Systém online', editMode), 3000);
+      // Na GitHubu je mezitím novější verze (třeba od Clauda) — sloučit a zkusit znovu
+      const remote = await readDeckFromApi();
+      if (remote) {
+        DECK = mergeDecks(getBase(), DECK, remote.data);
+        deckSha = remote.sha;
+        saveLocal(); render();
+      }
+      r = await putDeck(stripDeck(DECK), deckSha);
+    }
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    deckSha = (await r.json()).content.sha;
+    setBase(DECK);
+    setDirty(false);
+    setStatus(editMode ? 'Režim úprav' : 'Uloženo na GitHub', editMode);
+  } catch (e) {
+    setStatus('Chyba ukládání – zkusím znovu');
+    clearTimeout(syncTimer);
+    syncTimer = setTimeout(ghSyncDeck, 10000);
   }
 }
 
 function scheduleSyncDeck() {
-  if (!ghOk()) return;
+  if (!ghOk()) { setStatus('Uloženo jen v tomto prohlížeči – připoj GitHub'); return; }
   clearTimeout(syncTimer);
   syncTimer = setTimeout(ghSyncDeck, 800);
 }
+
+// Při zavření nebo refreshi stránky odeslat neuložené úpravy hned (keepalive přežije odchod ze stránky)
+function flushDeck() {
+  if (!ghOk() || !isDirty() || syncing || !deckSha) return;
+  clearTimeout(syncTimer);
+  const { token, owner, repo } = ghCfg;
+  try {
+    fetch(`https://api.github.com/repos/${owner}/${repo}/contents/deck-data.json`, {
+      method: 'PUT', keepalive: true,
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: 'Sync deck (web)', content: toB64(JSON.stringify(stripDeck(DECK))), sha: deckSha })
+    });
+  } catch {}
+}
+window.addEventListener('pagehide', flushDeck);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushDeck(); });
 
 // Převezme deck z webu jako hlavní zdroj. Projekty, které existují jen v tomto
 // prohlížeči (nahrané HTML uložené v IndexedDB), zachová. Vrací jejich počet.
@@ -901,7 +973,6 @@ function adoptRemoteDeck(remote) {
   }
   DECK = remote;
   saveLocal();
-  render();
   return added;
 }
 
@@ -912,16 +983,33 @@ async function attachLocalHtml() {
   }));
 }
 
+// Promítne deck z GitHubu do tohoto prohlížeče. Neodeslané lokální úpravy zachová
+// (sloučí je), jinak převezme vzdálenou verzi. Vrací true, pokud se něco změnilo.
+function applyRemoteDeck(remote) {
+  const js = x => JSON.stringify(x);
+  if (isDirty()) {
+    const merged = mergeDecks(getBase(), DECK, remote);
+    setBase(remote);
+    if (js(stripDeck(merged)) === js(remote)) setDirty(false); // úpravy už na GitHubu jsou
+    const changed = js(stripDeck(merged)) !== js(stripDeck(DECK));
+    DECK = merged; saveLocal();
+    if (isDirty()) scheduleSyncDeck();
+    return changed;
+  }
+  if (js(remote) === js(stripDeck(DECK))) { setBase(remote); return false; }
+  const added = adoptRemoteDeck(remote);
+  setBase(remote);
+  if (added) { setDirty(true); scheduleSyncDeck(); }
+  return true;
+}
+
 async function pollDeck() {
-  if (editMode) return;
+  if (editMode || syncing || document.visibilityState === 'hidden') return;
   try {
-    const data = await readDeckFromPages();
-    if (!data) return;
-    const strip = d => JSON.stringify(d.map(t => ({ ...t, projekty: t.projekty.map(({ html, ...rest }) => rest) })));
-    if (strip(data) === strip(DECK)) return;
-    adoptRemoteDeck(data);
-    await attachLocalHtml();
-    render();
+    const remote = await readDeck();
+    if (!remote) return;
+    if (remote.sha) deckSha = remote.sha;
+    if (applyRemoteDeck(remote.data)) { await attachLocalHtml(); render(); }
   } catch {}
 }
 
@@ -1131,6 +1219,28 @@ async function readDeckFromPages() {
   return r.json();
 }
 
+// Čerstvý deck přímo z GitHub API (Pages se po commitu aktualizují s až několikaminutovým zpožděním)
+async function readDeckFromApi() {
+  const { token, owner, repo } = ghCfg;
+  const r = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/deck-data.json?ref=main&_=${Date.now()}`, {
+    headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store'
+  });
+  if (r.status === 404) return null;
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const f = await r.json();
+  const text = new TextDecoder().decode(Uint8Array.from(atob(f.content.replace(/\s/g, '')), c => c.charCodeAt(0)));
+  return { data: JSON.parse(text), sha: f.sha };
+}
+
+// S připojeným GitHubem čte vždy aktuální verzi z API, jinak veřejnou kopii z Pages
+async function readDeck() {
+  if (ghOk()) {
+    try { return await readDeckFromApi(); } catch (e) { /* např. vypršený token → zkusit Pages */ }
+  }
+  const data = await readDeckFromPages();
+  return data ? { data, sha: null } : null;
+}
+
 async function getFileSha() {
   if (!ghOk()) return null;
   const { token, owner, repo } = ghCfg;
@@ -1148,15 +1258,16 @@ async function init() {
   render(); // hned ukázat uloženou kopii, aktuální deck se doplní po stažení
   setStatus('Načítám…');
   try {
-    // deck-data.json je veřejný soubor na stejné doméně, token ke čtení není potřeba
-    const data = await readDeckFromPages();
-    if (data) {
-      adoptRemoteDeck(data);
-      if (ghOk()) getFileSha().then(sha => { if (sha) deckSha = sha; });
-      setStatus('Systém online');
+    const remote = await readDeck();
+    if (remote) {
+      if (remote.sha) deckSha = remote.sha;
+      else if (ghOk()) getFileSha().then(sha => { if (sha) deckSha = sha; });
+      applyRemoteDeck(remote.data);
+      setStatus(isDirty() ? (ghOk() ? 'Ukládám na GitHub…' : 'Uloženo jen v tomto prohlížeči – připoj GitHub') : 'Systém online');
     } else if (ghOk()) {
-      // deck-data.json na Pages ještě není — vytvořit ho
+      // deck-data.json na GitHubu ještě není — vytvořit ho
       setStatus('Vytvářím zálohu…');
+      setDirty(true);
       await ghSyncDeck();
     } else {
       setStatus('Offline kopie');
