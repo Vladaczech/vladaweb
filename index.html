@@ -139,6 +139,19 @@
   .btn-danger { color: var(--danger); border-color: rgba(255,122,138,0.28); }
   .btn-danger:hover { border-color: var(--danger); background: rgba(255,122,138,0.08); }
   .btn-sm { padding: 7px 12px; font-size: 11px; }
+  /* ── Upozornění na neplatný token ─────────────────── */
+  .token-alert {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin: 0 0 18px;
+    padding: 14px 18px; border-radius: 14px; border: 1px solid rgba(255,182,72,0.45);
+    background: rgba(255,182,72,0.08); color: var(--text); font-size: 14px; line-height: 1.45;
+  }
+  .token-alert[hidden] { display: none; }
+  .token-alert .ta-text { flex: 1 1 320px; min-width: 0; }
+  .token-alert b { color: var(--amber); }
+  .token-alert .ta-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .token-alert a.btn { text-decoration: none; }
+  .gh-help { font-size: 12px; color: var(--muted); margin: -4px 0 4px; line-height: 1.5; }
+  .gh-help a { color: var(--cyan); }
   .icon-btn {
     width: 32px; height: 32px; padding: 0; display: grid; place-items: center; border-radius: 9px;
     background: var(--panel); border: 1px solid var(--line); color: var(--muted); cursor: pointer; transition: all 0.18s;
@@ -302,6 +315,14 @@
       </div>
     </div>
 
+    <div class="token-alert" id="token-alert" role="alert" hidden>
+      <div class="ta-text"><b>Token pro GitHub je neplatný.</b> <span id="ta-detail">Vypršel, byl zrušen, nebo nemá právo zapisovat do repozitáře.</span> Úpravy decku se zatím ukládají jen v tomto prohlížeči a odešlou se, jakmile vložíš nový token.</div>
+      <div class="ta-actions">
+        <a class="btn btn-sm token-new-link" target="_blank" rel="noopener">Vytvořit nový token ↗</a>
+        <button class="btn btn-primary btn-sm" id="ta-open">Vložit token</button>
+      </div>
+    </div>
+
     <header class="hero">
       <span class="eyebrow">Osobní testovací prostředí</span>
       <h1>Vibe Code <span class="slash">// Deck</span></h1>
@@ -424,9 +445,10 @@
       <h3>GitHub nastavení</h3>
       <p class="sub">Po propojení se uploaded HTML soubory automaticky ukládají do tvého repozitáře a jsou dostupné na všech zařízeních.</p>
       <div class="field">
-        <label for="gh-token">Personal Access Token <span style="color:var(--muted-2)">(repo scope)</span></label>
-        <input id="gh-token" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
+        <label for="gh-token">Personal Access Token <span style="color:var(--muted-2)">(Contents: Read and write)</span></label>
+        <input id="gh-token" type="password" placeholder="github_pat_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
       </div>
+      <p class="gh-help"><a class="token-new-link" target="_blank" rel="noopener">Vytvořit nový token ↗</a> – Expiration: <b>No expiration</b>, Repository access: jen <b>vladaweb</b>, Permissions → Contents: <b>Read and write</b>. Pak token zkopíruj sem.</p>
       <div class="field">
         <label for="gh-owner">GitHub uživatel</label>
         <input id="gh-owner" type="text" placeholder="Vladaczech">
@@ -803,6 +825,37 @@ const GH_KEY = 'vibe-deck-gh';
 let ghCfg = JSON.parse(localStorage.getItem(GH_KEY) || 'null');
 
 function ghOk() { return !!(ghCfg && ghCfg.token && ghCfg.owner && ghCfg.repo); }
+
+/* ── Neplatný token ──────────────────────────────────
+   401 = token vypršel / byl zrušen, 403 (mimo vyčerpaný limit) = chybí oprávnění. */
+let tokenBad = false;
+function isAuthError(r) {
+  return r.status === 401 || (r.status === 403 && r.headers.get('x-ratelimit-remaining') !== '0');
+}
+function tokenUrl() {
+  const owner = (ghCfg && ghCfg.owner) || 'Vladaczech';
+  return 'https://github.com/settings/personal-access-tokens/new?name=vladaweb-deck'
+    + '&description=' + encodeURIComponent('Ukládání decku z webu vladaweb')
+    + '&target_name=' + encodeURIComponent(owner) + '&expires_in=none&contents=write';
+}
+function showTokenAlert(bad, status) {
+  tokenBad = bad;
+  document.getElementById('token-alert').hidden = !bad;
+  if (bad) {
+    document.getElementById('ta-detail').textContent = status === 403
+      ? 'Nemá oprávnění zapisovat do repozitáře (potřebuje Contents: Read and write).'
+      : 'Vypršel nebo byl zrušen.';
+    setStatus('Neplatný token GitHubu');
+  }
+}
+// Projde odpověď GitHub API: při chybě tokenu ukáže upozornění, při úspěchu ho skryje
+function ghCheck(r) {
+  if (isAuthError(r)) { showTokenAlert(true, r.status); const e = new Error('Neplatný token GitHubu'); e.auth = true; throw e; }
+  if (r.ok && tokenBad) showTokenAlert(false);
+  return r;
+}
+document.querySelectorAll('.token-new-link').forEach(a => { a.href = tokenUrl(); });
+document.getElementById('ta-open').addEventListener('click', () => document.getElementById('btn-settings').click());
 function ghLabel() { document.getElementById('gh-btn-label').textContent = ghOk() ? '✓ GitHub' : 'GitHub'; }
 ghLabel();
 
@@ -817,6 +870,7 @@ async function ghCommit(filename, html) {
     headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ message: `Add: ${filename}`, content: toB64(html) })
   });
+  ghCheck(res);
   if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'GitHub API chyba'); }
   return `./projects/${filename}`;
 }
@@ -854,10 +908,15 @@ document.getElementById('gh-save').addEventListener('click', async () => {
   document.getElementById('gh-err').textContent = 'Ověřuji připojení…';
   try {
     const r = await fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers: { 'Authorization': `Bearer ${token}` } });
-    if (!r.ok) throw new Error('Repozitář nenalezen nebo neplatný token.');
+    if (r.status === 401) throw new Error('Token je neplatný nebo vypršel.');
+    if (!r.ok) throw new Error('Repozitář nenalezen, nebo k němu token nemá přístup.');
+    const perms = (await r.json()).permissions;
+    if (perms && !perms.push) throw new Error('Token nemá právo zapisovat (Contents: Read and write).');
     ghCfg = { token, owner, repo };
     localStorage.setItem(GH_KEY, JSON.stringify(ghCfg));
     ghLabel();
+    showTokenAlert(false);
+    document.querySelectorAll('.token-new-link').forEach(a => { a.href = tokenUrl(); });
     document.getElementById('gh-err').textContent = 'Načítám aktuální deck…';
     // Nejdřív stáhnout to, co je na GitHubu. Nahrávat jen pokud tam deck ještě není
     // nebo pokud tu jsou projekty uložené jen v tomto prohlížeči.
@@ -913,7 +972,7 @@ async function doSyncDeck() {
   setStatus('Ukládám na GitHub…');
   try {
     if (!deckSha) deckSha = await getFileSha();
-    let r = await putDeck(stripDeck(DECK), deckSha);
+    let r = ghCheck(await putDeck(stripDeck(DECK), deckSha));
     if (r.status === 409 || r.status === 422) {
       // Na GitHubu je mezitím novější verze (třeba od Clauda) — sloučit a zkusit znovu
       const remote = await readDeckFromApi();
@@ -922,7 +981,7 @@ async function doSyncDeck() {
         deckSha = remote.sha;
         saveLocal(); render();
       }
-      r = await putDeck(stripDeck(DECK), deckSha);
+      r = ghCheck(await putDeck(stripDeck(DECK), deckSha));
     }
     if (!r.ok) throw new Error('HTTP ' + r.status);
     deckSha = (await r.json()).content.sha;
@@ -930,6 +989,8 @@ async function doSyncDeck() {
     setDirty(false);
     setStatus(editMode ? 'Režim úprav' : 'Uloženo na GitHub', editMode);
   } catch (e) {
+    // Se špatným tokenem nemá smysl to zkoušet znovu – počká se na nový token
+    if (e.auth) return;
     setStatus('Chyba ukládání – zkusím znovu');
     clearTimeout(syncTimer);
     syncTimer = setTimeout(ghSyncDeck, 10000);
@@ -1225,6 +1286,7 @@ async function readDeckFromApi() {
   const r = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/deck-data.json?ref=main&_=${Date.now()}`, {
     headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store'
   });
+  ghCheck(r);
   if (r.status === 404) return null;
   if (!r.ok) throw new Error('HTTP ' + r.status);
   const f = await r.json();
@@ -1263,7 +1325,8 @@ async function init() {
       if (remote.sha) deckSha = remote.sha;
       else if (ghOk()) getFileSha().then(sha => { if (sha) deckSha = sha; });
       applyRemoteDeck(remote.data);
-      setStatus(isDirty() ? (ghOk() ? 'Ukládám na GitHub…' : 'Uloženo jen v tomto prohlížeči – připoj GitHub') : 'Systém online');
+      if (tokenBad) setStatus('Neplatný token GitHubu');
+      else setStatus(isDirty() ? (ghOk() ? 'Ukládám na GitHub…' : 'Uloženo jen v tomto prohlížeči – připoj GitHub') : 'Systém online');
     } else if (ghOk()) {
       // deck-data.json na GitHubu ještě není — vytvořit ho
       setStatus('Vytvářím zálohu…');
