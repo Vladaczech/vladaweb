@@ -128,6 +128,27 @@ nav button.on svg{filter:drop-shadow(0 0 6px rgba(57,255,136,.8))}
 .set.ok .n{color:var(--neon)}
 .set-actions{display:flex;gap:6px;margin-top:8px}
 .set-actions .btn{flex:1}
+.chg{font-size:12.5px;color:var(--muted);margin-top:4px;font-family:var(--mono)}
+.chg span{color:var(--muted2)}
+.chg b{color:var(--neon);font-weight:500}
+.reco.down .chg b{color:var(--warn)}
+.xnote{margin-top:8px;font-size:13px;color:#d9d9d9;padding:8px 10px;border-left:2px solid var(--neon-d);background:var(--panel2);border-radius:0 8px 8px 0}
+.xnote span{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2)}
+.ctabs{display:flex;gap:6px;margin-top:8px}
+.ctabs button{flex:1;padding:8px;border-radius:10px;border:1px solid var(--line);font-family:var(--mono);font-size:11px;color:var(--muted)}
+.ctabs button.on{color:var(--neon);border-color:var(--neon-d);background:rgba(57,255,136,.05)}
+.cpanel{margin-top:8px;padding:10px;border-radius:12px;background:#080808;border:1px solid var(--line)}
+.exc textarea,.cpanel textarea{min-height:56px;font-family:var(--sans);font-size:15px}
+.xh-list{display:grid}
+.xh{display:flex;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
+.xh:last-child{border-bottom:0}
+.xh-d{width:46px;flex:none;font-family:var(--mono);font-size:12px;color:var(--text)}
+.xh-d span{display:block;font-size:10px;color:var(--muted2)}
+.xh-b{flex:1;min-width:0}
+.xh-s{font-family:var(--mono);font-size:13px;line-height:1.5;word-break:break-word}
+.xh-m{font-family:var(--mono);font-size:10.5px;color:var(--muted2);margin-top:2px}
+.xh-m .up{color:var(--neon)}.xh-m .dn{color:var(--warn)}.xh-m .eqm{color:var(--muted)}
+.xh-n{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:3px}
 .legend-rir{font-size:11px;color:var(--muted2);margin-top:8px;font-family:var(--mono)}
 
 /* library */
@@ -539,9 +560,11 @@ const ls = { get(k) { try { return localStorage.getItem(k); } catch { return nul
 
 let S = null;                 // dešifrovaný stav
 let view = 'train';
-const ui = { genGroups: [], genDur: 60, plan: null, libGroup: 'Vše', libQ: '', pickGroup: 'Vše', pickQ: '', progEx: null, progMetric: 'e1', histOpen: null, setOpen: false };
+const ui = { cardOpen: {}, genGroups: [], genDur: 60, plan: null, libGroup: 'Vše', libQ: '', pickGroup: 'Vše', pickQ: '', progEx: null, progMetric: 'e1', histOpen: null, setOpen: false };
 
-function blank() { return { v: 1, w: [], cx: [], set: { rest: 120, inc: {} }, setU: 0 }; }
+function blank() { return { v: 1, w: [], cx: [], notes: [], set: { rest: 120, inc: {} }, setU: 0 }; }
+const getNote = id => ((S.notes || []).find(n => n.id === id) || {}).t || '';
+function setNote(id, t) { S.notes = S.notes || []; let n = S.notes.find(x => x.id === id); if (!n) { n = { id }; S.notes.push(n); } n.t = t; n.u = now(); dirty.notes.add(id); commit(); }
 function allEx() { return [...EX, ...(S ? S.cx.filter(c => !c.del) : [])]; }
 function getEx(id) { return allEx().find(e => e.id === id) || (S && S.cx.find(c => c.id === id)) || { id, n: 'Neznámý cvik', g: 'Core', eq: 'bw', lo: 8, hi: 12, m: [], m2: [] }; }
 function incOf(ex) { return ex.inc ?? (S.set.inc && S.set.inc[ex.eq]) ?? EQ[ex.eq]?.inc ?? 2.5; }
@@ -573,16 +596,16 @@ const FIREBASE_CONFIG = {
 const K_FB = 'posilovna-fb';
 function fbConfig() { if (FIREBASE_CONFIG) return FIREBASE_CONFIG; try { return JSON.parse(ls.get(K_FB) || 'null'); } catch { return null; } }
 let auth = null, db = null, USER = null, PROFILE = null, unsubs = [], loaded = false;
-const dirty = { w: new Set(), cx: new Set(), set: false };
+const dirty = { w: new Set(), cx: new Set(), notes: new Set(), set: false };
 const userDoc = () => db.collection('users').doc(USER.uid);
 const nameKey = n => n.trim().toLowerCase();
 const clean = o => JSON.parse(JSON.stringify(o));
 const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
 
-function markAll() { S.w.forEach(w => dirty.w.add(w.id)); S.cx.forEach(c => dirty.cx.add(c.id)); dirty.set = true; }
+function markAll() { S.w.forEach(w => dirty.w.add(w.id)); S.cx.forEach(c => dirty.cx.add(c.id)); (S.notes || []).forEach(n => dirty.notes.add(n.id)); dirty.set = true; }
 function mergeState(a, b) {
   const pick = (x, y) => { const m = new Map(); for (const it of [...x, ...y]) { const o = m.get(it.id); if (!o || (it.u || 0) > (o.u || 0)) m.set(it.id, it); } return [...m.values()]; };
-  return { v: 1, w: pick(a.w || [], b.w || []), cx: pick(a.cx || [], b.cx || []), set: (a.setU || 0) >= (b.setU || 0) ? a.set : b.set, setU: Math.max(a.setU || 0, b.setU || 0) };
+  return { v: 1, w: pick(a.w || [], b.w || []), cx: pick(a.cx || [], b.cx || []), notes: pick(a.notes || [], b.notes || []), set: (a.setU || 0) >= (b.setU || 0) ? a.set : b.set, setU: Math.max(a.setU || 0, b.setU || 0) };
 }
 
 /* ── Ukládání: změněné záznamy se po chvíli odešlou dávkou; offline je Firestore podrží ── */
@@ -598,8 +621,9 @@ async function flush() {
   const ops = [];
   for (const id of dirty.w) { const w = S.w.find(x => x.id === id); if (w) ops.push([userDoc().collection('workouts').doc(id), clean(w)]); }
   for (const id of dirty.cx) { const c = S.cx.find(x => x.id === id); if (c) ops.push([userDoc().collection('cx').doc(id), clean(c)]); }
+  for (const id of dirty.notes) { const n = (S.notes || []).find(x => x.id === id); if (n) ops.push([userDoc().collection('notes').doc(id), clean(n)]); }
   if (dirty.set) ops.push([userDoc(), { set: clean(S.set), setU: S.setU }, true]);
-  dirty.w.clear(); dirty.cx.clear(); dirty.set = false;
+  dirty.w.clear(); dirty.cx.clear(); dirty.notes.clear(); dirty.set = false;
   if (!ops.length) { syncStatus(navigator.onLine ? 'ok' : 'off'); return; }
   const commits = [];
   for (let i = 0; i < ops.length; i += 400) {
@@ -623,8 +647,8 @@ function applyChanges(q, arr, pend) {
 function subscribe() {
   loaded = false;
   let got = 0;
-  const once = () => { let d = false; return () => { if (!d) { d = true; if (++got === 3) { loaded = true; afterLoad(); } } }; };
-  const r1 = once(), r2 = once(), r3 = once();
+  const once = () => { let d = false; return () => { if (!d) { d = true; if (++got === 4) { loaded = true; afterLoad(); } } }; };
+  const r1 = once(), r2 = once(), r3 = once(), r4 = once();
   const onErr = e => { syncStatus('err', fbErr(e)); if (!loaded) showLock(fbErr(e)); };
   unsubs.push(userDoc().onSnapshot(d => {
     const v = d.data() || {};
@@ -634,6 +658,7 @@ function subscribe() {
   }, onErr));
   unsubs.push(userDoc().collection('workouts').onSnapshot(q => { applyChanges(q, S.w, dirty.w); r2(); if (loaded && !q.metadata.hasPendingWrites) safeRender(); }, onErr));
   unsubs.push(userDoc().collection('cx').onSnapshot(q => { applyChanges(q, S.cx, dirty.cx); r3(); if (loaded && !q.metadata.hasPendingWrites) safeRender(); }, onErr));
+  unsubs.push(userDoc().collection('notes').onSnapshot(q => { S.notes = S.notes || []; applyChanges(q, S.notes, dirty.notes); r4(); if (loaded && !q.metadata.hasPendingWrites) safeRender(); }, onErr));
 }
 async function afterLoad() { showApp(); await migrateLocal(); }
 // Přenos dat z předchozí verze (šifrovaně v tomto prohlížeči)
@@ -702,8 +727,8 @@ const maskEmail = e => e.replace(/^(.)(.*)(@.*)$/, (_, a, b, c) => a + '•'.rep
    ═══════════════════════════════════════════════════════════════ */
 function sessions(exId, excludeId) {
   return doneWorkouts().filter(w => w.id !== excludeId).map(w => {
-    const sets = w.it.filter(i => i.ex === exId).flatMap(doneSets);
-    return sets.length ? { d: w.d, sets, wid: w.id } : null;
+    const its = w.it.filter(i => i.ex === exId), sets = its.flatMap(doneSets);
+    return sets.length ? { d: w.d, sets, wid: w.id, note: its.map(i => i.note).filter(Boolean).join(' · ') } : null;
   }).filter(Boolean);
 }
 const bestE1 = sets => Math.max(0, ...sets.map(e1rm));
@@ -1037,10 +1062,37 @@ function vTrain() {
     <div class="row"><button class="btn p wide big" data-act="finish">✓ Dokončit trénink</button></div>
     <div class="row" style="margin-top:8px"><button class="btn ghost wide sm" data-act="discard">Zahodit trénink</button></div>`;
 }
+const setTxt = (s, ex) => `${s.w > 0 ? fmt(s.w, 2) + '×' : ''}${s.r}${ex.unit && !(s.w > 0) ? ' ' + ex.unit : ''}${s.q === 0 ? '<span class="f-mark">S</span>' : ''}`;
+const topSet = sets => sets.reduce((a, s) => s.w > a.w || (s.w === a.w && s.r > a.r) ? s : a, sets[0]);
+function recoBox(rc, ex, kicker) {
+  const timed = ex.unit === 's';
+  const lab = kicker || { up: rc.w > 0 && rc.last && Math.max(...rc.last.sets.map(s => s.w)) === 0 ? '↑ Přidej zátěž' : timed ? '↑ Prodluž' : '↑ Přidej kg', reps: timed ? '↗ Prodluž čas' : '↗ Přidej opakování', hold: '→ Drž a zopakuj', down: '↓ Uber kg', new: 'Start' }[rc.kind];
+  let chg = '';
+  if (rc.last) {
+    const t = topSet(rc.last.sets), minR = Math.min(...rc.last.sets.filter(s => s.w === t.w).map(s => s.r));
+    const dw = (rc.w ?? t.w) - t.w, dr = rc.r - minR;
+    const what = rc.kind === 'up' || rc.kind === 'down' ? `${dw > 0 ? '+' : '−'}${fmt(Math.abs(dw), 2)} kg` : dr > 0 ? `+${dr} ${unitOf(ex)} v nejslabší sérii` : 'stejná váha i opakování';
+    chg = `<div class="chg"><span>Minule</span> ${t.w > 0 ? fmt(t.w, 2) + ' kg × ' : ''}${minR}–${Math.max(...rc.last.sets.filter(s => s.w === t.w).map(s => s.r))} <span>→ Teď</span> <b>${what}</b></div>`;
+  }
+  return `<div class="reco ${rc.kind === 'down' ? 'down' : rc.kind === 'new' ? 'new' : ''}"><div class="rt"><span class="k">${lab}</span><b>${esc(rc.head)}</b><span class="mono muted" style="font-size:11px">${rc.n} série</span></div>${chg}<p>${esc(rc.txt)}</p></div>`;
+}
+function exHistory(ex, excludeId, limit = 8) {
+  const H = sessions(ex.id, excludeId);
+  if (!H.length) return '<div class="empty" style="padding:14px">Tenhle cvik jsi ještě nedělal.</div>';
+  return `<div class="xh-list">${H.slice(0, limit).map((h, k) => {
+    const prev = H[k + 1], e = bestE1(h.sets), pe = prev ? bestE1(prev.sets) : 0;
+    const vol = h.sets.reduce((a, s) => a + s.w * s.r, 0);
+    const trend = pe && e ? (e > pe * 1.005 ? '<span class="up">▲</span>' : e < pe * 0.995 ? '<span class="dn">▼</span>' : '<span class="eqm">=</span>') : '';
+    return `<div class="xh"><div class="xh-d">${dShort(h.d)}<span>${new Date(h.d).toLocaleDateString('cs-CZ', { weekday: 'short' })}</span></div>
+      <div class="xh-b"><div class="xh-s">${h.sets.map(s => setTxt(s, ex)).join(' · ')}</div>
+      <div class="xh-m">${pl(h.sets.length, 'série', 'série', 'sérií')}${vol > 0 ? ` · ${fmtInt(vol)} kg objem` : ''}${e > 0 ? ` · 1RM ${fmt(e, 1)} ${trend}` : ''}</div>
+      ${h.note ? `<div class="xh-n">„${esc(h.note)}“</div>` : ''}</div></div>`;
+  }).join('')}${H.length > limit ? `<div class="note" style="padding:8px 0 0">…a ${H.length - limit} starších – celé v detailu cviku.</div>` : ''}</div>`;
+}
 function exCard(w, it, i) {
   const ex = getEx(it.ex), rc = recommend(ex, w.id);
   const u = unitOf(ex);
-  const lastTxt = rc.last ? `Minule ${dShort(rc.last.d)}: ` + rc.last.sets.map(s => `${s.w > 0 ? fmt(s.w, 2) + '×' : ''}${s.r}${s.q === 0 ? '<span class="f-mark">S</span>' : ''}`).join(' · ') : '';
+  const nH = sessions(ex.id, w.id).length, open = ui.cardOpen[it.ex], pin = getNote(ex.id);
   const rows = it.s.map((s, j) => `<div class="set ${s.ok ? 'ok' : ''}" data-i="${i}" data-j="${j}">
       <span class="n">${j + 1}</span>
       <input inputmode="decimal" data-f="w" value="${s.w ?? ''}" placeholder="${ex.eq === 'cardio' ? '–' : ex.eq === 'bw' ? '+kg' : 'kg'}" aria-label="Váha série ${j + 1}">
@@ -1052,8 +1104,13 @@ function exCard(w, it, i) {
     <div class="exc-h"><button data-act="detail" data-ex="${ex.id}" aria-label="Ukázka cviku">${figSvg(ex, 'fig-mini')}</button>
       <div class="nm"><b>${esc(ex.n)}</b><span>${ex.g.toUpperCase()} · ${ex.lo}–${ex.hi} ${u} · ${EQ[ex.eq]?.n || ''}</span></div>
       <button class="icon-btn" data-act="rmex" aria-label="Odebrat cvik">✕</button></div>
-    <div class="reco ${rc.kind === 'down' ? 'down' : rc.kind === 'new' ? 'new' : ''}"><div class="rt"><span class="k">${{ up: '↑ Přidej', reps: '↗ Opakování', hold: '→ Drž', down: '↓ Uber', new: 'Start' }[rc.kind]}</span><b>${esc(rc.head)}</b><span class="mono muted" style="font-size:11px">${rc.n} série</span></div><p>${esc(rc.txt)}</p></div>
-    ${lastTxt ? `<div class="last">${lastTxt}</div>` : ''}
+    ${recoBox(rc, ex)}
+    ${pin ? `<div class="xnote"><span>Poznámka</span>${esc(pin)}</div>` : ''}
+    <div class="ctabs"><button class="${open === 'hist' ? 'on' : ''}" data-act="ctab" data-t="hist">Historie${nH ? ` (${nH})` : ''}</button><button class="${open === 'note' ? 'on' : ''}" data-act="ctab" data-t="note">Poznámky${it.note ? ' •' : ''}</button></div>
+    ${open === 'hist' ? `<div class="cpanel">${exHistory(ex, w.id, 5)}</div>` : ''}
+    ${open === 'note' ? `<div class="cpanel stack">
+      <label class="field" style="margin:0"><span class="help">K cviku / stroji – ukáže se pokaždé (nastavení sedáku, úchop…)</span><textarea data-f="exnote" data-ex="${ex.id}" rows="2" placeholder="např. sedák 4, opěrka 2, široký úchop">${esc(pin)}</textarea></label>
+      <label class="field" style="margin:0"><span class="help">K dnešnímu tréninku – uloží se do historie</span><textarea data-f="itnote" rows="2" placeholder="např. bolelo rameno, šlo to lehce…">${esc(it.note || '')}</textarea></label></div>` : ''}
     <div class="sets"><div class="set-h"><span>#</span><span>${ex.eq === 'bw' ? '+kg' : 'kg'}</span><span>${unitHead(ex)}</span><span>rezerva</span><span></span></div>${rows}</div>
     <div class="set-actions"><button class="btn sm" data-act="addset">＋ Série</button><button class="btn sm ghost" data-act="rmset">− Série</button></div>
     ${i === 0 ? '<div class="legend-rir">Rezerva (RIR): S = selhání, 1–3+ = kolik opakování ještě zbývalo.</div>' : ''}
@@ -1170,7 +1227,11 @@ function detailSheet(id) {
     <div class="kv"><div class="stat"><div class="v">${ex.lo}–${ex.hi}</div><div class="l">rozsah ${unitOf(ex)}</div></div>
       <div class="stat"><div class="v">${best.v ? fmt(best.v, 1) : '–'}</div><div class="l">${isBW(ex) ? 'rekord' : 'odhad 1RM'}</div></div>
       <div class="stat"><div class="v">${H.length}</div><div class="l">tréninků</div></div></div>
-    <div class="reco ${rc.kind === 'down' ? 'down' : rc.kind === 'new' ? 'new' : ''}"><div class="rt"><span class="k">Příště</span><b>${esc(rc.head)}</b><span class="mono muted" style="font-size:11px">${rc.n} série</span></div><p>${esc(rc.txt)}</p></div>
+    ${recoBox(rc, ex)}
+    <h2 class="sec">Poznámka ke cviku</h2>
+    <textarea data-f="exnote" data-ex="${ex.id}" rows="2" style="min-height:64px" placeholder="např. sedák 4, opěrka 2, široký úchop">${esc(getNote(ex.id))}</textarea>
+    <h2 class="sec">Historie${H.length ? ` · ${H.length}×` : ''}</h2>
+    ${exHistory(ex, null, 30)}
     <div style="margin-top:16px" class="stack">
       ${ui.plan && !w ? '<button class="btn wide" data-act="planback">← Zpět na návrh</button>' : ''}
       ${w ? (inW ? '<button class="btn wide" disabled style="opacity:.5">Už je v tréninku</button>' : `<button class="btn p wide big" data-act="addex" data-ex="${ex.id}">＋ Přidat do tréninku</button>`) : `<button class="btn p wide big" data-act="startwith" data-ex="${ex.id}">▶ Začít trénink s tímto cvikem</button>`}
@@ -1203,7 +1264,7 @@ function histItem(w, expandable = true) {
       <div class="dt"><b>${t.getDate()}</b><span>${t.toLocaleDateString('cs-CZ', { month: 'short' })}</span></div>
       <div class="sm"><b>${esc(groups || 'Bez cviků')}</b><span>${pl(exs.length, 'cvik', 'cviky', 'cviků')} · ${pl(sets, 'série', 'série', 'sérií')} · ${fmtInt(vol)} kg${dur && dur > 0 && dur < 600 ? ` · ${dur} min` : ''}</span></div>
       <span class="mono muted" style="font-size:12px">${open ? '−' : '+'}</span></button>
-    ${open ? `<div class="hist-body">${exs.map(i => { const ex = getEx(i.ex); return `<div class="hist-ex"><b>${esc(ex.n)}</b><div>${doneSets(i).map(s => `${s.w > 0 ? fmt(s.w, 2) + ' kg × ' : ''}${s.r}${ex.unit ? ' ' + ex.unit : ''}${s.q === 0 ? ' <span class="f-mark">selhání</span>' : s.q != null ? ` <span class="muted">RIR ${s.q === 3 ? '3+' : s.q}</span>` : ''}`).join('<br>')}</div></div>`; }).join('')}
+    ${open ? `<div class="hist-body">${exs.map(i => { const ex = getEx(i.ex); return `<div class="hist-ex"><b>${esc(ex.n)}</b><div>${doneSets(i).map(s => `${s.w > 0 ? fmt(s.w, 2) + ' kg × ' : ''}${s.r}${ex.unit ? ' ' + ex.unit : ''}${s.q === 0 ? ' <span class="f-mark">selhání</span>' : s.q != null ? ` <span class="muted">RIR ${s.q === 3 ? '3+' : s.q}</span>` : ''}`).join('<br>')}${i.note ? `<br><i class="muted">„${esc(i.note)}“</i>` : ''}</div></div>`; }).join('')}
       ${w.note ? `<p class="note" style="margin-top:8px">${esc(w.note)}</p>` : ''}
       <div class="row" style="margin-top:12px"><button class="btn sm wide" data-act="editw" data-id="${w.id}">Upravit</button><button class="btn sm danger wide" data-act="delw" data-id="${w.id}">Smazat</button></div></div>` : ''}</div>`;
 }
@@ -1254,7 +1315,7 @@ function vProg() {
     <div class="seg" style="margin-top:10px">${metrics.map(([k, l]) => `<button class="${ui.progMetric === k ? 'on' : ''}" data-act="metric" data-m="${k}">${l}</button>`).join('')}</div>
     <div class="card" style="margin-top:10px;padding:10px 6px 4px"><div class="chart" id="chart"></div></div>
     <p class="note" style="margin-top:6px">${ui.progMetric === 'e1' ? 'Odhad 1RM = váha × (1 + (opakování + rezerva) / 30). Plný bod = trénink se selháním.' : ui.progMetric === 'vol' ? 'Objem = součet váha × opakování ve všech sériích.' : 'Plný bod = trénink se selháním.'}</p>
-    <div class="reco ${rc.kind === 'down' ? 'down' : rc.kind === 'new' ? 'new' : ''}" style="margin-top:12px"><div class="rt"><span class="k">Příště</span><b>${esc(rc.head)}</b><span class="mono muted" style="font-size:11px">${rc.n} série</span></div><p>${esc(rc.txt)}</p></div>
+    <div style="margin-top:12px">${recoBox(rc, ex)}</div>
     <h2 class="sec">Tabulka</h2>
     <div class="card" style="padding:4px 12px"><table class="tbl"><thead><tr><th>Datum</th><th>Série</th><th class="r">${bw ? 'Max' : '1RM'}</th></tr></thead><tbody>
       ${H.map(h => `<tr><td class="mono">${dShort(h.d)}</td><td>${h.sets.map(s => `${s.w > 0 ? fmt(s.w, 2) + '×' : ''}${s.r}${s.q === 0 ? '<span class="f-mark">S</span>' : ''}`).join(' ')}</td><td class="r">${bw ? Math.max(...h.sets.map(s => s.r)) : fmt(bestE1(h.sets), 1)}</td></tr>`).join('')}
@@ -1329,7 +1390,7 @@ function vSet() {
    ═══════════════════════════════════════════════════════════════ */
 let sheetKind = null;
 function openSheet(html, kind = 'x') { $('#sheet-c').innerHTML = html; $('#sheet').classList.add('on'); $('#sheet-bg').classList.add('on'); sheetKind = kind; }
-function closeSheet() { $('#sheet').classList.remove('on'); $('#sheet-bg').classList.remove('on'); sheetKind = null; setTimeout(() => { if (!sheetKind) $('#sheet-c').innerHTML = ''; }, 300); }
+function closeSheet() { const was = sheetKind; $('#sheet').classList.remove('on'); $('#sheet-bg').classList.remove('on'); sheetKind = null; setTimeout(() => { if (!sheetKind) $('#sheet-c').innerHTML = ''; }, 300); if (was && S) safeRender(); }
 let toastT;
 function toast(msg, ms = 2600) { const t = $('#toast'); t.innerHTML = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), ms); }
 const mmss = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
@@ -1391,6 +1452,7 @@ document.addEventListener('click', async e => {
     case 'planrm': ui.plan.items.splice(+b.dataset.i, 1); planSheet(); break;
     case 'planadd': { const P = ui.plan; const g = P.groups[Math.floor(Math.random() * P.groups.length)]; const e = pickExercise(g, P.items, true) || pickExercise(g, P.items, null); if (e) P.items.push({ ex: e.id, n: setsFor(e) }); planSheet(); break; }
     case 'planstart': startPlan(); break;
+    case 'ctab': { const k = getEx(it.ex).id; ui.cardOpen[k] = ui.cardOpen[k] === b.dataset.t ? null : b.dataset.t; render(); break; }
     case 'planback': planSheet(); break;
     case 'startwith': closeSheet(); startWorkout(b.dataset.ex); break;
     case 'pick': ui.pickQ = ''; pickSheet(); break;
@@ -1462,7 +1524,9 @@ document.addEventListener('input', e => {
     s[f] = num(e.target.value);
     if (s.ok && !(s.r > 0)) { s.ok = false; setEl.classList.remove('ok'); }
     touch(w); commit();
-  } else if (f === 'libq') { ui.libQ = e.target.value; const pos = e.target.selectionStart; render(); const i = $('[data-f=libq]'); i.focus(); i.setSelectionRange(pos, pos); }
+  } else if (f === 'exnote') { setNote(e.target.dataset.ex, e.target.value); }
+  else if (f === 'itnote') { const card = e.target.closest('.exc'); if (!w || !card) return; w.it[+card.dataset.i].note = e.target.value; touch(w); commit(); }
+  else if (f === 'libq') { ui.libQ = e.target.value; const pos = e.target.selectionStart; render(); const i = $('[data-f=libq]'); i.focus(); i.setSelectionRange(pos, pos); }
   else if (f === 'pickq') { ui.pickQ = e.target.value; const pos = e.target.selectionStart; pickSheet(); const i = $('[data-f=pickq]'); i.focus(); i.setSelectionRange(pos, pos); }
 });
 document.addEventListener('change', e => {
