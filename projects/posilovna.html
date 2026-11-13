@@ -332,7 +332,7 @@ const EQ = {
   sled: { n: 'Saně', inc: 10 },
   cardio: { n: 'Trenažér', inc: 10 },
 };
-const MUSCLE = { chest: 'Prsa', delts: 'Ramena', triceps: 'Triceps', biceps: 'Biceps', forearms: 'Předloktí', abs: 'Břicho', obliques: 'Šikmé břišní', quads: 'Kvadricepsy', hamstrings: 'Hamstringy', glutes: 'Hýždě', calves: 'Lýtka', lats: 'Široký zádový', traps: 'Trapézy', lowerback: 'Spodní záda' };
+const MUSCLE = { chest: 'Prsa', delts: 'Ramena', triceps: 'Triceps', biceps: 'Biceps', forearms: 'Předloktí', abs: 'Břicho', obliques: 'Šikmé břišní', quads: 'Kvadricepsy', hamstrings: 'Hamstringy', glutes: 'Hýždě', calves: 'Lýtka', lats: 'Široký zádový', traps: 'Trapézy', lowerback: 'Spodní záda', adductors: 'Přitahovače stehen' };
 
 const STAND = { H: [95, 70], t: 180, foot: [95, 146] };
 const EX = [
@@ -426,7 +426,7 @@ const EX = [
   { id: 'chestpress', n: 'Tlaky na hrudník na stroji', g: 'Hrudník', eq: 'machine', lo: 8, hi: 12, m: ['chest'], m2: ['triceps', 'delts'],
     tips: ['Sedačku nastav tak, aby madla byla ve výšce středu hrudníku.', 'Lopatky drž u opěrky, netlač rameny dopředu.', 'Vpředu lokty úplně nezamykej.'],
     a: { eq: 'handle', props: [['bench', 50, 112, 40], ['line', 54, 112, 48, 50]], A: { H: [70, 106], t: 178, hand: [90, 60], foot: [110, 146] }, B: { hand: [124, 60] } } },
-  { id: 'pecdeck', n: 'Peck deck (rozpažky na stroji)', g: 'Hrudník', eq: 'machine', lo: 10, hi: 15, m: ['chest'], m2: ['delts'],
+  { id: 'pecdeck', n: 'Peck deck – rozpažky', g: 'Hrudník', eq: 'machine', lo: 10, hi: 15, m: ['chest'], m2: ['delts'],
     tips: ['Lokty mírně pokrčené a ve výšce ramen.', 'Uprostřed madla stiskni a vteřinu podrž.', 'Zpátky jen do mírného protažení prsou.'],
     a: { front: true, thl: 14, props: [['bench', 70, 104, 60]], A: { H: [100, 100], t: 180, ua: 92, fa: 175, th: 0, sh: 0 }, B: { ua: 35, fa: 172 } } },
   { id: 'crossover', n: 'Kabelové křížení', g: 'Hrudník', eq: 'cable', lo: 10, hi: 15, m: ['chest'], m2: ['delts'],
@@ -465,7 +465,7 @@ const EX = [
   { id: 'machshoulder', n: 'Tlaky na ramena na stroji', g: 'Ramena', eq: 'machine', lo: 8, hi: 12, m: ['delts'], m2: ['triceps', 'traps'],
     tips: ['Madla na startu zhruba ve výšce brady.', 'Záda opřená, bedra neprohýbej.', 'Nahoře lokty nezamykej.'],
     a: { eq: 'handle', props: [['bench', 50, 112, 40], ['line', 54, 112, 48, 50]], A: { H: [70, 106], t: 178, hand: [84, 52], foot: [110, 146] }, B: { hand: [80, 8] } } },
-  { id: 'revfly', n: 'Zadní ramena na stroji', g: 'Ramena', eq: 'machine', lo: 12, hi: 20, m: ['delts', 'traps'], m2: [],
+  { id: 'revfly', n: 'Reverse peck deck – zadní ramena', g: 'Ramena', eq: 'machine', lo: 12, hi: 20, m: ['delts', 'traps'], m2: [],
     tips: ['Hrudník opřený o opěrku, ruce ve výšce ramen.', 'Veď pohyb lokty dozadu a do stran.', 'Lopatky na konci stáhni, nehoupej se.'],
     a: { front: true, thl: 14, props: [['bench', 70, 104, 60]], A: { H: [100, 100], t: 180, ua: 40, fa: 30, th: 0, sh: 0 }, B: { ua: 92, fa: 90 } } },
 
@@ -501,6 +501,19 @@ const EX = [
   { id: 'boxjump', n: 'Skoky na plyobox', g: 'Kondice', eq: 'bw', lo: 5, hi: 10, m: ['quads', 'glutes'], m2: ['calves'],
     tips: ['Odraz z podřepu se švihem paží.', 'Dopadni měkce na celé chodidlo, kolena ven.', 'Dolů raději sestup, ne seskok.'],
     a: { props: [['step', 100, 108, 50]], A: { H: [64, 104], t: 140, hand: [60, 120], foot: [70, 146] }, B: { H: [116, 72], t: 160, hand: [150, 60], foot: [124, 106] } } },
+  /* ── Stroje z fotek REGYM ── */
+  { id: 'rowmachine', n: 'Veslování na stroji s opěrkou hrudníku', g: 'Záda', eq: 'machine', lo: 8, hi: 12, m: ['lats', 'traps'], m2: ['biceps', 'delts'],
+    tips: ['Sedák nastav tak, aby madla byla ve výšce spodní části hrudníku.', 'Hrudník celou dobu na opěrce – záda nehoupou.', 'Táhni lokty dozadu a na konci stáhni lopatky.'],
+    a: { eq: 'handle', props: [['bench', 44, 114, 40], ['line', 88, 48, 92, 92]], A: { H: [64, 108], t: 168, hand: [124, 62], foot: [104, 146] }, B: { hand: [92, 72] } } },
+  { id: 'beltsquat', n: 'Belt squat (dřep s opaskem)', g: 'Nohy', eq: 'machine', lo: 8, hi: 12, m: ['quads', 'glutes'], m2: ['hamstrings', 'adductors'],
+    tips: ['Opasek na bocích, řetěz krátký tak, aby nahoře bylo napětí.', 'Drž se madla jen pro rovnováhu, trup vzpřímeně.', 'Záda nejsou zatížená – můžeš jít hluboko a s vyšším objemem.'],
+    a: { cable: [95, 152], cableAt: 'H', props: [['step', 58, 140, 76], ['line', 124, 140, 124, 36], ['line', 112, 36, 130, 36]], A: { H: [95, 62], t: 180, hand: [120, 38], foot: [95, 138] }, B: { H: [86, 100], t: 174 } } },
+  { id: 'adduction', n: 'Addukce na stroji', g: 'Nohy', eq: 'machine', lo: 12, hi: 20, m: ['adductors'], m2: ['glutes'],
+    tips: ['Stejný stroj jako abdukce – jen přehodíš opěrky dovnitř kolen.', 'Stehna stahuj k sobě a uprostřed vteřinu podrž.', 'Ven jen do příjemného protažení, pomalu.'],
+    a: { front: true, thl: 14, props: [['bench', 70, 104, 60]], A: { H: [100, 100], t: 180, ua: 14, fa: 2, th: 70, sh: 22 }, B: { th: 14, sh: 2 } } },
+  { id: 'seatedcalf', n: 'Výpony vsedě', g: 'Nohy', eq: 'machine', lo: 12, hi: 20, m: ['calves'], m2: [],
+    tips: ['Opěrka těsně na kolenou, špičky na hraně plošiny.', 'Dole pořádně protáhni, nahoře vteřinu podrž.', 'Vsedě pracuje hlavně hlubší sval lýtka (šikmý) – doplněk ke stojným výponům.'],
+    a: { eq: 'pad', eqAt: 'K', props: [['bench', 30, 110, 44], ['step', 92, 144, 24]], A: { H: [60, 104], t: 178, hand: [100, 92], th: 90, sh: 2, ft: 80 }, B: { H: [60, 97], th: 88, ft: 15, hand: [100, 85] } } },
 ];
 EX.forEach(e => { if (e.a) e.a.B = { ...e.a.A, ...e.a.B }; });
 
@@ -828,6 +841,7 @@ function eqShape(t) {
   if (t === 'dumbbell') return '<circle class="eq" r="6.5"/><circle class="eqh" r="2"/>';
   if (t === 'handle') return '<line class="eq" x1="-8" y1="0" x2="8" y2="0"/>';
   if (t === 'roller') return '<circle class="eq" r="6"/>';
+  if (t === 'pad') return '<rect class="eq" x="-15" y="-13" width="30" height="7" rx="3"/>';
   if (t === 'kettlebell') return '<path class="eq" d="M-4,2 Q0,-6 4,2" style="fill:none;stroke-width:2.5"/><circle class="eq" cy="8" r="7"/>';
   if (t === 'wheel') return '<circle class="eq" r="8"/><circle class="eqh" r="2.5"/>';
   if (t === 'sled') return '<line class="eq" x1="-6" y1="-16" x2="12" y2="14" style="stroke-width:5"/>';
@@ -880,8 +894,8 @@ function drawFig(svg, ex, p) {
   setL(g.ua, o.S, o.E); setL(g.fa, o.E, o.W);
   setL(g.th, o.H, o.K); setL(g.sh, o.K, o.A); setL(g.ft, o.A, o.T);
   if (o.K2) { setL(g.th2, o.H, o.K2); setL(g.sh2, o.K2, o.A2); setL(g.ft2, o.A2, o.T2); }
-  if (g.cab) setL(g.cab, an.cable, an.cableAt === 'A' ? o.A : o.W);
-  if (g.eq) { const at = an.eqAt === 'A' ? (an.eq === 'sled' ? o.T : o.A) : o.W; g.eq.setAttribute('transform', `translate(${at[0].toFixed(1)} ${at[1].toFixed(1)})`); }
+  if (g.cab) setL(g.cab, an.cable, an.cableAt === 'A' ? o.A : an.cableAt === 'H' ? o.H : o.W);
+  if (g.eq) { const at = an.eqAt === 'A' ? (an.eq === 'sled' ? o.T : o.A) : an.eqAt === 'K' ? o.K : o.W; g.eq.setAttribute('transform', `translate(${at[0].toFixed(1)} ${at[1].toFixed(1)})`); }
 }
 const RM = matchMedia('(prefers-reduced-motion: reduce)');
 const PERIOD = 2800;
@@ -903,7 +917,7 @@ function animLoop(t) {
 }
 
 /* ── Svalová mapa ── */
-const MF = [['traps', 42, 26, 5, 2.5, 28], ['delts', 34, 31, 7, 6, 0], ['chest', 42.5, 39, 8, 6, 0], ['biceps', 29, 48, 4, 8, 8], ['forearms', 25.5, 64, 3.5, 9, 12], ['abs', 50, 58, 6.5, 13, 0], ['obliques', 40, 60, 3, 9, 0], ['quads', 43, 92, 6.5, 16, -4], ['calves', 44, 124, 3.5, 10, 0]];
+const MF = [['traps', 42, 26, 5, 2.5, 28], ['delts', 34, 31, 7, 6, 0], ['chest', 42.5, 39, 8, 6, 0], ['biceps', 29, 48, 4, 8, 8], ['forearms', 25.5, 64, 3.5, 9, 12], ['abs', 50, 58, 6.5, 13, 0], ['obliques', 40, 60, 3, 9, 0], ['quads', 43, 92, 6.5, 16, -4], ['adductors', 47.5, 88, 2.2, 10, 0], ['calves', 44, 124, 3.5, 10, 0]];
 const MB = [['traps', 50, 32, 11, 8, 0], ['delts', 34, 31, 7, 6, 0], ['lats', 40.5, 48, 7, 12, 10], ['triceps', 29, 48, 4, 8, 8], ['forearms', 25.5, 64, 3.5, 9, 12], ['lowerback', 50, 64, 6, 7, 0], ['glutes', 44, 78, 7, 7, 0], ['hamstrings', 43, 98, 5.5, 13, -3], ['calves', 44, 124, 4.5, 10, 0]];
 function muscleMap(ex) {
   const fill = id => ex.m.includes(id) ? 'fill="#39ff88" style="filter:drop-shadow(0 0 4px rgba(57,255,136,.8))"' : (ex.m2 || []).includes(id) ? 'fill="#1d7d46"' : 'fill="#1c1c1c"';
@@ -1054,7 +1068,7 @@ function newSetsFor(ex, w, n) {
 /* ── Generátor tréninku ──
    Vícekloubové cviky první (pořadí ovlivňuje výkon), izolace potom, core a kondice na konec.
    Větší partie dostanou víc cviků. Preferuje cviky, které jsi dlouho nedělal, a různé hlavní svaly. */
-const ISO = new Set(['pecdeck', 'crossover', 'latraise', 'revfly', 'facepull', 'curl', 'hammer', 'pushdown', 'preacher', 'skull', 'ohtri', 'legext', 'legcurl', 'calf', 'abduction', 'kickback', 'shrug', 'hyperext']);
+const ISO = new Set(['adduction', 'seatedcalf', 'pecdeck', 'crossover', 'latraise', 'revfly', 'facepull', 'curl', 'hammer', 'pushdown', 'preacher', 'skull', 'ohtri', 'legext', 'legcurl', 'calf', 'abduction', 'kickback', 'shrug', 'hyperext']);
 const BIG = { 'Hrudník': 2, 'Záda': 2, 'Nohy': 2.5, 'Ramena': 1.2, 'Paže': 1.2, 'Core': 0.8, 'Kondice': 0.8 };
 const isIso = ex => ISO.has(ex.id) || ex.g === 'Core' || ex.g === 'Kondice';
 function lastDone(exId) { const h = sessions(exId)[0]; return h ? new Date(h.d).getTime() : 0; }
