@@ -1,0 +1,1490 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Finanční řízení podnikových inovací</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: záložky podle tématu, nad nimi výběr příkladu; vlevo zadání a čísla k úpravě, vpravo výsledek, tabulky a vyplněné vzorce */
+:root {
+  --bg: #f3f5f9;
+  --surface: #ffffff;
+  --surface-2: #eaeef6;
+  --fg: #14213d;
+  --muted: #5a6788;
+  --line: #d5dbe8;
+  --accent: #1b3f8f;
+  --accent-fg: #ffffff;
+  --interest: #c0701a;
+  --good: #1f7a4d;
+  --bad: #b3261e;
+  --c-pv: #1b3f8f;
+  --c-i: #b0306a;
+  --c-n: #0f7a74;
+  --c-a: #7a4bb8;
+  --c-u: #c0701a;
+  --font-body: "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1424; --surface: #151d33; --surface-2: #1d2744; --fg: #e6ebf7; --muted: #9aa7c7;
+    --line: #2a3556; --accent: #7fa2f0; --accent-fg: #0e1424; --interest: #e0963f; --good: #5fcf98; --bad: #f08a83;
+    --c-pv: #7fa2f0; --c-i: #f08ab5; --c-n: #4fd1c5; --c-a: #b79af0; --c-u: #e0963f;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1424; --surface: #151d33; --surface-2: #1d2744; --fg: #e6ebf7; --muted: #9aa7c7;
+  --line: #2a3556; --accent: #7fa2f0; --accent-fg: #0e1424; --interest: #e0963f; --good: #5fcf98; --bad: #f08a83;
+  --c-pv: #7fa2f0; --c-i: #f08ab5; --c-n: #4fd1c5; --c-a: #b79af0; --c-u: #e0963f;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.45; padding-inline: 16px; padding-block: 24px 40px; }
+.wrap { max-width: 1160px; margin-inline: auto; display: flex; flex-direction: column; gap: 18px; }
+header h1 { font-size: 1.7rem; font-weight: 700; margin: 0 0 4px; letter-spacing: -0.01em; text-wrap: balance; }
+header p { margin: 0; color: var(--muted); max-width: 70ch; }
+
+/* záložky témat */
+.tabs { display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--line); scrollbar-width: thin; }
+.tabs button { flex: none; background: transparent; color: var(--muted); border: 0; border-bottom: 3px solid transparent; border-radius: 0; padding: 10px 14px 9px; font-weight: 600; white-space: nowrap; }
+.tabs button[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+.tabs button:hover { filter: none; color: var(--fg); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chips button { background: var(--surface); color: var(--fg); border: 1px solid var(--line); border-radius: 99px; padding: 5px 13px; font-weight: 500; font-size: 0.88rem; }
+.chips button[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+
+.grid { display: grid; grid-template-columns: minmax(0, 330px) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 860px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 18px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.panel h2 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); font-weight: 600; margin: 0; }
+@media (min-width: 861px) { #side { position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow-y: auto; } }
+.src { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+.extitle { margin: 2px 0 0; font-size: 1.2rem; line-height: 1.25; text-wrap: balance; }
+.assign { margin: 0; font-size: 0.92rem; color: var(--muted); }
+.note { margin: 0; font-size: 0.82rem; color: var(--interest); }
+#form { display: flex; flex-direction: column; gap: 14px; }
+.field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.field label { font-weight: 600; font-size: 0.88rem; }
+.input-row { display: flex; align-items: stretch; }
+.input-row input { flex: 1; min-width: 0; border-radius: 4px 0 0 4px; }
+.input-row .unit { background: var(--surface-2); border: 1px solid var(--line); border-left: 0; border-radius: 0 4px 4px 0; padding: 0 10px; display: flex; align-items: center; color: var(--muted); font-size: 0.85rem; white-space: nowrap; }
+input[type="number"], select { font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 8px 10px; width: 100%; font-variant-numeric: tabular-nums; }
+input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.check { display: flex; gap: 8px; align-items: flex-start; font-size: 0.9rem; }
+.check input { margin-top: 3px; accent-color: var(--accent); }
+button { font: inherit; font-weight: 600; cursor: pointer; border-radius: 4px; padding: 8px 12px; border: 1px solid var(--accent); background: var(--accent); color: var(--accent-fg); }
+button.ghost { background: transparent; color: var(--accent); }
+button:hover { filter: brightness(1.08); }
+.btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.results { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.heads { display: flex; flex-wrap: wrap; gap: 10px 36px; }
+.head { display: flex; flex-direction: column; min-width: 0; }
+.head .big { font-size: 2rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; color: var(--accent); line-height: 1.15; overflow-wrap: anywhere; }
+.head .lbl { color: var(--muted); font-size: 0.88rem; }
+.verdict { margin: 0; font-weight: 600; max-width: 70ch; }
+dl.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px 20px; margin: 0; }
+dl.facts div { border-top: 1px solid var(--line); padding-top: 8px; min-width: 0; }
+dl.facts dt { font-size: 0.78rem; color: var(--muted); }
+dl.facts dd { margin: 2px 0 0; font-weight: 600; font-size: 1.05rem; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.status { display: inline-block; font-size: 0.8rem; font-weight: 600; padding: 2px 8px; border-radius: 99px; border: 1px solid currentColor; }
+.status.ok { color: var(--good); }
+.status.warn { color: var(--bad); }
+.chart-wrap { overflow-x: auto; }
+svg.chart { width: 100%; height: auto; display: block; min-width: 420px; }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.85rem; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 4px; }
+.table-wrap.tall { max-height: 460px; overflow-y: auto; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; font-size: 0.9rem; }
+th, td { padding: 8px 12px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--line); }
+th:first-child, td:first-child { text-align: left; }
+thead th { position: sticky; top: 0; background: var(--surface-2); font-size: 0.78rem; font-weight: 600; color: var(--muted); z-index: 1; }
+tfoot td { font-weight: 700; background: var(--surface-2); border-bottom: 0; }
+tr.adjusted td.pay { color: var(--interest); font-weight: 600; }
+table.amort tbody tr { cursor: pointer; }
+tbody tr.sel td { background: var(--surface-2); }
+.hint { color: var(--muted); font-size: 0.8rem; }
+input[type="range"] { width: 100%; accent-color: var(--accent); }
+.prow { display: flex; flex-direction: column; gap: 2px; border-top: 1px solid var(--line); padding-top: 10px; min-width: 0; }
+.prow .lbl { font-size: 0.8rem; color: var(--muted); }
+#periodMath { display: flex; flex-direction: column; gap: 10px; }
+.formulas { display: flex; flex-direction: column; gap: 10px; }
+.formulas .row { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.formulas .row span { font-size: 0.8rem; color: var(--muted); }
+code { font-family: var(--font-mono); font-size: 0.85rem; background: var(--surface-2); padding: 6px 8px; border-radius: 4px; display: block; overflow-x: auto; white-space: nowrap; }
+.err { color: var(--bad); font-weight: 600; }
+
+/* vyplněné vzorce */
+.v-pv { color: var(--c-pv); } .v-i { color: var(--c-i); } .v-n { color: var(--c-n); } .v-a { color: var(--c-a); } .v-u { color: var(--c-u); }
+math { font-family: "Latin Modern Math", "STIX Two Math", "Cambria Math", "Noto Sans Math", math, serif; font-size: 1.2rem; math-style: normal; }
+.eq { overflow-x: auto; overflow-y: hidden; padding-block: 3px; }
+.eq.res math { font-size: 1.3rem; }
+.step { display: grid; grid-template-columns: minmax(0, 210px) minmax(0, 1fr); gap: 6px 24px; padding-top: 16px; border-top: 1px solid var(--line); }
+@media (max-width: 860px) { .step { grid-template-columns: minmax(0, 1fr); } }
+.step h3 { margin: 0; font-size: 0.95rem; }
+.step .no { display: block; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 2px; font-weight: 600; }
+.step p { margin: 4px 0 0; color: var(--muted); font-size: 0.85rem; }
+.step .eqs { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.steps { display: flex; flex-direction: column; gap: 16px; }
+.symbols { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px 20px; }
+.sym-item { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+.sym { font-family: "Latin Modern Math", "STIX Two Text", "Cambria Math", Georgia, serif; font-style: italic; font-size: 1.15rem; min-width: 2.6rem; font-weight: 600; }
+.sym-item .what { color: var(--muted); font-size: 0.85rem; }
+/* přehled vzorců */
+.guide { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 8px 16px; }
+.guide button { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 9px 12px; font-weight: 500; }
+.guide button b { color: var(--accent); font-size: 0.88rem; }
+.fhead { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; }
+.badge { font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+.fform { display: flex; flex-direction: column; gap: 2px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+.fform .flbl { font-size: 0.78rem; color: var(--muted); margin-top: 6px; }
+.fform math { font-size: 1.45rem; }
+.fcols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 20px; align-items: start; }
+@media (max-width: 860px) { .fcols { grid-template-columns: minmax(0, 1fr); } }
+.fexp { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.fexp p { margin: 0; max-width: 65ch; }
+.used { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 0.82rem; color: var(--muted); }
+.used button { background: var(--bg); color: var(--accent); border: 1px solid var(--line); border-radius: 99px; padding: 2px 10px; font-weight: 600; font-size: 0.8rem; }
+.fcalc { display: flex; flex-direction: column; gap: 12px; min-width: 0; border: 1px solid var(--line); border-radius: 6px; padding: 14px; background: var(--bg); }
+.fcalc h4 { margin: 0; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); font-weight: 600; }
+.fin { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+.fres { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.fres .head .big { font-size: 1.6rem; }
+svg.spark { width: 100%; max-width: 440px; height: auto; display: block; }
+@media (prefers-reduced-motion: no-preference) { button { transition: filter .15s, color .15s; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Finanční řízení podnikových inovací</h1>
+    <p>Časová hodnota peněz: všechny příklady z cvičení 1 a z přednášky a přehled vzorců. U každého příkladu můžete měnit čísla a sledovat vyplněné vzorce.</p>
+  </header>
+
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Témata"></nav>
+  <div class="chips" id="chips" aria-label="Příklady"></div>
+
+  <div class="grid" id="mainGrid">
+    <div class="panel" id="side"></div>
+    <div class="results" id="out" aria-live="polite"></div>
+  </div>
+  <div class="results" id="ref" hidden></div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+
+  /* ---------- formátování ---------- */
+  function nf(x, d) { return new Intl.NumberFormat('cs-CZ', { minimumFractionDigits: 0, maximumFractionDigits: d == null ? 2 : d }).format(x); }
+  function fmt(x, cents) { return new Intl.NumberFormat('cs-CZ', { minimumFractionDigits: cents ? 2 : 0, maximumFractionDigits: cents ? 2 : 0 }).format(x); }
+  function kc(x, cents) { return fmt(x, cents) + ' Kč'; }
+  function mv(x) { return Math.abs(x - Math.round(x)) < 0.005 ? fmt(x, false) : fmt(x, true); }
+  function pcs(x, d) { return nf(x * 100, d == null ? 4 : d) + ' %'; }
+  function xl(x) { return String(+Number(x).toPrecision(12)).replace('.', ','); }
+
+  /* ---------- MathML ---------- */
+  var M = {
+    i: function (t, c) { return '<mi' + (c ? ' class="' + c + '"' : '') + '>' + t + '</mi>'; },
+    n: function (t, c) { return '<mn' + (c ? ' class="' + c + '"' : '') + '>' + t + '</mn>'; },
+    o: function (t) { return '<mo>' + t + '</mo>'; },
+    t: function (t) { return '<mtext>' + t + '</mtext>'; },
+    r: function () { return '<mrow>' + Array.prototype.join.call(arguments, '') + '</mrow>'; },
+    sub: function (a, b) { return '<msub>' + a + '<mrow>' + b + '</mrow></msub>'; },
+    sup: function (a, b) { return '<msup>' + a + '<mrow>' + b + '</mrow></msup>'; },
+    frac: function (a, b) { return '<mfrac><mrow>' + a + '</mrow><mrow>' + b + '</mrow></mfrac>'; },
+    par: function (x) { return '<mrow><mo>(</mo>' + x + '<mo>)</mo></mrow>'; },
+    sum: function (lo, hi) { return '<munderover><mo>∑</mo><mrow>' + lo + '</mrow><mrow>' + hi + '</mrow></munderover>'; },
+    line: function (x, cls) { return '<div class="eq ' + (cls || '') + '"><math>' + x + '</math></div>'; }
+  };
+  var E = M.line, mr = M.r;
+  var EQ = M.o('='), DOT = M.o('⋅'), PLUS = M.o('+'), MINUS = M.o('−'), KC = M.t(' Kč'), ONE = M.n(1);
+  var sPV = M.i('PV', 'v-pv'), sFV = M.i('FV', 'v-pv'), sI = M.i('i', 'v-i'), sNn = M.i('n', 'v-n'), sM = M.i('M', 'v-n'), sA = M.i('A', 'v-a'), sT = M.i('t');
+  function R(name) { return M.i(name, 'v-i'); }
+  function mnr(x, c, d) { return M.n(nf(x, d == null ? 8 : d), c); }
+  function mnv(x, c) { return M.n(mv(x), c); }
+  function mn2(x, c) { return M.n(fmt(x, true), c); }
+  function mnp(x, c, d) { return M.n(pcs(x, d), c); }
+  function onePlus(x) { return M.par(mr(ONE, PLUS, x)); }
+
+  /* ---------- pomocné stavební prvky ---------- */
+  function Steps() {
+    var no = 0, h = '';
+    return {
+      add: function (title, note, lines) {
+        h += '<div class="step"><div><span class="no">Krok ' + (++no) + '</span><h3>' + title + '</h3>' + (note ? '<p>' + note + '</p>' : '') + '</div><div class="eqs">' + lines.join('') + '</div></div>';
+      },
+      html: function () { return h; }
+    };
+  }
+  function panel(title, body) { return '<section class="panel"><h2>' + title + '</h2>' + body + '</section>'; }
+  function table(cols, rows, foot) {
+    return '<div class="table-wrap"><table><thead><tr>' + cols.map(function (c) { return '<th>' + c + '</th>'; }).join('') + '</tr></thead><tbody>' +
+      rows.map(function (r) { return '<tr>' + r.map(function (c) { return '<td>' + c + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody>' +
+      (foot ? '<tfoot><tr>' + foot.map(function (c) { return '<td>' + c + '</td>'; }).join('') + '</tr></tfoot>' : '') + '</table></div>';
+  }
+  function eff(nom, m) { return Math.pow(1 + nom / m, m) - 1; }
+
+  function taxStep(st, hum, t) {
+    var cum = hum * (1 - t);
+    st.add('Čistá úroková míra po zdanění', 'Je zadaná sazba daně, proto se počítá s čistou úrokovou mírou.', [
+      E(mr(R('ČÚM'), EQ, R('HÚM'), DOT, M.par(mr(ONE, MINUS, sT)))),
+      E(mr(EQ, mnr(hum, 'v-i'), DOT, M.par(mr(ONE, MINUS, mnr(t))))),
+      E(mr(EQ, mnp(cum, 'v-i', 4)), 'res')
+    ]);
+    return cum;
+  }
+  function growthTable(pv, i, n) {
+    var rows = [], open = pv;
+    for (var k = 1; k <= n; k++) {
+      var u = open * i, close = open + u;
+      rows.push([k, fmt(open, true), fmt(u, true), fmt(close, true)]);
+      open = close;
+    }
+    return table(['Rok', 'Počátek roku', 'Čistý úrok', 'Konec roku'], rows);
+  }
+
+  /* ---------- amortizační schéma ---------- */
+  function amortCompute(p) {
+    var i = p.rate / 100 / p.m;
+    var N = Math.round(p.years * p.m);
+    var A = i === 0 ? p.pv / N : p.pv * i / (1 - Math.pow(1 + i, -N));
+    var pay = A;
+    if (p.step > 0) {
+      var q = A / p.step;
+      var k = p.mode === 'up' ? Math.ceil(q - 1e-9) : p.mode === 'down' ? Math.floor(q + 1e-9) : Math.round(q);
+      pay = k * p.step;
+    }
+    var rows = [], open = p.pv, totalPay = 0, totalInt = 0;
+    for (var t = 1; t <= N; t++) {
+      var interest = open * i;
+      var due = open + interest;
+      var payment = Math.min(pay, due);
+      if (t === N && p.adjust) { payment = due; }
+      var adjusted = Math.abs(payment - pay) > 1e-9;
+      var principal = payment - interest;
+      var close = open - principal;
+      if (Math.abs(close) < 1e-6) close = 0;
+      rows.push({ t: t, open: open, interest: interest, payment: payment, principal: principal, close: close, adjusted: adjusted });
+      totalPay += payment; totalInt += interest;
+      open = close;
+    }
+    return { i: i, N: N, A: A, pay: pay, rows: rows, totalPay: totalPay, totalInt: totalInt, end: open };
+  }
+  function niceMax(v) {
+    if (v <= 0) return 1;
+    var e = Math.pow(10, Math.floor(Math.log10(v))), f = v / e;
+    return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * e;
+  }
+  function shortNum(v) {
+    if (v >= 1e6) return nf(+(v / 1e6).toFixed(2), 2) + ' mil.';
+    if (v >= 1e3) return nf(+(v / 1e3).toFixed(1), 1) + ' tis.';
+    return String(v);
+  }
+  function chartSvg(r) {
+    var W = 720, H = 300, L = 66, Rr = 10, T = 12, B = 34, pw = W - L - Rr, ph = H - T - B, maxV = 0, out = '';
+    r.rows.forEach(function (x) { maxV = Math.max(maxV, x.payment); });
+    var top = niceMax(maxV * 1.02);
+    for (var k = 0; k <= 4; k++) {
+      var v = top * k / 4, y = T + ph - ph * k / 4;
+      out += '<line x1="' + L + '" x2="' + (W - Rr) + '" y1="' + y + '" y2="' + y + '" stroke="var(--line)" stroke-width="1"/>';
+      out += '<text x="' + (L - 8) + '" y="' + (y + 4) + '" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--font-body)">' + shortNum(v) + '</text>';
+    }
+    var n = r.rows.length, slot = pw / n, bw = Math.max(1, Math.min(56, slot * 0.62)), every = Math.max(1, Math.ceil(n / 12));
+    r.rows.forEach(function (x, idx) {
+      var cx = L + slot * idx + slot / 2, x0 = cx - bw / 2;
+      var hp = Math.max(0, x.principal) / top * ph, hi = Math.max(0, x.interest) / top * ph, yp = T + ph - hp, yi = yp - hi;
+      out += '<rect x="' + x0 + '" y="' + yp + '" width="' + bw + '" height="' + hp + '" fill="var(--accent)"/>';
+      out += '<rect x="' + x0 + '" y="' + yi + '" width="' + bw + '" height="' + hi + '" fill="var(--interest)"/>';
+      if (idx % every === 0 || idx === n - 1) out += '<text x="' + cx + '" y="' + (H - 12) + '" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--font-body)">' + x.t + '</text>';
+    });
+    out += '<line x1="' + L + '" x2="' + (W - Rr) + '" y1="' + (T + ph) + '" y2="' + (T + ph) + '" stroke="var(--muted)" stroke-width="1"/>';
+    return '<svg class="chart" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Sloupcový graf rozdělení platby na jistinu a úrok v jednotlivých obdobích">' + out + '</svg>';
+  }
+  function amortTable(r, p, t) {
+    var c = p.cents;
+    var rows = r.rows.map(function (x) {
+      var cls = ((x.adjusted ? 'adjusted' : '') + (x.t === t ? ' sel' : '')).trim();
+      return '<tr data-t="' + x.t + '"' + (cls ? ' class="' + cls + '"' : '') + '><td>' + x.t + '</td><td>' + fmt(x.open, c) + '</td><td>' + fmt(x.interest, c) + '</td><td class="pay">' + fmt(x.payment, c) + '</td><td>' + fmt(x.principal, c) + '</td><td>' + fmt(x.close, c) + '</td></tr>';
+    }).join('');
+    return '<div class="table-wrap tall"><table class="amort"><thead><tr><th>' + (p.m === 1 ? 'Rok' : 'Období') + '</th><th>Počátek období</th><th>Úrok</th><th>Platba</th><th>Splátka jistiny</th><th>Konec období</th></tr></thead><tbody>' + rows +
+      '</tbody><tfoot><tr><td>Celkem</td><td></td><td>' + fmt(r.totalInt, c) + '</td><td>' + fmt(r.totalPay, c) + '</td><td>' + fmt(r.totalPay - r.totalInt, c) + '</td><td></td></tr></tfoot></table></div>';
+  }
+  function periodHtml(r, t) {
+    var x = r.rows[t - 1];
+    var U = M.sub(M.i('U', 'v-u'), M.i('t')), S = M.sub(M.i('S', 'v-pv'), M.i('t')), At = M.sub(M.i('A', 'v-a'), M.i('t'));
+    var Dp = M.sub(M.i('D'), M.r(M.i('t'), MINUS, ONE)), Dt = M.sub(M.i('D'), M.i('t'));
+    var rows = [
+      ['Úrok z dluhu na začátku období', mr(U, EQ, Dp, DOT, sI, EQ, mnv(x.open), DOT, mnr(r.i, 'v-i'), EQ, mnv(x.interest, 'v-u'), KC)],
+      ['Platba v tomto období', mr(At, EQ, mnv(x.payment, 'v-a'), KC)],
+      ['Splátka jistiny', mr(S, EQ, At, MINUS, U, EQ, mnv(x.payment, 'v-a'), MINUS, mnv(x.interest, 'v-u'), EQ, mnv(x.principal, 'v-pv'), KC)],
+      ['Dluh na konci období', mr(Dt, EQ, Dp, MINUS, S, EQ, mnv(x.open), MINUS, mnv(x.principal, 'v-pv'), EQ, mnv(x.close), KC)]
+    ];
+    return rows.map(function (rw) { return '<div class="prow"><span class="lbl">' + rw[0] + '</span>' + E(rw[1]) + '</div>'; }).join('');
+  }
+  function amortSteps(p, r) {
+    var st = Steps(), i = r.i, N = r.N, m = p.m, nom = p.rate / 100, last = r.rows[N - 1];
+    var PV = sPV, I = sI, NN = M.i('N', 'v-n'), A = sA, D = M.i('D');
+    st.add('Sazba za jedno období', 'Roční nominální sazba se dělí počtem plateb za rok.', [
+      E(mr(I, EQ, M.frac(R('NÚM'), M.i('m')))),
+      E(mr(EQ, M.frac(mnr(nom), M.n(m)))),
+      E(mr(EQ, mnr(i, 'v-i'), EQ, mnp(i, 'v-i', 6)), 'res')
+    ]);
+    st.add('Počet plateb', 'Počet let krát počet plateb za rok.', [
+      E(mr(NN, EQ, M.i('n'), DOT, M.i('m'))),
+      E(mr(EQ, M.n(nf(p.years, 4)), DOT, M.n(m))),
+      E(mr(EQ, M.n(N, 'v-n')), 'res')
+    ]);
+    var v = Math.pow(1 + i, -N);
+    if (i === 0) {
+      st.add('Anuitní platba', 'Při nulové sazbě se půjčka dělí rovnoměrně.', [
+        E(mr(A, EQ, M.frac(PV, NN))), E(mr(EQ, M.frac(mnv(p.pv, 'v-pv'), M.n(N, 'v-n')))), E(mr(EQ, mnv(r.A, 'v-a'), KC), 'res')
+      ]);
+    } else {
+      var den = mr(ONE, MINUS, M.sup(onePlus(I), mr(MINUS, NN)));
+      var denNum = mr(ONE, MINUS, M.sup(onePlus(mnr(i, 'v-i')), mr(MINUS, M.n(N, 'v-n'))));
+      st.add('Anuitní platba', 'Stejná platba na konci každého období, která splatí půjčku i úroky. Mezivýsledek: (1 + i)<sup>−N</sup> = ' + nf(v, 8) + '.', [
+        E(mr(A, EQ, PV, DOT, M.frac(I, den))),
+        E(mr(EQ, mnv(p.pv, 'v-pv'), DOT, M.frac(mnr(i, 'v-i'), denNum))),
+        E(mr(EQ, mnv(p.pv, 'v-pv'), DOT, M.frac(mnr(i, 'v-i'), M.n(nf(1 - v, 8))))),
+        E(mr(EQ, mnv(r.A, 'v-a'), KC), 'res')
+      ]);
+    }
+    if (p.step > 0) {
+      var q = r.A / p.step;
+      var wrap = function (x) { return p.mode === 'up' ? M.o('⌈') + x + M.o('⌉') : p.mode === 'down' ? M.o('⌊') + x + M.o('⌋') : M.i('zaokr') + M.par(x); };
+      var kname = p.mode === 'up' ? 'nahoru' : p.mode === 'down' ? 'dolů' : 'na nejbližší násobek';
+      var Az = M.sub(A, M.i('z')), kk = Math.round(r.pay / p.step);
+      st.add('Zaokrouhlení platby', 'Platba se zaokrouhlí ' + kname + ' na celé ' + nf(p.step, 0) + ' Kč.', [
+        E(mr(Az, EQ, wrap(M.frac(A, M.i('k'))), DOT, M.i('k'))),
+        E(mr(EQ, wrap(M.frac(mnv(r.A, 'v-a'), M.n(nf(p.step, 0)))), DOT, M.n(nf(p.step, 0)))),
+        E(mr(EQ, wrap(M.n(nf(q, 4))), DOT, M.n(nf(p.step, 0)), EQ, M.n(nf(kk, 0)), DOT, M.n(nf(p.step, 0)))),
+        E(mr(EQ, mnv(r.pay, 'v-a'), KC), 'res')
+      ]);
+    }
+    if (p.adjust) {
+      var dprev = N > 1 ? r.rows[N - 2].close : p.pv, diff = last.payment - r.pay;
+      var cmp = p.step > 0 && Math.abs(diff) > 0.005 ? ' Oproti zaokrouhlené platbě je o ' + kc(Math.abs(diff), true) + (diff < 0 ? ' nižší.' : ' vyšší.') : '';
+      st.add('Úprava poslední platby', 'V posledním období se zaplatí celý zbývající dluh včetně úroku, takže konečný stav je nulový.' + cmp, [
+        E(mr(M.sub(A, NN), EQ, M.sub(D, mr(NN, MINUS, ONE)), DOT, onePlus(I))),
+        E(mr(EQ, mnv(dprev), DOT, onePlus(mnr(i, 'v-i')))),
+        E(mr(EQ, mnv(last.payment, 'v-a'), KC), 'res')
+      ]);
+    }
+    var terms = r.rows.map(function (x) { return { t: x.t, pay: x.payment, pv: x.payment / Math.pow(1 + i, x.t) }; });
+    var shown = terms.length <= 4 ? terms : terms.slice(0, 2).concat([null], terms.slice(-1));
+    var joinTerms = function (fn) {
+      var out = [];
+      shown.forEach(function (tm, idx) { if (idx > 0) out.push(PLUS); out.push(tm ? fn(tm) : M.o('…')); });
+      return out.join('');
+    };
+    var total = terms.reduce(function (s, x) { return s + x.pv; }, 0);
+    st.add('Kontrola současnou hodnotou', 'Všechny platby diskontované na dnešek musí dát výši půjčky.', [
+      E(mr(PV, EQ, M.sum(mr(M.i('t'), EQ, ONE), NN), M.frac(M.sub(A, M.i('t')), M.sup(onePlus(I), M.i('t'))))),
+      E(mr(EQ, joinTerms(function (tm) { return M.frac(mnv(tm.pay, 'v-a'), M.sup(M.n(nf(1 + i, 8)), M.n(tm.t))); }))),
+      E(mr(EQ, joinTerms(function (tm) { return mnv(tm.pv); }))),
+      E(mr(EQ, mnv(total, 'v-pv'), KC), 'res')
+    ]);
+    return st.html();
+  }
+  function amortRun(v) {
+    var p = { pv: v.pv, rate: v.rate, years: v.years, m: Math.round(v.m), step: v.step, mode: v.mode, adjust: v.adjust, cents: v.cents };
+    var r = amortCompute(p), c = p.cents, last = r.rows[r.N - 1], rounded = p.step > 0;
+    var endOk = Math.abs(r.end) < 0.005, diff = last.payment - r.pay;
+    var sazba = xl(p.rate / 100 / p.m), N = r.N, pv = p.pv;
+    var excel = [['Přesná platba', '=PLATBA(' + sazba + ';' + N + ';-' + pv + ')']];
+    if (rounded) {
+      var fn = p.mode === 'up' ? 'ZAOKROUHLIT.NAHORU' : p.mode === 'down' ? 'ZAOKROUHLIT.DOLŮ' : 'ZAOKROUHLIT';
+      excel.push(['Zaokrouhlená platba', '=' + fn + '(PLATBA(' + sazba + ';' + N + ';-' + pv + ');' + (-Math.round(Math.log10(p.step))) + ')']);
+    }
+    excel.push(['Úrok za období', '=počátek_období*' + sazba], ['Splátka jistiny', '=platba-úrok'], ['Konec období', '=počátek_období-splátka_jistiny'], ['Poslední platba (nulový konečný stav)', '=počátek_posledního_období*(1+' + sazba + ')']);
+    var extra =
+      panel('Z čeho se platba skládá', '<div class="legend"><span><i style="background:var(--accent)"></i>Splátka jistiny</span><span><i style="background:var(--interest)"></i>Úrok</span></div><div class="chart-wrap">' + chartSvg(r) + '</div>') +
+      panel('Amortizační schéma', amortTable(r, p, tSel) + '<span class="hint">Klepnutím na řádek vyberete období pro rozbor níže.</span>') +
+      panel('Rozbor jednoho období', '<div class="field"><label for="tsel">Období <output id="tval">' + tSel + ' z ' + r.N + '</output></label><input type="range" id="tsel" min="1" max="' + r.N + '" step="1" value="' + tSel + '"></div><div id="periodMath">' + periodHtml(r, tSel) + '</div>');
+    return {
+      heads: [{ v: kc(rounded ? r.pay : r.A, c), l: p.m === 1 ? 'platba na konci každého roku' : 'platba na konci každého období (' + (12 / p.m) + ' měs.)' }],
+      verdict: rounded && p.adjust && Math.abs(diff) > 0.005 ? 'Poslední platba je o ' + kc(Math.abs(diff), true) + (diff < 0 ? ' nižší' : ' vyšší') + ' než ostatní, aby konečný stav byl nulový.' : '',
+      facts: [
+        ['Přesná anuitní platba', kc(r.A, true)],
+        ['Zaokrouhlená platba', rounded ? kc(r.pay, c) : 'bez zaokrouhlení'],
+        ['Poslední platba', kc(last.payment, c)],
+        ['Zaplaceno celkem', kc(r.totalPay, c)],
+        ['Úroky celkem', kc(r.totalInt, c)],
+        ['Konečný stav dluhu', kc(r.end, c) + ' <span class="status ' + (endOk ? 'ok' : 'warn') + '">' + (endOk ? 'splaceno' : 'zbývá dluh') + '</span>']
+      ],
+      extra: extra,
+      legend: [['v-pv', 'PV', 'Výše půjčky'], ['', 'NÚM', 'Roční nominální sazba'], ['', 'm', 'Plateb za rok'], ['v-i', 'i', 'Sazba za jedno období'], ['v-n', 'N', 'Počet plateb celkem'], ['v-a', 'A', 'Anuitní platba'], ['', 'D<sub>t</sub>', 'Dluh na konci období t'], ['v-u', 'U<sub>t</sub>', 'Úrok v období t'], ['v-pv', 'S<sub>t</sub>', 'Splátka jistiny v období t']],
+      steps: amortSteps(p, r),
+      excel: excel,
+      amort: { r: r, p: p }
+    };
+  }
+  function amortParams(d) {
+    return [
+      P('pv', 'Výše půjčky', d.pv, 'Kč', { pos: true }),
+      P('rate', 'Roční úroková míra', d.rate, '% p.a.'),
+      P('years', 'Doba splácení', d.years, 'let', { pos: true, max: 50 }),
+      P('m', 'Plateb za rok', d.m || 1, '', { type: 'select', opts: [[1, '1 (ročně)'], [2, '2 (pololetně)'], [4, '4 (čtvrtletně)'], [12, '12 (měsíčně)']] }),
+      P('step', 'Zaokrouhlit platbu na', d.step, '', { type: 'select', opts: [[0, 'bez zaokrouhlení'], [1, '1 Kč'], [100, '100 Kč'], [1000, '1 000 Kč'], [10000, '10 000 Kč'], [100000, '100 000 Kč']] }),
+      P('mode', 'Směr zaokrouhlení', d.mode || 'up', '', { type: 'select', str: true, opts: [['up', 'nahoru'], ['down', 'dolů'], ['nearest', 'na nejbližší']] }),
+      P('adjust', 'Upravit poslední platbu, aby konečný stav byl nulový', d.adjust !== false, '', { type: 'check' }),
+      P('cents', 'Zobrazit haléře', !!d.cents, '', { type: 'check' })
+    ];
+  }
+
+  /* ---------- definice parametrů ---------- */
+  function P(k, label, def, unit, o) {
+    var p = { k: k, label: label, def: def, unit: unit || '', min: 0 };
+    if (o) for (var q in o) p[q] = o[q];
+    return p;
+  }
+  var NOTE_REAL = 'Reálná úroková míra může být záporná.';
+
+  /* ---------- příklady ---------- */
+  var EX = [];
+
+  EX.push({
+    id: 'a1', tab: 'miry', short: 'A1', title: 'Reálná úroková míra', src: 'Cvičení 1, příklad A1',
+    text: 'Termínový účet je spojen s 3,9% úrokovou mírou. Jaká je reálná úroková míra při zvažované míře inflace 1,9 %? Odhadem a přesně.',
+    params: [P('num', 'Nominální úroková míra (NÚM)', 3.9, '% p.a.'), P('infl', 'Míra inflace (π)', 1.9, '% p.a.', { min: -50 })],
+    legend: [['v-i', 'NÚM', 'Nominální úroková míra'], ['v-i', 'π', 'Míra inflace'], ['v-i', 'RÚM', 'Reálná úroková míra']],
+    run: function (v) {
+      var nom = v.num / 100, pi = v.infl / 100, est = nom - pi, ex = (1 + nom) / (1 + pi) - 1, st = Steps();
+      st.add('Odhad', 'Při nízké inflaci stačí rozdíl sazeb.', [
+        E(mr(R('RÚM'), M.o('≈'), R('NÚM'), MINUS, R('π'))),
+        E(mr(M.o('≈'), mnr(nom, 'v-i'), MINUS, mnr(pi, 'v-i'))),
+        E(mr(M.o('≈'), mnp(est, 'v-i', 4)), 'res')
+      ]);
+      st.add('Přesně (Fisherova rovnice)', 'Vychází z rovnice (1 + NÚM) = (1 + RÚM) · (1 + π).', [
+        E(mr(R('RÚM'), EQ, M.frac(mr(ONE, PLUS, R('NÚM')), mr(ONE, PLUS, R('π'))), MINUS, ONE, EQ, M.frac(mr(R('NÚM'), MINUS, R('π')), mr(ONE, PLUS, R('π'))))),
+        E(mr(EQ, M.frac(mnr(1 + nom, 'v-i'), mnr(1 + pi, 'v-i')), MINUS, ONE)),
+        E(mr(EQ, mnp(ex, 'v-i', 4)), 'res')
+      ]);
+      return {
+        heads: [{ v: pcs(ex, 4), l: 'reálná úroková míra (přesně)' }],
+        verdict: ex < 0 ? NOTE_REAL + ' Inflace spolkne celý výnos.' : 'Odhad se od přesné hodnoty liší o ' + nf((est - ex) * 100, 4) + ' procentního bodu.',
+        facts: [['Odhad (NÚM − π)', pcs(est, 4)], ['Přesně (Fisher)', pcs(ex, 4)], ['Rozdíl odhadu a přesné hodnoty', nf((est - ex) * 100, 4) + ' p. b.']],
+        steps: st.html(),
+        excel: [['RÚM odhadem', '=' + xl(nom) + '-' + xl(pi)], ['RÚM přesně', '=(' + xl(nom) + '-' + xl(pi) + ')/(1+' + xl(pi) + ')']]
+      };
+    }
+  });
+
+  EX.push({
+    id: 'real', tab: 'miry', short: 'Slidy: nominální vs. reálná hodnota', title: 'Nominální vs. reálná hodnota', src: 'Přednáška, příklad s tisícikorunou',
+    text: 'Určete budoucí hodnotu tisícikoruny, kterou budete 5 let zhodnocovat nominální roční sazbou 3 %: (a) bez inflace, (b) s roční inflací 2,5 %.',
+    params: [P('pv', 'Vklad (PV)', 1000, 'Kč', { pos: true }), P('num', 'Nominální úroková míra', 3, '% p.a.'), P('n', 'Doba', 5, 'let', { pos: true }), P('infl', 'Míra inflace', 2.5, '% p.a.', { min: -50 })],
+    legend: [['v-pv', 'PV', 'Vklad dnes'], ['v-pv', 'FV', 'Budoucí hodnota'], ['v-i', 'i', 'Úroková míra (bez inflace RÚM = NÚM = i)'], ['v-n', 'n', 'Počet let'], ['v-i', 'RÚM', 'Reálná úroková míra'], ['v-i', 'π', 'Míra inflace']],
+    run: function (v) {
+      var pv = v.pv, nom = v.num / 100, n = v.n, pi = v.infl / 100;
+      var fv1 = pv * Math.pow(1 + nom, n), rum = (nom - pi) / (1 + pi), fv2 = pv * Math.pow(1 + rum, n), st = Steps();
+      st.add('Bez vlivu inflace', 'Reálná míra se rovná nominální (RÚM = NÚM = i).', [
+        E(mr(sFV, EQ, sPV, DOT, M.sup(onePlus(sI), sNn))),
+        E(mr(EQ, mnv(pv, 'v-pv'), DOT, M.sup(onePlus(mnr(nom, 'v-i')), M.n(nf(n, 4), 'v-n')))),
+        E(mr(EQ, mn2(fv1, 'v-pv'), KC), 'res')
+      ]);
+      st.add('Přepočet nominální míry na reálnou', 'Odečte se inflace a výsledek se vydělí (1 + π).', [
+        E(mr(R('RÚM'), EQ, M.frac(mr(R('NÚM'), MINUS, R('π')), mr(ONE, PLUS, R('π'))))),
+        E(mr(EQ, M.frac(mr(mnr(nom, 'v-i'), MINUS, mnr(pi, 'v-i')), mr(ONE, PLUS, mnr(pi, 'v-i'))))),
+        E(mr(EQ, mnr(rum, 'v-i', 8), EQ, mnp(rum, 'v-i', 4)), 'res')
+      ]);
+      st.add('S vlivem inflace', 'Budoucí hodnota se počítá s reálnou mírou.', [
+        E(mr(sFV, EQ, sPV, DOT, M.sup(onePlus(R('RÚM')), sNn))),
+        E(mr(EQ, mnv(pv, 'v-pv'), DOT, M.sup(onePlus(mnr(rum, 'v-i')), M.n(nf(n, 4), 'v-n')))),
+        E(mr(EQ, mn2(fv2, 'v-pv'), KC), 'res')
+      ]);
+      return {
+        heads: [{ v: kc(fv1, true), l: '(a) budoucí hodnota bez inflace' }, { v: kc(fv2, true), l: '(b) budoucí hodnota s inflací (v dnešních cenách)' }],
+        verdict: rum < 0 ? NOTE_REAL + ' Kupní síla vkladu v čase klesá.' : 'Inflace snižuje reálný přírůstek o ' + kc(fv1 - fv2, true) + '.',
+        facts: [['Reálná úroková míra', pcs(rum, 4)], ['Reálný přírůstek', kc(fv2 - pv, true)], ['Nominální přírůstek', kc(fv1 - pv, true)]],
+        steps: st.html(),
+        excel: [['FV bez inflace', '=' + xl(pv) + '*(1+' + xl(nom) + ')^' + xl(n)], ['RÚM', '=(' + xl(nom) + '-' + xl(pi) + ')/(1+' + xl(pi) + ')'], ['FV s inflací', '=' + xl(pv) + '*(1+' + xl(rum) + ')^' + xl(n)]]
+      };
+    }
+  });
+
+  EX.push({
+    id: 'a2', tab: 'miry', short: 'A2', title: 'Hrubá a čistá úroková míra', src: 'Cvičení 1, příklad A2',
+    text: 'Vklad 92 000 Kč, hrubý úrok z vkladu 5 000 Kč, sazba daně z úroku 15 %. Jaká je čistá úroková míra?',
+    params: [P('dep', 'Vklad', 92000, 'Kč', { pos: true }), P('int', 'Hrubý úrok', 5000, 'Kč'), P('tax', 'Sazba daně z úroku (t)', 15, '%', { max: 100 })],
+    legend: [['v-i', 'HÚM', 'Hrubá úroková míra'], ['v-i', 'ČÚM', 'Čistá úroková míra'], ['', 't', 'Sazba daně z úroku']],
+    run: function (v) {
+      var dep = v.dep, u = v.int, t = v.tax / 100, hum = u / dep, cum = hum * (1 - t), st = Steps();
+      st.add('Hrubá úroková míra', 'Úrok před zdaněním ve vztahu k vkladu.', [
+        E(mr(R('HÚM'), EQ, M.frac(M.i('úrok'), M.i('vklad')))),
+        E(mr(EQ, M.frac(mnv(u), mnv(dep)))),
+        E(mr(EQ, mnp(hum, 'v-i', 4)), 'res')
+      ]);
+      st.add('Čistá úroková míra', 'Hrubá míra se zmenší o daň z úroku.', [
+        E(mr(R('ČÚM'), EQ, R('HÚM'), DOT, M.par(mr(ONE, MINUS, sT)))),
+        E(mr(EQ, mnr(hum, 'v-i'), DOT, M.par(mr(ONE, MINUS, mnr(t))))),
+        E(mr(EQ, mnp(cum, 'v-i', 4)), 'res')
+      ]);
+      return {
+        heads: [{ v: pcs(cum, 4), l: 'čistá úroková míra' }],
+        verdict: '',
+        facts: [['Hrubá úroková míra', pcs(hum, 4)], ['Daň z úroku', kc(u * t, true)], ['Čistý úrok', kc(u * (1 - t), true)]],
+        steps: st.html(),
+        excel: [['HÚM', '=' + xl(u) + '/' + xl(dep)], ['ČÚM', '=' + xl(u) + '/' + xl(dep) + '*(1-' + xl(t) + ')']]
+      };
+    }
+  });
+
+  EX.push({
+    id: 'ex1', tab: 'miry', short: 'Př. 1', title: 'Efektivní úroková míra', src: 'Cvičení 1, příklad 1 (přednáška, příklad 1)',
+    text: 'Jak velká bude roční efektivní úroková míra pro termínovaný bankovní účet spojený s 9% roční nominální úrokovou mírou a) s ročním, b) s měsíčním, c) se spojitým skládáním úroků?',
+    params: [P('num', 'Roční nominální úroková míra (NÚM)', 9, '% p.a.'), P('mB', 'Počet složení za rok ve variantě b)', 12, 'krát', { pos: true, step: 1 })],
+    legend: [['v-i', 'EÚM', 'Efektivní úroková míra'], ['v-i', 'NÚM', 'Roční nominální úroková míra'], ['v-n', 'M', 'Počet složení úroku za rok'], ['', 'e', 'Eulerovo číslo 2,718281828…']],
+    run: function (v) {
+      var nom = v.num / 100, mB = Math.max(1, Math.round(v.mB)), a = eff(nom, 1), b = eff(nom, mB), c = Math.exp(nom) - 1, st = Steps();
+      var gen = function (m, title, note) {
+        st.add(title, note, [
+          E(mr(R('EÚM'), EQ, M.sup(onePlus(M.frac(R('NÚM'), sM)), sM), MINUS, ONE)),
+          E(mr(EQ, M.sup(onePlus(M.frac(mnr(nom, 'v-i'), M.n(m, 'v-n'))), M.n(m, 'v-n')), MINUS, ONE)),
+          E(mr(EQ, mnp(eff(nom, m), 'v-i', 4)), 'res')
+        ]);
+      };
+      gen(1, 'a) Roční skládání (M = 1)', 'Při ročním skládání se efektivní míra rovná nominální.');
+      gen(mB, 'b) Skládání ' + mB + '× ročně (M = ' + mB + ')', 'Úrok se připisuje častěji, takže se úročí i dříve připsané úroky.');
+      st.add('c) Spojité skládání (M → ∞)', 'Limita pro neomezený počet složení vede na Eulerovo číslo e. Mezivýsledek: e<sup>NÚM</sup> = ' + nf(Math.exp(nom), 8) + '.', [
+        E(mr(R('EÚM'), EQ, M.i('lim', ''), M.sup(onePlus(M.frac(R('NÚM'), sM)), sM), MINUS, ONE, EQ, M.sup(M.i('e'), R('NÚM')), MINUS, ONE)),
+        E(mr(EQ, M.sup(M.i('e'), mnr(nom, 'v-i')), MINUS, ONE)),
+        E(mr(EQ, mnp(c, 'v-i', 4)), 'res')
+      ]);
+      return {
+        heads: [{ v: pcs(a, 2), l: 'a) roční skládání' }, { v: pcs(b, 2), l: 'b) skládání ' + mB + '× ročně' }, { v: pcs(c, 2), l: 'c) spojité skládání' }],
+        verdict: 'Čím častěji se úroky připisují, tím vyšší je efektivní míra. Spojité skládání je její horní mez.',
+        facts: [['EÚM, roční', pcs(a, 4)], ['EÚM, ' + mB + '× ročně', pcs(b, 4)], ['EÚM, spojité', pcs(c, 4)]],
+        steps: st.html(),
+        excel: [['a) roční', '=(1+' + xl(nom) + '/1)^1-1'], ['b) ' + mB + '× ročně', '=(1+' + xl(nom) + '/' + mB + ')^' + mB + '-1'], ['c) spojité', '=EXP(' + xl(nom) + ')-1']]
+      };
+    }
+  });
+
+  EX.push({
+    id: 'eum', tab: 'miry', short: 'Slidy: EÚM pololetně a měsíčně', title: 'Efektivní míra při pololetním a měsíčním úročení', src: 'Přednáška, příklad k úrokové míře',
+    text: 'Vklad úročený pololetně sazbou 13,1 % p. a. a vklad úročený měsíčně sazbou 10,8 % p. a. Jaká je u nich efektivní úroková míra?',
+    params: [P('n1', 'Vklad A: nominální sazba', 13.1, '% p.a.'), P('m1', 'Vklad A: složení za rok', 2, 'krát', { pos: true, step: 1 }), P('n2', 'Vklad B: nominální sazba', 10.8, '% p.a.'), P('m2', 'Vklad B: složení za rok', 12, 'krát', { pos: true, step: 1 })],
+    legend: [['v-i', 'EÚM', 'Efektivní úroková míra'], ['v-i', 'NÚM', 'Roční nominální úroková míra'], ['v-n', 'M', 'Počet složení úroku za rok']],
+    run: function (v) {
+      var st = Steps(), res = [], ex = [];
+      [[v.n1, v.m1, 'A'], [v.n2, v.m2, 'B']].forEach(function (x) {
+        var nom = x[0] / 100, m = Math.max(1, Math.round(x[1])), e = eff(nom, m);
+        res.push([x[2], e, m]);
+        ex.push(['EÚM, vklad ' + x[2], '=(1+' + xl(nom) + '/' + m + ')^' + m + '-1']);
+        st.add('Vklad ' + x[2] + ': ' + nf(x[0], 4) + ' % p. a., skládání ' + m + '× ročně', null, [
+          E(mr(R('EÚM'), EQ, M.sup(onePlus(M.frac(R('NÚM'), sM)), sM), MINUS, ONE)),
+          E(mr(EQ, M.sup(onePlus(M.frac(mnr(nom, 'v-i'), M.n(m, 'v-n'))), M.n(m, 'v-n')), MINUS, ONE)),
+          E(mr(EQ, mnp(e, 'v-i', 4)), 'res')
+        ]);
+      });
+      return {
+        heads: res.map(function (x) { return { v: pcs(x[1], 2), l: 'vklad ' + x[0] + ', skládání ' + x[2] + '× ročně' }; }),
+        verdict: res[0][1] > res[1][1] ? 'Vklad A má vyšší efektivní úrokovou míru.' : res[0][1] < res[1][1] ? 'Vklad B má vyšší efektivní úrokovou míru.' : 'Oba vklady mají stejnou efektivní míru.',
+        facts: [['EÚM, vklad A', pcs(res[0][1], 4)], ['EÚM, vklad B', pcs(res[1][1], 4)]],
+        steps: st.html(), excel: ex
+      };
+    }
+  });
+
+  EX.push({
+    id: 'ex2', tab: 'miry', short: 'Př. 2', title: 'Rovnocenná nominální sazba pro jiné skládání', src: 'Cvičení 1, příklad 2 (přednáška, příklad 2)',
+    text: 'Banka nabízí účet MC s 12% roční nominální sazbou a měsíčním skládáním. Klient požaduje čtvrtletní skládání (účet QC). Jakou roční nominální sazbu mu nabídnete, chcete-li zachovat stejné podmínky pro oba typy účtů?',
+    params: [P('num', 'Nominální sazba účtu A (MC)', 12, '% p.a.'), P('mA', 'Účet A: složení za rok', 12, 'krát', { pos: true, step: 1 }), P('mB', 'Účet B (QC): složení za rok', 4, 'krát', { pos: true, step: 1 })],
+    legend: [['v-i', 'EÚM', 'Efektivní úroková míra účtu A'], ['v-i', 'NÚM<sub>A</sub>', 'Nominální sazba účtu A'], ['v-i', 'NÚM<sub>B</sub>', 'Hledaná nominální sazba účtu B'], ['v-n', 'M', 'Počet složení za rok']],
+    run: function (v) {
+      var nom = v.num / 100, mA = Math.max(1, Math.round(v.mA)), mB = Math.max(1, Math.round(v.mB));
+      var e = eff(nom, mA), nb = mB * (Math.pow(1 + e, 1 / mB) - 1), chk = eff(nb, mB), st = Steps();
+      var nA = M.sub(R('NÚM'), M.i('A')), nBs = M.sub(R('NÚM'), M.i('B')), mAs = M.sub(sM, M.i('A')), mBs = M.sub(sM, M.i('B'));
+      st.add('Efektivní míra účtu A', 'Obě varianty musí mít stejnou efektivní úrokovou míru.', [
+        E(mr(R('EÚM'), EQ, M.sup(onePlus(M.frac(nA, mAs)), mAs), MINUS, ONE)),
+        E(mr(EQ, M.sup(onePlus(M.frac(mnr(nom, 'v-i'), M.n(mA, 'v-n'))), M.n(mA, 'v-n')), MINUS, ONE)),
+        E(mr(EQ, mnr(e, 'v-i', 6), EQ, mnp(e, 'v-i', 4)), 'res')
+      ]);
+      st.add('Nominální sazba účtu B', 'Rovnice EÚM = (1 + NÚM<sub>B</sub> / M<sub>B</sub>)<sup>M<sub>B</sub></sup> − 1 se vyřeší pro NÚM<sub>B</sub>.', [
+        E(mr(nBs, EQ, mBs, DOT, M.par(mr(M.sup(onePlus(R('EÚM')), M.frac(ONE, mBs)), MINUS, ONE)))),
+        E(mr(EQ, M.n(mB, 'v-n'), DOT, M.par(mr(M.sup(onePlus(mnr(e, 'v-i', 6)), M.frac(ONE, M.n(mB, 'v-n'))), MINUS, ONE)))),
+        E(mr(EQ, mnr(nb, 'v-i', 6), EQ, mnp(nb, 'v-i', 4)), 'res')
+      ]);
+      st.add('Kontrola', 'Efektivní míra účtu B musí vyjít stejně jako u účtu A.', [
+        E(mr(R('EÚM'), EQ, M.sup(onePlus(M.frac(mnr(nb, 'v-i', 6), M.n(mB, 'v-n'))), M.n(mB, 'v-n')), MINUS, ONE, EQ, mnp(chk, 'v-i', 4)), 'res')
+      ]);
+      return {
+        heads: [{ v: pcs(nb, 4), l: 'nominální sazba účtu B (' + mB + '× ročně)' }],
+        verdict: 'Při méně častém skládání musí být nominální sazba vyšší (o ' + nf((nb - nom) * 100, 4) + ' procentního bodu), aby výnos zůstal stejný.',
+        facts: [['EÚM účtu A', pcs(e, 4)], ['Nominální sazba účtu B', pcs(nb, 4)], ['EÚM účtu B (kontrola)', pcs(chk, 4)]],
+        steps: st.html(),
+        excel: [['EÚM účtu A', '=(1+' + xl(nom) + '/' + mA + ')^' + mA + '-1'], ['NÚM účtu B', '=' + mB + '*((1+EÚM)^(1/' + mB + ')-1)']]
+      };
+    }
+  });
+
+  /* ----- Budoucí a současná hodnota ----- */
+  EX.push({
+    id: 'cmp', tab: 'hodnota', short: 'Slidy: 5 000 vs. 7 200', title: 'Dnes, nebo později', src: 'Přednáška, faktor času',
+    text: 'Rozhodněte se mezi 5 000 Kč dnes nebo 7 200 Kč za 5 let. Zvažovaná úroková míra činí 12 % p. a.',
+    params: [P('now', 'Částka dnes', 5000, 'Kč', { pos: true }), P('later', 'Částka později', 7200, 'Kč', { pos: true }), P('n', 'Za kolik let', 5, 'let', { pos: true }), P('i', 'Zvažovaná úroková míra (i)', 12, '% p.a.')],
+    legend: [['v-pv', 'PV', 'Současná hodnota'], ['v-pv', 'FV', 'Budoucí hodnota'], ['v-i', 'i', 'Úroková míra'], ['v-n', 'n', 'Počet let']],
+    run: function (v) {
+      var a = v.now, b = v.later, n = v.n, i = v.i / 100, fv = a * Math.pow(1 + i, n), pv = b / Math.pow(1 + i, n), st = Steps();
+      st.add('Budoucí hodnota částky dnes', 'Úročitel (1 + i)<sup>n</sup> převede částku do budoucnosti.', [
+        E(mr(sFV, EQ, sPV, DOT, M.sup(onePlus(sI), sNn))),
+        E(mr(EQ, mnv(a, 'v-pv'), DOT, M.sup(onePlus(mnr(i, 'v-i')), M.n(nf(n, 4), 'v-n')))),
+        E(mr(EQ, mn2(fv, 'v-pv'), KC), 'res')
+      ]);
+      st.add('Současná hodnota pozdější částky', 'Odúročitel (1 + i)<sup>−n</sup> převede částku do dneška.', [
+        E(mr(sPV, EQ, M.frac(sFV, M.sup(onePlus(sI), sNn)))),
+        E(mr(EQ, M.frac(mnv(b, 'v-pv'), M.sup(onePlus(mnr(i, 'v-i')), M.n(nf(n, 4), 'v-n'))))),
+        E(mr(EQ, mn2(pv, 'v-pv'), KC), 'res')
+      ]);
+      return {
+        heads: [{ v: kc(fv, true), l: 'FV(' + mv(a) + ' Kč dnes)' }, { v: kc(pv, true), l: 'PV(' + mv(b) + ' Kč za ' + nf(n, 2) + ' let)' }],
+        verdict: fv > b ? 'Výhodnější je dostat ' + mv(a) + ' Kč dnes a investovat je zvažovanou úrokovou mírou.' : fv < b ? 'Výhodnější je počkat a dostat ' + mv(b) + ' Kč později.' : 'Obě možnosti mají stejnou hodnotu.',
+        facts: [['Budoucí hodnota částky dnes', kc(fv, true)], ['Pozdější částka', kc(b, false)], ['Současná hodnota pozdější částky', kc(pv, true)], ['Částka dnes', kc(a, false)]],
+        steps: st.html(),
+        excel: [['FV', '=' + xl(a) + '*(1+' + xl(i) + ')^' + xl(n)], ['PV', '=' + xl(b) + '/(1+' + xl(i) + ')^' + xl(n)]]
+      };
+    }
+  });
+
+  EX.push({
+    id: 'ex3', tab: 'hodnota', short: 'Př. 3', title: 'Vklad na účtu po zdanění úroků', src: 'Cvičení 1, příklad 3 (přednáška, příklad 3)',
+    text: 'Vložili jste dnes na účet 200 000 Kč s 10% roční nominální sazbou. Jakou částku si budete moci vyzvednout na konci 5. roku při ročním a při čtvrtletním skládání? Sazba daně z úroků je 19 %.',
+    note: 'Podle přednášky se při zadané sazbě daně počítá s čistou úrokovou mírou (ČÚM). Druhou možnost, daň jednorázově na konci, najdete ve výběru zdanění.',
+    params: [P('pv', 'Vklad (PV)', 200000, 'Kč', { pos: true }), P('num', 'Roční nominální sazba (HÚM)', 10, '% p.a.'), P('n', 'Doba', 5, 'let', { pos: true }), P('tax', 'Sazba daně z úroků', 19, '%', { max: 100 }), P('mA', 'Varianta a): složení za rok', 1, 'krát', { pos: true, step: 1 }), P('mB', 'Varianta b): složení za rok', 4, 'krát', { pos: true, step: 1 }), P('method', 'Způsob zdanění', 'cum', '', { type: 'select', str: true, opts: [['cum', 'průběžně přes ČÚM (jako na přednášce)'], ['once', 'jednorázově z celého úroku na konci']] })],
+    legend: [['v-pv', 'PV', 'Vklad dnes'], ['v-pv', 'FV', 'Částka na konci doby'], ['v-i', 'HÚM', 'Hrubá (nominální) úroková míra'], ['v-i', 'ČÚM', 'Čistá úroková míra po zdanění'], ['', 't', 'Sazba daně z úroků'], ['v-n', 'M', 'Složení za rok'], ['v-n', 'n', 'Počet let']],
+    run: function (v) {
+      var pv = v.pv, hum = v.num / 100, n = v.n, t = v.tax / 100, mA = Math.max(1, Math.round(v.mA)), mB = Math.max(1, Math.round(v.mB)), once = v.method === 'once';
+      var cum = hum * (1 - t), st = Steps();
+      var calc = function (m) {
+        if (!once) return { fv: pv * Math.pow(1 + cum / m, n * m) };
+        var g = pv * Math.pow(1 + hum / m, n * m), u = g - pv;
+        return { g: g, u: u, tax: u * t, fv: g - u * t };
+      };
+      var A = calc(mA), B = calc(mB);
+      if (!once) taxStep(st, hum, t);
+      [['a', mA, A], ['b', mB, B]].forEach(function (x) {
+        var m = x[1], r = x[2], title = x[0] + ') Skládání ' + m + '× ročně';
+        if (!once) {
+          st.add(title, 'Budoucí hodnota s čistou sazbou za období (ČÚM / M) po dobu n · M období.', [
+            E(mr(sFV, EQ, sPV, DOT, M.sup(onePlus(M.frac(R('ČÚM'), sM)), mr(sNn, DOT, sM)))),
+            E(mr(EQ, mnv(pv, 'v-pv'), DOT, M.sup(onePlus(M.frac(mnr(cum, 'v-i'), M.n(m, 'v-n'))), M.n(nf(n * m, 2), 'v-n')))),
+            E(mr(EQ, mn2(r.fv, 'v-pv'), KC), 'res')
+          ]);
+        } else {
+          var Fh = M.sub(sFV, M.i('hrubá'));
+          st.add(title, 'Úroky se nejdřív připisují bez daně, daň se strhne jednorázově z celého úroku.', [
+            E(mr(Fh, EQ, sPV, DOT, M.sup(onePlus(M.frac(R('HÚM'), sM)), mr(sNn, DOT, sM)))),
+            E(mr(EQ, mnv(pv, 'v-pv'), DOT, M.sup(onePlus(M.frac(mnr(hum, 'v-i'), M.n(m, 'v-n'))), M.n(nf(n * m, 2), 'v-n')), EQ, mn2(r.g, 'v-pv'), KC)),
+            E(mr(M.i('U'), EQ, Fh, MINUS, sPV, EQ, mn2(r.g), MINUS, mnv(pv), EQ, mn2(r.u, 'v-u'), KC)),
+            E(mr(M.i('daň'), EQ, sT, DOT, M.i('U'), EQ, mnr(t), DOT, mn2(r.u), EQ, mn2(r.tax), KC)),
+            E(mr(sFV, EQ, Fh, MINUS, M.i('daň'), EQ, mn2(r.g), MINUS, mn2(r.tax), EQ, mn2(r.fv, 'v-pv'), KC), 'res')
+          ]);
+        }
+      });
+      var d = B.fv - A.fv;
+      return {
+        heads: [{ v: kc(A.fv, true), l: 'a) skládání ' + mA + '× ročně' }, { v: kc(B.fv, true), l: 'b) skládání ' + mB + '× ročně' }],
+        verdict: Math.abs(d) < 0.005 ? 'Obě varianty vycházejí stejně.' : (d > 0 ? 'Varianta b) vychází o ' : 'Varianta a) vychází o ') + kc(Math.abs(d), true) + ' výhodněji.',
+        facts: [['Čistá úroková míra (ČÚM)', pcs(cum, 4)], ['Čistý úrok, varianta a)', kc(A.fv - pv, true)], ['Čistý úrok, varianta b)', kc(B.fv - pv, true)]],
+        extra: panel('Vývoj vkladu při ročním skládání (varianta a)', mA === 1 && !once && Math.round(n) === n && n <= 40 ? growthTable(pv, cum, n) : '<span class="hint">Tabulka se zobrazí pro roční skládání s průběžným zdaněním a celý počet let.</span>'),
+        steps: st.html(),
+        excel: once ? [['a)', '=' + xl(pv) + '+(' + xl(pv) + '*(1+' + xl(hum) + '/' + mA + ')^(' + xl(n) + '*' + mA + ')-' + xl(pv) + ')*(1-' + xl(t) + ')'], ['b)', '=' + xl(pv) + '+(' + xl(pv) + '*(1+' + xl(hum) + '/' + mB + ')^(' + xl(n) + '*' + mB + ')-' + xl(pv) + ')*(1-' + xl(t) + ')']] :
+          [['ČÚM', '=' + xl(hum) + '*(1-' + xl(t) + ')'], ['a)', '=' + xl(pv) + '*(1+ČÚM/' + mA + ')^(' + xl(n) + '*' + mA + ')'], ['b)', '=' + xl(pv) + '*(1+ČÚM/' + mB + ')^(' + xl(n) + '*' + mB + ')']]
+      };
+    }
+  });
+
+  EX.push({
+    id: 'ex4', tab: 'hodnota', short: 'Př. 4', title: 'Dnes, nebo za sedm let', src: 'Cvičení 1, příklad 4 (přednáška, příklad 4)',
+    text: 'Máte si vybrat mezi 20 000 000 Kč dnes a 52 000 000 Kč za sedm let. Roční nominální úroková míra s ročním skládáním je 18 %, úroky se zdaňují 19 %. Čemu dáte přednost?',
+    params: [P('a', 'Částka dnes', 20000000, 'Kč', { pos: true }), P('b', 'Částka později', 52000000, 'Kč', { pos: true }), P('n', 'Za kolik let', 7, 'let', { pos: true, step: 1 }), P('num', 'Roční nominální míra (HÚM)', 18, '% p.a.'), P('tax', 'Sazba daně z úroků', 19, '%', { max: 100 })],
+    legend: [['v-pv', 'PV', 'Současná hodnota'], ['v-pv', 'FV', 'Budoucí hodnota'], ['v-i', 'HÚM', 'Hrubá úroková míra'], ['v-i', 'ČÚM', 'Čistá úroková míra'], ['v-n', 'n', 'Počet let'], ['', 't', 'Sazba daně']],
+    run: function (v) {
+      var a = v.a, b = v.b, n = Math.max(1, Math.round(v.n)), hum = v.num / 100, t = v.tax / 100, cum = hum * (1 - t), f = Math.pow(1 + cum, n);
+      var pv = b / f, fv = a * f, st = Steps();
+      taxStep(st, hum, t);
+      st.add('Současná hodnota pozdější částky', 'Pozdější částku převedeme do dneška čistou sazbou.', [
+        E(mr(sPV, EQ, M.frac(sFV, M.sup(onePlus(R('ČÚM')), sNn)))),
+        E(mr(EQ, M.frac(mnv(b, 'v-pv'), M.sup(onePlus(mnr(cum, 'v-i')), M.n(n, 'v-n'))))),
+        E(mr(EQ, mnv(pv, 'v-pv'), KC), 'res')
+      ]);
+      st.add('Budoucí hodnota částky dnes', 'Částku dnes zhodnotíme čistou sazbou do stejného okamžiku.', [
+        E(mr(sFV, EQ, sPV, DOT, M.sup(onePlus(R('ČÚM')), sNn))),
+        E(mr(EQ, mnv(a, 'v-pv'), DOT, M.sup(onePlus(mnr(cum, 'v-i')), M.n(n, 'v-n')))),
+        E(mr(EQ, mnv(fv, 'v-pv'), KC), 'res')
+      ]);
+      return {
+        heads: [{ v: kc(pv, false), l: 'PV(' + mv(b) + ' Kč za ' + n + ' let)' }, { v: kc(fv, false), l: 'FV(' + mv(a) + ' Kč dnes)' }],
+        verdict: pv > a ? 'Přednost dostává ' + mv(b) + ' Kč za ' + n + ' let: jeho současná hodnota je o ' + kc(pv - a, false) + ' vyšší než částka dnes.' : pv < a ? 'Přednost dostává ' + mv(a) + ' Kč dnes: pozdější částka má nižší současnou hodnotu o ' + kc(a - pv, false) + '.' : 'Obě možnosti mají stejnou hodnotu.',
+        facts: [['Čistá úroková míra (ČÚM)', pcs(cum, 4)], ['PV pozdější částky − částka dnes', kc(pv - a, false)], ['Pozdější částka − FV částky dnes', kc(b - fv, false)]],
+        extra: panel('Vývoj částky dnes při čisté sazbě', growthTable(a, cum, n)),
+        steps: st.html(),
+        excel: [['ČÚM', '=' + xl(hum) + '*(1-' + xl(t) + ')'], ['PV', '=' + xl(b) + '/(1+ČÚM)^' + n], ['FV', '=' + xl(a) + '*(1+ČÚM)^' + n]]
+      };
+    }
+  });
+
+  EX.push({
+    id: 'ex5', tab: 'hodnota', short: 'Př. 5', title: 'Kolik uložit dnes', src: 'Cvičení 1, příklad 5 (přednáška, příklad 5)',
+    text: 'Kolik musíte dnes uložit na účet, abyste si mohli za šest let vyzvednout 800 000 Kč? Účet má 12% roční nominální sazbu a roční skládání. Zdanění úroků je 19 %.',
+    params: [P('fv', 'Požadovaná částka (FV)', 800000, 'Kč', { pos: true }), P('n', 'Doba', 6, 'let', { pos: true, step: 1 }), P('num', 'Roční nominální míra (HÚM)', 12, '% p.a.'), P('tax', 'Sazba daně z úroků', 19, '%', { max: 100 })],
+    legend: [['v-pv', 'PV', 'Hledaný vklad dnes'], ['v-pv', 'FV', 'Požadovaná částka'], ['v-i', 'HÚM', 'Hrubá úroková míra'], ['v-i', 'ČÚM', 'Čistá úroková míra'], ['v-n', 'n', 'Počet let']],
+    run: function (v) {
+      var fv = v.fv, n = Math.max(1, Math.round(v.n)), hum = v.num / 100, t = v.tax / 100, cum = hum * (1 - t), pv = fv / Math.pow(1 + cum, n), st = Steps();
+      taxStep(st, hum, t);
+      st.add('Současná hodnota', 'Vklad dnes, který se čistou sazbou zhodnotí na požadovanou částku.', [
+        E(mr(sPV, EQ, M.frac(sFV, M.sup(onePlus(R('ČÚM')), sNn)))),
+        E(mr(EQ, M.frac(mnv(fv, 'v-pv'), M.sup(onePlus(mnr(cum, 'v-i')), M.n(n, 'v-n'))))),
+        E(mr(EQ, mn2(pv, 'v-pv'), KC), 'res')
+      ]);
+      return {
+        heads: [{ v: kc(pv, true), l: 'vklad dnes (PV)' }],
+        verdict: 'Za ' + n + ' let se vklad zhodnotí o čistých ' + kc(fv - pv, true) + '.',
+        facts: [['Čistá úroková míra (ČÚM)', pcs(cum, 4)], ['Požadovaná částka', kc(fv, false)], ['Čistý úrok za celou dobu', kc(fv - pv, true)]],
+        extra: panel('Kontrola: vývoj vkladu', growthTable(pv, cum, n)),
+        steps: st.html(),
+        excel: [['ČÚM', '=' + xl(hum) + '*(1-' + xl(t) + ')'], ['PV', '=' + xl(fv) + '/(1+ČÚM)^' + n]]
+      };
+    }
+  });
+
+  EX.push({
+    id: 'ex6', tab: 'hodnota', short: 'Př. 6', title: 'Účet pro Aničku', src: 'Cvičení 1, příklad 6 (přednáška, příklad 6)',
+    text: 'Panu Novákovi se narodila dcera Anička. K jejím 15. narozeninám chce, aby si na termínovém účtu s úrokem 3,85 % p. a. a měsíčním skládáním mohla vyzvednout rovných 100 000 Kč. Kolik musí dnes uložit, je-li sazba daně z úroků 15 %?',
+    params: [P('fv', 'Požadovaná částka (FV)', 100000, 'Kč', { pos: true }), P('n', 'Doba', 15, 'let', { pos: true, step: 1 }), P('num', 'Roční úroková míra (HÚM)', 3.85, '% p.a.'), P('tax', 'Sazba daně z úroků', 15, '%', { max: 100 }), P('m', 'Složení za rok', 12, 'krát', { pos: true, step: 1 })],
+    legend: [['v-pv', 'PV', 'Hledaný vklad dnes'], ['v-pv', 'FV', 'Požadovaná částka'], ['v-i', 'HÚM', 'Hrubá úroková míra'], ['v-i', 'ČÚM', 'Čistá úroková míra'], ['v-i', 'EÚM', 'Efektivní úroková míra'], ['v-n', 'M', 'Složení za rok']],
+    run: function (v) {
+      var fv = v.fv, n = v.n, hum = v.num / 100, t = v.tax / 100, m = Math.max(1, Math.round(v.m)), cum = hum * (1 - t), e = eff(cum, m), pv = fv / Math.pow(1 + e, n), st = Steps();
+      taxStep(st, hum, t);
+      st.add('Efektivní úroková míra', 'Sazba se skládá ' + m + '× ročně, proto ji převedeme na roční efektivní míru.', [
+        E(mr(R('EÚM'), EQ, M.sup(onePlus(M.frac(R('ČÚM'), sM)), sM), MINUS, ONE)),
+        E(mr(EQ, M.sup(onePlus(M.frac(mnr(cum, 'v-i'), M.n(m, 'v-n'))), M.n(m, 'v-n')), MINUS, ONE)),
+        E(mr(EQ, mnr(e, 'v-i', 8), EQ, mnp(e, 'v-i', 4)), 'res')
+      ]);
+      st.add('Současná hodnota', 'Budoucí částku převedeme do dneška efektivní sazbou.', [
+        E(mr(sPV, EQ, M.frac(sFV, M.sup(onePlus(R('EÚM')), sNn)))),
+        E(mr(EQ, M.frac(mnv(fv, 'v-pv'), M.sup(onePlus(mnr(e, 'v-i')), M.n(nf(n, 4), 'v-n'))))),
+        E(mr(EQ, mn2(pv, 'v-pv'), KC), 'res')
+      ]);
+      return {
+        heads: [{ v: kc(pv, true), l: 'vklad dnes (PV)' }],
+        verdict: 'Za ' + nf(n, 2) + ' let se vklad zhodnotí o čistých ' + kc(fv - pv, true) + '.',
+        facts: [['Čistá úroková míra (ČÚM)', pcs(cum, 4)], ['Efektivní úroková míra (EÚM)', pcs(e, 4)], ['Kontrola: PV · (1 + EÚM)^n', kc(pv * Math.pow(1 + e, n), true)]],
+        steps: st.html(),
+        excel: [['ČÚM', '=' + xl(hum) + '*(1-' + xl(t) + ')'], ['EÚM', '=(1+ČÚM/' + m + ')^' + m + '-1'], ['PV', '=' + xl(fv) + '/(1+EÚM)^' + xl(n)]]
+      };
+    }
+  });
+
+  /* ----- Anuity ----- */
+  EX.push({
+    id: 'ex7', tab: 'anuity', short: 'Př. 7', title: 'Spoření s platbou na počátku roku', src: 'Cvičení 1, příklad 7 (přednáška, příklad 7)',
+    text: 'Chceme do konce 5. roku našetřit 1 500 000 Kč. Jakou částku musíme dát na počátku každého roku na účet s 10% nominální sazbou a ročním skládáním? Sazba daně z úroků je 15 %.',
+    params: [P('fva', 'Cílová částka (FVA)', 1500000, 'Kč', { pos: true }), P('n', 'Počet let', 5, 'let', { pos: true, step: 1 }), P('num', 'Roční nominální míra (HÚM)', 10, '% p.a.'), P('tax', 'Sazba daně z úroků', 15, '%', { max: 100 })],
+    legend: [['v-a', 'A<sub>p</sub>', 'Platba na počátku období (předem)'], ['v-a', 'A<sub>z</sub>', 'Platba na konci období (pozadu)'], ['v-pv', 'FVA<sub>z</sub>', 'Budoucí hodnota anuity'], ['v-i', 'i', 'Čistá úroková míra (ČÚM)'], ['v-n', 'n', 'Počet let']],
+    run: function (v) {
+      var fva = v.fva, n = Math.max(1, Math.round(v.n)), hum = v.num / 100, t = v.tax / 100, i = hum * (1 - t);
+      var f = Math.pow(1 + i, n), az = fva * i / (f - 1), ap = az / (1 + i), st = Steps();
+      var Az = M.sub(sA, M.i('z')), Ap = M.sub(sA, M.i('p')), FVAz = M.sub(M.i('FVA', 'v-pv'), M.i('z'));
+      taxStep(st, hum, t);
+      st.add('Platba na konci období (fondovatel)', 'Nejdřív spočítáme platbu, kdyby se vkládalo na konci roku.', [
+        E(mr(Az, EQ, FVAz, DOT, M.frac(sI, mr(M.sup(onePlus(sI), sNn), MINUS, ONE)))),
+        E(mr(EQ, mnv(fva, 'v-pv'), DOT, M.frac(mnr(i, 'v-i'), mr(M.sup(onePlus(mnr(i, 'v-i')), M.n(n, 'v-n')), MINUS, ONE)))),
+        E(mr(EQ, mnv(fva, 'v-pv'), DOT, M.frac(mnr(i, 'v-i'), M.n(nf(f - 1, 8))))),
+        E(mr(EQ, mn2(az, 'v-a'), KC), 'res')
+      ]);
+      st.add('Platba na počátku období', 'Při platbě předem se celá řada posune o jedno období, proto se platba zmenší o faktor (1 + i).', [
+        E(mr(Ap, EQ, M.frac(Az, onePlus(sI)))),
+        E(mr(EQ, M.frac(mn2(az, 'v-a'), onePlus(mnr(i, 'v-i'))))),
+        E(mr(EQ, mn2(ap, 'v-a'), KC), 'res')
+      ]);
+      var rows = [], open = 0;
+      for (var k = 1; k <= n; k++) {
+        var base = open + ap, u = base * i, close = base + u;
+        rows.push([k, fmt(open, true), fmt(ap, true), fmt(u, true), fmt(close, true)]);
+        open = close;
+      }
+      st.add('Kontrola vývojem účtu', 'Po posledním úroku musí být na účtu cílová částka.', [
+        E(mr(M.i('FVA', 'v-pv'), EQ, Ap, DOT, M.frac(mr(M.sup(onePlus(sI), sNn), MINUS, ONE), sI), DOT, onePlus(sI), EQ, mn2(open, 'v-pv'), KC), 'res')
+      ]);
+      return {
+        heads: [{ v: kc(ap, true), l: 'vklad na počátku každého roku (A_p)' }],
+        verdict: 'Za ' + n + ' let vložíte celkem ' + kc(ap * n, true) + ' a úroky po zdanění přidají ' + kc(fva - ap * n, true) + '.',
+        facts: [['Čistá úroková míra (ČÚM)', pcs(i, 4)], ['Platba na konci období (A_z)', kc(az, true)], ['Vloženo celkem', kc(ap * n, true)]],
+        extra: panel('Vývoj účtu (vklad na počátku roku)', table(['Rok', 'Počátek roku', 'Vklad na počátku', 'Úrok za rok', 'Konec roku'], rows)),
+        steps: st.html(),
+        excel: [['ČÚM', '=' + xl(hum) + '*(1-' + xl(t) + ')'], ['A_z', '=' + xl(fva) + '*ČÚM/((1+ČÚM)^' + n + '-1)'], ['A_p', '=A_z/(1+ČÚM)']]
+      };
+    }
+  });
+
+  EX.push({
+    id: 'ex8', tab: 'anuity', short: 'Př. 8', title: 'Vklady do fondu na konci roku', src: 'Cvičení 1, příklad 8 (přednáška, příklad 8)',
+    text: 'Jak velkou částku musíte na konci každého roku vložit do fondu, abyste měli koncem čtvrtého roku k dispozici 4 000 000 Kč? Prostředky ukládáte na účet s 9% nominální sazbou a ročním skládáním. Úrok zdaňujete 19 %.',
+    params: [P('fva', 'Cílová částka (FVA)', 4000000, 'Kč', { pos: true }), P('n', 'Počet let', 4, 'let', { pos: true, step: 1 }), P('num', 'Roční nominální míra (HÚM)', 9, '% p.a.'), P('tax', 'Sazba daně z příjmu', 19, '%', { max: 100 })],
+    legend: [['v-a', 'A<sub>z</sub>', 'Roční platba na konci období'], ['v-pv', 'FVA<sub>z</sub>', 'Budoucí hodnota anuity'], ['v-i', 'i', 'Čistá úroková míra (ČÚM)'], ['v-n', 'n', 'Počet let']],
+    run: function (v) {
+      var fva = v.fva, n = Math.max(1, Math.round(v.n)), hum = v.num / 100, t = v.tax / 100, i = hum * (1 - t);
+      var f = Math.pow(1 + i, n), az = fva * i / (f - 1), st = Steps();
+      var Az = M.sub(sA, M.i('z')), FVAz = M.sub(M.i('FVA', 'v-pv'), M.i('z'));
+      taxStep(st, hum, t);
+      st.add('Roční platba (fondovatel)', 'Známe i, n a FVA<sub>z</sub>, hledáme A<sub>z</sub>.', [
+        E(mr(Az, EQ, FVAz, DOT, M.frac(sI, mr(M.sup(onePlus(sI), sNn), MINUS, ONE)))),
+        E(mr(EQ, mnv(fva, 'v-pv'), DOT, M.frac(mnr(i, 'v-i'), mr(M.sup(onePlus(mnr(i, 'v-i')), M.n(n, 'v-n')), MINUS, ONE)))),
+        E(mr(EQ, mnv(fva, 'v-pv'), DOT, M.frac(mnr(i, 'v-i'), M.n(nf(f - 1, 8))))),
+        E(mr(EQ, mn2(az, 'v-a'), KC), 'res')
+      ]);
+      var rows = [], open = 0;
+      for (var k = 1; k <= n; k++) {
+        var u = open * i, close = open + u + az;
+        rows.push([k, fmt(open, true), fmt(u, true), fmt(az, true), fmt(close, true)]);
+        open = close;
+      }
+      st.add('Kontrola vývojem fondu', 'Na konci posledního roku musí být ve fondu cílová částka.', [
+        E(mr(FVAz, EQ, Az, DOT, M.frac(mr(M.sup(onePlus(sI), sNn), MINUS, ONE), sI), EQ, mn2(open, 'v-pv'), KC), 'res')
+      ]);
+      return {
+        heads: [{ v: kc(az, true), l: 'vklad na konci každého roku (A_z)' }],
+        verdict: 'Vložíte celkem ' + kc(az * n, true) + ', zbytek do ' + kc(fva, false) + ' doplní čisté úroky (' + kc(fva - az * n, true) + ').',
+        facts: [['Čistá úroková míra (ČÚM)', pcs(i, 4)], ['Vloženo celkem', kc(az * n, true)], ['Čisté úroky celkem', kc(fva - az * n, true)]],
+        extra: panel('Vývoj fondu (vklad na konci roku)', table(['Rok', 'Počátek roku', 'Úrok za rok', 'Vklad na konci', 'Konec roku'], rows)),
+        steps: st.html(),
+        excel: [['ČÚM', '=' + xl(hum) + '*(1-' + xl(t) + ')'], ['A_z', '=' + xl(fva) + '*ČÚM/((1+ČÚM)^' + n + '-1)']]
+      };
+    }
+  });
+
+  EX.push({
+    id: 'ex9', tab: 'anuity', short: 'Př. 9', title: 'Současná hodnota prodaného auta', src: 'Cvičení 1, příklad 9 (přednáška, příklad 9)',
+    text: 'Za kolik (v současné hodnotě) jste prodali staré auto, jestliže první platba dnes byla 100 000 Kč a dále budou následovat 3 platby po 50 000 Kč na konci každého roku? Zvažujete 8% roční nominální sazbu s ročním skládáním. Od zdanění abstrahujete.',
+    params: [P('first', 'Platba dnes', 100000, 'Kč'), P('a', 'Roční platba (A)', 50000, 'Kč', { pos: true }), P('n', 'Počet ročních plateb', 3, '', { pos: true, step: 1 }), P('num', 'Roční nominální míra (i)', 8, '% p.a.')],
+    legend: [['v-pv', 'PV', 'Celková současná hodnota'], ['v-pv', 'PVA<sub>z</sub>', 'Současná hodnota anuity'], ['v-a', 'A', 'Roční platba na konci roku'], ['v-i', 'i', 'Úroková míra'], ['v-n', 'n', 'Počet plateb']],
+    run: function (v) {
+      var first = v.first, a = v.a, n = Math.max(1, Math.round(v.n)), i = v.num / 100;
+      var pva = i === 0 ? a * n : a * (1 - Math.pow(1 + i, -n)) / i, pv = pva + first, st = Steps();
+      var PVAz = M.sub(M.i('PVA', 'v-pv'), M.i('z'));
+      st.add('Současná hodnota anuity', 'Tři roční platby na konci roku (zásobitel).', [
+        E(mr(PVAz, EQ, sA, DOT, M.frac(mr(ONE, MINUS, M.sup(onePlus(sI), mr(MINUS, sNn))), sI))),
+        E(mr(EQ, mnv(a, 'v-a'), DOT, M.frac(mr(ONE, MINUS, M.sup(onePlus(mnr(i, 'v-i')), mr(MINUS, M.n(n, 'v-n')))), mnr(i, 'v-i')))),
+        E(mr(EQ, mn2(pva, 'v-pv'), KC), 'res')
+      ]);
+      st.add('Celková současná hodnota', 'Platba dnes už je v současné hodnotě, přičte se bez diskontování.', [
+        E(mr(sPV, EQ, PVAz, PLUS, M.i('platba dnes'))),
+        E(mr(EQ, mn2(pva, 'v-pv'), PLUS, mnv(first))),
+        E(mr(EQ, mn2(pv, 'v-pv'), KC), 'res')
+      ]);
+      var rows = [[0, 'dnes', fmt(first, true), '1', fmt(first, true)]], total = first;
+      for (var k = 1; k <= n; k++) {
+        var df = Math.pow(1 + i, -k);
+        rows.push([k, 'konec ' + k + '. roku', fmt(a, true), nf(df, 6), fmt(a * df, true)]);
+        total += a * df;
+      }
+      return {
+        heads: [{ v: kc(pv, true), l: 'současná hodnota prodeje (PV)' }],
+        verdict: 'Nominálně dostanete ' + kc(first + a * n, false) + ', ale platby v budoucnu mají nižší současnou hodnotu.',
+        facts: [['Současná hodnota anuity', kc(pva, true)], ['Platba dnes', kc(first, false)], ['Nominální součet plateb', kc(first + a * n, false)]],
+        extra: panel('Diskontování jednotlivých plateb', table(['Období', 'Kdy', 'Platba', 'Odúročitel (1 + i)^−t', 'Současná hodnota'], rows, ['Celkem', '', fmt(first + a * n, true), '', fmt(total, true)])),
+        steps: st.html(),
+        excel: [['PV', '=' + xl(first) + '+' + xl(a) + '*(1-(1+' + xl(i) + ')^-' + n + ')/' + xl(i)]]
+      };
+    }
+  });
+
+  /* ----- Splátkový kalendář ----- */
+  EX.push({
+    id: 'ex10', tab: 'umor', short: 'Př. 10', title: 'Půjčka společnosti Alfa', src: 'Cvičení 1, příklad 10 (přednáška, příklad 10)',
+    text: 'Společnost Alfa si vypůjčila 40 000 000 Kč na 3 roky při 10% úrokové míře. Platby jsou na konci roku. Jak velká je roční platba? Sestavte amortizační schéma. Zdanění úroků neuvažujte. Anuitní platbu zaokrouhlete na celé tisícikoruny nahoru a upravte platbu v posledním roce, aby konečný stav byl nulový.',
+    params: amortParams({ pv: 40000000, rate: 10, years: 3, m: 1, step: 1000, mode: 'up', adjust: true }),
+    run: amortRun, amortic: true
+  });
+  EX.push({
+    id: 'ex11', tab: 'umor', short: 'Př. 11', title: 'Úvěr Lesního draka', src: 'Přednáška, příklad 11',
+    text: 'Lesní drak a.s. si půjčila 250 000 000 Kč na 4 roky při 10% roční nominální sazbě a ročním skládání. Jde o úvěr s anuitním splácením. Jak velká bude roční platba? Sestavte umořovací plán.',
+    note: 'V zadání je překlep (250,00,000), tabulka ve slidech počítá s 250 000 000 Kč. Zaokrouhlení zadání neuvádí. Výchozí hodnoty ho berou jako v příkladu 10 (na tisíce nahoru) a lze ho vypnout.',
+    params: amortParams({ pv: 250000000, rate: 10, years: 4, m: 1, step: 1000, mode: 'up', adjust: true }),
+    run: amortRun, amortic: true
+  });
+  EX.push({
+    id: 'kal30', tab: 'umor', short: 'Slidy: 30 let, 5,22 %', title: 'Roční splátkový kalendář na 30 let', src: 'Přednáška, anuita – splátkový kalendář',
+    text: 'Úvěr 1 000 000 Kč, splatnost 30 let, i = 5,22 % p. a. Sestavte roční splátkový kalendář: anuita, úrok, úmor a konečný stav úvěru.',
+    params: amortParams({ pv: 1000000, rate: 5.22, years: 30, m: 1, step: 0, mode: 'up', adjust: true }),
+    run: amortRun, amortic: true
+  });
+
+  /* ----- Perpetuita ----- */
+  EX.push({
+    id: 'perp', tab: 'perp', short: 'Perpetuita', title: 'Perpetuita a Gordonův model', src: 'Přednáška, perpetuita',
+    text: 'Nekonečná řada stejných plateb. Perpetuita placená pozadu: PVP_z = A_z / i. Placená předem: PVP_p = PVP_z + A_p. Při konstantním růstu plateb mírou g platí Gordonův model PV = A · (1 + g) / (i − g).',
+    note: 'V materiálech je jen vzorec bez zadání. Čísla jsou ukázková.',
+    params: [P('a', 'Pravidelná platba (A)', 10000, 'Kč', { pos: true }), P('i', 'Úroková míra (i)', 5, '% p.a.', { pos: true }), P('g', 'Míra růstu plateb (g) pro Gordonův model', 2, '% p.a.', { min: -50 })],
+    legend: [['v-pv', 'PVP<sub>z</sub>', 'Současná hodnota perpetuity placené pozadu'], ['v-pv', 'PVP<sub>p</sub>', 'Současná hodnota perpetuity placené předem'], ['v-a', 'A', 'Konstantní platba (dividenda, nájem …)'], ['v-i', 'i', 'Úroková míra'], ['', 'g', 'Míra růstu platby']],
+    run: function (v) {
+      var a = v.a, i = v.i / 100, g = v.g / 100, pz = a / i, pp = pz + a, st = Steps(), okG = i > g, gor = okG ? a * (1 + g) / (i - g) : NaN;
+      var Pz = M.sub(M.i('PVP', 'v-pv'), M.i('z')), Pp = M.sub(M.i('PVP', 'v-pv'), M.i('p')), Az = M.sub(sA, M.i('z')), Ap = M.sub(sA, M.i('p'));
+      st.add('Perpetuita placená pozadu', 'Platby jsou na konci každého období a nikdy nekončí.', [
+        E(mr(Pz, EQ, M.frac(Az, sI))),
+        E(mr(EQ, M.frac(mnv(a, 'v-a'), mnr(i, 'v-i')))),
+        E(mr(EQ, mn2(pz, 'v-pv'), KC), 'res')
+      ]);
+      st.add('Perpetuita placená předem', 'První platba je hned, takže se k hodnotě pozadu přičte jedna platba.', [
+        E(mr(Pp, EQ, Pz, PLUS, Ap)),
+        E(mr(EQ, mn2(pz, 'v-pv'), PLUS, mnv(a, 'v-a'))),
+        E(mr(EQ, mn2(pp, 'v-pv'), KC), 'res')
+      ]);
+      if (okG) {
+        st.add('Gordonův model (platby rostou mírou g)', 'Platí jen pro i &gt; g.', [
+          E(mr(sPV, EQ, M.frac(mr(sA, DOT, onePlus(M.i('g'))), mr(sI, MINUS, M.i('g'))))),
+          E(mr(EQ, M.frac(mr(mnv(a, 'v-a'), DOT, onePlus(mnr(g))), mr(mnr(i, 'v-i'), MINUS, mnr(g))))),
+          E(mr(EQ, mn2(gor, 'v-pv'), KC), 'res')
+        ]);
+      }
+      var N = 100, part = a * (1 - Math.pow(1 + i, -N)) / i;
+      return {
+        heads: [{ v: kc(pz, true), l: 'perpetuita pozadu (PVP_z)' }, { v: kc(pp, true), l: 'perpetuita předem (PVP_p)' }].concat(okG ? [{ v: kc(gor, true), l: 'Gordonův model (PV)' }] : []),
+        verdict: okG ? '' : 'Gordonův model vyžaduje, aby úroková míra byla vyšší než míra růstu plateb (i > g).',
+        facts: [['Současná hodnota prvních ' + N + ' plateb', kc(part, true)], ['Zbývá do PVP_z', kc(pz - part, true)]],
+        steps: st.html(),
+        excel: [['PVP_z', '=' + xl(a) + '/' + xl(i)], ['PVP_p', '=PVP_z+' + xl(a)]].concat(okG ? [['Gordon', '=' + xl(a) + '*(1+' + xl(g) + ')/(' + xl(i) + '-' + xl(g) + ')']] : [])
+      };
+    }
+  });
+
+  /* ---------- přehled vzorců ---------- */
+  var GROUPS = [['miry', 'Úrokové míry'], ['hodnota', 'Budoucí a současná hodnota'], ['anuity', 'Anuity'], ['umor', 'Splátky úvěru'], ['perp', 'Perpetuita']];
+  var FS = [];
+  var FVAz = M.sub(M.i('FVA', 'v-pv'), M.i('z')), FVAp = M.sub(M.i('FVA', 'v-pv'), M.i('p')), PVAz = M.sub(M.i('PVA', 'v-pv'), M.i('z')), PVAp = M.sub(M.i('PVA', 'v-pv'), M.i('p'));
+  var Az = M.sub(sA, M.i('z')), Ap = M.sub(sA, M.i('p'));
+  var pctF = function (x) { return pcs(x, 2); };
+  var numF = function (x) { return nf(x, 2); };
+
+  function curveSvg(c, v) {
+    var xs = c.xs(v), x0 = xs[0], x1 = xs[1], N = 60, pts = [], lo = Infinity, hi = -Infinity, k, x, y;
+    for (k = 0; k <= N; k++) {
+      x = x0 + (x1 - x0) * k / N; y = c.f(v, x);
+      if (isFinite(y)) { pts.push([x, y]); lo = Math.min(lo, y); hi = Math.max(hi, y); }
+    }
+    if (pts.length < 2) return '';
+    var cx = Math.min(Math.max(c.cur(v), x0), x1), cy = c.f(v, cx), fx = c.fx || numF, fy = c.fy || numF;
+    lo = Math.min(lo, 0, cy); hi = Math.max(hi, cy, 0); if (hi === lo) hi = lo + 1;
+    var W = 360, H = 176, L = 10, Rr = 12, T = 26, B = 36, pw = W - L - Rr, ph = H - T - B;
+    var sx = function (a) { return L + (a - x0) / (x1 - x0) * pw; }, sy = function (b) { return T + ph - (b - lo) / (hi - lo) * ph; };
+    var d = pts.map(function (p, idx) { return (idx ? 'L' : 'M') + sx(p[0]).toFixed(1) + ' ' + sy(p[1]).toFixed(1); }).join(' ');
+    var px = sx(cx), py = sy(cy), anchor = px > W * 0.6 ? 'end' : 'start', tx = anchor === 'end' ? px - 8 : px + 8;
+    var out = '<line x1="' + L + '" x2="' + (W - Rr) + '" y1="' + sy(0) + '" y2="' + sy(0) + '" stroke="var(--muted)" stroke-width="1"/>' +
+      '<path d="' + d + '" fill="none" stroke="var(--accent)" stroke-width="2"/>' +
+      '<line x1="' + px + '" x2="' + px + '" y1="' + py + '" y2="' + sy(0) + '" stroke="var(--interest)" stroke-width="1" stroke-dasharray="3 3"/>' +
+      '<circle cx="' + px + '" cy="' + py + '" r="4.5" fill="var(--interest)"/>' +
+      '<text x="' + tx + '" y="' + Math.max(14, py - 9) + '" text-anchor="' + anchor + '" font-size="12" font-weight="600" fill="var(--fg)" font-family="var(--font-body)">' + fy(cy) + '</text>' +
+      '<text x="' + L + '" y="' + (H - 18) + '" font-size="11" fill="var(--muted)" font-family="var(--font-body)">' + fx(x0) + '</text>' +
+      '<text x="' + (W - Rr) + '" y="' + (H - 18) + '" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--font-body)">' + fx(x1) + '</text>' +
+      '<text x="' + (W / 2) + '" y="' + (H - 4) + '" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--font-body)">' + c.xl + '</text>';
+    return '<svg class="spark" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Graf závislosti výsledku na veličině ' + c.xl + '">' + out + '</svg>';
+  }
+
+  FS.push({
+    id: 'fisher', group: 'miry', name: 'Reálná úroková míra (Fisherova rovnice)',
+    formula: [['přesně', mr(R('RÚM'), EQ, M.frac(mr(R('NÚM'), MINUS, R('π')), mr(ONE, PLUS, R('π'))))], ['odhad', mr(R('RÚM'), M.o('≈'), R('NÚM'), MINUS, R('π'))]],
+    when: 'Chcete očistit nominální úrok od inflace. Při nízké inflaci stačí odhad, při vyšší je přesnější Fisherův vzorec. Reálná míra může být záporná.',
+    symbols: [['v-i', 'RÚM', 'Reálná úroková míra'], ['v-i', 'NÚM', 'Nominální úroková míra'], ['v-i', 'π', 'Míra inflace']],
+    used: ['a1', 'real'],
+    params: [P('num', 'NÚM', 3.9, '% p.a.'), P('infl', 'Inflace π', 1.9, '% p.a.', { min: -50 })],
+    curve: { xl: 'inflace π', xs: function (v) { return [0, Math.max(0.1, v.num / 100 * 2)]; }, f: function (v, x) { return (v.num / 100 - x) / (1 + x); }, cur: function (v) { return v.infl / 100; }, fx: pctF, fy: pctF },
+    run: function (v) {
+      var nom = v.num / 100, pi = v.infl / 100, ex = (nom - pi) / (1 + pi);
+      return {
+        head: { v: pcs(ex, 4), l: 'RÚM přesně (odhad ' + pcs(nom - pi, 4) + ')' },
+        lines: [E(mr(R('RÚM'), EQ, M.frac(mr(mnr(nom, 'v-i'), MINUS, mnr(pi, 'v-i')), mr(ONE, PLUS, mnr(pi, 'v-i'))))), E(mr(EQ, mnp(ex, 'v-i', 4)), 'res')],
+        xl: '=(' + xl(nom) + '-' + xl(pi) + ')/(1+' + xl(pi) + ')'
+      };
+    }
+  });
+
+  FS.push({
+    id: 'cum', group: 'miry', name: 'Čistá úroková míra po zdanění',
+    formula: [['', mr(R('ČÚM'), EQ, R('HÚM'), DOT, M.par(mr(ONE, MINUS, sT)))]],
+    when: 'Jakmile je zadaná sazba daně z úroku, počítá se s čistou úrokovou mírou. Daň se strhává z úroku, ne z vkladu.',
+    symbols: [['v-i', 'ČÚM', 'Čistá úroková míra'], ['v-i', 'HÚM', 'Hrubá úroková míra'], ['', 't', 'Sazba daně z úroku']],
+    used: ['a2', 'ex3', 'ex4', 'ex5', 'ex6', 'ex7', 'ex8'],
+    params: [P('hum', 'HÚM', 10, '% p.a.'), P('tax', 'Sazba daně t', 19, '%', { max: 100 })],
+    curve: { xl: 'sazba daně t', xs: function () { return [0, 0.5]; }, f: function (v, x) { return v.hum / 100 * (1 - x); }, cur: function (v) { return v.tax / 100; }, fx: function (x) { return pcs(x, 0); }, fy: pctF },
+    run: function (v) {
+      var h = v.hum / 100, t = v.tax / 100, c = h * (1 - t);
+      return {
+        head: { v: pcs(c, 4), l: 'čistá úroková míra ČÚM' },
+        lines: [E(mr(R('ČÚM'), EQ, mnr(h, 'v-i'), DOT, M.par(mr(ONE, MINUS, mnr(t))))), E(mr(EQ, mnp(c, 'v-i', 4)), 'res')],
+        xl: '=' + xl(h) + '*(1-' + xl(t) + ')'
+      };
+    }
+  });
+
+  FS.push({
+    id: 'eum', group: 'miry', name: 'Efektivní úroková míra',
+    formula: [['', mr(R('EÚM'), EQ, M.sup(M.par(mr(ONE, PLUS, M.frac(R('NÚM'), sM))), sM), MINUS, ONE)]],
+    when: 'Úroky se připisují častěji než jednou ročně. EÚM je roční míra, která dává stejný výnos jako nominální sazba s M složeními. Pro M = 1 je EÚM rovna NÚM.',
+    symbols: [['v-i', 'EÚM', 'Efektivní úroková míra'], ['v-i', 'NÚM', 'Roční nominální úroková míra'], ['v-n', 'M', 'Počet složení úroku za rok']],
+    used: ['ex1', 'eum', 'ex2', 'ex6'],
+    params: [P('num', 'NÚM', 9, '% p.a.'), P('M', 'M', 12, 'krát', { pos: true })],
+    curve: { xl: 'počet složení M za rok', xs: function () { return [1, 60]; }, f: function (v, x) { return eff(v.num / 100, x); }, cur: function (v) { return v.M; }, fx: function (x) { return nf(x, 0); }, fy: pctF },
+    run: function (v) {
+      var nom = v.num / 100, m = v.M, e = eff(nom, m);
+      return {
+        head: { v: pcs(e, 4), l: 'efektivní úroková míra EÚM' },
+        lines: [E(mr(R('EÚM'), EQ, M.sup(onePlus(M.frac(mnr(nom, 'v-i'), M.n(nf(m, 4), 'v-n'))), M.n(nf(m, 4), 'v-n')), MINUS, ONE)), E(mr(EQ, mnp(e, 'v-i', 4)), 'res')],
+        xl: '=(1+' + xl(nom) + '/' + xl(m) + ')^' + xl(m) + '-1'
+      };
+    }
+  });
+
+  FS.push({
+    id: 'cont', group: 'miry', name: 'Spojité skládání úroků',
+    formula: [['', mr(R('EÚM'), EQ, M.i('lim'), M.sup(M.par(mr(ONE, PLUS, M.frac(R('NÚM'), sM))), sM), MINUS, ONE, EQ, M.sup(M.i('e'), R('NÚM')), MINUS, ONE)]],
+    when: 'Úroky se připisují v každém okamžiku. Je to horní mez efektivní míry pro dané NÚM. Číslo e je přibližně 2,71828.',
+    symbols: [['v-i', 'EÚM', 'Efektivní úroková míra'], ['v-i', 'NÚM', 'Roční nominální úroková míra'], ['', 'e', 'Eulerovo číslo']],
+    used: ['ex1'],
+    params: [P('num', 'NÚM', 9, '% p.a.')],
+    curve: { xl: 'nominální míra NÚM', xs: function (v) { return [0, Math.max(0.2, v.num / 100 * 2)]; }, f: function (v, x) { return Math.exp(x) - 1; }, cur: function (v) { return v.num / 100; }, fx: pctF, fy: pctF },
+    run: function (v) {
+      var nom = v.num / 100, e = Math.exp(nom) - 1;
+      return {
+        head: { v: pcs(e, 4), l: 'EÚM při spojitém skládání' },
+        lines: [E(mr(R('EÚM'), EQ, M.sup(M.i('e'), mnr(nom, 'v-i')), MINUS, ONE, EQ, mnr(Math.exp(nom)), MINUS, ONE)), E(mr(EQ, mnp(e, 'v-i', 4)), 'res')],
+        xl: '=EXP(' + xl(nom) + ')-1'
+      };
+    }
+  });
+
+  FS.push({
+    id: 'nomB', group: 'miry', name: 'Rovnocenná nominální sazba pro jiné skládání',
+    formula: [['', mr(M.sub(R('NÚM'), M.i('B')), EQ, M.sub(sM, M.i('B')), DOT, M.par(mr(M.sup(onePlus(R('EÚM')), M.frac(ONE, M.sub(sM, M.i('B')))), MINUS, ONE)))]],
+    when: 'Chcete nabídnout stejné podmínky při jiné frekvenci skládání. Z efektivní míry se zpětně dopočítá nominální sazba pro M<sub>B</sub> složení za rok.',
+    symbols: [['v-i', 'NÚM<sub>B</sub>', 'Hledaná nominální sazba'], ['v-i', 'EÚM', 'Efektivní míra původního účtu'], ['v-n', 'M<sub>B</sub>', 'Složení za rok u nového účtu']],
+    used: ['ex2'],
+    params: [P('e', 'EÚM', 12.6825, '% p.a.'), P('mB', 'M_B', 4, 'krát', { pos: true })],
+    curve: { xl: 'počet složení M_B za rok', xs: function () { return [1, 24]; }, f: function (v, x) { return x * (Math.pow(1 + v.e / 100, 1 / x) - 1); }, cur: function (v) { return v.mB; }, fx: function (x) { return nf(x, 0); }, fy: pctF },
+    run: function (v) {
+      var e = v.e / 100, m = v.mB, nb = m * (Math.pow(1 + e, 1 / m) - 1);
+      return {
+        head: { v: pcs(nb, 4), l: 'nominální sazba NÚM_B' },
+        lines: [E(mr(M.sub(R('NÚM'), M.i('B')), EQ, M.n(nf(m, 4), 'v-n'), DOT, M.par(mr(M.sup(onePlus(mnr(e, 'v-i')), M.frac(ONE, M.n(nf(m, 4), 'v-n'))), MINUS, ONE)))), E(mr(EQ, mnp(nb, 'v-i', 4)), 'res')],
+        xl: '=' + xl(m) + '*((1+' + xl(e) + ')^(1/' + xl(m) + ')-1)'
+      };
+    }
+  });
+
+  FS.push({
+    id: 'fv', group: 'hodnota', name: 'Budoucí hodnota (úročitel)',
+    formula: [['', mr(sFV, EQ, sPV, DOT, M.sup(onePlus(sI), sNn))]],
+    when: 'Znáte částku dnes a chcete vědět, na kolik naroste za n let při složeném úročení. Faktor (1 + i)<sup>n</sup> je úročitel.',
+    symbols: [['v-pv', 'FV', 'Budoucí hodnota'], ['v-pv', 'PV', 'Současná hodnota (vklad dnes)'], ['v-i', 'i', 'Úroková míra za období'], ['v-n', 'n', 'Počet období']],
+    used: ['cmp', 'ex3', 'ex4', 'real'],
+    params: [P('pv', 'PV', 5000, 'Kč', { pos: true }), P('i', 'i', 12, '%'), P('n', 'n', 5, 'období', { pos: true })],
+    curve: { xl: 'počet období n', xs: function (v) { return [0, Math.max(10, Math.ceil(v.n * 1.5))]; }, f: function (v, x) { return v.pv * Math.pow(1 + v.i / 100, x); }, cur: function (v) { return v.n; }, fx: function (x) { return nf(x, 0); }, fy: function (y) { return kc(y, false); } },
+    run: function (v) {
+      var i = v.i / 100, f = v.pv * Math.pow(1 + i, v.n);
+      return {
+        head: { v: kc(f, true), l: 'budoucí hodnota FV' },
+        lines: [E(mr(sFV, EQ, mnv(v.pv, 'v-pv'), DOT, M.sup(onePlus(mnr(i, 'v-i')), M.n(nf(v.n, 4), 'v-n')))), E(mr(EQ, mn2(f, 'v-pv'), KC), 'res')],
+        xl: '=' + xl(v.pv) + '*(1+' + xl(i) + ')^' + xl(v.n)
+      };
+    }
+  });
+
+  FS.push({
+    id: 'pv', group: 'hodnota', name: 'Současná hodnota (odúročitel)',
+    formula: [['', mr(sPV, EQ, M.frac(sFV, M.sup(onePlus(sI), sNn)), EQ, sFV, DOT, M.sup(onePlus(sI), mr(MINUS, sNn)))]],
+    when: 'Znáte částku v budoucnu a chcete vědět, kolik je dnes. Faktor (1 + i)<sup>−n</sup> je odúročitel. Umožňuje srovnávat částky z různých okamžiků.',
+    symbols: [['v-pv', 'PV', 'Současná hodnota'], ['v-pv', 'FV', 'Budoucí hodnota'], ['v-i', 'i', 'Úroková míra za období'], ['v-n', 'n', 'Počet období']],
+    used: ['cmp', 'ex4', 'ex5', 'ex6'],
+    params: [P('fv', 'FV', 7200, 'Kč', { pos: true }), P('i', 'i', 12, '%'), P('n', 'n', 5, 'období', { pos: true })],
+    curve: { xl: 'počet období n', xs: function (v) { return [0, Math.max(10, Math.ceil(v.n * 1.5))]; }, f: function (v, x) { return v.fv / Math.pow(1 + v.i / 100, x); }, cur: function (v) { return v.n; }, fx: function (x) { return nf(x, 0); }, fy: function (y) { return kc(y, false); } },
+    run: function (v) {
+      var i = v.i / 100, p = v.fv / Math.pow(1 + i, v.n);
+      return {
+        head: { v: kc(p, true), l: 'současná hodnota PV' },
+        lines: [E(mr(sPV, EQ, M.frac(mnv(v.fv, 'v-pv'), M.sup(onePlus(mnr(i, 'v-i')), M.n(nf(v.n, 4), 'v-n'))))), E(mr(EQ, mn2(p, 'v-pv'), KC), 'res')],
+        xl: '=' + xl(v.fv) + '/(1+' + xl(i) + ')^' + xl(v.n)
+      };
+    }
+  });
+
+  FS.push({
+    id: 'fvaz', group: 'anuity', name: 'Budoucí hodnota anuity (střadatel)',
+    formula: [['', mr(FVAz, EQ, sA, DOT, M.frac(mr(M.sup(onePlus(sI), sNn), MINUS, ONE), sI))]],
+    when: 'Pravidelně spoříte stejnou částku na konci každého období a chcete vědět, kolik budete mít po n obdobích. Zlomek je střadatel.',
+    symbols: [['v-pv', 'FVA<sub>z</sub>', 'Budoucí hodnota anuity placené pozadu'], ['v-a', 'A', 'Pravidelná platba'], ['v-i', 'i', 'Úroková míra za období'], ['v-n', 'n', 'Počet plateb']],
+    used: ['ex7', 'ex8'],
+    params: [P('a', 'A', 50000, 'Kč', { pos: true }), P('i', 'i', 5, '%', { pos: true }), P('n', 'n', 10, 'období', { pos: true })],
+    curve: { xl: 'počet plateb n', xs: function (v) { return [0, Math.max(10, Math.ceil(v.n * 1.5))]; }, f: function (v, x) { var i = v.i / 100; return v.a * (Math.pow(1 + i, x) - 1) / i; }, cur: function (v) { return v.n; }, fx: function (x) { return nf(x, 0); }, fy: function (y) { return kc(y, false); } },
+    run: function (v) {
+      var i = v.i / 100, r = v.a * (Math.pow(1 + i, v.n) - 1) / i;
+      return {
+        head: { v: kc(r, true), l: 'FVA_z' },
+        lines: [E(mr(FVAz, EQ, mnv(v.a, 'v-a'), DOT, M.frac(mr(M.sup(onePlus(mnr(i, 'v-i')), M.n(nf(v.n, 4), 'v-n')), MINUS, ONE), mnr(i, 'v-i')))), E(mr(EQ, mn2(r, 'v-pv'), KC), 'res')],
+        xl: '=' + xl(v.a) + '*((1+' + xl(i) + ')^' + xl(v.n) + '-1)/' + xl(i)
+      };
+    }
+  });
+
+  FS.push({
+    id: 'azfva', group: 'anuity', name: 'Platba na naspoření cílové částky (fondovatel)',
+    formula: [['', mr(Az, EQ, FVAz, DOT, M.frac(sI, mr(M.sup(onePlus(sI), sNn), MINUS, ONE)))]],
+    when: 'Chcete naspořit danou částku a hledáte pravidelnou platbu na konci období. Fondovatel je převrácená hodnota střadatele.',
+    symbols: [['v-a', 'A<sub>z</sub>', 'Hledaná pravidelná platba'], ['v-pv', 'FVA<sub>z</sub>', 'Cílová částka na konci'], ['v-i', 'i', 'Úroková míra za období'], ['v-n', 'n', 'Počet plateb']],
+    used: ['ex7', 'ex8'],
+    params: [P('fva', 'FVA_z', 4000000, 'Kč', { pos: true }), P('i', 'i', 7.29, '%', { pos: true }), P('n', 'n', 4, 'období', { pos: true })],
+    curve: { xl: 'počet plateb n', xs: function (v) { return [1, Math.max(10, Math.ceil(v.n * 1.5))]; }, f: function (v, x) { var i = v.i / 100; return v.fva * i / (Math.pow(1 + i, x) - 1); }, cur: function (v) { return v.n; }, fx: function (x) { return nf(x, 0); }, fy: function (y) { return kc(y, false); } },
+    run: function (v) {
+      var i = v.i / 100, f = Math.pow(1 + i, v.n), r = v.fva * i / (f - 1);
+      return {
+        head: { v: kc(r, true), l: 'platba A_z' },
+        lines: [E(mr(Az, EQ, mnv(v.fva, 'v-pv'), DOT, M.frac(mnr(i, 'v-i'), mr(M.sup(onePlus(mnr(i, 'v-i')), M.n(nf(v.n, 4), 'v-n')), MINUS, ONE)))), E(mr(EQ, mn2(r, 'v-a'), KC), 'res')],
+        xl: '=' + xl(v.fva) + '*' + xl(i) + '/((1+' + xl(i) + ')^' + xl(v.n) + '-1)'
+      };
+    }
+  });
+
+  FS.push({
+    id: 'pvaz', group: 'anuity', name: 'Současná hodnota anuity (zásobitel)',
+    formula: [['', mr(PVAz, EQ, sA, DOT, M.frac(mr(ONE, MINUS, M.sup(onePlus(sI), mr(MINUS, sNn))), sI))]],
+    when: 'Znáte pravidelné platby na konci období a chcete jejich hodnotu dnes, například při prodeji na splátky nebo u leasingu. Zlomek je zásobitel.',
+    symbols: [['v-pv', 'PVA<sub>z</sub>', 'Současná hodnota anuity'], ['v-a', 'A', 'Pravidelná platba'], ['v-i', 'i', 'Úroková míra za období'], ['v-n', 'n', 'Počet plateb']],
+    used: ['ex9'],
+    params: [P('a', 'A', 50000, 'Kč', { pos: true }), P('i', 'i', 8, '%', { pos: true }), P('n', 'n', 3, 'období', { pos: true })],
+    curve: { xl: 'počet plateb n', xs: function (v) { return [0, Math.max(10, Math.ceil(v.n * 2))]; }, f: function (v, x) { var i = v.i / 100; return v.a * (1 - Math.pow(1 + i, -x)) / i; }, cur: function (v) { return v.n; }, fx: function (x) { return nf(x, 0); }, fy: function (y) { return kc(y, false); } },
+    run: function (v) {
+      var i = v.i / 100, r = v.a * (1 - Math.pow(1 + i, -v.n)) / i;
+      return {
+        head: { v: kc(r, true), l: 'PVA_z (strop pro n → ∞ je A / i = ' + kc(v.a / i, false) + ')' },
+        lines: [E(mr(PVAz, EQ, mnv(v.a, 'v-a'), DOT, M.frac(mr(ONE, MINUS, M.sup(onePlus(mnr(i, 'v-i')), mr(MINUS, M.n(nf(v.n, 4), 'v-n')))), mnr(i, 'v-i')))), E(mr(EQ, mn2(r, 'v-pv'), KC), 'res')],
+        xl: '=' + xl(v.a) + '*(1-(1+' + xl(i) + ')^-' + xl(v.n) + ')/' + xl(i)
+      };
+    }
+  });
+
+  FS.push({
+    id: 'azpva', group: 'anuity', name: 'Anuitní splátka úvěru (umořovatel)',
+    formula: [['', mr(Az, EQ, PVAz, DOT, M.frac(sI, mr(ONE, MINUS, M.sup(onePlus(sI), mr(MINUS, sNn)))))]],
+    when: 'Znáte výši úvěru a hledáte stejnou splátku na konci každého období. Umořovatel je převrácená hodnota zásobitele.',
+    symbols: [['v-a', 'A<sub>z</sub>', 'Hledaná anuitní splátka'], ['v-pv', 'PVA<sub>z</sub>', 'Výše úvěru'], ['v-i', 'i', 'Sazba za období'], ['v-n', 'n', 'Počet splátek']],
+    used: ['ex10', 'ex11', 'kal30'],
+    params: [P('pva', 'PVA_z', 40000000, 'Kč', { pos: true }), P('i', 'i', 10, '%', { pos: true }), P('n', 'n', 3, 'období', { pos: true })],
+    curve: { xl: 'počet splátek n', xs: function (v) { return [1, Math.max(10, Math.ceil(v.n * 2))]; }, f: function (v, x) { var i = v.i / 100; return v.pva * i / (1 - Math.pow(1 + i, -x)); }, cur: function (v) { return v.n; }, fx: function (x) { return nf(x, 0); }, fy: function (y) { return kc(y, false); } },
+    run: function (v) {
+      var i = v.i / 100, r = v.pva * i / (1 - Math.pow(1 + i, -v.n));
+      return {
+        head: { v: kc(r, true), l: 'anuitní splátka A_z' },
+        lines: [E(mr(Az, EQ, mnv(v.pva, 'v-pv'), DOT, M.frac(mnr(i, 'v-i'), mr(ONE, MINUS, M.sup(onePlus(mnr(i, 'v-i')), mr(MINUS, M.n(nf(v.n, 4), 'v-n'))))))), E(mr(EQ, mn2(r, 'v-a'), KC), 'res')],
+        xl: '=PLATBA(' + xl(i) + ';' + xl(v.n) + ';-' + xl(v.pva) + ')'
+      };
+    }
+  });
+
+  FS.push({
+    id: 'due', group: 'anuity', name: 'Anuita placená předem',
+    formula: [['budoucí hodnota', mr(FVAp, EQ, FVAz, DOT, onePlus(sI))], ['současná hodnota', mr(PVAp, EQ, PVAz, DOT, onePlus(sI))], ['platba', mr(Ap, EQ, M.frac(Az, onePlus(sI)))]],
+    when: 'Platby jsou na počátku období, takže celá řada je posunutá o jedno období dopředu a každá platba se úročí o období déle. Pro stejný cíl stačí o faktor (1 + i) menší platba.',
+    symbols: [['v-a', 'A<sub>p</sub>', 'Platba na počátku období'], ['v-a', 'A<sub>z</sub>', 'Platba na konci období'], ['v-pv', 'FVA<sub>p</sub>', 'Budoucí hodnota anuity předem'], ['v-pv', 'PVA<sub>p</sub>', 'Současná hodnota anuity předem']],
+    used: ['ex7'],
+    params: [P('a', 'Platba A_z', 100000, 'Kč', { pos: true }), P('i', 'i', 5, '%', { pos: true }), P('n', 'n', 10, 'období', { pos: true })],
+    curve: { xl: 'sazba i', xs: function () { return [0.005, 0.2]; }, f: function (v, x) { return v.a / (1 + x); }, cur: function (v) { return v.i / 100; }, fx: function (x) { return pcs(x, 1); }, fy: function (y) { return kc(y, false); } },
+    run: function (v) {
+      var i = v.i / 100, n = v.n, fz = v.a * (Math.pow(1 + i, n) - 1) / i, pz = v.a * (1 - Math.pow(1 + i, -n)) / i, ap = v.a / (1 + i);
+      return {
+        head: { v: kc(ap, true), l: 'platba předem A_p (stejný cíl jako A_z pozadu)' },
+        lines: [
+          E(mr(FVAp, EQ, mn2(fz, 'v-pv'), DOT, onePlus(mnr(i, 'v-i')), EQ, mn2(fz * (1 + i), 'v-pv'), KC)),
+          E(mr(PVAp, EQ, mn2(pz, 'v-pv'), DOT, onePlus(mnr(i, 'v-i')), EQ, mn2(pz * (1 + i), 'v-pv'), KC)),
+          E(mr(Ap, EQ, M.frac(mnv(v.a, 'v-a'), onePlus(mnr(i, 'v-i'))), EQ, mn2(ap, 'v-a'), KC), 'res')
+        ],
+        xl: '=' + xl(v.a) + '/(1+' + xl(i) + ')'
+      };
+    }
+  });
+
+  FS.push({
+    id: 'per', group: 'umor', name: 'Sazba za období a počet plateb',
+    formula: [['sazba za období', mr(sI, EQ, M.frac(R('NÚM'), M.i('m')))], ['počet plateb', mr(M.i('N', 'v-n'), EQ, sNn, DOT, M.i('m'))]],
+    when: 'Platíte víckrát než jednou ročně (měsíčně, čtvrtletně). Roční nominální sazba se dělí počtem plateb za rok a počet let se tímto číslem násobí.',
+    symbols: [['v-i', 'i', 'Sazba za jedno období'], ['v-i', 'NÚM', 'Roční nominální sazba'], ['v-n', 'N', 'Počet plateb celkem'], ['v-n', 'n', 'Počet let'], ['', 'm', 'Plateb za rok']],
+    used: ['ex10', 'ex11', 'kal30'],
+    params: [P('num', 'NÚM', 10, '% p.a.'), P('m', 'm', 12, 'za rok', { pos: true }), P('n', 'n', 3, 'let', { pos: true })],
+    curve: { xl: 'plateb za rok m', xs: function () { return [1, 12]; }, f: function (v, x) { return v.num / 100 / x; }, cur: function (v) { return v.m; }, fx: function (x) { return nf(x, 0); }, fy: function (y) { return pcs(y, 3); } },
+    run: function (v) {
+      var nom = v.num / 100, i = nom / v.m, N = v.n * v.m;
+      return {
+        head: { v: pcs(i, 4), l: 'sazba za období i; počet plateb N = ' + nf(N, 2) },
+        lines: [E(mr(sI, EQ, M.frac(mnr(nom, 'v-i'), M.n(nf(v.m, 4))), EQ, mnp(i, 'v-i', 4))), E(mr(M.i('N', 'v-n'), EQ, M.n(nf(v.n, 4), 'v-n'), DOT, M.n(nf(v.m, 4)), EQ, M.n(nf(N, 2), 'v-n')), 'res')],
+        xl: '=' + xl(nom) + '/' + xl(v.m) + '   a   =' + xl(v.n) + '*' + xl(v.m)
+      };
+    }
+  });
+
+  FS.push({
+    id: 'amort', group: 'umor', name: 'Úrok, splátka jistiny a zůstatek v období t',
+    formula: [['úrok', mr(M.sub(M.i('U', 'v-u'), M.i('t')), EQ, M.sub(M.i('D'), mr(M.i('t'), MINUS, ONE)), DOT, sI)], ['splátka jistiny', mr(M.sub(M.i('S', 'v-pv'), M.i('t')), EQ, sA, MINUS, M.sub(M.i('U', 'v-u'), M.i('t')))], ['zůstatek dluhu', mr(M.sub(M.i('D'), M.i('t')), EQ, M.sub(M.i('D'), mr(M.i('t'), MINUS, ONE)), MINUS, M.sub(M.i('S', 'v-pv'), M.i('t')))]],
+    when: 'Řádek amortizačního schématu. Úrok se počítá z dluhu na začátku období, zbytek platby splácí jistinu a dluh se o ni sníží. Poslední platba se upraví tak, aby zůstatek byl nulový.',
+    symbols: [['', 'D<sub>t−1</sub>', 'Dluh na začátku období'], ['', 'D<sub>t</sub>', 'Dluh na konci období'], ['v-u', 'U<sub>t</sub>', 'Úrok v období t'], ['v-pv', 'S<sub>t</sub>', 'Splátka jistiny v období t'], ['v-a', 'A', 'Anuitní platba'], ['v-i', 'i', 'Sazba za období']],
+    used: ['ex10', 'ex11', 'kal30'],
+    params: [P('d', 'D_t−1', 27915000, 'Kč'), P('i', 'i', 10, '%'), P('a', 'A', 16085000, 'Kč', { pos: true })],
+    curve: { xl: 'dluh na začátku D_t−1', xs: function (v) { return [0, Math.max(v.d * 1.5, v.a)]; }, f: function (v, x) { return x * v.i / 100; }, cur: function (v) { return v.d; }, fx: function (x) { return shortNum(x); }, fy: function (y) { return 'úrok ' + kc(y, false); } },
+    run: function (v) {
+      var i = v.i / 100, u = v.d * i, s = v.a - u, dn = v.d - s;
+      var U = M.sub(M.i('U', 'v-u'), M.i('t')), S = M.sub(M.i('S', 'v-pv'), M.i('t')), Dp = M.sub(M.i('D'), mr(M.i('t'), MINUS, ONE)), Dt = M.sub(M.i('D'), M.i('t'));
+      return {
+        head: { v: kc(dn, true), l: 'dluh na konci období D_t' },
+        lines: [
+          E(mr(U, EQ, mnv(v.d), DOT, mnr(i, 'v-i'), EQ, mn2(u, 'v-u'), KC)),
+          E(mr(S, EQ, mnv(v.a, 'v-a'), MINUS, mn2(u, 'v-u'), EQ, mn2(s, 'v-pv'), KC)),
+          E(mr(Dt, EQ, mnv(v.d), MINUS, mn2(s, 'v-pv'), EQ, mn2(dn), KC), 'res')
+        ],
+        xl: 'úrok: =' + xl(v.d) + '*' + xl(i) + '   jistina: =' + xl(v.a) + '-úrok   zůstatek: =' + xl(v.d) + '-jistina'
+      };
+    }
+  });
+
+  FS.push({
+    id: 'perp', group: 'perp', name: 'Perpetuita',
+    formula: [['pozadu', mr(M.sub(M.i('PVP', 'v-pv'), M.i('z')), EQ, M.frac(Az, sI))], ['předem', mr(M.sub(M.i('PVP', 'v-pv'), M.i('p')), EQ, M.sub(M.i('PVP', 'v-pv'), M.i('z')), PLUS, Ap)]],
+    when: 'Nekonečná řada stejných plateb, například dividendy nebo nájem. Hodnota je platba dělená úrokovou mírou. U perpetuity předem se přičte jedna platba navíc.',
+    symbols: [['v-pv', 'PVP<sub>z</sub>', 'Hodnota perpetuity placené pozadu'], ['v-pv', 'PVP<sub>p</sub>', 'Hodnota perpetuity placené předem'], ['v-a', 'A', 'Konstantní platba'], ['v-i', 'i', 'Úroková míra']],
+    used: ['perp'],
+    params: [P('a', 'A', 10000, 'Kč', { pos: true }), P('i', 'i', 5, '%', { pos: true })],
+    curve: { xl: 'úroková míra i', xs: function () { return [0.01, 0.15]; }, f: function (v, x) { return v.a / x; }, cur: function (v) { return v.i / 100; }, fx: function (x) { return pcs(x, 0); }, fy: function (y) { return kc(y, false); } },
+    run: function (v) {
+      var i = v.i / 100, pz = v.a / i, pp = pz + v.a;
+      return {
+        head: { v: kc(pz, true), l: 'PVP_z (předem PVP_p = ' + kc(pp, true) + ')' },
+        lines: [E(mr(M.sub(M.i('PVP', 'v-pv'), M.i('z')), EQ, M.frac(mnv(v.a, 'v-a'), mnr(i, 'v-i')), EQ, mn2(pz, 'v-pv'), KC)), E(mr(M.sub(M.i('PVP', 'v-pv'), M.i('p')), EQ, mn2(pz, 'v-pv'), PLUS, mnv(v.a, 'v-a'), EQ, mn2(pp, 'v-pv'), KC), 'res')],
+        xl: '=' + xl(v.a) + '/' + xl(i)
+      };
+    }
+  });
+
+  FS.push({
+    id: 'gordon', group: 'perp', name: 'Gordonův model (rostoucí perpetuita)',
+    formula: [['', mr(sPV, EQ, M.frac(mr(sA, DOT, onePlus(M.i('g'))), mr(sI, MINUS, M.i('g'))))]],
+    when: 'Perpetuita, jejíž platba roste konstantní mírou g. Používá se pro vnitřní hodnotu akcie. Platí jen pro i větší než g.',
+    symbols: [['v-pv', 'PV', 'Současná hodnota'], ['v-a', 'A', 'Poslední zaplacená platba (dividenda)'], ['', 'g', 'Míra růstu platby'], ['v-i', 'i', 'Úroková míra']],
+    used: ['perp'],
+    params: [P('a', 'A', 10000, 'Kč', { pos: true }), P('i', 'i', 5, '%', { pos: true }), P('g', 'g', 2, '%', { min: -50 })],
+    curve: { xl: 'míra růstu g', xs: function (v) { return [0, Math.max(0.001, v.i / 100 * 0.95)]; }, f: function (v, x) { return v.a * (1 + x) / (v.i / 100 - x); }, cur: function (v) { return v.g / 100; }, fx: function (x) { return pcs(x, 1); }, fy: function (y) { return kc(y, false); } },
+    run: function (v) {
+      var i = v.i / 100, g = v.g / 100;
+      if (!(i > g)) return { err: 'Gordonův model vyžaduje, aby úroková míra byla vyšší než míra růstu (i > g).' };
+      var r = v.a * (1 + g) / (i - g);
+      return {
+        head: { v: kc(r, true), l: 'současná hodnota PV' },
+        lines: [E(mr(sPV, EQ, M.frac(mr(mnv(v.a, 'v-a'), DOT, onePlus(mnr(g))), mr(mnr(i, 'v-i'), MINUS, mnr(g))))), E(mr(EQ, mn2(r, 'v-pv'), KC), 'res')],
+        xl: '=' + xl(v.a) + '*(1+' + xl(g) + ')/(' + xl(i) + '-' + xl(g) + ')'
+      };
+    }
+  });
+
+  var GUIDE = [
+    ['Mám částku dnes a chci znát hodnotu za n let', 'fv'],
+    ['Mám částku v budoucnu a chci znát hodnotu dnes', 'pv'],
+    ['Pravidelně spořím a chci znát naspořenou částku', 'fvaz'],
+    ['Chci naspořit cílovou částku, kolik mám ukládat', 'azfva'],
+    ['Znám pravidelné platby a chci jejich hodnotu dnes', 'pvaz'],
+    ['Mám úvěr a chci znát výši splátky', 'azpva'],
+    ['Platím na začátku období, ne na konci', 'due'],
+    ['Úroky se připisují častěji než jednou ročně', 'eum'],
+    ['Je zadaná inflace', 'fisher'],
+    ['Je zadaná sazba daně z úroku', 'cum'],
+    ['Platím měsíčně nebo čtvrtletně', 'per'],
+    ['Chci sestavit splátkový kalendář', 'amort'],
+    ['Platby nikdy nekončí (dividendy, nájem)', 'perp']
+  ];
+
+  function fById(id) { return FS.filter(function (f) { return f.id === id; })[0]; }
+  function fresHtml(f, v) {
+    var err = validate(f.params, v), r = null;
+    if (!err) { try { r = f.run(v); } catch (e) { err = 'Výpočet se nepodařil. Zkontrolujte zadané hodnoty.'; } }
+    if (!err && r.err) err = r.err;
+    if (err) return '<div class="err">' + err + '</div>';
+    return '<div class="head"><span class="big">' + r.head.v + '</span><span class="lbl">' + r.head.l + '</span></div>' + r.lines.join('') + (f.curve ? curveSvg(f.curve, v) : '') +
+      '<div class="formulas"><div class="row"><span>Excel</span><code>' + r.xl + '</code></div></div>';
+  }
+  function fcardHtml(f) {
+    var vals = state.fvals[f.id] || (state.fvals[f.id] = defaults(f));
+    var gname = GROUPS.filter(function (g) { return g[0] === f.group; })[0][1];
+    return '<article class="panel fcard" id="fc_' + f.id + '" data-f="' + f.id + '">' +
+      '<div class="fhead"><h3 class="extitle">' + f.name + '</h3><span class="badge">' + gname + '</span></div>' +
+      '<div class="fform">' + f.formula.map(function (x) { return (x[0] ? '<span class="flbl">' + x[0] + '</span>' : '') + E(x[1]); }).join('') + '</div>' +
+      '<div class="fcols"><div class="fexp"><p>' + f.when + '</p><div class="symbols">' + f.symbols.map(function (x) { return '<div class="sym-item"><span class="sym ' + x[0] + '">' + x[1] + '</span><span class="what">' + x[2] + '</span></div>'; }).join('') + '</div>' +
+      '<div class="used"><span>Použito v příkladech:</span>' + f.used.map(function (id) { var e = exById(id); return '<button type="button" data-goto="' + id + '">' + e.short + '</button>'; }).join('') + '</div></div>' +
+      '<div class="fcalc"><h4>Vyzkoušejte s vlastními čísly</h4><div class="fin">' + f.params.map(function (p) {
+        return '<div class="field"><label for="f_' + f.id + '_' + p.k + '">' + p.label + '</label><div class="input-row"><input type="number" data-k="' + p.k + '" id="f_' + f.id + '_' + p.k + '" value="' + vals[p.k] + '" step="any" inputmode="decimal">' + (p.unit ? '<span class="unit">' + p.unit + '</span>' : '') + '</div></div>';
+      }).join('') + '</div><div class="fres">' + fresHtml(f, vals) + '</div></div></div></article>';
+  }
+  function renderRef() {
+    var list = FS.filter(function (f) { return state.rg === 'all' || f.group === state.rg; });
+    var h = '<section class="panel"><h2>Který vzorec použít</h2><div class="guide">' + GUIDE.map(function (g) { return '<button type="button" data-scroll="' + g[1] + '"><span>' + g[0] + '</span><b>' + fById(g[1]).name + '</b></button>'; }).join('') + '</div></section>';
+    h += '<div class="chips" id="rgchips">' + [['all', 'Všechny vzorce']].concat(GROUPS).map(function (g) { return '<button type="button" data-rg="' + g[0] + '" aria-pressed="' + (state.rg === g[0]) + '">' + g[1] + '</button>'; }).join('') + '</div>';
+    h += list.map(fcardHtml).join('');
+    $('ref').innerHTML = h;
+  }
+  function readCard(f, root) {
+    var v = {};
+    f.params.forEach(function (p) { var el = root.querySelector('[data-k="' + p.k + '"]'); v[p.k] = el ? parseFloat(el.value) : p.def; });
+    return v;
+  }
+
+  var TABS = [['miry', 'Úrokové míry'], ['hodnota', 'Budoucí a současná hodnota'], ['anuity', 'Anuity a spoření'], ['umor', 'Splátkový kalendář'], ['perp', 'Perpetuita'], ['ref', 'Přehled vzorců']];
+
+  /* ---------- rozhraní ---------- */
+  var state = { tab: 'miry', ex: { miry: 'a1', hodnota: 'cmp', anuity: 'ex7', umor: 'ex10', perp: 'perp', ref: null }, vals: {}, fvals: {}, rg: 'all' };
+  var cur = null, tSel = 1;
+
+  function exById(id) { return EX.filter(function (e) { return e.id === id; })[0]; }
+  function defaults(ex) { var d = {}; ex.params.forEach(function (p) { d[p.k] = p.def; }); return d; }
+  function showView(ref) { $('mainGrid').hidden = ref; $('ref').hidden = !ref; }
+
+  function renderTabs() {
+    $('tabs').innerHTML = TABS.map(function (t) {
+      return '<button type="button" role="tab" data-tab="' + t[0] + '" aria-selected="' + (state.tab === t[0]) + '">' + t[1] + '</button>';
+    }).join('');
+    var list = EX.filter(function (e) { return e.tab === state.tab; });
+    $('chips').innerHTML = list.length > 1 ? list.map(function (e) {
+      return '<button type="button" data-ex="' + e.id + '" aria-pressed="' + (state.ex[state.tab] === e.id) + '">' + e.short + '</button>';
+    }).join('') : '';
+  }
+
+  function fieldHtml(p, val) {
+    var id = 'p_' + p.k;
+    if (p.type === 'check') return '<label class="check"><input type="checkbox" id="' + id + '"' + (val ? ' checked' : '') + '><span>' + p.label + '</span></label>';
+    if (p.type === 'select') {
+      return '<div class="field"><label for="' + id + '">' + p.label + '</label><select id="' + id + '">' + p.opts.map(function (o) {
+        return '<option value="' + o[0] + '"' + (String(o[0]) === String(val) ? ' selected' : '') + '>' + o[1] + '</option>';
+      }).join('') + '</select></div>';
+    }
+    return '<div class="field"><label for="' + id + '">' + p.label + '</label><div class="input-row"><input type="number" id="' + id + '" value="' + val + '" step="' + (p.step || 'any') + '" inputmode="decimal">' + (p.unit ? '<span class="unit">' + p.unit + '</span>' : '') + '</div></div>';
+  }
+
+  function renderSide() {
+    var ex = cur;
+    var vals = state.vals[ex.id] || (state.vals[ex.id] = defaults(ex));
+    $('side').innerHTML = '<div><span class="src">' + ex.src + '</span><h3 class="extitle">' + ex.title + '</h3></div>' +
+      '<p class="assign">' + ex.text + '</p>' + (ex.note ? '<p class="note">' + ex.note + '</p>' : '') +
+      '<form id="form" autocomplete="off">' + ex.params.map(function (p) { return fieldHtml(p, vals[p.k]); }).join('') + '</form>' +
+      '<div class="btns"><button type="button" id="reset" class="ghost">Vrátit zadání z příkladu</button></div>';
+  }
+
+  function readVals() {
+    var v = {};
+    cur.params.forEach(function (p) {
+      var el = $('p_' + p.k);
+      if (!el) { v[p.k] = p.def; return; }
+      if (p.type === 'check') v[p.k] = el.checked;
+      else if (p.type === 'select' && p.str) v[p.k] = el.value;
+      else v[p.k] = parseFloat(el.value);
+    });
+    return v;
+  }
+  function validate(params, v) {
+    for (var k = 0; k < params.length; k++) {
+      var p = params[k];
+      if (p.type === 'check' || (p.type === 'select' && p.str)) continue;
+      var x = v[p.k];
+      if (!isFinite(x)) return 'Vyplňte pole „' + p.label + '“ číslem.';
+      if (p.pos && !(x > 0)) return 'Pole „' + p.label + '“ musí být větší než nula.';
+      if (p.min != null && x < p.min) return 'Pole „' + p.label + '“ nesmí být menší než ' + nf(p.min, 2) + '.';
+      if (p.max != null && x > p.max) return 'Pole „' + p.label + '“ nesmí být větší než ' + nf(p.max, 2) + '.';
+    }
+    return null;
+  }
+
+  function update() {
+    var v = readVals();
+    var err = validate(cur.params, v), res = null;
+    if (!err) state.vals[cur.id] = v;
+    if (!err) { try { res = cur.run(v); } catch (e) { err = 'Výpočet se nepodařil. Zkontrolujte zadané hodnoty.'; } }
+    if (!err && cur.amortic && res.amort && res.amort.r.N > 600) err = 'Pro přehlednost je nejvyšší počet plateb 600.';
+    if (err) { $('out').innerHTML = panel('Výsledek', '<div class="err">' + err + '</div>'); cur.res = null; return; }
+    if (cur.amortic) tSel = Math.min(Math.max(1, tSel), res.amort.r.N);
+    cur.res = res;
+    var h = '<section class="panel"><h2>Výsledek</h2><div class="heads">' + res.heads.map(function (x) { return '<div class="head"><span class="big">' + x.v + '</span><span class="lbl">' + x.l + '</span></div>'; }).join('') + '</div>' +
+      (res.verdict ? '<p class="verdict">' + res.verdict + '</p>' : '') +
+      '<dl class="facts">' + res.facts.map(function (f) { return '<div><dt>' + f[0] + '</dt><dd>' + f[1] + '</dd></div>'; }).join('') + '</dl></section>';
+    if (cur.amortic) {
+      // amortizační příklady mají vlastní pořadí: graf, tabulka, rozbor období
+      h += res.extra;
+    } else if (res.extra) { h += res.extra; }
+    var leg = (res.legend || cur.legend || []).map(function (x) { return '<div class="sym-item"><span class="sym ' + x[0] + '">' + x[1] + '</span><span class="what">' + x[2] + '</span></div>'; }).join('');
+    h += panel('Vyplněné vzorce', '<div class="symbols">' + leg + '</div><div class="steps">' + res.steps + '</div>');
+    h += panel('Vzorce pro Excel', '<div class="formulas">' + res.excel.map(function (f) { return '<div class="row"><span>' + f[0] + '</span><code>' + f[1] + '</code></div>'; }).join('') + '</div><span class="hint">Zápis pro český Excel (desetinná čárka, středník).</span>');
+    $('out').innerHTML = h;
+  }
+
+  function setPeriod(t) {
+    if (!cur || !cur.res || !cur.res.amort) return;
+    var r = cur.res.amort.r;
+    tSel = Math.min(Math.max(1, t), r.N);
+    var pm = $('periodMath'); if (pm) pm.innerHTML = periodHtml(r, tSel);
+    var tv = $('tval'); if (tv) tv.textContent = tSel + ' z ' + r.N;
+    var s = $('tsel'); if (s) s.value = tSel;
+    var rows = $('out').querySelectorAll('tr[data-t]');
+    for (var k = 0; k < rows.length; k++) rows[k].classList.toggle('sel', parseInt(rows[k].getAttribute('data-t'), 10) === tSel);
+  }
+
+  function select(tab, id) {
+    state.tab = tab;
+    if (tab === 'ref') { showView(true); renderTabs(); renderRef(); return; }
+    showView(false);
+    state.ex[tab] = id; cur = exById(id); tSel = 1;
+    renderTabs(); renderSide(); update();
+  }
+
+  $('tabs').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-tab]');
+    if (b) select(b.getAttribute('data-tab'), state.ex[b.getAttribute('data-tab')]);
+  });
+  $('chips').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-ex]');
+    if (b) select(state.tab, b.getAttribute('data-ex'));
+  });
+  $('side').addEventListener('input', function (e) { if (e.target.closest('#form')) update(); });
+  $('side').addEventListener('change', function (e) { if (e.target.closest('#form')) update(); });
+  $('side').addEventListener('submit', function (e) { e.preventDefault(); });
+  $('side').addEventListener('click', function (e) {
+    if (e.target.id === 'reset') { delete state.vals[cur.id]; renderSide(); update(); }
+  });
+  $('out').addEventListener('input', function (e) { if (e.target.id === 'tsel') setPeriod(parseInt(e.target.value, 10)); });
+  $('out').addEventListener('click', function (e) {
+    var tr = e.target.closest('tr[data-t]');
+    if (tr) setPeriod(parseInt(tr.getAttribute('data-t'), 10));
+  });
+
+  $('ref').addEventListener('input', function (e) {
+    var card = e.target.closest('.fcard');
+    if (!card) return;
+    var f = fById(card.getAttribute('data-f')), v = readCard(f, card);
+    if (validate(f.params, v) === null) state.fvals[f.id] = v;
+    card.querySelector('.fres').innerHTML = fresHtml(f, v);
+  });
+  $('ref').addEventListener('click', function (e) {
+    var b = e.target.closest('button');
+    if (!b) return;
+    if (b.hasAttribute('data-goto')) {
+      var id = b.getAttribute('data-goto');
+      select(exById(id).tab, id);
+      $('tabs').scrollIntoView();
+    } else if (b.hasAttribute('data-scroll')) {
+      var f = fById(b.getAttribute('data-scroll'));
+      if (state.rg !== 'all' && state.rg !== f.group) { state.rg = 'all'; renderRef(); }
+      var el = $('fc_' + f.id);
+      if (el) el.scrollIntoView();
+    } else if (b.hasAttribute('data-rg')) {
+      state.rg = b.getAttribute('data-rg'); renderRef();
+    }
+  });
+
+  window.__EX = EX; window.__FS = FS; window.__api = { exById: exById, defaults: defaults, fresHtml: fresHtml, renderRef: renderRef, select: select };
+  select('miry', 'a1');
+})();
+</script>
+
+</body></html>
