@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f3ede2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#15130f" media="(prefers-color-scheme: dark)">
+<title>Špendlík — kde leží památka?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{
+  color-scheme:light;
+  --bg:#f3ede2;--surface:#fbf8f2;--surface2:#ece4d5;
+  --ink:#2a241c;--ink2:#5b5144;--muted:#83786a;
+  --line:#ddd2bf;--accent:#bf4a2a;--accent-ink:#fff;--accent-wash:rgba(191,74,42,.10);
+  --true:#2f6b4f;--true-wash:rgba(47,107,79,.12);
+  --cz-fill:rgba(191,74,42,.05);--cz-line:#8a3a22;--kraj-line:rgba(90,70,50,.45);
+  --shadow:0 18px 40px -22px rgba(60,40,20,.45);
+  --r:16px;
+  --display:"Fraunces",Georgia,serif;
+  --sans:"Instrument Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#15130f;--surface:#1f1c17;--surface2:#29251e;
+    --ink:#efe7d8;--ink2:#c9bfae;--muted:#9a8f7e;
+    --line:#38322a;--accent:#e57a55;--accent-ink:#1a120d;--accent-wash:rgba(229,122,85,.14);
+    --true:#6fbf94;--true-wash:rgba(111,191,148,.14);
+    --cz-fill:rgba(229,122,85,.06);--cz-line:#e57a55;--kraj-line:rgba(239,231,216,.30);
+    --shadow:0 18px 40px -22px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#15130f;--surface:#1f1c17;--surface2:#29251e;
+  --ink:#efe7d8;--ink2:#c9bfae;--muted:#9a8f7e;
+  --line:#38322a;--accent:#e57a55;--accent-ink:#1a120d;--accent-wash:rgba(229,122,85,.14);
+  --true:#6fbf94;--true-wash:rgba(111,191,148,.14);
+  --cz-fill:rgba(229,122,85,.06);--cz-line:#e57a55;--kraj-line:rgba(239,231,216,.30);
+  --shadow:0 18px 40px -22px rgba(0,0,0,.8);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);-webkit-font-smoothing:antialiased;overflow:hidden}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+a{color:var(--accent)}
+.hidden{display:none!important}
+
+/* ---------- layout ---------- */
+.app{height:100vh;height:100dvh;display:grid;grid-template-rows:auto 1fr}
+.top{display:flex;align-items:center;gap:12px;padding:10px 16px;padding-top:max(10px,env(safe-area-inset-top));border-bottom:1px solid var(--line);background:var(--bg)}
+.brand{display:flex;align-items:center;gap:8px;font-family:var(--display);font-weight:700;font-size:20px;letter-spacing:-.01em;text-decoration:none;color:var(--ink)}
+.brand svg{width:22px;height:22px;color:var(--accent)}
+.top .spacer{flex:1}
+.hud{display:flex;gap:6px}
+.chip{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 11px;font-size:13px;color:var(--ink2);white-space:nowrap;font-variant-numeric:tabular-nums}
+.chip b{color:var(--ink);font-weight:600}
+.iconbtn{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;border:1px solid var(--line);background:var(--surface)}
+.iconbtn svg{width:17px;height:17px}
+.back{font-size:13px;color:var(--muted);text-decoration:none;white-space:nowrap}
+.back:hover{color:var(--ink)}
+
+.stage{position:relative;min-height:0;display:grid;grid-template-columns:minmax(300px,380px) 1fr}
+.side{min-height:0;overflow:auto;border-right:1px solid var(--line);padding:16px;display:flex;flex-direction:column;gap:14px}
+.mapwrap{position:relative;min-height:0}
+.side.hidden + .mapwrap{grid-column:1/-1;grid-row:1/-1}
+#map{position:absolute;inset:0;background:var(--surface2)}
+
+/* ---------- clue card ---------- */
+.clue{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
+.photo{position:relative;aspect-ratio:4/3;background:var(--surface2);overflow:hidden;cursor:zoom-in}
+.photo img{position:relative;z-index:1;width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .35s}
+.photo img.ok{opacity:1}
+.photo .ph{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:20px;color:var(--muted);font-size:13px}
+.photo .ph svg{width:46px;height:46px;opacity:.6;margin:0 auto 8px;display:block}
+.credit{font-size:11px;color:var(--muted);padding:6px 14px 0;line-height:1.35}
+.credit a{color:inherit}
+.clue-body{padding:12px 14px 14px}
+.badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.badge{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:6px;background:var(--accent-wash);color:var(--accent)}
+.badge.u{background:var(--true-wash);color:var(--true)}
+.clue h2{font-family:var(--display);font-weight:700;font-size:23px;line-height:1.15;margin:0 0 6px;letter-spacing:-.01em}
+.clue p{margin:0;color:var(--ink2)}
+.hintrow{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
+.hint{font-size:13px;border:1px dashed var(--line);background:none;border-radius:10px;padding:6px 10px;color:var(--ink2)}
+.hint:hover{border-color:var(--accent);color:var(--accent)}
+.hinttext{font-size:13px;color:var(--accent);font-weight:600}
+
+/* ---------- action panel ---------- */
+.action{display:flex;flex-direction:column;gap:10px}
+.btn{border:0;border-radius:12px;padding:12px 18px;font-weight:600;background:var(--accent);color:var(--accent-ink);font-size:15px;transition:transform .08s, opacity .2s}
+.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+.result{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.result .big{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.result .pts{font-family:var(--display);font-weight:700;font-size:34px;line-height:1;color:var(--accent);font-variant-numeric:tabular-nums}
+.result .dist{font-size:14px;color:var(--ink2);text-align:right}
+.result .dist b{font-size:18px;color:var(--ink)}
+.bar{height:6px;border-radius:99px;background:var(--surface2);margin:12px 0 10px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);border-radius:99px;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.result .where{font-size:13px;color:var(--muted)}
+.tip{font-size:13px;color:var(--muted);text-align:center}
+
+/* ---------- overlays (start / end) ---------- */
+.overlay{position:absolute;inset:0;z-index:1000;display:grid;place-items:center;padding:16px;background:color-mix(in srgb,var(--bg) 70%,transparent);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);overflow:auto}
+.panel{width:100%;max-width:520px;background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:24px;margin:auto}
+.panel h1{font-family:var(--display);font-weight:700;font-size:clamp(30px,6vw,42px);line-height:1.05;margin:0 0 8px;letter-spacing:-.02em}
+.panel h1 em{font-style:normal;color:var(--accent)}
+.lead{color:var(--ink2);margin:0 0 18px}
+.opt{margin:0 0 16px}
+.opt .lbl{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:7px 12px;font-size:14px;color:var(--ink2)}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.toggle{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--ink2);cursor:pointer}
+.toggle input{width:18px;height:18px;accent-color:var(--accent)}
+.best{font-size:13px;color:var(--muted);margin-top:12px;text-align:center}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 18px}
+.steps div{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px;font-size:12.5px;color:var(--ink2);line-height:1.35}
+.steps b{display:block;font-family:var(--display);font-size:18px;color:var(--accent)}
+.final{font-family:var(--display);font-weight:700;font-size:56px;line-height:1;color:var(--accent);font-variant-numeric:tabular-nums}
+.final small{font-size:18px;color:var(--muted);font-weight:500}
+.rank{font-family:var(--display);font-size:22px;margin:6px 0 2px}
+.rounds{list-style:none;margin:16px 0;padding:0;display:flex;flex-direction:column;gap:6px;max-height:34vh;overflow:auto}
+.rounds li{display:grid;grid-template-columns:22px 1fr auto auto;gap:10px;align-items:center;font-size:14px;padding:7px 10px;border-radius:10px;background:var(--bg);border:1px solid var(--line);cursor:pointer}
+.rounds li:hover{border-color:var(--accent)}
+.rounds .n{color:var(--muted);font-variant-numeric:tabular-nums}
+.rounds .d{color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+.rounds .p{font-weight:600;font-variant-numeric:tabular-nums;min-width:3.2em;text-align:right}
+.row{display:flex;gap:8px}
+.row .btn{flex:1}
+.newbest{display:inline-block;margin-top:6px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--true);background:var(--true-wash);padding:3px 8px;border-radius:6px}
+
+/* ---------- lightbox ---------- */
+.lightbox{position:fixed;inset:0;z-index:2000;background:rgba(10,8,6,.88);display:grid;place-items:center;padding:16px;cursor:zoom-out}
+.lightbox img{max-width:100%;max-height:100%;border-radius:10px}
+
+/* ---------- leaflet tweaks ---------- */
+.leaflet-container{font-family:var(--sans);background:var(--surface2)}
+.leaflet-container.picking{cursor:crosshair}
+.leaflet-control-attribution{font-size:10px;background:color-mix(in srgb,var(--surface) 80%,transparent)!important;color:var(--muted)!important}
+.leaflet-control-attribution a{color:var(--ink2)!important}
+.leaflet-bar a{background:var(--surface)!important;color:var(--ink)!important;border-color:var(--line)!important}
+.city-label{background:none;border:0;box-shadow:none;color:var(--ink2);font-size:11px;font-weight:600;padding:0 0 0 2px;text-shadow:0 0 3px var(--bg),0 0 3px var(--bg),0 0 2px var(--bg)}
+.city-label::before{display:none}
+.pin{width:30px;height:40px}
+.pin svg{width:30px;height:40px;filter:drop-shadow(0 3px 3px rgba(0,0,0,.35))}
+.pinlabel{background:var(--surface);border:1px solid var(--line);color:var(--ink);font-weight:600;font-size:12px;border-radius:8px;box-shadow:var(--shadow)}
+.pinlabel::before{display:none}
+.maptip{position:absolute;left:50%;top:12px;transform:translateX(-50%);z-index:500;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:13px;color:var(--ink2);box-shadow:var(--shadow);pointer-events:none;white-space:nowrap}
+
+/* ---------- mobile ---------- */
+@media (max-width:760px){
+  .top{padding:8px 12px;gap:8px}
+  .brand{font-size:18px}
+  .back{display:none}
+  .stage{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+  .side{border-right:0;border-bottom:1px solid var(--line);padding:10px 12px;gap:10px;max-height:52dvh}
+  .clue{display:grid;grid-template-columns:38% 1fr;box-shadow:none}
+  .photo{aspect-ratio:auto;min-height:118px;height:100%}
+  .credit{display:none}
+  .clue-body{padding:10px 12px}
+  .clue h2{font-size:18px}
+  .clue p{font-size:13.5px;line-height:1.4}
+  .badges{margin-bottom:4px}
+  .hintrow{margin-top:8px}
+  .result{padding:10px 12px}
+  .result .pts{font-size:28px}
+  .bar{margin:8px 0}
+  .tip{display:none}
+  .steps{grid-template-columns:1fr}
+  .steps div{display:flex;gap:10px;align-items:center}
+  .steps b{font-size:16px}
+  .panel{padding:20px}
+  .final{font-size:46px}
+  .maptip{top:8px;font-size:12px}
+}
+@media (max-width:380px){
+  .hud .chip:first-child{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <a class="brand" href="#" id="home" aria-label="Špendlík — úvod">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="7.5" r="4.5" fill="currentColor" fill-opacity=".18"/><path d="M12 12v10"/></svg>
+      Špendlík
+    </a>
+    <a class="back" href="../index.html">← Rozcestník</a>
+    <div class="spacer"></div>
+    <div class="hud hidden" id="hud">
+      <span class="chip">Kolo <b id="hRound">1</b>/<b id="hTotal">5</b></span>
+      <span class="chip">Body <b id="hScore">0</b></span>
+    </div>
+    <button class="iconbtn" id="themeBtn" aria-label="Přepnout vzhled" title="Vzhled: automaticky">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16z" fill="currentColor"/></svg>
+    </button>
+  </header>
+
+  <main class="stage">
+    <aside class="side hidden" id="side">
+      <article class="clue" id="clue">
+        <div class="photo" id="photo" title="Zvětšit fotku">
+          <div class="ph" id="ph"></div>
+          <img id="img" alt="">
+        </div>
+        <div class="clue-body">
+          <div class="badges" id="badges"></div>
+          <h2 id="cName">—</h2>
+          <p id="cDesc"></p>
+          <div class="hintrow">
+            <button class="hint" id="hintBtn">Nápověda: kraj (−50 % bodů)</button>
+            <span class="hinttext hidden" id="hintText"></span>
+          </div>
+        </div>
+        <div class="credit" id="credit"></div>
+      </article>
+
+      <div class="action" id="actGuess">
+        <button class="btn" id="guessBtn" disabled>Zapíchnout špendlík</button>
+        <div class="tip">Klikni do mapy, kde si myslíš, že památka leží. Tip můžeš před potvrzením přesouvat.</div>
+      </div>
+
+      <div class="action hidden" id="actResult">
+        <div class="result">
+          <div class="big">
+            <div class="pts" id="rPts">0</div>
+            <div class="dist">vedle o <b id="rDist">0 km</b></div>
+          </div>
+          <div class="bar"><i id="rBar"></i></div>
+          <div class="where" id="rWhere"></div>
+        </div>
+        <button class="btn" id="nextBtn">Další památka →</button>
+      </div>
+    </aside>
+
+    <section class="mapwrap">
+      <div id="map" role="application" aria-label="Mapa České republiky"></div>
+      <div class="maptip hidden" id="maptip">Klepni do mapy a zapíchni špendlík</div>
+    </section>
+
+      <!-- start -->
+      <div class="overlay" id="startOv">
+        <div class="panel">
+          <h1>Kde leží <em>tahle</em> památka?</h1>
+          <p class="lead">Hrady, zámky, kostely, technické divy i skalní města z celé republiky. Podívej se na fotku, zapíchni špendlík do mapy a sbírej body podle toho, jak blízko trefíš.</p>
+          <div class="steps">
+            <div><b>1</b>Prohlédni si fotku a popis</div>
+            <div><b>2</b>Klepni do mapy na místo tipu</div>
+            <div><b>3</b>Až 1000 bodů za kolo</div>
+          </div>
+          <div class="opt">
+            <div class="lbl">Počet kol</div>
+            <div class="seg" id="optRounds">
+              <button data-v="5" aria-pressed="true">5</button>
+              <button data-v="10" aria-pressed="false">10</button>
+              <button data-v="15" aria-pressed="false">15</button>
+            </div>
+          </div>
+          <div class="opt">
+            <div class="lbl">Témata</div>
+            <div class="seg" id="optCat">
+              <button data-v="all" aria-pressed="true">Vše</button>
+              <button data-v="hrady" aria-pressed="false">Hrady a zámky</button>
+              <button data-v="cirkev" aria-pressed="false">Církevní</button>
+              <button data-v="technika" aria-pressed="false">Technika a architektura</button>
+              <button data-v="priroda" aria-pressed="false">Příroda</button>
+              <button data-v="unesco" aria-pressed="false">UNESCO</button>
+            </div>
+          </div>
+          <div class="opt">
+            <label class="toggle"><input type="checkbox" id="optCities" checked> Zobrazit krajská města (snazší)</label>
+          </div>
+          <button class="btn" id="startBtn" style="width:100%">Začít hrát</button>
+          <div class="best" id="bestLine"></div>
+        </div>
+      </div>
+
+      <!-- end -->
+      <div class="overlay hidden" id="endOv">
+        <div class="panel">
+          <div class="lbl" style="font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Konec hry</div>
+          <div class="final"><span id="eScore">0</span> <small>/ <span id="eMax">5000</span></small></div>
+          <div class="rank" id="eRank"></div>
+          <div id="eBest"></div>
+          <ul class="rounds" id="eList"></ul>
+          <div class="row">
+            <button class="btn ghost" id="mapBtn">Ukázat na mapě</button>
+            <button class="btn" id="againBtn">Hrát znovu</button>
+          </div>
+        </div>
+      </div>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+/* Data: souřadnice a fotky z Wikidat / Wikimedia Commons (ověřeno 11/2026). */
+const PLACES = [{"n":"Pražský hrad","c":"hrady","u":1,"k":"Praha","p":"Největší hradní komplex na světě a sídlo prezidenta, nad nímž se tyčí katedrála sv. Víta.","lat":50.09,"lon":14.4,"img":"Hradschin Prag.jpg","q":"Q193369","a":"Stefan Bauer, http://www.ferras.at","l":"CC BY-SA 2.5"},{"n":"Karlův most","c":"technika","u":1,"k":"Praha","p":"Gotický kamenný most z doby Karla IV., zdobený třiceti barokními sochami.","lat":50.08639,"lon":14.41194,"img":"Prague 07-2016 View from Petrinska Tower img2.jpg","q":"Q204871","a":"A.Savin","l":"FAL"},{"n":"Petřínská rozhledna","c":"technika","u":0,"k":"Praha","p":"Ocelová rozhledna z roku 1891 inspirovaná Eiffelovou věží.","lat":50.08354,"lon":14.39505,"img":"Prague 07-2016 View from Lesser Town Nicholas Church img5.jpg","q":"Q12256","a":"A.Savin","l":"FAL"},{"n":"Žižkovský vysílač","c":"technika","u":0,"k":"Praha","p":"Nejvyšší stavba hlavního města (216 m), po jejíchž tubusech lezou plastiky miminek.","lat":50.08083,"lon":14.45139,"img":"Žižkov tv tower.jpg","q":"Q1413217","a":"Norbert Požár","l":"CC BY-SA 3.0"},{"n":"Vila Tugendhat","c":"technika","u":1,"k":"Jihomoravský kraj","p":"Funkcionalistická vila Ludwiga Miese van der Rohe s proslulou onyxovou stěnou.","lat":49.20722,"lon":16.61583,"img":"Villa Tugendhat, Brno.jpg","q":"Q457453","a":"Thomas Ledl","l":"CC BY 4.0"},{"n":"Špilberk","c":"hrady","u":0,"k":"Jihomoravský kraj","p":"Hrad a barokní pevnost, kdysi obávaný „žalář národů“.","lat":49.19444,"lon":16.59889,"img":"Hrad Špilberk (Brno), Brno - střed 208, Brno.JPG","q":"Q118256","a":"Michal Kmínek","l":"CC BY-SA 3.0"},{"n":"Katedrála sv. Petra a Pavla","c":"cirkev","u":0,"k":"Jihomoravský kraj","p":"Katedrála na vršku Petrov, jejíž zvony odbíjejí poledne už v 11 hodin.","lat":49.19097,"lon":16.60736,"img":"Brno, katedrála sv. Petra a Pavla.jpg","q":"Q45033","a":"Michal Klajban","l":"CC BY-SA 3.0"},{"n":"Zámek Lednice","c":"hrady","u":1,"k":"Jihomoravský kraj","p":"Novogotický zámek Lichtenštejnů s parkem, minaretem a skleníkem.","lat":48.80139,"lon":16.80556,"img":"Lednice - Schloss (a).JPG","q":"Q370990","a":"C.Stadler/Bwag","l":"CC BY-SA 4.0"},{"n":"Arcibiskupský zámek Kroměříž","c":"hrady","u":1,"k":"Zlínský kraj","p":"Sídlo olomouckých biskupů s Květnou a Podzámeckou zahradou.","lat":49.30028,"lon":17.39306,"img":"Kroměříž zámek 1.jpg","q":"Q200693","a":"VitVit","l":"CC BY-SA 4.0"},{"n":"Sloup Nejsvětější Trojice","c":"cirkev","u":1,"k":"Olomoucký kraj","p":"Barokní morový sloup vysoký 35 metrů, uvnitř se skrývá malá kaple.","lat":49.59402,"lon":17.25049,"img":"Holy Trinity Column.jpg","q":"Q742362","a":"Michal Maňas","l":"CC BY 4.0"},{"n":"Bazilika sv. Prokopa","c":"cirkev","u":1,"k":"Kraj Vysočina","p":"Románsko-gotická bazilika, památka UNESCO spolu se sousední židovskou čtvrtí.","lat":49.21695,"lon":15.87364,"img":"Overview of Basilica of Saint Procopius in Třebíč, Třebíč District.jpg","q":"Q776727","a":"Frettie","l":"CC BY 3.0"},{"n":"Chrám sv. Barbory","c":"cirkev","u":1,"k":"Středočeský kraj","p":"Gotická katedrála zasvěcená patronce horníků ve městě stříbra.","lat":49.94493,"lon":15.26363,"img":"Church of Saint Barbara, North Facade, Kurna Hora.jpg","q":"Q913185","a":"Thomas Ledl","l":"CC BY-SA 4.0"},{"n":"Kostnice Sedlec","c":"cirkev","u":0,"k":"Středočeský kraj","p":"Kaple Všech svatých, jejíž výzdoba je složena z kostí desítek tisíc lidí.","lat":49.96196,"lon":15.28829,"img":"Sedlec, kaple Všech svatých s kostnicí.JPG","q":"Q513821","a":"H2k4","l":"CC BY-SA 3.0"},{"n":"Kostel sv. Jana Nepomuckého na Zelené hoře","c":"cirkev","u":1,"k":"Kraj Vysočina","p":"Poutní kostel ve tvaru pěticípé hvězdy od Jana Blažeje Santiniho.","lat":49.58,"lon":15.94194,"img":"Kostel svatého Jana Nepomuckého (3).jpg","q":"Q752318","a":"Aqalexor","l":"CC BY-SA 4.0"},{"n":"Zámek Telč","c":"hrady","u":1,"k":"Kraj Vysočina","p":"Renesanční zámek vedle náměstí lemovaného barevnými štíty a podloubím.","lat":49.1854,"lon":15.4513,"img":"Telč zámek z parku 7.jpg","q":"Q2243703","a":"VitVit","l":"CC BY-SA 4.0"},{"n":"Hrad a zámek Český Krumlov","c":"hrady","u":1,"k":"Jihočeský kraj","p":"Druhý největší zámecký komplex v zemi s barokním divadlem a malovanou věží.","lat":48.8125,"lon":14.31528,"img":"Castello (9572386406).jpg","q":"Q2164919","a":"szerenka","l":"CC BY-SA 2.0"},{"n":"Zámek Litomyšl","c":"hrady","u":1,"k":"Pardubický kraj","p":"Renesanční zámek s tisíci sgrafitových „psaníček“; v jeho pivovaru se narodil Bedřich Smetana.","lat":49.87344,"lon":16.31265,"img":"Litomysl zamek.jpg","q":"Q2164885","a":"Přemysl Otakar","l":"CC BY-SA 4.0"},{"n":"Holašovice","c":"technika","u":1,"k":"Jihočeský kraj","p":"Vesnice selského baroka se štíty statků kolem velké návsi.","lat":48.96667,"lon":14.26667,"img":"Holasovice1.jpg","q":"Q826452","a":"Sgbeer","l":"CC BY-SA 3.0"},{"n":"Národní hřebčín Kladruby nad Labem","c":"technika","u":1,"k":"Pardubický kraj","p":"Jeden z nejstarších hřebčínů na světě, domov bílých starokladrubských koní.","lat":50.05762,"lon":15.48483,"img":"Hřebčín Kladruby (2017) 02.jpg","q":"Q1449417","a":"Michal Louč","l":"CC BY-SA 4.0"},{"n":"Karlštejn","c":"hrady","u":0,"k":"Středočeský kraj","p":"Gotický hrad Karla IV., kde se uchovávaly korunovační klenoty.","lat":49.93955,"lon":14.18793,"img":"Burg Karlstein - Karlštejn - panoramio.jpg","q":"Q266698","a":"Jürgen Regel, Marian…","l":"CC BY 3.0"},{"n":"Křivoklát","c":"hrady","u":0,"k":"Středočeský kraj","p":"Královský hrad uprostřed hlubokých lesů nad Berounkou.","lat":50.03778,"lon":13.8725,"img":"Krivoklat castle 01.jpg","q":"Q1012808","a":"Svobodat","l":"CC BY-SA 3.0"},{"n":"Točník","c":"hrady","u":0,"k":"Středočeský kraj","p":"Zřícenina honosného hradu Václava IV., stojící hned vedle menšího Žebráku.","lat":49.88694,"lon":13.88333,"img":"Tocnik od jz.jpg","q":"Q1972068","a":"Lukáš Kalista","l":"CC BY-SA 4.0"},{"n":"Zámek Konopiště","c":"hrady","u":0,"k":"Středočeský kraj","p":"Sídlo arcivévody Františka Ferdinanda d'Este s obří sbírkou loveckých trofejí.","lat":49.77944,"lon":14.65667,"img":"Konopiste CZ 02.jpg","q":"Q744016","a":"Marek Prokop from Říčany, Czech Republic","l":"CC BY 2.0"},{"n":"Svatá Hora","c":"cirkev","u":0,"k":"Středočeský kraj","p":"Barokní poutní areál s bazilikou nad hornickým městem.","lat":49.68501,"lon":14.01758,"img":"Svatá Hora u Příbrami - letecký pohled.jpg","q":"Q593540","a":"Jirka Jiroušek","l":"CC BY-SA 4.0"},{"n":"Kokořín","c":"hrady","u":0,"k":"Středočeský kraj","p":"Hrad nad pískovcovým údolím plným skalních útvarů.","lat":50.4404,"lon":14.57679,"img":"Kokorin letecky pohled.jpg","q":"Q1012711","a":"Jan Sovka aka sovicka","l":"CC BY 2.5"},{"n":"Velká Amerika","c":"priroda","u":0,"k":"Středočeský kraj","p":"Zatopený vápencový lom, přezdívaný český Grand Canyon.","lat":49.9594,"lon":14.1986,"img":"Amerika Quarry HDR.jpg","q":"Q7919095","a":"Pavel Koběrský","l":"CC BY-SA 2.5"},{"n":"Koněpruské jeskyně","c":"priroda","u":0,"k":"Středočeský kraj","p":"Nejrozsáhlejší jeskynní systém v Čechách, kde kdysi sídlila penězokazecká dílna.","lat":49.91513,"lon":14.06734,"img":"Kavernoj en Koneprusy.jpg","q":"Q3890135","a":"Zp","l":"CC BY 2.5"},{"n":"Zámek Orlík","c":"hrady","u":0,"k":"Jihočeský kraj","p":"Schwarzenberský zámek na skalním ostrohu nad přehradní nádrží.","lat":49.513,"lon":14.17047,"img":"Orlík 7.jpg","q":"Q1013458","a":"Karelj","l":"Public domain"},{"n":"Zvíkov","c":"hrady","u":0,"k":"Jihočeský kraj","p":"„Král českých hradů“ na soutoku dvou řek.","lat":49.43888,"lon":14.19241,"img":"Zvíkov Castle from Kopaniny (4) (cropped).JPG","q":"Q769690","a":"Chmee2","l":"CC BY 3.0"},{"n":"Zámek Hluboká","c":"hrady","u":0,"k":"Jihočeský kraj","p":"Bílý novogotický zámek inspirovaný anglickým Windsorem.","lat":49.05083,"lon":14.44194,"img":"Zamek Hluboka 001 THWZ.jpg","q":"Q2142483","a":"Thomas Zimmermann (THWZ)","l":"CC BY-SA 3.0 de"},{"n":"Klášter Zlatá Koruna","c":"cirkev","u":0,"k":"Jihočeský kraj","p":"Cisterciácký klášter v meandru Vltavy.","lat":48.85525,"lon":14.37103,"img":"Klášter Zlatá Koruna.jpg","q":"Q1776313","a":"MiPi","l":"CC BY-SA 4.0"},{"n":"Jaderná elektrárna Temelín","c":"technika","u":0,"k":"Jihočeský kraj","p":"Největší elektrárna v Česku se čtyřmi chladicími věžemi.","lat":49.18194,"lon":14.38139,"img":"Jete side remastered (cropped).jpg","q":"Q1502091","a":"Ajrocket1","l":"CC BY-SA 4.0"},{"n":"Plešné jezero","c":"priroda","u":0,"k":"Jihočeský kraj","p":"Ledovcové jezero pod skalní stěnou se Stifterovým pomníkem.","lat":48.77639,"lon":13.86528,"img":"Plešné jezero.jpg","q":"Q1509558","a":"Prochaine at Czech Wikipedia","l":"Public domain"},{"n":"Černé jezero","c":"priroda","u":0,"k":"Plzeňský kraj","p":"Největší a nejhlubší přírodní jezero v Česku, ledovcového původu.","lat":49.17917,"lon":13.1825,"img":"Černé Jezero - panoramio.jpg","q":"Q45642","a":"Fireopinel","l":"CC BY 3.0"},{"n":"Rabí","c":"hrady","u":0,"k":"Plzeňský kraj","p":"Největší hradní zřícenina v zemi; při jejím obléhání přišel Jan Žižka o druhé oko.","lat":49.27878,"lon":13.61837,"img":"Rabi - east view 01.jpg","q":"Q366087","a":"V.Švarc","l":"CC BY-SA 4.0"},{"n":"Klášter Plasy","c":"cirkev","u":0,"k":"Plzeňský kraj","p":"Cisterciácký klášter postavený v bažinatém terénu na dubových pilotech.","lat":49.93444,"lon":13.39083,"img":"Plasy aerial.jpg","q":"Q267033","a":"neuvedeno","l":"CC BY-SA 3.0"},{"n":"Loket","c":"hrady","u":0,"k":"Karlovarský kraj","p":"Hrad na skále v ohbí řeky Ohře.","lat":50.18697,"lon":12.75444,"img":"Hrad Loket květen 2020.jpg","q":"Q1013039","a":"Lubor Ferenc","l":"CC BY-SA 4.0"},{"n":"Vřídelní kolonáda","c":"technika","u":1,"k":"Karlovarský kraj","p":"Kolonáda nad gejzírem horké vody tryskajícím do výšky kolem 12 metrů.","lat":50.22294,"lon":12.88372,"img":"Karlovy Vary Vřídelní kolonáda duben 2019 (1).jpg","q":"Q12005524","a":"Lubor Ferenc","l":"CC BY-SA 4.0"},{"n":"Soos","c":"priroda","u":0,"k":"Karlovarský kraj","p":"Rašeliniště s bublajícími mofetami, připomínající měsíční krajinu.","lat":50.1475,"lon":12.40611,"img":"Soos Landscape 0B.JPG","q":"Q2302593","a":"Hans-Peter Scholz (User:Zwergelstern)","l":"CC BY-SA 2.5"},{"n":"Střekov","c":"hrady","u":0,"k":"Ústecký kraj","p":"Zřícenina na skále nad Labem, která inspirovala Richarda Wagnera.","lat":50.63913,"lon":14.05079,"img":"Hrad Střekov, Střekov, okres Ústí nad Labem.jpg","q":"Q1014187","a":"Jiří Komárek","l":"CC BY-SA 4.0"},{"n":"Pravčická brána","c":"priroda","u":0,"k":"Ústecký kraj","p":"Největší přírodní pískovcová brána v Evropě.","lat":50.88398,"lon":14.28138,"img":"Pravčická brána (Prebischtor) - by Pudelek.jpg","q":"Q368560","a":"Pudelek","l":"CC BY-SA 4.0"},{"n":"Milešovka","c":"priroda","u":0,"k":"Ústecký kraj","p":"Nejvyšší hora Českého středohoří s meteorologickou observatoří na vrcholu.","lat":50.5549,"lon":13.93109,"img":"Milleschau-WJP-1.jpg","q":"Q50482382","a":"W.J.Pils","l":"CC BY-SA 3.0"},{"n":"Říp","c":"priroda","u":0,"k":"Ústecký kraj","p":"Osamělá hora, na kterou podle pověsti vystoupil praotec Čech.","lat":50.38653,"lon":14.28963,"img":"Ctiněves, Říp a obec.jpg","q":"Q102079702","a":"neuvedeno","l":"CC BY-SA 3.0"},{"n":"Panská skála","c":"priroda","u":0,"k":"Liberecký kraj","p":"Čedičové „varhany“ – pravidelné sloupy ztuhlé lávy.","lat":50.76948,"lon":14.4849,"img":"Panská skála(6) edit.jpg","q":"Q1426184","a":"Miloslav Rejha","l":"CC BY-SA 3.0"},{"n":"Ještěd","c":"technika","u":0,"k":"Liberecký kraj","p":"Horský hotel a vysílač ve tvaru hyperboloidu od Karla Hubáčka.","lat":50.73263,"lon":14.98459,"img":"Jested 002.JPG","q":"Q1129608","a":"O. Mejsnar","l":"CC BY-SA 3.0"},{"n":"Zámek Sychrov","c":"hrady","u":0,"k":"Liberecký kraj","p":"Novogotický zámek Rohanů s bohatými dřevořezbami.","lat":50.62639,"lon":15.08944,"img":"Sychrov Castle (3).jpg","q":"Q1755820","a":"Miloslav Rejha","l":"CC BY-SA 3.0"},{"n":"Bezděz","c":"hrady","u":0,"k":"Liberecký kraj","p":"Gotický hrad na kuželovitém kopci, viditelný ze širokého okolí.","lat":50.53904,"lon":14.7197,"img":"Bezdez.jpg","q":"Q1186381","a":"Jan Sovka aka sovicka","l":"CC BY 2.5"},{"n":"Kost","c":"hrady","u":0,"k":"Liberecký kraj","p":"Jeden z nejzachovalejších gotických hradů, stojí v Českém ráji.","lat":50.49028,"lon":15.135,"img":"Kost-letecky-pohled.jpg","q":"Q1012726","a":"JardaTravnicek","l":"Public domain"},{"n":"Trosky","c":"hrady","u":0,"k":"Liberecký kraj","p":"Zřícenina se dvěma věžemi Panna a Baba na čedičových sopouších.","lat":50.51625,"lon":15.23083,"img":"Hrad Trosky, letecký snímek.jpg","q":"Q508519","a":"Zdeněk Fiedler","l":"CC BY-SA 3.0"},{"n":"Prachovské skály","c":"priroda","u":0,"k":"Královéhradecký kraj","p":"Pískovcové skalní město v Českém ráji.","lat":50.46833,"lon":15.28417,"img":"Prachauer felsen 01.jpg","q":"Q452242","a":"neuvedeno","l":"CC BY-SA 2.0 de"},{"n":"Adršpašsko-teplické skály","c":"priroda","u":0,"k":"Královéhradecký kraj","p":"Rozsáhlé skalní město se skalami Milenci, Starosta a Starostová.","lat":50.61139,"lon":16.115,"img":"Adršpašskoteplické skály 02.JPG","q":"Q356427","a":"Lestat (Jan Mehlich)","l":"CC BY-SA 3.0"},{"n":"Sněžka","c":"priroda","u":0,"k":"Královéhradecký kraj","p":"Nejvyšší hora Česka (1603 m) na hranici s Polskem.","lat":50.73611,"lon":15.74028,"img":"Śnieżka z zachodu.jpg","q":"Q617511","a":"Derbeth","l":"CC BY 2.5"},{"n":"Broumovský klášter","c":"cirkev","u":0,"k":"Královéhradecký kraj","p":"Benediktinský klášter s knihovnou a kopií Turínského plátna.","lat":50.58668,"lon":16.3338,"img":"Broumov, klášter, kostel 07.jpg","q":"Q1807024","a":"Daniel Baránek","l":"CC BY-SA 3.0"},{"n":"Veveří","c":"hrady","u":0,"k":"Jihomoravský kraj","p":"Hrad na ostrohu nad přehradní nádrží u moravské metropole.","lat":49.25667,"lon":16.46167,"img":"Hrad Veveří - panorama.JPG","q":"Q921344","a":"Michal Klajban","l":"CC BY-SA 3.0"},{"n":"Bítov","c":"hrady","u":0,"k":"Jihomoravský kraj","p":"Hrad nad přehradou, proslulý sbírkou vycpaných psů.","lat":48.9436,"lon":15.7005,"img":"Bitov, Burg mit Stausee.jpg","q":"Q1011302","a":"Christof Halbe","l":"CC BY-SA 3.0"},{"n":"Propast Macocha","c":"priroda","u":0,"k":"Jihomoravský kraj","p":"Propast hluboká 138 metrů v krasové oblasti.","lat":49.37324,"lon":16.72982,"img":"Propast Macocha 01.jpg","q":"Q673317","a":"Doronenko","l":"CC BY-SA 3.0"},{"n":"Pernštejn","c":"hrady","u":0,"k":"Jihomoravský kraj","p":"Mohutný gotický hrad na skále, přezdívaný „hrad hradů“.","lat":49.45083,"lon":16.31889,"img":"Burg Pernstein.JPG","q":"Q655633","a":"Dominik Tefert at de.wikipedia","l":"Public domain"},{"n":"Buchlov","c":"hrady","u":0,"k":"Zlínský kraj","p":"Královský hrad v Chřibech; na protějším kopci stojí kaple sv. Barbory.","lat":49.1075,"lon":17.31083,"img":"The Buchlov Castle.jpg","q":"Q105310","a":"Mercy","l":"CC BY-SA 3.0"},{"n":"Bazilika na Velehradě","c":"cirkev","u":0,"k":"Zlínský kraj","p":"Bazilika a cisterciácký klášter, nejvýznamnější poutní místo Moravy.","lat":49.1035,"lon":17.3959,"img":"Klášter cisterciáků (Velehrad) 1.jpg","q":"Q11062082","a":"Bjalek Michal","l":"CC BY-SA 3.0"},{"n":"Svatý Hostýn","c":"cirkev","u":0,"k":"Zlínský kraj","p":"Hora s poutní bazilikou a křížovou cestou od Dušana Jurkoviče.","lat":49.37972,"lon":17.70194,"img":"Hostyn1.jpg","q":"Q369552","a":"Roy","l":"Public domain"},{"n":"Baťův mrakodrap","c":"technika","u":0,"k":"Zlínský kraj","p":"Budova č. 21, kde jezdila kancelář ředitele jako výtah.","lat":49.22324,"lon":17.6583,"img":"Baťův mrakodrap.jpg","q":"Q3504366","a":"Romanenko","l":"CC BY-SA 3.0"},{"n":"Pustevny","c":"technika","u":0,"k":"Zlínský kraj","p":"Horské sedlo s lidovými chatami Libušín a Maměnka od Dušana Jurkoviče.","lat":49.49032,"lon":18.26583,"img":"Pustevny 2009-06 (8).JPG","q":"Q2036311","a":"Maxx","l":"CC BY-SA 3.0"},{"n":"Bouzov","c":"hrady","u":0,"k":"Olomoucký kraj","p":"Romantický hrad Řádu německých rytířů, oblíbená pohádková kulisa.","lat":49.70444,"lon":16.88972,"img":"Bouzov hrad (Burg Busau) - by Pudelek (cropped).jpg","q":"Q940492","a":"Pudelek","l":"CC BY-SA 4.0"},{"n":"Svatý Kopeček","c":"cirkev","u":0,"k":"Olomoucký kraj","p":"Barokní poutní bazilika na kopci hned vedle zoologické zahrady.","lat":49.62972,"lon":17.34056,"img":"Bazilika Svaty Kopecek.jpg","q":"Q1419130","a":"Michal Maňas","l":"CC BY 4.0"},{"n":"Helfštýn","c":"hrady","u":0,"k":"Olomoucký kraj","p":"Rozlehlá zřícenina, kde se každoročně schází umělečtí kováři.","lat":49.51812,"lon":17.62857,"img":"Helfštýn.jpg","q":"Q1012308","a":"neuvedeno","l":"Copyrighted free use"},{"n":"Přečerpávací elektrárna Dlouhé stráně","c":"technika","u":0,"k":"Olomoucký kraj","p":"Elektrárna s horní nádrží na vrcholu hory a největší reverzní turbínou v Evropě.","lat":50.085,"lon":17.17889,"img":"Dlouhe Strane turbinovy sal.jpg","q":"Q1507459","a":"Petr Kadlec","l":"CC BY-SA 3.0"},{"n":"Praděd","c":"priroda","u":0,"k":"Moravskoslezský kraj","p":"Nejvyšší hora Moravy (1491 m) s vysokým vysílačem.","lat":50.08319,"lon":17.23086,"img":"NPR Praděd - vrcholové partie z okolí rozcestí Nad Ovčárnou (červenec 2024) (4).jpg","q":"Q674016","a":"MartinVeselka","l":"CC BY-SA 4.0"},{"n":"Sovinec","c":"hrady","u":0,"k":"Moravskoslezský kraj","p":"Rozsáhlý hrad v lesích Nízkého Jeseníku.","lat":49.83748,"lon":17.24574,"img":"Castle Sovinec.jpg","q":"Q1014034","a":"Radek Bartoš","l":"CC BY 2.5"},{"n":"Dolní oblast Vítkovice","c":"technika","u":0,"k":"Moravskoslezský kraj","p":"Bývalé doly a železárny s vysokou pecí, dnes kulturní areál.","lat":49.82033,"lon":18.27951,"img":"Dolní oblast Vítkovic 07-08-2012.JPG","q":"Q12016587","a":"Honza chodec","l":"CC BY-SA 3.0"},{"n":"Hukvaldy","c":"hrady","u":0,"k":"Moravskoslezský kraj","p":"Zřícenina rozsáhlého hradu; v obci pod ní se narodil Leoš Janáček.","lat":49.62108,"lon":18.22778,"img":"Hukv09.JPG","q":"Q1012520","a":"Tedmek","l":"Public domain"},{"n":"Lysá hora","c":"priroda","u":0,"k":"Moravskoslezský kraj","p":"Nejvyšší vrchol Moravskoslezských Beskyd a nejdeštivější místo v Česku.","lat":49.54583,"lon":18.4475,"img":"Lysa berg.JPG","q":"Q1573557","a":"Pudelek","l":"CC BY-SA 3.0"}];
+const GEO = {"cz":[[50.859,14.809],[50.864,14.866],[50.859,14.982],[50.867,14.985],[50.915,14.982],[50.93,15.0],[50.958,14.996],[50.974,14.982],[50.982,14.964],[50.992,14.96],[51.007,14.996],[51.021,15.003],[51.009,15.025],[51.002,15.075],[50.992,15.082],[50.98,15.108],[50.982,15.118],[51.006,15.133],[51.011,15.144],[51.007,15.154],[50.979,15.169],[50.977,15.226],[50.969,15.255],[50.953,15.27],[50.943,15.27],[50.933,15.259],[50.915,15.252],[50.899,15.255],[50.855,15.288],[50.832,15.342],[50.813,15.352],[50.785,15.349],[50.776,15.356],[50.773,15.37],[50.798,15.399],[50.8,15.442],[50.756,15.64],[50.751,15.655],[50.734,15.673],[50.744,15.766],[50.742,15.792],[50.675,15.849],[50.675,15.882],[50.688,15.943],[50.687,15.957],[50.678,15.972],[50.663,15.986],[50.636,16.0],[50.624,15.997],[50.612,15.979],[50.604,15.982],[50.609,16.026],[50.646,16.087],[50.644,16.13],[50.624,16.177],[50.626,16.191],[50.636,16.206],[50.66,16.22],[50.661,16.231],[50.661,16.267],[50.644,16.332],[50.587,16.418],[50.568,16.425],[50.56,16.393],[50.551,16.4],[50.535,16.389],[50.521,16.389],[50.521,16.393],[50.492,16.353],[50.496,16.303],[50.492,16.288],[50.481,16.281],[50.472,16.267],[50.452,16.213],[50.437,16.216],[50.44,16.198],[50.425,16.191],[50.406,16.198],[50.403,16.231],[50.371,16.249],[50.364,16.263],[50.373,16.288],[50.369,16.342],[50.351,16.353],[50.342,16.35],[50.334,16.353],[50.318,16.371],[50.298,16.44],[50.227,16.504],[50.207,16.537],[50.143,16.566],[50.107,16.62],[50.092,16.659],[50.096,16.702],[50.123,16.731],[50.143,16.767],[50.175,16.796],[50.187,16.818],[50.192,16.882],[50.217,16.918],[50.214,16.954],[50.232,16.962],[50.232,16.976],[50.212,16.998],[50.21,17.008],[50.219,17.016],[50.232,17.012],[50.242,17.001],[50.268,16.998],[50.285,16.987],[50.298,16.969],[50.307,16.944],[50.318,16.926],[50.378,16.897],[50.408,16.864],[50.423,16.864],[50.433,16.893],[50.432,16.915],[50.415,16.958],[50.416,16.983],[50.398,17.084],[50.378,17.131],[50.379,17.188],[50.376,17.185],[50.364,17.188],[50.337,17.21],[50.322,17.246],[50.318,17.318],[50.313,17.336],[50.308,17.318],[50.297,17.332],[50.27,17.336],[50.253,17.354],[50.271,17.365],[50.273,17.386],[50.261,17.412],[50.242,17.419],[50.239,17.43],[50.242,17.44],[50.266,17.469],[50.268,17.516],[50.258,17.606],[50.263,17.631],[50.298,17.678],[50.312,17.685],[50.315,17.692],[50.312,17.707],[50.29,17.736],[50.253,17.718],[50.242,17.721],[50.217,17.746],[50.202,17.739],[50.175,17.674],[50.168,17.649],[50.163,17.588],[50.153,17.581],[50.146,17.584],[50.106,17.631],[50.102,17.66],[50.107,17.678],[50.096,17.732],[50.087,17.721],[50.075,17.721],[50.06,17.743],[50.025,17.764],[49.974,17.84],[49.969,17.876],[49.976,17.912],[49.993,17.941],[49.996,17.998],[50.008,18.038],[50.025,18.027],[50.025,18.006],[50.047,18.002],[50.042,18.034],[50.018,18.092],[49.999,18.085],[49.989,18.099],[49.981,18.16],[49.976,18.178],[49.959,18.207],[49.945,18.258],[49.918,18.272],[49.908,18.294],[49.91,18.308],[49.925,18.333],[49.928,18.33],[49.932,18.369],[49.923,18.409],[49.896,18.481],[49.896,18.506],[49.913,18.546],[49.906,18.56],[49.89,18.567],[49.874,18.564],[49.861,18.567],[49.852,18.592],[49.832,18.567],[49.805,18.567],[49.743,18.607],[49.714,18.618],[49.7,18.636],[49.695,18.682],[49.668,18.729],[49.675,18.772],[49.662,18.794],[49.626,18.798],[49.599,18.816],[49.547,18.834],[49.527,18.837],[49.51,18.834],[49.51,18.794],[49.505,18.772],[49.481,18.733],[49.479,18.704],[49.496,18.643],[49.496,18.628],[49.486,18.6],[49.489,18.556],[49.481,18.535],[49.445,18.524],[49.429,18.481],[49.395,18.438],[49.385,18.416],[49.39,18.387],[49.342,18.384],[49.312,18.326],[49.277,18.189],[49.258,18.16],[49.233,18.135],[49.202,18.117],[49.143,18.103],[49.093,18.103],[49.071,18.096],[49.047,18.074],[49.028,18.045],[49.02,18.013],[49.02,17.934],[49.01,17.916],[48.993,17.901],[48.934,17.88],[48.922,17.862],[48.92,17.797],[48.912,17.779],[48.873,17.746],[48.863,17.728],[48.812,17.534],[48.817,17.498],[48.843,17.455],[48.819,17.376],[48.858,17.26],[48.866,17.214],[48.86,17.167],[48.834,17.113],[48.806,17.098],[48.773,17.052],[48.746,17.026],[48.65,16.976],[48.623,16.947],[48.605,16.944],[48.632,16.911],[48.697,16.897],[48.719,16.872],[48.709,16.8],[48.73,16.746],[48.735,16.674],[48.74,16.663],[48.778,16.645],[48.804,16.53],[48.806,16.512],[48.799,16.483],[48.802,16.454],[48.795,16.436],[48.736,16.386],[48.73,16.375],[48.728,16.353],[48.736,16.339],[48.733,16.317],[48.746,16.177],[48.743,16.087],[48.758,16.033],[48.807,15.932],[48.819,15.932],[48.822,15.925],[48.819,15.907],[48.831,15.907],[48.834,15.9],[48.833,15.874],[48.843,15.885],[48.841,15.878],[48.849,15.86],[48.849,15.838],[48.858,15.828],[48.87,15.824],[48.873,15.817],[48.873,15.788],[48.854,15.727],[48.858,15.68],[48.887,15.604],[48.909,15.522],[48.946,15.45],[48.954,15.406],[48.971,15.36],[48.976,15.288],[48.986,15.273],[48.983,15.262],[48.964,15.259],[48.952,15.244],[48.937,15.144],[48.966,15.151],[48.993,15.136],[48.998,15.061],[49.01,15.003],[49.006,14.978],[48.993,14.978],[48.971,14.964],[48.885,14.967],[48.811,14.938],[48.797,14.938],[48.78,14.953],[48.763,14.938],[48.762,14.92],[48.775,14.866],[48.78,14.816],[48.777,14.802],[48.743,14.78],[48.724,14.776],[48.694,14.722],[48.674,14.704],[48.589,14.697],[48.576,14.676],[48.578,14.658],[48.603,14.636],[48.599,14.604],[48.611,14.604],[48.621,14.593],[48.608,14.535],[48.625,14.481],[48.643,14.46],[48.637,14.445],[48.598,14.42],[48.586,14.406],[48.557,14.316],[48.581,14.215],[48.591,14.074],[48.606,14.031],[48.627,14.01],[48.64,14.006],[48.654,14.02],[48.655,14.031],[48.662,14.035],[48.67,14.028],[48.675,14.013],[48.701,13.992],[48.731,13.916],[48.753,13.876],[48.767,13.815],[48.78,13.797],[48.868,13.725],[48.881,13.653],[48.909,13.621],[48.927,13.61],[48.946,13.61],[48.946,13.592],[48.968,13.538],[48.971,13.516],[48.966,13.502],[48.956,13.491],[48.937,13.484],[48.959,13.426],[48.978,13.398],[48.993,13.383],[49.022,13.383],[49.039,13.372],[49.067,13.329],[49.094,13.3],[49.106,13.268],[49.108,13.207],[49.118,13.178],[49.155,13.149],[49.238,13.056],[49.268,13.012],[49.277,13.005],[49.295,13.002],[49.3,12.984],[49.327,12.94],[49.332,12.922],[49.339,12.886],[49.337,12.872],[49.324,12.876],[49.322,12.858],[49.327,12.796],[49.342,12.76],[49.391,12.728],[49.405,12.71],[49.418,12.663],[49.444,12.631],[49.51,12.624],[49.515,12.595],[49.523,12.584],[49.55,12.562],[49.584,12.555],[49.596,12.548],[49.619,12.501],[49.63,12.508],[49.635,12.498],[49.646,12.505],[49.66,12.505],[49.67,12.498],[49.7,12.418],[49.743,12.382],[49.758,12.397],[49.77,12.436],[49.78,12.454],[49.83,12.462],[49.827,12.483],[49.886,12.523],[49.912,12.519],[49.932,12.462],[49.955,12.472],[49.971,12.469],[49.981,12.451],[49.982,12.415],[49.993,12.4],[50.045,12.246],[50.07,12.242],[50.08,12.231],[50.102,12.188],[50.133,12.177],[50.172,12.184],[50.194,12.163],[50.21,12.138],[50.231,12.091],[50.242,12.08],[50.264,12.109],[50.276,12.112],[50.291,12.109],[50.315,12.076],[50.312,12.148],[50.303,12.17],[50.27,12.177],[50.263,12.188],[50.259,12.231],[50.253,12.242],[50.242,12.238],[50.237,12.228],[50.21,12.26],[50.2,12.26],[50.172,12.274],[50.161,12.285],[50.161,12.3],[50.166,12.314],[50.199,12.307],[50.217,12.31],[50.227,12.314],[50.242,12.336],[50.259,12.336],[50.28,12.368],[50.315,12.397],[50.342,12.465],[50.345,12.469],[50.356,12.465],[50.369,12.476],[50.389,12.512],[50.396,12.552],[50.4,12.627],[50.394,12.692],[50.432,12.739],[50.435,12.789],[50.443,12.818],[50.405,12.919],[50.405,12.951],[50.433,12.998],[50.492,13.009],[50.497,13.027],[50.491,13.052],[50.499,13.106],[50.497,13.16],[50.509,13.185],[50.526,13.2],[50.582,13.232],[50.58,13.254],[50.568,13.286],[50.575,13.304],[50.602,13.322],[50.619,13.358],[50.629,13.369],[50.622,13.387],[50.6,13.408],[50.594,13.43],[50.597,13.448],[50.629,13.498],[50.643,13.495],[50.663,13.524],[50.676,13.527],[50.692,13.516],[50.707,13.556],[50.712,13.603],[50.712,13.693],[50.725,13.772],[50.724,13.833],[50.742,13.884],[50.764,13.88],[50.781,13.891],[50.779,13.923],[50.798,13.948],[50.805,13.981],[50.803,14.035],[50.849,14.19],[50.879,14.233],[50.884,14.269],[50.881,14.348],[50.896,14.377],[50.921,14.38],[50.931,14.355],[50.938,14.319],[50.953,14.294],[50.964,14.294],[50.97,14.305],[50.977,14.251],[50.982,14.24],[50.992,14.251],[51.021,14.265],[51.036,14.287],[51.039,14.319],[51.033,14.355],[51.012,14.388],[51.012,14.398],[51.021,14.427],[51.019,14.463],[51.023,14.474],[51.038,14.481],[51.018,14.492],[51.009,14.503],[51.002,14.514],[50.999,14.542],[50.975,14.575],[50.965,14.578],[50.95,14.575],[50.913,14.55],[50.906,14.56],[50.921,14.629],[50.909,14.636],[50.871,14.611],[50.854,14.607],[50.845,14.614],[50.835,14.661],[50.817,14.701],[50.81,14.758],[50.813,14.776],[50.82,14.784],[50.859,14.809]],"kraje":[{"n":"Hlavn\u00ed m\u011bsto Praha","c":[[50.128,14.605],[50.145,14.588],[50.154,14.599],[50.15,14.563],[50.166,14.551],[50.162,14.534],[50.177,14.527],[50.17,14.467],[50.141,14.395],[50.148,14.366],[50.138,14.354],[50.116,14.361],[50.115,14.321],[50.13,14.302],[50.116,14.288],[50.103,14.224],[50.103,14.25],[50.077,14.289],[50.058,14.248],[50.054,14.272],[50.04,14.27],[50.028,14.287],[50.024,14.316],[50.007,14.311],[50.002,14.295],[49.991,14.343],[49.972,14.327],[49.968,14.345],[49.957,14.325],[49.942,14.396],[49.971,14.401],[49.971,14.462],[49.992,14.484],[50.001,14.53],[50.011,14.527],[50.016,14.582],[49.994,14.64],[50.006,14.638],[50.007,14.662],[50.019,14.67],[50.038,14.657],[50.039,14.667],[50.049,14.654],[50.042,14.644],[50.057,14.64],[50.072,14.7],[50.09,14.705],[50.107,14.657],[50.123,14.659],[50.128,14.605]]},{"n":"St\u0159edo\u010desk\u00fd kraj","c":[[49.97,15.497],[49.987,15.461],[49.994,15.474],[50.007,15.469],[49.997,15.459],[50.01,15.46],[50.01,15.424],[50.017,15.431],[50.02,15.394],[50.041,15.363],[50.047,15.403],[50.056,15.375],[50.063,15.413],[50.086,15.404],[50.088,15.428],[50.096,15.399],[50.108,15.414],[50.102,15.437],[50.111,15.432],[50.125,15.448],[50.14,15.415],[50.145,15.349],[50.156,15.374],[50.166,15.356],[50.173,15.378],[50.198,15.397],[50.218,15.391],[50.227,15.371],[50.247,15.367],[50.255,15.384],[50.285,15.378],[50.301,15.351],[50.281,15.307],[50.294,15.264],[50.287,15.232],[50.297,15.206],[50.309,15.204],[50.318,15.218],[50.328,15.181],[50.34,15.189],[50.346,15.129],[50.359,15.121],[50.364,15.131],[50.376,15.104],[50.389,15.118],[50.388,15.144],[50.404,15.137],[50.408,15.155],[50.427,15.162],[50.447,15.149],[50.451,15.13],[50.475,15.145],[50.48,15.128],[50.49,15.134],[50.505,15.113],[50.523,15.147],[50.535,15.098],[50.554,15.095],[50.571,15.064],[50.565,15.039],[50.604,15.004],[50.606,14.977],[50.594,14.958],[50.619,14.924],[50.602,14.895],[50.586,14.909],[50.572,14.847],[50.556,14.859],[50.539,14.827],[50.557,14.75],[50.519,14.754],[50.52,14.725],[50.499,14.719],[50.492,14.688],[50.48,14.692],[50.487,14.633],[50.474,14.59],[50.493,14.575],[50.511,14.578],[50.496,14.547],[50.51,14.51],[50.492,14.501],[50.509,14.469],[50.499,14.474],[50.496,14.455],[50.479,14.47],[50.449,14.473],[50.453,14.423],[50.44,14.426],[50.431,14.41],[50.428,14.422],[50.421,14.416],[50.436,14.378],[50.43,14.36],[50.411,14.378],[50.406,14.363],[50.395,14.38],[50.352,14.367],[50.355,14.274],[50.328,14.251],[50.345,14.184],[50.334,14.182],[50.331,14.143],[50.346,14.008],[50.334,13.982],[50.304,13.991],[50.307,13.952],[50.292,13.957],[50.28,13.94],[50.27,13.878],[50.244,13.864],[50.24,13.84],[50.264,13.812],[50.232,13.769],[50.241,13.76],[50.224,13.751],[50.222,13.672],[50.238,13.669],[50.208,13.632],[50.211,13.616],[50.202,13.623],[50.192,13.608],[50.189,13.536],[50.169,13.513],[50.166,13.488],[50.147,13.494],[50.143,13.479],[50.128,13.493],[50.132,13.47],[50.106,13.463],[50.11,13.43],[50.098,13.404],[50.061,13.43],[50.062,13.414],[50.037,13.396],[50.028,13.435],[50.042,13.445],[50.032,13.487],[50.041,13.521],[50.029,13.537],[50.022,13.501],[49.994,13.569],[50.002,13.656],[49.962,13.699],[49.966,13.748],[49.941,13.743],[49.928,13.833],[49.909,13.818],[49.868,13.834],[49.868,13.808],[49.854,13.813],[49.83,13.797],[49.812,13.809],[49.801,13.789],[49.781,13.8],[49.76,13.782],[49.761,13.813],[49.696,13.84],[49.686,13.824],[49.693,13.806],[49.661,13.767],[49.638,13.773],[49.622,13.741],[49.615,13.754],[49.545,13.737],[49.546,13.765],[49.511,13.77],[49.527,13.821],[49.511,13.842],[49.526,13.865],[49.514,13.901],[49.507,13.891],[49.501,13.932],[49.517,13.948],[49.512,13.978],[49.527,13.986],[49.523,14.005],[49.531,13.998],[49.54,14.015],[49.551,14.01],[49.56,14.039],[49.556,14.076],[49.541,14.064],[49.529,14.074],[49.537,14.107],[49.528,14.126],[49.537,14.122],[49.532,14.208],[49.562,14.227],[49.568,14.266],[49.559,14.292],[49.544,14.3],[49.539,14.334],[49.528,14.324],[49.524,14.355],[49.543,14.387],[49.537,14.414],[49.558,14.406],[49.532,14.467],[49.546,14.477],[49.531,14.561],[49.544,14.589],[49.522,14.574],[49.519,14.632],[49.503,14.648],[49.519,14.651],[49.544,14.694],[49.549,14.738],[49.569,14.72],[49.587,14.734],[49.592,14.724],[49.595,14.746],[49.604,14.741],[49.621,14.766],[49.576,14.845],[49.587,14.878],[49.573,14.875],[49.543,14.909],[49.557,14.946],[49.58,14.94],[49.582,14.993],[49.596,14.969],[49.606,14.982],[49.594,15.056],[49.61,15.118],[49.589,15.165],[49.614,15.171],[49.612,15.222],[49.63,15.25],[49.665,15.235],[49.676,15.18],[49.71,15.182],[49.726,15.217],[49.757,15.225],[49.763,15.254],[49.754,15.25],[49.751,15.265],[49.768,15.3],[49.769,15.346],[49.776,15.367],[49.8,15.382],[49.793,15.425],[49.804,15.439],[49.828,15.416],[49.845,15.447],[49.838,15.464],[49.85,15.492],[49.874,15.505],[49.898,15.498],[49.902,15.521],[49.927,15.535],[49.941,15.516],[49.962,15.532],[49.97,15.497]]},{"n":"Jiho\u010desk\u00fd kraj","c":[[49.294,15.024],[49.277,14.978],[49.333,14.904],[49.356,14.933],[49.376,14.888],[49.425,14.916],[49.428,14.9],[49.456,14.928],[49.474,14.918],[49.484,14.934],[49.516,14.902],[49.524,14.944],[49.549,14.932],[49.544,14.902],[49.573,14.875],[49.587,14.878],[49.576,14.845],[49.602,14.814],[49.605,14.78],[49.621,14.767],[49.606,14.743],[49.595,14.746],[49.592,14.724],[49.587,14.734],[49.569,14.72],[49.549,14.738],[49.544,14.694],[49.519,14.651],[49.503,14.648],[49.519,14.632],[49.522,14.574],[49.544,14.589],[49.531,14.561],[49.546,14.477],[49.532,14.467],[49.558,14.406],[49.537,14.414],[49.543,14.387],[49.524,14.355],[49.528,14.324],[49.539,14.334],[49.544,14.3],[49.559,14.292],[49.568,14.266],[49.562,14.227],[49.532,14.208],[49.537,14.122],[49.528,14.126],[49.537,14.107],[49.529,14.074],[49.541,14.064],[49.556,14.076],[49.56,14.039],[49.551,14.01],[49.54,14.015],[49.531,13.998],[49.523,14.005],[49.527,13.986],[49.512,13.978],[49.517,13.948],[49.501,13.932],[49.507,13.891],[49.514,13.901],[49.526,13.867],[49.511,13.836],[49.527,13.821],[49.507,13.751],[49.497,13.758],[49.487,13.748],[49.483,13.769],[49.481,13.759],[49.475,13.769],[49.453,13.764],[49.435,13.791],[49.422,13.763],[49.399,13.759],[49.376,13.771],[49.368,13.792],[49.342,13.769],[49.323,13.77],[49.311,13.722],[49.28,13.731],[49.279,13.698],[49.258,13.708],[49.257,13.733],[49.228,13.689],[49.195,13.72],[49.187,13.692],[49.16,13.69],[49.16,13.659],[49.136,13.63],[49.146,13.589],[49.142,13.6],[49.126,13.589],[49.109,13.598],[49.104,13.579],[49.064,13.607],[49.045,13.588],[49.051,13.571],[49.038,13.557],[48.986,13.536],[48.968,13.551],[48.968,13.586],[48.939,13.61],[48.948,13.63],[48.939,13.622],[48.88,13.671],[48.886,13.738],[48.834,13.764],[48.83,13.793],[48.797,13.815],[48.781,13.803],[48.774,13.813],[48.767,13.876],[48.714,13.956],[48.709,14.003],[48.677,14.034],[48.674,14.059],[48.653,14.054],[48.653,14.024],[48.64,14.011],[48.627,14.048],[48.613,14.042],[48.607,14.069],[48.595,14.067],[48.581,14.272],[48.552,14.333],[48.575,14.358],[48.572,14.388],[48.593,14.386],[48.589,14.431],[48.625,14.456],[48.643,14.444],[48.648,14.47],[48.617,14.503],[48.603,14.562],[48.628,14.61],[48.605,14.626],[48.604,14.654],[48.582,14.663],[48.583,14.702],[48.602,14.721],[48.65,14.712],[48.687,14.727],[48.734,14.808],[48.779,14.809],[48.78,14.881],[48.758,14.956],[48.769,14.976],[48.779,14.98],[48.795,14.953],[48.837,14.968],[48.842,14.985],[48.875,14.973],[48.875,14.984],[48.904,14.993],[48.971,14.976],[48.992,14.998],[49.015,14.996],[49.016,15.059],[49.0,15.065],[48.993,15.156],[48.981,15.151],[48.962,15.17],[48.942,15.16],[48.96,15.224],[48.954,15.262],[48.98,15.281],[48.995,15.278],[48.978,15.306],[48.982,15.367],[48.952,15.425],[48.952,15.468],[48.936,15.502],[48.915,15.512],[48.908,15.542],[48.924,15.55],[48.928,15.57],[48.929,15.558],[48.942,15.567],[48.947,15.587],[48.956,15.574],[48.966,15.58],[48.976,15.523],[48.995,15.528],[48.997,15.487],[49.025,15.534],[49.037,15.525],[49.042,15.546],[49.06,15.541],[49.061,15.555],[49.077,15.553],[49.076,15.598],[49.084,15.59],[49.089,15.604],[49.098,15.582],[49.104,15.59],[49.115,15.55],[49.117,15.57],[49.129,15.567],[49.135,15.537],[49.125,15.536],[49.131,15.516],[49.119,15.503],[49.12,15.468],[49.133,15.441],[49.118,15.424],[49.167,15.337],[49.193,15.351],[49.218,15.341],[49.206,15.253],[49.218,15.258],[49.236,15.191],[49.216,15.167],[49.221,15.139],[49.248,15.124],[49.241,15.099],[49.252,15.075],[49.249,15.101],[49.27,15.104],[49.272,15.062],[49.294,15.024]]},{"n":"Plze\u0148sk\u00fd kraj","c":[[49.903,12.581],[49.905,12.551],[49.857,12.498],[49.838,12.498],[49.837,12.476],[49.81,12.464],[49.786,12.473],[49.754,12.401],[49.704,12.442],[49.686,12.522],[49.666,12.53],[49.645,12.517],[49.626,12.534],[49.618,12.528],[49.62,12.561],[49.538,12.589],[49.523,12.644],[49.485,12.644],[49.476,12.634],[49.46,12.653],[49.435,12.656],[49.425,12.709],[49.395,12.758],[49.375,12.758],[49.345,12.786],[49.332,12.887],[49.349,12.88],[49.351,12.889],[49.334,12.973],[49.306,13.007],[49.304,13.029],[49.264,13.034],[49.247,13.081],[49.229,13.086],[49.218,13.114],[49.203,13.11],[49.174,13.171],[49.144,13.17],[49.134,13.183],[49.114,13.236],[49.119,13.289],[49.052,13.396],[49.003,13.409],[48.987,13.403],[48.941,13.496],[48.942,13.508],[48.969,13.507],[48.968,13.551],[48.986,13.536],[49.018,13.543],[49.051,13.571],[49.045,13.588],[49.064,13.607],[49.104,13.579],[49.109,13.598],[49.126,13.589],[49.142,13.6],[49.146,13.589],[49.136,13.63],[49.16,13.659],[49.164,13.694],[49.165,13.684],[49.187,13.692],[49.195,13.72],[49.228,13.689],[49.257,13.733],[49.258,13.708],[49.279,13.698],[49.28,13.731],[49.311,13.722],[49.323,13.77],[49.342,13.769],[49.364,13.791],[49.399,13.759],[49.422,13.763],[49.435,13.791],[49.453,13.764],[49.475,13.769],[49.481,13.759],[49.483,13.769],[49.487,13.748],[49.536,13.772],[49.552,13.749],[49.545,13.737],[49.615,13.754],[49.622,13.741],[49.638,13.773],[49.655,13.764],[49.681,13.787],[49.696,13.84],[49.761,13.813],[49.76,13.782],[49.781,13.8],[49.801,13.789],[49.812,13.809],[49.83,13.797],[49.854,13.813],[49.868,13.808],[49.868,13.834],[49.909,13.818],[49.928,13.833],[49.941,13.743],[49.966,13.748],[49.962,13.699],[50.002,13.656],[49.994,13.569],[50.022,13.501],[50.029,13.537],[50.041,13.521],[50.032,13.4],[50.062,13.414],[50.061,13.43],[50.074,13.428],[50.09,13.405],[50.077,13.372],[50.104,13.356],[50.087,13.334],[50.087,13.324],[50.103,13.325],[50.099,13.282],[50.092,13.291],[50.077,13.277],[50.07,13.299],[50.062,13.276],[50.052,13.28],[50.049,13.231],[50.026,13.242],[50.013,13.229],[49.996,13.232],[50.026,13.16],[50.022,13.12],[50.035,13.097],[50.009,13.069],[49.989,13.0],[49.978,13.0],[49.976,12.96],[49.944,12.967],[49.921,12.928],[49.934,12.894],[49.924,12.853],[49.941,12.792],[49.927,12.776],[49.926,12.703],[49.912,12.713],[49.908,12.674],[49.891,12.683],[49.916,12.649],[49.91,12.614],[49.893,12.595],[49.903,12.581]]},{"n":"Karlovarsk\u00fd kraj","c":[[49.903,12.581],[49.893,12.595],[49.91,12.614],[49.916,12.649],[49.891,12.683],[49.908,12.674],[49.912,12.713],[49.926,12.703],[49.927,12.776],[49.941,12.792],[49.924,12.853],[49.934,12.894],[49.921,12.928],[49.944,12.967],[49.976,12.96],[49.978,13.0],[49.989,13.0],[50.009,13.069],[50.035,13.097],[50.022,13.12],[50.026,13.16],[49.997,13.233],[50.013,13.229],[50.026,13.242],[50.049,13.231],[50.06,13.293],[50.075,13.297],[50.077,13.277],[50.092,13.291],[50.098,13.282],[50.099,13.302],[50.128,13.274],[50.134,13.228],[50.146,13.251],[50.136,13.284],[50.157,13.265],[50.156,13.284],[50.168,13.287],[50.169,13.274],[50.186,13.274],[50.206,13.249],[50.216,13.212],[50.229,13.255],[50.24,13.223],[50.248,13.238],[50.273,13.233],[50.28,13.199],[50.296,13.234],[50.313,13.221],[50.336,13.238],[50.361,13.209],[50.349,13.184],[50.36,13.134],[50.345,13.115],[50.355,13.093],[50.372,13.109],[50.382,13.098],[50.396,13.021],[50.389,12.974],[50.46,12.819],[50.431,12.81],[50.449,12.795],[50.432,12.734],[50.397,12.707],[50.417,12.673],[50.397,12.512],[50.371,12.486],[50.35,12.49],[50.355,12.469],[50.323,12.431],[50.321,12.398],[50.294,12.4],[50.285,12.371],[50.263,12.353],[50.242,12.359],[50.242,12.331],[50.217,12.335],[50.207,12.323],[50.192,12.338],[50.182,12.323],[50.171,12.332],[50.177,12.289],[50.197,12.275],[50.221,12.294],[50.246,12.239],[50.257,12.247],[50.25,12.266],[50.271,12.254],[50.273,12.201],[50.309,12.201],[50.322,12.185],[50.318,12.101],[50.307,12.126],[50.291,12.123],[50.278,12.14],[50.262,12.098],[50.25,12.092],[50.232,12.127],[50.236,12.151],[50.211,12.16],[50.199,12.197],[50.196,12.189],[50.168,12.216],[50.143,12.195],[50.109,12.201],[50.076,12.275],[50.058,12.262],[50.053,12.317],[50.033,12.326],[50.039,12.34],[50.017,12.367],[50.003,12.432],[49.984,12.431],[49.995,12.461],[49.982,12.49],[49.972,12.5],[49.948,12.47],[49.936,12.478],[49.903,12.581]]},{"n":"\u00dasteck\u00fd kraj","c":[[50.634,14.364],[50.657,14.363],[50.658,14.343],[50.667,14.343],[50.691,14.379],[50.7,14.367],[50.721,14.376],[50.736,14.431],[50.741,14.417],[50.767,14.428],[50.779,14.458],[50.784,14.448],[50.806,14.456],[50.811,14.443],[50.816,14.484],[50.809,14.478],[50.795,14.526],[50.8,14.561],[50.838,14.567],[50.843,14.608],[50.898,14.637],[50.905,14.653],[50.932,14.65],[50.919,14.564],[50.963,14.596],[50.987,14.599],[51.01,14.565],[51.004,14.535],[51.017,14.532],[51.022,14.499],[51.043,14.509],[51.046,14.501],[51.044,14.491],[51.023,14.493],[51.036,14.454],[51.019,14.414],[51.045,14.362],[51.04,14.335],[51.056,14.316],[51.04,14.274],[51.027,14.286],[51.009,14.261],[51.0,14.269],[50.988,14.259],[50.977,14.286],[50.985,14.323],[50.973,14.328],[50.965,14.303],[50.961,14.317],[50.954,14.311],[50.936,14.397],[50.899,14.388],[50.901,14.349],[50.884,14.305],[50.895,14.267],[50.888,14.233],[50.859,14.223],[50.826,14.09],[50.812,14.078],[50.804,14.03],[50.82,13.991],[50.79,13.939],[50.793,13.901],[50.77,13.887],[50.745,13.899],[50.743,13.862],[50.727,13.855],[50.736,13.758],[50.734,13.728],[50.717,13.707],[50.732,13.665],[50.71,13.603],[50.714,13.552],[50.704,13.525],[50.678,13.544],[50.654,13.513],[50.639,13.524],[50.632,13.498],[50.602,13.465],[50.617,13.415],[50.647,13.392],[50.651,13.371],[50.627,13.377],[50.608,13.325],[50.581,13.323],[50.575,13.291],[50.593,13.279],[50.592,13.248],[50.503,13.195],[50.506,13.137],[50.519,13.133],[50.5,13.085],[50.51,13.032],[50.447,13.02],[50.42,12.985],[50.408,12.94],[50.389,12.974],[50.396,13.021],[50.382,13.097],[50.372,13.109],[50.355,13.093],[50.345,13.115],[50.36,13.134],[50.353,13.222],[50.336,13.238],[50.313,13.221],[50.296,13.234],[50.28,13.199],[50.273,13.233],[50.248,13.238],[50.24,13.223],[50.229,13.255],[50.216,13.212],[50.206,13.249],[50.186,13.274],[50.169,13.274],[50.168,13.287],[50.156,13.284],[50.157,13.265],[50.136,13.284],[50.146,13.251],[50.134,13.228],[50.128,13.274],[50.099,13.297],[50.103,13.325],[50.087,13.324],[50.104,13.356],[50.077,13.371],[50.08,13.395],[50.109,13.425],[50.106,13.463],[50.132,13.471],[50.128,13.493],[50.143,13.479],[50.147,13.494],[50.166,13.488],[50.169,13.513],[50.189,13.536],[50.192,13.608],[50.202,13.623],[50.211,13.616],[50.208,13.632],[50.238,13.669],[50.222,13.672],[50.224,13.751],[50.241,13.76],[50.232,13.769],[50.264,13.812],[50.24,13.84],[50.244,13.864],[50.27,13.878],[50.28,13.94],[50.292,13.957],[50.307,13.952],[50.304,13.991],[50.334,13.982],[50.346,14.008],[50.331,14.143],[50.334,14.182],[50.345,14.184],[50.328,14.251],[50.355,14.274],[50.352,14.367],[50.395,14.38],[50.406,14.363],[50.411,14.378],[50.43,14.36],[50.436,14.378],[50.421,14.416],[50.428,14.422],[50.431,14.41],[50.44,14.426],[50.453,14.423],[50.449,14.473],[50.479,14.47],[50.496,14.455],[50.499,14.474],[50.509,14.469],[50.506,14.487],[50.527,14.47],[50.53,14.44],[50.634,14.364]]},{"n":"Libereck\u00fd kraj","c":[[50.634,14.364],[50.53,14.44],[50.525,14.473],[50.492,14.501],[50.51,14.51],[50.496,14.547],[50.511,14.578],[50.481,14.582],[50.472,14.61],[50.487,14.633],[50.48,14.692],[50.492,14.688],[50.499,14.719],[50.52,14.725],[50.519,14.754],[50.557,14.75],[50.539,14.827],[50.556,14.859],[50.572,14.847],[50.586,14.909],[50.602,14.895],[50.607,14.917],[50.619,14.912],[50.592,14.968],[50.606,14.977],[50.604,15.004],[50.565,15.039],[50.571,15.063],[50.554,15.095],[50.535,15.098],[50.494,15.223],[50.498,15.242],[50.507,15.238],[50.526,15.266],[50.515,15.33],[50.495,15.368],[50.509,15.379],[50.481,15.39],[50.482,15.428],[50.49,15.423],[50.487,15.441],[50.501,15.454],[50.522,15.436],[50.533,15.48],[50.547,15.478],[50.513,15.536],[50.527,15.563],[50.514,15.583],[50.525,15.633],[50.559,15.59],[50.558,15.601],[50.568,15.586],[50.574,15.594],[50.581,15.571],[50.614,15.602],[50.637,15.565],[50.653,15.584],[50.682,15.562],[50.744,15.569],[50.758,15.539],[50.779,15.535],[50.809,15.44],[50.777,15.394],[50.778,15.374],[50.838,15.367],[50.86,15.312],[50.891,15.277],[50.932,15.268],[50.953,15.292],[50.963,15.274],[50.98,15.274],[50.98,15.248],[50.999,15.237],[50.983,15.18],[51.02,15.172],[51.013,15.144],[50.994,15.133],[50.991,15.142],[50.99,15.129],[50.991,15.105],[51.003,15.097],[51.01,15.107],[51.023,15.061],[51.012,15.056],[51.023,15.024],[51.011,14.985],[50.99,14.968],[50.978,14.989],[50.987,15.006],[50.967,15.022],[50.963,15.011],[50.94,15.014],[50.922,14.989],[50.907,15.007],[50.892,14.994],[50.869,15.002],[50.873,14.83],[50.82,14.793],[50.829,14.745],[50.822,14.722],[50.841,14.709],[50.858,14.619],[50.842,14.605],[50.838,14.567],[50.8,14.561],[50.794,14.541],[50.809,14.478],[50.816,14.484],[50.811,14.443],[50.806,14.456],[50.784,14.448],[50.779,14.458],[50.767,14.428],[50.741,14.417],[50.736,14.431],[50.721,14.376],[50.7,14.367],[50.691,14.379],[50.667,14.343],[50.658,14.343],[50.657,14.363],[50.634,14.364]]},{"n":"Kr\u00e1lov\u00e9hradeck\u00fd kraj","c":[[50.173,15.771],[50.168,15.804],[50.141,15.804],[50.132,15.835],[50.148,15.853],[50.147,15.887],[50.162,15.888],[50.171,15.917],[50.157,15.992],[50.146,15.992],[50.146,16.01],[50.113,16.01],[50.113,16.063],[50.087,16.075],[50.085,16.112],[50.063,16.139],[50.059,16.175],[50.038,16.197],[50.042,16.23],[50.056,16.242],[50.043,16.248],[50.051,16.282],[50.04,16.333],[50.061,16.312],[50.078,16.357],[50.092,16.341],[50.137,16.472],[50.165,16.481],[50.139,16.569],[50.152,16.586],[50.165,16.561],[50.208,16.562],[50.23,16.548],[50.264,16.49],[50.325,16.431],[50.319,16.399],[50.329,16.383],[50.35,16.362],[50.38,16.361],[50.383,16.305],[50.367,16.279],[50.394,16.263],[50.396,16.247],[50.406,16.253],[50.409,16.214],[50.432,16.196],[50.452,16.213],[50.443,16.232],[50.458,16.22],[50.468,16.256],[50.48,16.259],[50.479,16.294],[50.506,16.312],[50.501,16.36],[50.53,16.402],[50.542,16.387],[50.548,16.411],[50.569,16.405],[50.58,16.445],[50.662,16.341],[50.672,16.235],[50.633,16.217],[50.627,16.184],[50.645,16.17],[50.663,16.104],[50.64,16.068],[50.61,16.056],[50.614,16.043],[50.599,16.025],[50.613,15.986],[50.63,16.022],[50.645,16.001],[50.683,15.991],[50.692,15.961],[50.674,15.861],[50.755,15.816],[50.737,15.706],[50.777,15.602],[50.78,15.539],[50.759,15.538],[50.736,15.574],[50.712,15.559],[50.682,15.562],[50.653,15.584],[50.637,15.565],[50.614,15.602],[50.581,15.571],[50.574,15.594],[50.568,15.586],[50.558,15.601],[50.559,15.59],[50.523,15.632],[50.514,15.583],[50.527,15.563],[50.513,15.536],[50.547,15.478],[50.533,15.48],[50.522,15.436],[50.501,15.454],[50.487,15.442],[50.48,15.402],[50.491,15.379],[50.492,15.392],[50.509,15.379],[50.495,15.368],[50.524,15.285],[50.525,15.265],[50.495,15.235],[50.523,15.147],[50.507,15.114],[50.49,15.134],[50.48,15.128],[50.475,15.145],[50.451,15.13],[50.447,15.149],[50.427,15.162],[50.408,15.155],[50.404,15.137],[50.388,15.144],[50.389,15.118],[50.376,15.104],[50.364,15.131],[50.359,15.121],[50.346,15.129],[50.34,15.189],[50.328,15.181],[50.318,15.218],[50.309,15.204],[50.297,15.206],[50.287,15.232],[50.294,15.264],[50.281,15.307],[50.301,15.351],[50.285,15.378],[50.255,15.384],[50.247,15.367],[50.227,15.371],[50.218,15.391],[50.198,15.397],[50.173,15.378],[50.166,15.356],[50.156,15.374],[50.145,15.349],[50.14,15.415],[50.125,15.448],[50.115,15.435],[50.095,15.452],[50.117,15.522],[50.135,15.521],[50.135,15.551],[50.143,15.571],[50.15,15.566],[50.133,15.586],[50.134,15.727],[50.161,15.74],[50.173,15.771]]},{"n":"Pardubick\u00fd kraj","c":[[50.173,15.771],[50.161,15.74],[50.134,15.727],[50.139,15.705],[50.126,15.69],[50.14,15.648],[50.133,15.586],[50.15,15.57],[50.135,15.551],[50.135,15.521],[50.117,15.522],[50.114,15.489],[50.1,15.47],[50.108,15.414],[50.096,15.399],[50.088,15.428],[50.086,15.404],[50.063,15.413],[50.056,15.375],[50.047,15.403],[50.041,15.363],[50.02,15.394],[50.017,15.431],[50.01,15.424],[50.01,15.46],[49.997,15.459],[50.007,15.469],[49.994,15.474],[49.987,15.461],[49.962,15.532],[49.941,15.516],[49.927,15.535],[49.902,15.521],[49.898,15.498],[49.859,15.499],[49.829,15.575],[49.809,15.592],[49.816,15.639],[49.807,15.654],[49.817,15.662],[49.804,15.709],[49.779,15.738],[49.78,15.782],[49.756,15.775],[49.759,15.806],[49.737,15.851],[49.744,15.864],[49.719,15.849],[49.685,15.918],[49.691,15.96],[49.702,15.954],[49.701,15.969],[49.72,15.972],[49.738,16.01],[49.719,16.016],[49.712,16.075],[49.683,16.103],[49.691,16.139],[49.678,16.151],[49.678,16.194],[49.66,16.242],[49.62,16.287],[49.613,16.348],[49.572,16.406],[49.595,16.417],[49.599,16.436],[49.597,16.451],[49.587,16.446],[49.6,16.487],[49.59,16.54],[49.631,16.555],[49.621,16.604],[49.633,16.622],[49.619,16.651],[49.626,16.697],[49.596,16.782],[49.599,16.805],[49.627,16.811],[49.623,16.822],[49.639,16.8],[49.657,16.804],[49.681,16.846],[49.716,16.848],[49.73,16.831],[49.729,16.789],[49.749,16.813],[49.759,16.792],[49.773,16.801],[49.791,16.766],[49.818,16.761],[49.831,16.736],[49.864,16.742],[49.874,16.769],[49.894,16.75],[49.92,16.757],[50.0,16.712],[49.995,16.749],[50.017,16.767],[50.031,16.81],[50.045,16.819],[50.069,16.798],[50.085,16.824],[50.109,16.805],[50.115,16.826],[50.165,16.848],[50.177,16.866],[50.201,16.862],[50.207,16.847],[50.191,16.812],[50.146,16.783],[50.135,16.745],[50.096,16.705],[50.111,16.634],[50.14,16.595],[50.165,16.481],[50.137,16.472],[50.092,16.341],[50.078,16.357],[50.061,16.312],[50.04,16.33],[50.051,16.282],[50.043,16.248],[50.056,16.242],[50.042,16.23],[50.039,16.196],[50.059,16.175],[50.063,16.139],[50.085,16.112],[50.087,16.075],[50.113,16.063],[50.113,16.01],[50.146,16.01],[50.146,15.992],[50.157,15.992],[50.171,15.917],[50.162,15.888],[50.147,15.887],[50.148,15.853],[50.132,15.835],[50.141,15.804],[50.168,15.804],[50.173,15.771]]},{"n":"Kraj Vyso\u010dina","c":[[49.031,15.992],[49.029,16.022],[49.047,16.033],[49.031,16.086],[49.039,16.086],[49.036,16.118],[49.048,16.147],[49.058,16.129],[49.068,16.137],[49.072,16.211],[49.084,16.227],[49.097,16.22],[49.106,16.255],[49.138,16.204],[49.136,16.234],[49.146,16.246],[49.164,16.225],[49.174,16.233],[49.184,16.276],[49.201,16.274],[49.211,16.235],[49.226,16.235],[49.254,16.254],[49.257,16.288],[49.283,16.255],[49.312,16.294],[49.322,16.288],[49.324,16.244],[49.333,16.273],[49.355,16.217],[49.377,16.237],[49.394,16.228],[49.406,16.26],[49.426,16.262],[49.431,16.329],[49.437,16.323],[49.44,16.336],[49.45,16.326],[49.447,16.292],[49.466,16.315],[49.47,16.351],[49.448,16.352],[49.457,16.382],[49.465,16.372],[49.476,16.39],[49.502,16.355],[49.493,16.385],[49.525,16.418],[49.551,16.373],[49.576,16.394],[49.602,16.37],[49.62,16.287],[49.63,16.27],[49.64,16.275],[49.678,16.194],[49.678,16.151],[49.691,16.139],[49.684,16.101],[49.712,16.075],[49.719,16.016],[49.738,16.01],[49.72,15.972],[49.701,15.969],[49.702,15.954],[49.691,15.96],[49.685,15.918],[49.719,15.849],[49.744,15.864],[49.737,15.851],[49.759,15.806],[49.756,15.775],[49.78,15.782],[49.779,15.738],[49.804,15.709],[49.817,15.662],[49.807,15.654],[49.816,15.639],[49.809,15.592],[49.829,15.575],[49.861,15.497],[49.839,15.465],[49.845,15.447],[49.828,15.416],[49.804,15.439],[49.793,15.425],[49.8,15.382],[49.776,15.367],[49.769,15.346],[49.768,15.3],[49.751,15.265],[49.754,15.25],[49.763,15.254],[49.757,15.225],[49.726,15.217],[49.71,15.182],[49.696,15.178],[49.668,15.185],[49.665,15.235],[49.643,15.25],[49.615,15.23],[49.619,15.184],[49.614,15.171],[49.589,15.165],[49.61,15.118],[49.594,15.056],[49.604,14.976],[49.596,14.969],[49.582,14.993],[49.58,14.94],[49.557,14.946],[49.557,14.933],[49.543,14.928],[49.527,14.945],[49.517,14.902],[49.484,14.934],[49.474,14.918],[49.456,14.928],[49.428,14.9],[49.425,14.916],[49.376,14.888],[49.356,14.933],[49.333,14.904],[49.321,14.926],[49.31,14.924],[49.277,14.979],[49.297,15.03],[49.272,15.062],[49.27,15.104],[49.249,15.101],[49.252,15.075],[49.241,15.099],[49.248,15.124],[49.221,15.139],[49.216,15.167],[49.236,15.191],[49.218,15.258],[49.206,15.253],[49.218,15.341],[49.193,15.351],[49.167,15.337],[49.118,15.424],[49.133,15.441],[49.12,15.468],[49.119,15.503],[49.131,15.516],[49.125,15.536],[49.135,15.537],[49.129,15.567],[49.117,15.57],[49.115,15.55],[49.104,15.59],[49.098,15.582],[49.089,15.604],[49.084,15.59],[49.076,15.598],[49.077,15.553],[49.061,15.555],[49.06,15.541],[49.042,15.546],[49.037,15.525],[49.025,15.534],[48.997,15.487],[48.995,15.528],[48.976,15.523],[48.966,15.58],[48.957,15.573],[48.947,15.586],[48.959,15.611],[48.942,15.624],[48.938,15.646],[48.956,15.665],[48.965,15.66],[48.968,15.704],[48.947,15.73],[48.981,15.758],[48.984,15.792],[49.011,15.819],[49.008,15.875],[49.039,15.884],[49.029,15.917],[49.039,15.935],[49.051,15.931],[49.057,15.961],[49.039,15.969],[49.031,15.992]]},{"n":"Jihomoravsk\u00fd kraj","c":[[49.031,15.992],[49.039,15.969],[49.057,15.961],[49.051,15.931],[49.039,15.935],[49.029,15.917],[49.039,15.884],[49.008,15.875],[49.011,15.819],[48.984,15.792],[48.981,15.758],[48.947,15.73],[48.968,15.706],[48.965,15.66],[48.956,15.665],[48.938,15.646],[48.942,15.624],[48.959,15.611],[48.955,15.588],[48.908,15.542],[48.898,15.614],[48.856,15.691],[48.852,15.754],[48.875,15.78],[48.877,15.842],[48.867,15.852],[48.86,15.843],[48.86,15.877],[48.842,15.885],[48.848,15.898],[48.839,15.905],[48.843,15.893],[48.835,15.893],[48.839,15.92],[48.819,15.935],[48.823,15.958],[48.805,15.95],[48.779,15.994],[48.745,16.103],[48.731,16.33],[48.746,16.343],[48.728,16.36],[48.728,16.378],[48.766,16.435],[48.809,16.46],[48.798,16.519],[48.814,16.541],[48.783,16.594],[48.781,16.664],[48.766,16.678],[48.728,16.683],[48.738,16.725],[48.706,16.8],[48.718,16.902],[48.693,16.919],[48.676,16.91],[48.67,16.923],[48.639,16.928],[48.622,16.919],[48.617,16.94],[48.624,16.957],[48.669,16.968],[48.692,16.997],[48.709,16.998],[48.764,17.043],[48.786,17.089],[48.831,17.111],[48.878,17.2],[48.845,17.322],[48.814,17.361],[48.813,17.397],[48.847,17.453],[48.82,17.51],[48.829,17.519],[48.818,17.516],[48.812,17.528],[48.82,17.553],[48.832,17.555],[48.825,17.589],[48.841,17.602],[48.854,17.647],[48.878,17.639],[48.879,17.622],[48.91,17.602],[48.923,17.538],[48.948,17.548],[48.953,17.509],[48.966,17.499],[48.95,17.434],[48.98,17.397],[48.979,17.352],[49.005,17.363],[49.016,17.336],[49.014,17.275],[49.034,17.267],[49.033,17.222],[49.064,17.232],[49.093,17.213],[49.073,17.145],[49.077,17.11],[49.086,17.12],[49.103,17.113],[49.104,17.142],[49.133,17.149],[49.138,17.188],[49.176,17.203],[49.184,17.196],[49.173,17.181],[49.175,17.147],[49.19,17.165],[49.215,17.136],[49.23,17.148],[49.245,17.13],[49.278,17.162],[49.299,17.143],[49.325,17.141],[49.359,17.035],[49.365,17.051],[49.371,17.023],[49.404,17.024],[49.426,16.988],[49.455,16.987],[49.469,16.958],[49.493,16.947],[49.499,16.906],[49.48,16.858],[49.46,16.898],[49.448,16.892],[49.429,16.916],[49.381,16.86],[49.411,16.796],[49.429,16.8],[49.436,16.829],[49.456,16.798],[49.51,16.788],[49.513,16.805],[49.53,16.81],[49.532,16.833],[49.543,16.738],[49.56,16.753],[49.587,16.745],[49.574,16.793],[49.578,16.803],[49.592,16.788],[49.598,16.805],[49.626,16.697],[49.619,16.651],[49.633,16.622],[49.621,16.604],[49.631,16.555],[49.59,16.54],[49.6,16.487],[49.587,16.446],[49.597,16.451],[49.599,16.436],[49.595,16.417],[49.572,16.406],[49.58,16.392],[49.562,16.391],[49.551,16.373],[49.525,16.418],[49.493,16.385],[49.502,16.355],[49.476,16.39],[49.465,16.372],[49.452,16.379],[49.448,16.352],[49.47,16.35],[49.466,16.315],[49.447,16.292],[49.45,16.326],[49.44,16.336],[49.437,16.323],[49.431,16.329],[49.428,16.267],[49.414,16.254],[49.406,16.26],[49.394,16.228],[49.377,16.237],[49.351,16.22],[49.332,16.273],[49.326,16.24],[49.312,16.294],[49.283,16.255],[49.257,16.288],[49.254,16.254],[49.226,16.235],[49.211,16.235],[49.201,16.274],[49.184,16.276],[49.174,16.233],[49.164,16.225],[49.146,16.246],[49.136,16.234],[49.138,16.204],[49.105,16.255],[49.097,16.22],[49.084,16.227],[49.072,16.211],[49.068,16.137],[49.058,16.129],[49.048,16.147],[49.036,16.118],[49.039,16.086],[49.031,16.086],[49.047,16.033],[49.029,16.022],[49.031,15.992]]},{"n":"Olomouck\u00fd kraj","c":[[49.838,17.217],[49.859,17.225],[49.844,17.185],[49.878,17.147],[49.911,17.175],[49.921,17.162],[49.949,17.203],[49.983,17.155],[49.993,17.174],[50.011,17.168],[50.064,17.234],[50.102,17.22],[50.121,17.249],[50.142,17.239],[50.187,17.309],[50.19,17.348],[50.223,17.377],[50.21,17.421],[50.263,17.431],[50.277,17.421],[50.283,17.386],[50.282,17.366],[50.264,17.363],[50.264,17.349],[50.283,17.338],[50.308,17.354],[50.313,17.338],[50.328,17.349],[50.318,17.29],[50.332,17.248],[50.364,17.201],[50.386,17.203],[50.38,17.143],[50.394,17.111],[50.405,17.111],[50.407,17.053],[50.428,16.998],[50.418,16.974],[50.449,16.908],[50.443,16.882],[50.408,16.86],[50.389,16.911],[50.315,16.946],[50.302,17.003],[50.278,17.02],[50.256,17.002],[50.23,17.028],[50.216,16.999],[50.245,16.976],[50.223,16.956],[50.223,16.899],[50.2,16.883],[50.198,16.863],[50.177,16.866],[50.165,16.848],[50.115,16.826],[50.109,16.805],[50.085,16.824],[50.069,16.798],[50.045,16.819],[50.031,16.81],[50.017,16.767],[49.995,16.749],[50.0,16.712],[49.92,16.757],[49.894,16.75],[49.874,16.769],[49.864,16.742],[49.831,16.736],[49.818,16.761],[49.791,16.766],[49.773,16.801],[49.759,16.792],[49.749,16.813],[49.729,16.789],[49.73,16.831],[49.716,16.848],[49.681,16.846],[49.657,16.804],[49.639,16.8],[49.623,16.822],[49.627,16.811],[49.597,16.805],[49.592,16.788],[49.578,16.803],[49.573,16.784],[49.587,16.746],[49.575,16.742],[49.56,16.753],[49.543,16.738],[49.532,16.833],[49.53,16.81],[49.513,16.805],[49.51,16.788],[49.456,16.798],[49.436,16.829],[49.429,16.8],[49.411,16.796],[49.381,16.86],[49.429,16.916],[49.448,16.892],[49.46,16.898],[49.48,16.858],[49.499,16.906],[49.493,16.948],[49.469,16.958],[49.455,16.987],[49.426,16.988],[49.404,17.024],[49.371,17.023],[49.327,17.139],[49.276,17.156],[49.269,17.177],[49.297,17.194],[49.289,17.212],[49.303,17.255],[49.295,17.277],[49.332,17.315],[49.343,17.357],[49.382,17.333],[49.409,17.355],[49.405,17.386],[49.38,17.375],[49.38,17.45],[49.355,17.474],[49.383,17.515],[49.401,17.504],[49.401,17.632],[49.415,17.65],[49.45,17.625],[49.452,17.648],[49.439,17.664],[49.461,17.674],[49.463,17.692],[49.438,17.72],[49.437,17.774],[49.458,17.778],[49.47,17.8],[49.488,17.787],[49.504,17.839],[49.522,17.837],[49.509,17.887],[49.529,17.915],[49.566,17.902],[49.568,17.883],[49.545,17.863],[49.551,17.853],[49.565,17.844],[49.571,17.864],[49.582,17.864],[49.622,17.816],[49.633,17.778],[49.675,17.747],[49.68,17.736],[49.663,17.725],[49.677,17.69],[49.705,17.681],[49.733,17.698],[49.732,17.687],[49.754,17.681],[49.76,17.654],[49.755,17.618],[49.745,17.614],[49.771,17.528],[49.79,17.525],[49.799,17.494],[49.817,17.506],[49.826,17.483],[49.839,17.48],[49.84,17.49],[49.856,17.473],[49.874,17.476],[49.867,17.441],[49.832,17.463],[49.827,17.41],[49.815,17.417],[49.813,17.393],[49.791,17.387],[49.813,17.356],[49.849,17.381],[49.863,17.356],[49.835,17.265],[49.819,17.266],[49.818,17.216],[49.838,17.217]]},{"n":"Moravskoslezsk\u00fd kraj","c":[[49.838,17.217],[49.818,17.216],[49.819,17.266],[49.835,17.265],[49.863,17.356],[49.849,17.381],[49.813,17.356],[49.791,17.387],[49.813,17.393],[49.815,17.417],[49.827,17.41],[49.832,17.463],[49.867,17.441],[49.874,17.476],[49.856,17.473],[49.84,17.49],[49.839,17.48],[49.826,17.483],[49.817,17.506],[49.799,17.494],[49.79,17.525],[49.771,17.528],[49.75,17.586],[49.754,17.681],[49.732,17.687],[49.733,17.698],[49.705,17.681],[49.681,17.686],[49.663,17.725],[49.68,17.739],[49.652,17.773],[49.633,17.778],[49.606,17.838],[49.576,17.867],[49.563,17.843],[49.545,17.863],[49.568,17.883],[49.566,17.902],[49.541,17.91],[49.538,17.973],[49.503,17.998],[49.521,18.126],[49.509,18.136],[49.517,18.164],[49.489,18.203],[49.49,18.301],[49.451,18.321],[49.432,18.367],[49.406,18.366],[49.397,18.404],[49.394,18.45],[49.409,18.476],[49.433,18.49],[49.468,18.548],[49.49,18.535],[49.503,18.553],[49.51,18.597],[49.495,18.618],[49.508,18.678],[49.488,18.754],[49.515,18.808],[49.517,18.851],[49.524,18.837],[49.538,18.857],[49.551,18.859],[49.573,18.833],[49.595,18.839],[49.6,18.825],[49.679,18.805],[49.677,18.741],[49.684,18.717],[49.704,18.71],[49.703,18.668],[49.722,18.625],[49.747,18.629],[49.755,18.613],[49.829,18.569],[49.862,18.606],[49.873,18.57],[49.906,18.58],[49.922,18.573],[49.926,18.539],[49.909,18.547],[49.899,18.524],[49.903,18.491],[49.938,18.431],[49.936,18.377],[49.949,18.333],[49.93,18.35],[49.931,18.33],[49.916,18.318],[49.94,18.279],[49.965,18.276],[49.972,18.214],[49.998,18.207],[50.0,18.173],[49.982,18.154],[49.997,18.134],[49.995,18.116],[50.012,18.095],[50.023,18.103],[50.032,18.086],[50.044,18.089],[50.066,18.034],[50.053,18.005],[50.039,18.004],[50.03,18.013],[50.037,18.044],[50.005,18.045],[50.018,18.005],[50.005,17.954],[49.978,17.919],[49.972,17.868],[49.994,17.826],[50.004,17.837],[50.011,17.828],[50.02,17.777],[50.049,17.771],[50.097,17.731],[50.117,17.697],[50.103,17.677],[50.111,17.65],[50.131,17.64],[50.16,17.593],[50.171,17.604],[50.185,17.705],[50.206,17.717],[50.207,17.758],[50.236,17.765],[50.257,17.725],[50.3,17.752],[50.327,17.693],[50.299,17.686],[50.267,17.617],[50.279,17.592],[50.27,17.456],[50.257,17.455],[50.254,17.43],[50.21,17.421],[50.223,17.377],[50.19,17.348],[50.187,17.309],[50.142,17.239],[50.121,17.249],[50.102,17.22],[50.064,17.234],[50.011,17.168],[49.993,17.174],[49.983,17.155],[49.949,17.203],[49.921,17.162],[49.911,17.175],[49.881,17.147],[49.844,17.185],[49.859,17.225],[49.838,17.217]]},{"n":"Zl\u00ednsk\u00fd kraj","c":[[49.083,17.172],[49.093,17.213],[49.064,17.232],[49.033,17.221],[49.039,17.251],[49.034,17.268],[49.014,17.275],[49.005,17.362],[48.977,17.357],[48.98,17.397],[48.95,17.434],[48.966,17.499],[48.953,17.509],[48.948,17.548],[48.923,17.538],[48.91,17.602],[48.879,17.622],[48.878,17.639],[48.854,17.647],[48.86,17.703],[48.925,17.781],[48.928,17.885],[49.02,17.924],[49.021,18.024],[49.046,18.082],[49.09,18.116],[49.114,18.11],[49.118,18.122],[49.134,18.107],[49.161,18.137],[49.189,18.131],[49.216,18.155],[49.248,18.147],[49.27,18.184],[49.287,18.184],[49.324,18.366],[49.368,18.416],[49.397,18.404],[49.406,18.366],[49.433,18.366],[49.465,18.307],[49.49,18.301],[49.489,18.203],[49.517,18.164],[49.509,18.136],[49.521,18.126],[49.503,17.998],[49.523,17.993],[49.54,17.957],[49.538,17.917],[49.509,17.887],[49.524,17.843],[49.504,17.839],[49.488,17.787],[49.47,17.8],[49.458,17.778],[49.438,17.775],[49.438,17.72],[49.463,17.692],[49.461,17.674],[49.439,17.664],[49.452,17.648],[49.45,17.625],[49.415,17.65],[49.401,17.632],[49.401,17.504],[49.383,17.515],[49.355,17.474],[49.38,17.45],[49.38,17.375],[49.405,17.386],[49.409,17.355],[49.382,17.333],[49.343,17.357],[49.332,17.315],[49.295,17.277],[49.303,17.255],[49.289,17.212],[49.297,17.194],[49.269,17.177],[49.275,17.159],[49.247,17.131],[49.23,17.148],[49.215,17.136],[49.19,17.165],[49.175,17.147],[49.173,17.181],[49.184,17.196],[49.176,17.203],[49.138,17.188],[49.133,17.149],[49.104,17.142],[49.103,17.113],[49.086,17.12],[49.077,17.11],[49.083,17.172]]}]};
+const CITIES = [["Praha",50.0875,14.4214],["Brno",49.1951,16.6068],["Ostrava",49.8347,18.282],["Plzeň",49.7477,13.3776],["Liberec",50.7671,15.0562],["Olomouc",49.5938,17.2509],["České Budějovice",48.9745,14.4743],["Hradec Králové",50.2092,15.8328],["Ústí n. L.",50.6607,14.0323],["Pardubice",50.0343,15.7812],["Zlín",49.2265,17.6707],["Jihlava",49.3961,15.5912],["Karlovy Vary",50.2306,12.8711]];
+const CAT = {hrady:"Hrad a zámek",cirkev:"Církevní památka",technika:"Technika a architektura",priroda:"Příroda"};
+const MAXPTS = 1000;
+
+/* ---------- storage (bezpečně) ---------- */
+const store = {
+  get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+};
+
+/* ---------- theme ---------- */
+const root = document.documentElement;
+const themes = ["auto","light","dark"];
+let theme = store.get("spendlik.theme","auto");
+const mq = matchMedia("(prefers-color-scheme: dark)");
+function isDark(){return theme==="dark"||(theme==="auto"&&mq.matches)}
+function applyTheme(){
+  if(theme==="auto") root.removeAttribute("data-theme"); else root.setAttribute("data-theme",theme);
+  document.getElementById("themeBtn").title = "Vzhled: "+({auto:"automaticky",light:"světlý",dark:"tmavý"})[theme];
+  if(window.mapReady) refreshMapStyle();
+}
+document.getElementById("themeBtn").onclick=()=>{theme=themes[(themes.indexOf(theme)+1)%3];store.set("spendlik.theme",theme);applyTheme()};
+mq.addEventListener?.("change",()=>{if(theme==="auto")applyTheme()});
+applyTheme();
+
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+const css = v => getComputedStyle(root).getPropertyValue(v).trim();
+function haversine(a,b){
+  const R=6371,toR=x=>x*Math.PI/180;
+  const dLat=toR(b[0]-a[0]),dLon=toR(b[1]-a[1]);
+  const h=Math.sin(dLat/2)**2+Math.cos(toR(a[0]))*Math.cos(toR(b[0]))*Math.sin(dLon/2)**2;
+  return 2*R*Math.asin(Math.sqrt(h));
+}
+function score(km,hint){
+  let p = km<0.5 ? MAXPTS : Math.round(MAXPTS*Math.exp(-km/60));
+  return hint ? Math.round(p/2) : p;
+}
+function fmtKm(km){return km<1?Math.round(km*1000)+" m":km<10?km.toFixed(1).replace(".",",")+" km":Math.round(km)+" km"}
+function fmtPts(n){return n.toLocaleString("cs-CZ")}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function imgUrl(f,w){return "https://commons.wikimedia.org/wiki/Special:FilePath/"+encodeURIComponent(f)+"?width="+w}
+function fileUrl(f){return "https://commons.wikimedia.org/wiki/File:"+encodeURIComponent(f.replace(/ /g,"_"))}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c])}
+const PIN = c => `<svg viewBox="0 0 30 40"><path d="M15 39s12-13.3 12-23A12 12 0 0 0 3 16c0 9.7 12 23 12 23z" fill="${c}" stroke="#fff" stroke-width="2"/><circle cx="15" cy="15.5" r="4.5" fill="#fff"/></svg>`;
+const FLAG = c => `<svg viewBox="0 0 30 40"><path d="M15 39s12-13.3 12-23A12 12 0 0 0 3 16c0 9.7 12 23 12 23z" fill="${c}" stroke="#fff" stroke-width="2"/><path d="M11 22V9.5m0 0h8l-2 3 2 3h-8" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+function pinIcon(kind){
+  const c = kind==="true" ? css("--true") : css("--accent");
+  return L.divIcon({className:"pin",html:kind==="true"?FLAG(c):PIN(c),iconSize:[30,40],iconAnchor:[15,39],tooltipAnchor:[0,-34]});
+}
+
+/* ---------- map ---------- */
+const CZ_BOUNDS = L.latLngBounds(GEO.cz);
+const map = L.map("map",{
+  zoomControl:true, attributionControl:true, minZoom:5.5, maxZoom:15,
+  maxBounds:CZ_BOUNDS.pad(0.35), maxBoundsViscosity:0.8, zoomSnap:0.25, worldCopyJump:false
+});
+map.fitBounds(CZ_BOUNDS,{padding:[12,12]});
+let tiles=null, tilesFailed=0;
+function makeTiles(){
+  // Esri Canvas – podklad bez popisků (názvy míst by hru prozradily), bez API klíče
+  const style = isDark() ? "World_Dark_Gray_Base" : "World_Light_Gray_Base";
+  const t = L.tileLayer(`https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/${style}/MapServer/tile/{z}/{y}/{x}`,{
+    maxZoom:16,
+    attribution:'Podklad © <a href="https://www.esri.com" target="_blank" rel="noopener">Esri</a>, HERE, Garmin, © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> · fotky <a href="https://commons.wikimedia.org" target="_blank" rel="noopener">Wikimedia Commons</a>'
+  });
+  t.on("tileerror",()=>{tilesFailed++});
+  return t;
+}
+const czLayer = L.polygon(GEO.cz,{interactive:false});
+const krajLayer = L.layerGroup(GEO.kraje.map(k=>L.polyline(k.c,{interactive:false})));
+const cityLayer = L.layerGroup(CITIES.map(([n,la,lo])=>
+  L.circleMarker([la,lo],{radius:3.5,weight:1.5,interactive:false}).bindTooltip(n,{permanent:true,direction:"right",className:"city-label",offset:[3,0]})
+));
+function refreshMapStyle(){
+  if(tiles) map.removeLayer(tiles);
+  tiles = makeTiles().addTo(map); tiles.bringToBack();
+  czLayer.setStyle({color:css("--cz-line"),weight:2.2,fillColor:css("--accent"),fillOpacity:isDark()?.06:.05});
+  krajLayer.eachLayer(l=>l.setStyle({color:css("--kraj-line"),weight:1,dashArray:"3 4"}));
+  cityLayer.eachLayer(l=>l.setStyle({color:css("--ink2"),fillColor:css("--surface"),fillOpacity:1}));
+  game.markers.forEach(m=>m.setIcon(pinIcon(m._kind)));
+  game.lines.forEach(l=>l.setStyle({color:css("--ink")}));
+}
+czLayer.addTo(map); krajLayer.addTo(map);
+
+/* ---------- game state ---------- */
+const game = {rounds:5, cat:"all", cities:true, list:[], i:0, results:[], guess:null, hint:false, locked:true, markers:[], lines:[], guessMarker:null};
+refreshMapStyle(); window.mapReady=true;
+
+function poolFor(cat){
+  if(cat==="all") return PLACES;
+  if(cat==="unesco") return PLACES.filter(p=>p.u);
+  return PLACES.filter(p=>p.c===cat);
+}
+function cfgKey(){return "spendlik.best."+game.rounds+"."+game.cat}
+function updateBestLine(){
+  const b = store.get(cfgKey(),null), n = Math.min(game.rounds,poolFor(game.cat).length);
+  $("bestLine").textContent = (n<game.rounds?`V tomto tématu je jen ${n} památek, hra bude mít ${n} kol. `:"") + (b!=null?`Tvůj rekord pro toto nastavení: ${fmtPts(b)} bodů`:"Zatím žádný rekord pro toto nastavení");
+}
+function bindSeg(id,key,conv){
+  $(id).addEventListener("click",e=>{
+    const b=e.target.closest("button"); if(!b) return;
+    [...$(id).children].forEach(x=>x.setAttribute("aria-pressed",x===b));
+    game[key]=conv(b.dataset.v); store.set("spendlik.opt",{rounds:game.rounds,cat:game.cat,cities:game.cities}); updateBestLine();
+  });
+}
+bindSeg("optRounds","rounds",Number);
+bindSeg("optCat","cat",String);
+$("optCities").onchange=e=>{game.cities=e.target.checked;store.set("spendlik.opt",{rounds:game.rounds,cat:game.cat,cities:game.cities})};
+(function restoreOpts(){
+  const o=store.get("spendlik.opt",null); if(!o) return;
+  if([5,10,15].includes(o.rounds)) game.rounds=o.rounds;
+  if(["all","hrady","cirkev","technika","priroda","unesco"].includes(o.cat)) game.cat=o.cat;
+  game.cities = o.cities!==false;
+  [...$("optRounds").children].forEach(x=>x.setAttribute("aria-pressed",Number(x.dataset.v)===game.rounds));
+  [...$("optCat").children].forEach(x=>x.setAttribute("aria-pressed",x.dataset.v===game.cat));
+  $("optCities").checked=game.cities;
+})();
+updateBestLine();
+
+function clearMap(){
+  game.markers.forEach(m=>map.removeLayer(m)); game.lines.forEach(l=>map.removeLayer(l));
+  game.markers=[]; game.lines=[]; game.guessMarker=null;
+}
+function addMarker(ll,kind,label){
+  const m=L.marker(ll,{icon:pinIcon(kind),keyboard:false,interactive:!!label}); m._kind=kind;
+  if(label) m.bindTooltip(label,{direction:"top",className:"pinlabel"});
+  m.addTo(map); game.markers.push(m); return m;
+}
+
+function start(){
+  const pool = poolFor(game.cat);
+  game.list = shuffle(pool).slice(0,Math.min(game.rounds,pool.length));
+  game.i=0; game.results=[];
+  if(game.cities) cityLayer.addTo(map); else map.removeLayer(cityLayer);
+  $("startOv").classList.add("hidden"); $("endOv").classList.add("hidden");
+  $("hud").classList.remove("hidden"); $("side").classList.remove("hidden");
+  $("hTotal").textContent=game.list.length;
+  map.invalidateSize({pan:false});
+  showRound();
+}
+
+function showRound(){
+  clearMap();
+  const p = game.list[game.i];
+  game.guess=null; game.hint=false; game.locked=false;
+  $("hRound").textContent=game.i+1;
+  $("hScore").textContent=fmtPts(game.results.reduce((s,r)=>s+r.pts,0));
+  $("cName").textContent=p.n;
+  $("cDesc").textContent=p.p;
+  $("badges").innerHTML = `<span class="badge">${CAT[p.c]}</span>` + (p.u?`<span class="badge u">UNESCO</span>`:"");
+  $("hintBtn").classList.remove("hidden"); $("hintText").classList.add("hidden");
+  $("actGuess").classList.remove("hidden"); $("actResult").classList.add("hidden");
+  $("guessBtn").disabled=true;
+  $("maptip").classList.remove("hidden");
+  map.getContainer().classList.add("picking");
+  loadPhoto(p);
+  // přednačti další fotku
+  const nx = game.list[game.i+1]; if(nx){const im=new Image(); im.src=imgUrl(nx.img,photoWidth())}
+  map.invalidateSize({pan:false});
+  map.flyToBounds(CZ_BOUNDS,{padding:[8,8],duration:.6});
+  $("side").scrollTop=0;
+}
+function photoWidth(){return Math.min(1280, Math.round((innerWidth<=760?innerWidth*.45:380)*(devicePixelRatio||1)/160)*160 || 640)}
+function loadPhoto(p){
+  const img=$("img"), ph=$("ph");
+  img.classList.remove("ok"); img.removeAttribute("src"); img.alt="";
+  ph.innerHTML=`<div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-8 8"/></svg>Načítám fotku…</div>`;
+  $("credit").innerHTML = `Foto: ${esc(p.a)} · ${esc(p.l)} · <a href="${fileUrl(p.img)}" target="_blank" rel="noopener">Wikimedia Commons</a>`;
+  img.onload=()=>{img.classList.add("ok");img.alt="Fotografie: "+p.n};
+  img.onerror=()=>{ph.innerHTML=`<div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 21s7-7.6 7-12.5A7 7 0 0 0 5 8.5C5 13.4 12 21 12 21z"/><circle cx="12" cy="8.5" r="2.5"/></svg>Fotka se nenačetla.<br>Řiď se popisem vpravo/níže.</div>`;$("credit").innerHTML=""};
+  img.src=imgUrl(p.img,photoWidth());
+}
+$("photo").onclick=()=>{
+  const img=$("img"); if(!img.classList.contains("ok")) return;
+  const lb=document.createElement("div"); lb.className="lightbox";
+  const big=new Image(); big.src=imgUrl(game.list[game.i].img,1600); big.alt=img.alt;
+  big.onerror=()=>{big.src=img.src};
+  lb.appendChild(big); lb.onclick=()=>lb.remove(); document.body.appendChild(lb);
+};
+$("hintBtn").onclick=()=>{
+  if(game.locked) return;
+  game.hint=true; $("hintBtn").classList.add("hidden");
+  const t=$("hintText"); t.textContent="📍 "+game.list[game.i].k; t.classList.remove("hidden");
+};
+
+map.on("click",e=>{
+  if(game.locked) return;
+  game.guess=[e.latlng.lat,e.latlng.lng];
+  if(game.guessMarker) game.guessMarker.setLatLng(e.latlng);
+  else game.guessMarker=addMarker(e.latlng,"guess");
+  $("guessBtn").disabled=false;
+  $("maptip").classList.add("hidden");
+});
+
+function confirmGuess(){
+  if(game.locked||!game.guess) return;
+  game.locked=true; map.getContainer().classList.remove("picking");
+  const p=game.list[game.i], truth=[p.lat,p.lon];
+  const km=haversine(game.guess,truth), pts=score(km,game.hint);
+  game.results.push({p,guess:game.guess,km,pts,hint:game.hint});
+  addMarker(truth,"true",p.n);
+  const line=L.polyline([game.guess,truth],{color:css("--ink"),weight:2,dashArray:"5 6",opacity:.75,interactive:false}).addTo(map);
+  game.lines.push(line);
+  map.flyToBounds(L.latLngBounds([game.guess,truth]),{padding:[60,60],maxZoom:11,duration:.8});
+  $("rPts").textContent="+"+fmtPts(pts);
+  $("rDist").textContent=fmtKm(km);
+  $("rBar").style.width="0";
+  requestAnimationFrame(()=>requestAnimationFrame(()=>$("rBar").style.width=(pts/MAXPTS*100)+"%"));
+  $("rWhere").innerHTML=`${esc(p.n)} · ${esc(p.k)}${game.hint?" · s nápovědou":""} · <a href="https://www.wikidata.org/wiki/${p.q}" target="_blank" rel="noopener">více o místě</a>`;
+  $("hScore").textContent=fmtPts(game.results.reduce((s,r)=>s+r.pts,0));
+  $("hintBtn").classList.add("hidden");
+  $("actGuess").classList.add("hidden"); $("actResult").classList.remove("hidden");
+  $("nextBtn").textContent = game.i+1<game.list.length ? "Další památka →" : "Zobrazit výsledky";
+  $("nextBtn").focus({preventScroll:true});
+}
+$("guessBtn").onclick=confirmGuess;
+$("nextBtn").onclick=()=>{ if(game.i+1<game.list.length){game.i++;showRound()} else finish(); };
+
+function rankFor(pct){
+  if(pct>=.9) return "Živoucí mapa republiky 🧭";
+  if(pct>=.7) return "Zkušený výletník";
+  if(pct>=.5) return "Víkendový turista";
+  if(pct>=.3) return "Občas zabloudí";
+  return "Bez navigace ani ránu";
+}
+function finish(){
+  const total=game.results.reduce((s,r)=>s+r.pts,0), max=game.results.length*MAXPTS;
+  $("eScore").textContent=fmtPts(total); $("eMax").textContent=fmtPts(max);
+  $("eRank").textContent=rankFor(total/max);
+  const key=cfgKey(), prev=store.get(key,null);
+  if(prev==null||total>prev){store.set(key,total); $("eBest").innerHTML=prev==null?"":`<span class="newbest">Nový rekord!</span>`}
+  else $("eBest").innerHTML=`<span style="font-size:13px;color:var(--muted)">Rekord: ${fmtPts(prev)} bodů</span>`;
+  $("eList").innerHTML=game.results.map((r,i)=>`<li data-i="${i}"><span class="n">${i+1}.</span><span>${esc(r.p.n)}</span><span class="d">${fmtKm(r.km)}</span><span class="p">${fmtPts(r.pts)}</span></li>`).join("");
+  $("side").classList.add("hidden"); map.invalidateSize();
+  showAllOnMap();
+  $("endOv").classList.remove("hidden"); $("hud").classList.add("hidden");
+}
+function showAllOnMap(){
+  clearMap();
+  const pts=[];
+  game.results.forEach((r,i)=>{
+    const t=[r.p.lat,r.p.lon];
+    addMarker(r.guess,"guess",`Tvůj tip ${i+1}`); addMarker(t,"true",`${i+1}. ${r.p.n} — ${fmtKm(r.km)}`);
+    game.lines.push(L.polyline([r.guess,t],{color:css("--ink"),weight:2,dashArray:"5 6",opacity:.7,interactive:false}).addTo(map));
+    pts.push(r.guess,t);
+  });
+  if(pts.length) map.fitBounds(L.latLngBounds(pts).extend(CZ_BOUNDS),{padding:[20,20]});
+}
+$("eList").onclick=e=>{
+  const li=e.target.closest("li"); if(!li) return;
+  const r=game.results[+li.dataset.i];
+  $("endOv").classList.add("hidden"); $("mapBtnBack").classList.remove("hidden");
+  map.flyToBounds(L.latLngBounds([r.guess,[r.p.lat,r.p.lon]]),{padding:[60,60],maxZoom:11,duration:.7});
+};
+$("mapBtn").onclick=()=>{ $("endOv").classList.add("hidden"); $("mapBtnBack").classList.remove("hidden"); };
+$("againBtn").onclick=()=>{ $("endOv").classList.add("hidden"); openStart(); };
+function openStart(){
+  clearMap(); game.locked=true; map.removeLayer(cityLayer); $("side").classList.add("hidden"); map.invalidateSize();
+  $("hud").classList.add("hidden"); $("startOv").classList.remove("hidden"); $("maptip").classList.add("hidden");
+  $("mapBtnBack").classList.add("hidden");
+  updateBestLine(); map.fitBounds(CZ_BOUNDS,{padding:[12,12]});
+}
+$("startBtn").onclick=start;
+$("home").onclick=e=>{e.preventDefault(); if(!$("startOv").classList.contains("hidden")) return;
+  if(game.results.length && game.results.length<game.list.length && !confirm("Ukončit rozehranou hru?")) return; openStart();};
+
+/* tlačítko zpět k výsledkům (při prohlížení mapy) */
+const backBtn=document.createElement("button");
+backBtn.id="mapBtnBack"; backBtn.className="btn hidden";
+backBtn.style.cssText="position:absolute;left:50%;bottom:max(36px,calc(env(safe-area-inset-bottom) + 24px));transform:translateX(-50%);z-index:900;box-shadow:var(--shadow)";
+backBtn.textContent="Zpět na výsledky";
+backBtn.onclick=()=>{backBtn.classList.add("hidden"); $("endOv").classList.remove("hidden")};
+document.querySelector(".mapwrap").appendChild(backBtn);
+
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){document.querySelector(".lightbox")?.remove();return}
+  if(e.key!=="Enter"||e.target.closest("button,a,input")) return;
+  if(!$("startOv").classList.contains("hidden")||!$("endOv").classList.contains("hidden")) return;
+  if(!game.locked&&game.guess){e.preventDefault();confirmGuess()}
+  else if(!$("actResult").classList.contains("hidden")&&$("mapBtnBack").classList.contains("hidden")){e.preventDefault();$("nextBtn").click()}
+});
+addEventListener("resize",()=>map.invalidateSize());
+new ResizeObserver(()=>map.invalidateSize()).observe($("map"));
+</script>
+</body>
+</html>
