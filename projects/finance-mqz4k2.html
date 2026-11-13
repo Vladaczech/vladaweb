@@ -73,6 +73,23 @@ h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.01em}
 .sub{color:var(--muted);font-size:13px;margin:2px 0 14px}
 .card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
 .filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.rbar{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 14px 6px}
+.rbar-h{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;justify-content:space-between;font-size:13px}
+.rbar-h b{font-weight:600}
+.rs{position:relative;height:30px;touch-action:none}
+.rs .tr,.rs .fl{position:absolute;top:13px;height:4px;border-radius:2px}
+.rs .tr{left:9px;right:9px;background:var(--surface2)}
+.rs .fl{background:var(--accent);cursor:grab}
+.rs .fl:active{cursor:grabbing}
+.rs .fl::before{content:'';position:absolute;left:0;right:0;top:-11px;bottom:-11px}
+.rs input{position:absolute;left:0;top:0;width:100%;height:30px;margin:0;background:none;pointer-events:none;-webkit-appearance:none;appearance:none;z-index:2}
+.rs input::-webkit-slider-runnable-track{background:none;height:30px}
+.rs input::-moz-range-track{background:none}
+.rs input::-webkit-slider-thumb{-webkit-appearance:none;pointer-events:auto;width:18px;height:18px;margin-top:6px;border-radius:50%;background:var(--surface);border:2px solid var(--accent);cursor:grab;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.rs input::-moz-range-thumb{pointer-events:auto;width:14px;height:14px;border-radius:50%;background:var(--surface);border:2px solid var(--accent);cursor:grab;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.rs input:focus-visible::-webkit-slider-thumb{outline:2px solid var(--accent);outline-offset:2px}
+.rs input:focus-visible::-moz-range-thumb{outline:2px solid var(--accent);outline-offset:2px}
+.rbar-e{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);padding:0 2px}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .end{justify-content:flex-end}
 .muted{color:var(--muted)}
@@ -261,6 +278,28 @@ function monthsBetween(a, b) { const out = []; let k = a, g = 0; while (k <= b &
 function lastDay(k) { const [y, m] = k.split('-').map(Number); return `${k}-${pad(new Date(y, m, 0).getDate())}`; }
 const dayNum = d => { const [y, m, dd] = d.split('-').map(Number); return Date.UTC(y, m - 1, dd) / 864e5; };
 const minStr = (a, b) => a < b ? a : b;
+const maxStr = (a, b) => a > b ? a : b;
+const dayStr = n => new Date(n * 864e5).toISOString().slice(0, 10);
+const addDays = (d, n) => dayStr(dayNum(d) + n);
+const DNY = ['po', 'út', 'st', 'čt', 'pá', 'so', 'ne'];
+const wdIdx = d => (dayNum(d) + 3) % 7; // 0 = pondělí
+const dm = d => { const [, m, dd] = d.split('-'); return `${+dd}. ${+m}.`; };
+// Rozdělí období na sloupce: dny (do ~1,5 měsíce), týdny (do ~4 měsíců), jinak měsíce
+function buckets(from, to) {
+  const span = dayNum(to) - dayNum(from) + 1;
+  const g = span <= 45 ? 'd' : span <= 125 ? 'w' : 'm';
+  const out = [];
+  if (g === 'd') {
+    for (let n = dayNum(from), e = dayNum(to); n <= e; n++) { const d = dayStr(n); out.push({ from: d, to: d, label: dm(d), title: `${DNY[wdIdx(d)]} ${fmtDate(d)}` }); }
+  } else if (g === 'w') {
+    for (let s = addDays(from, -wdIdx(from)); s <= to; s = addDays(s, 7)) { const e = addDays(s, 6); out.push({ from: s, to: e, label: dm(s), title: `týden ${dm(s)} – ${fmtDate(e)}` }); }
+  } else {
+    for (const k of monthsBetween(monthKey(from), monthKey(to))) out.push({ from: k + '-01', to: lastDay(k), label: monthLabel(k), title: monthLabel(k, true) });
+  }
+  const idx = g === 'd' ? d => dayNum(d) - dayNum(from) : g === 'w' ? d => Math.floor((dayNum(d) - dayNum(out[0].from)) / 7) : (() => { const mi = new Map(out.map((b, i) => [monthKey(b.from), i])); return d => mi.get(monthKey(d)); })();
+  return { g, span, list: out, idx };
+}
+const GRAN = { d: { by: 'po dnech', unit: 'Den', per: 'za den' }, w: { by: 'po týdnech', unit: 'Týden', per: 'za týden' }, m: { by: 'po měsících', unit: 'Měsíc', per: 'za měsíc' } };
 
 /* ================================================================
    Šifrované úložiště (AES-256-GCM, klíč z hesla přes PBKDF2)
@@ -1299,6 +1338,53 @@ function periodControls(onChange) {
   }
   return els;
 }
+// Dvojitý posuvník rozmezí. onLive překreslí obsah během tažení, po puštění se překreslí celá stránka.
+function rangeSlider(onLive) {
+  if (!S.tx.length) return null;
+  let mn = null, mx = null; for (const x of S.tx) { if (!mn || x.date < mn) mn = x.date; if (!mx || x.date > mx) mx = x.date; }
+  const lo = dayNum(mn), hi = Math.max(dayNum(maxStr(mx, todayStr())), lo + 1);
+  const r = range();
+  let a = Math.max(lo, Math.min(hi, dayNum(r.from))), b = Math.max(lo, Math.min(hi, dayNum(r.to)));
+  if (a > b) [a, b] = [b, a];
+  const mk = (v, label) => h('input', { type: 'range', min: lo, max: hi, step: 1, value: v, 'aria-label': label });
+  const inA = mk(a, 'Začátek období'), inB = mk(b, 'Konec období');
+  const fl = h('div', { class: 'fl', title: 'Tažením posunete celé okno' });
+  const txt = h('b'), gran = h('span', { class: 'pill' });
+  let raf = 0;
+  const pct = v => (v - lo) / (hi - lo);
+  const paint = () => {
+    fl.style.left = `calc(9px + (100% - 18px) * ${pct(a)})`;
+    fl.style.width = `calc((100% - 18px) * ${pct(b) - pct(a)})`;
+    const f = dayStr(a), t = dayStr(b), bk = buckets(f, t);
+    txt.textContent = `${fmtDate(f)} – ${fmtDate(t)}`;
+    gran.textContent = `${pl(bk.span, 'den', 'dny', 'dní')} · ${GRAN[bk.g].by}`;
+    inA.style.zIndex = a === b && b > (lo + hi) / 2 ? 3 : 2;
+    inA.setAttribute('aria-valuetext', fmtDate(f)); inB.setAttribute('aria-valuetext', fmtDate(t));
+  };
+  const apply = () => {
+    ui.period = 'custom'; ui.from = dayStr(a); ui.to = dayStr(b); ui.txLimit = 200;
+    paint();
+    cancelAnimationFrame(raf); raf = requestAnimationFrame(onLive);
+  };
+  inA.addEventListener('input', () => { a = Math.min(+inA.value, b); inA.value = a; apply(); });
+  inB.addEventListener('input', () => { b = Math.max(+inB.value, a); inB.value = b; apply(); });
+  const done = which => { cancelAnimationFrame(raf); ui.rsFocus = which; render(); };
+  inA.addEventListener('change', () => done('a')); inB.addEventListener('change', () => done('b'));
+  // posun celého okna tažením modrého pruhu
+  fl.addEventListener('pointerdown', e => {
+    e.preventDefault(); fl.setPointerCapture(e.pointerId);
+    const x0 = e.clientX, a0 = a, w = b - a, px = (rs.clientWidth - 18) / (hi - lo);
+    const move = ev => { const na = Math.max(lo, Math.min(hi - w, a0 + Math.round((ev.clientX - x0) / px))); if (na === a) return; a = na; b = na + w; inA.value = a; inB.value = b; apply(); };
+    const up = () => { fl.removeEventListener('pointermove', move); fl.removeEventListener('pointerup', up); fl.removeEventListener('pointercancel', up); if (a !== a0) done(null); };
+    fl.addEventListener('pointermove', move); fl.addEventListener('pointerup', up); fl.addEventListener('pointercancel', up);
+  });
+  const rs = h('div', { class: 'rs' }, h('div', { class: 'tr' }), fl, inA, inB);
+  paint();
+  if (ui.rsFocus) { const el = ui.rsFocus === 'a' ? inA : inB; ui.rsFocus = null; requestAnimationFrame(() => el.focus({ preventScroll: true })); }
+  return h('div', { class: 'rbar' },
+    h('div', { class: 'rbar-h' }, txt, gran), rs,
+    h('div', { class: 'rbar-e' }, h('span', null, fmtDate(dayStr(lo))), h('span', null, fmtDate(dayStr(hi)))));
+}
 function backupNotice() {
   if (!S.tx.length) return null;
   const days = S.lastBackup ? (Date.now() - new Date(S.lastBackup).getTime()) / 864e5 : Infinity;
@@ -1318,7 +1404,16 @@ function viewOverview(after) {
       h('button', { class: 'btn primary', onclick: () => goTab('import') }, 'Importovat výpis')));
     return root;
   }
+  const body = h('div', { class: 'stack' });
+  const fill = () => { const af = []; body.replaceChildren(overviewBody(f => af.push(f))); af.forEach(f => f()); };
+  root.append(rangeSlider(fill), body);
+  after(fill);
+  return root;
+}
+function overviewBody(after) {
+  const root = h('div', { class: 'stack' });
   const { from, to } = range();
+  const bk = buckets(from, to), G = GRAN[bk.g], B = bk.list;
   const list = txIn(from, to, ui.acc);
   const st = stats(list);
   const activeM = new Set(list.map(t => monthKey(t.date))).size || 1;
@@ -1330,28 +1425,31 @@ function viewOverview(after) {
 
   root.append(h('div', { class: 'tiles' },
     tile('Příjmy', kc(st.inc), `${fmtDate(from)} – ${fmtDate(to)}`),
-    tile('Výdaje', kc(st.exp), `průměrně ${kc(st.exp / activeM)} za měsíc`),
+    tile('Výdaje', kc(st.exp), bk.g === 'm' ? `průměrně ${kc(st.exp / activeM)} za měsíc` : `průměrně ${kc(st.exp / bk.span * (bk.g === 'w' ? 7 : 1))} ${G.per}`),
     tile('Bilance', (net >= 0 ? '+' : '') + kc(net), st.inc > 0 ? `ušetříte ${Math.round(net / st.inc * 100)} % příjmů` : ''),
     st.save ? tile('Do spoření a investic', kc(st.save), 'odešlo z účtů') : null,
     tile('Zůstatek na účtech', totalBal != null ? kc(totalBal) : '—', totalBal != null ? `k ${fmtDate(endD)}` + (withBal.length < accs.length ? ' (bez některých účtů)' : '') : 'nastavte zůstatek v Nastavení')));
 
   if (!list.length) { root.append(h('div', { class: 'card empty' }, h('h2', null, 'V tomto období nejsou žádné pohyby'), h('p', { class: 'sub' }, 'Zkuste jiné období.'))); return root; }
 
-  // Měsíční příjmy a výdaje
-  const months = monthsBetween(monthKey(from), monthKey(to));
-  const mi = new Map(months.map((k, i) => [k, i]));
-  const mInc = months.map(() => 0), mExp = months.map(() => 0);
-  for (const t of list) { const i = mi.get(monthKey(t.date)); if (i == null) continue; const k = kindOf(t.cat); if (k === 'inc') mInc[i] += t.amt; else if (k === 'exp') mExp[i] -= t.amt; }
+  // Příjmy a výdaje po dnech / týdnech / měsících podle délky období
+  const mInc = B.map(() => 0), mExp = B.map(() => 0);
+  for (const t of list) { const i = bk.idx(t.date); if (i == null || i < 0 || i >= B.length) continue; const k = kindOf(t.cat); if (k === 'inc') mInc[i] += t.amt; else if (k === 'exp') mExp[i] -= t.amt; }
   const ser = [{ name: 'Příjmy', color: 'var(--s1)', values: mInc.map(v => Math.max(0, v)) }, { name: 'Výdaje', color: 'var(--s2)', values: mExp.map(v => Math.max(0, v)) }];
   const barBox = h('div', { class: 'chart' });
+  const hint = bk.g === 'd' ? 'Kliknutím na den zobrazíte jeho platby.' : bk.g === 'w' ? 'Kliknutím na týden ho rozložíte po dnech.' : 'Kliknutím na měsíc zobrazíte jeho detail.';
   root.append(h('div', { class: 'card' },
-    h('h2', null, 'Příjmy a výdaje po měsících'),
-    h('p', { class: 'sub' }, months.length > 1 ? 'Kliknutím na měsíc zobrazíte jeho detail.' : monthLabel(months[0], true)),
+    h('h2', null, `Příjmy a výdaje ${G.by}`),
+    h('p', { class: 'sub' }, B.length > 1 || bk.g === 'd' ? hint : B[0].title),
     legend(ser, true), barBox,
-    dataTable(['Měsíc', 'Příjmy', 'Výdaje', 'Bilance'], months.map((k, i) => [monthLabel(k, true), kc(mInc[i]), kc(mExp[i]), kc(mInc[i] - mExp[i])]), [1, 2, 3])));
-  after(() => drawBars(barBox, { labels: months.map(k => monthLabel(k)), tipTitles: months.map(k => monthLabel(k, true)), series: ser, aria: 'Příjmy a výdaje po měsících',
+    dataTable([G.unit, 'Příjmy', 'Výdaje', 'Bilance'], B.map((b, i) => [b.title, kc(mInc[i]), kc(mExp[i]), kc(mInc[i] - mExp[i])]), [1, 2, 3])));
+  const zoom = i => {
+    const b = B[i]; ui.period = 'custom'; ui.from = b.from; ui.to = b.to;
+    if (bk.g === 'd') { ui.txCat = ''; ui.txSearch = ''; ui.txType = ''; ui.txLimit = 200; goTab('transakce'); } else { render(); scrollTo(0, 0); }
+  };
+  after(() => drawBars(barBox, { labels: B.map(b => b.label), tipTitles: B.map(b => b.title), series: ser, aria: `Příjmy a výdaje ${G.by}`,
     extra: i => ({ name: 'bilance', color: 'transparent', value: (mInc[i] - mExp[i] >= 0 ? '+' : '') + kc(mInc[i] - mExp[i]) }),
-    onClick: months.length > 1 ? i => { ui.period = 'custom'; ui.from = months[i] + '-01'; ui.to = lastDay(months[i]); render(); scrollTo(0, 0); } : null }));
+    onClick: B.length > 1 || bk.g === 'd' ? zoom : null }));
 
   // Kategorie a obchodníci
   const byCat = new Map();
@@ -1384,15 +1482,15 @@ function viewOverview(after) {
       h('button', { class: 'btn', onclick: () => goTab('nastaveni') }, 'Nastavit zůstatek účtu'));
   } else {
     const t0 = todayStr();
-    const ends = months.map(k => minStr(lastDay(k), t0));
+    const ends = B.map(b => minStr(minStr(b.to, to), t0));
     const slotsOk = withBal.length <= 3 && withBal.every(a => a.slot <= 2);
     const series = slotsOk
       ? withBal.map(a => { const f = firstTxDate(a.id); return { name: a.name, color: `var(--s${a.slot + 1})`, values: ends.map(d => (f && d < f && d < a.anchor.date) ? null : balanceAt(a, d)) }; })
       : [{ name: 'Celkem', color: 'var(--s1)', values: ends.map(d => withBal.reduce((s, a) => s + balanceAt(a, d), 0)) }];
     const box = h('div', { class: 'chart' });
-    balCard.append(h('div', null, h('p', { class: 'sub' }, 'Zůstatek ke konci každého měsíce.'), series.length > 1 ? legend(series) : null), box,
-      dataTable(['Měsíc', ...series.map(s => s.name)], months.map((k, i) => [monthLabel(k, true), ...series.map(s => s.values[i] == null ? '—' : kc(s.values[i]))]), series.map((_, i) => i + 1)));
-    after(() => drawLines(box, { labels: months.map(k => monthLabel(k)), tipTitles: months.map(k => monthLabel(k, true)), series, aria: 'Vývoj zůstatku na účtech', zero: false }));
+    balCard.append(h('div', null, h('p', { class: 'sub' }, bk.g === 'd' ? 'Zůstatek na konci každého dne.' : bk.g === 'w' ? 'Zůstatek ke konci každého týdne.' : 'Zůstatek ke konci každého měsíce.'), series.length > 1 ? legend(series) : null), box,
+      dataTable([G.unit, ...series.map(s => s.name)], B.map((b, i) => [b.title, ...series.map(s => s.values[i] == null ? '—' : kc(s.values[i]))]), series.map((_, i) => i + 1)));
+    after(() => drawLines(box, { labels: B.map(b => b.label), tipTitles: B.map(b => b.title), series, aria: 'Vývoj zůstatku na účtech', zero: false }));
   }
   root.append(balCard);
   return root;
@@ -1414,7 +1512,7 @@ function viewTx() {
   catSel.value = ui.txCat;
   const typeSel = h('select', { class: 'inp', 'aria-label': 'Typ', onchange: e => { ui.txType = e.target.value; ui.txLimit = 200; upd(); } }, opt('', 'Příjmy i výdaje'), opt('out', 'Jen výdaje'), opt('in', 'Jen příjmy'));
   typeSel.value = ui.txType;
-  root.append(h('div', { class: 'filters' }, periodControls(render), catSel, typeSel),
+  root.append(h('div', { class: 'filters' }, periodControls(render), catSel, typeSel), rangeSlider(upd) || '',
     h('div', { class: 'filters' }, search, h('button', { class: 'btn', onclick: exportCsv }, 'Export do CSV')), box);
   upd();
   return root;
