@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f3ede2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#15130f" media="(prefers-color-scheme: dark)">
+<title>Šifrovačka v kapse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --bg:#f3ede2;--surface:#fbf8f2;--surface2:#ece4d5;
+  --ink:#2a241c;--ink2:#5b5144;--muted:#83786a;
+  --line:#ddd2bf;--accent:#bf4a2a;--accent-ink:#fff;--accent-wash:rgba(191,74,42,.10);
+  --true:#2f6b4f;--true-wash:rgba(47,107,79,.12);
+  --info:#2f5b8a;--info-wash:rgba(47,91,138,.10);
+  --tL:44%;
+  --shadow:0 18px 40px -22px rgba(60,40,20,.45);
+  --r:16px;
+  --display:"Fraunces",Georgia,serif;
+  --sans:"Instrument Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#15130f;--surface:#1f1c17;--surface2:#29251e;
+    --ink:#efe7d8;--ink2:#c9bfae;--muted:#9a8f7e;
+    --line:#38322a;--accent:#e57a55;--accent-ink:#1a120d;--accent-wash:rgba(229,122,85,.14);
+    --true:#6fbf94;--true-wash:rgba(111,191,148,.14);
+    --info:#8ab4e0;--info-wash:rgba(138,180,224,.12);
+    --tL:64%;
+    --shadow:0 18px 40px -22px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#15130f;--surface:#1f1c17;--surface2:#29251e;
+  --ink:#efe7d8;--ink2:#c9bfae;--muted:#9a8f7e;
+  --line:#38322a;--accent:#e57a55;--accent-ink:#1a120d;--accent-wash:rgba(229,122,85,.14);
+  --true:#6fbf94;--true-wash:rgba(111,191,148,.14);
+  --info:#8ab4e0;--info-wash:rgba(138,180,224,.12);
+  --tL:64%;
+  --shadow:0 18px 40px -22px rgba(0,0,0,.8);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);-webkit-font-smoothing:antialiased;min-height:100vh;min-height:100dvh}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+a{color:var(--accent)}
+.hidden{display:none!important}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.mono{font-family:var(--mono)}
+
+/* ---------- top bar ---------- */
+.top{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:10px;padding:10px 16px;padding-top:max(10px,env(safe-area-inset-top));border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.brand{display:flex;align-items:center;gap:8px;font-family:var(--display);font-weight:700;font-size:20px;letter-spacing:-.01em;text-decoration:none;color:var(--ink);white-space:nowrap}
+.brand svg{width:22px;height:22px;color:var(--accent);flex:none}
+.back{font-size:13px;color:var(--muted);text-decoration:none;white-space:nowrap}
+.back:hover{color:var(--ink)}
+.spacer{flex:1}
+.hud{display:flex;gap:6px}
+.chip{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 11px;font-size:13px;color:var(--ink2);white-space:nowrap;font-variant-numeric:tabular-nums}
+.chip b{color:var(--ink);font-weight:600}
+.iconbtn{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;border:1px solid var(--line);background:var(--surface);flex:none}
+.iconbtn svg{width:17px;height:17px}
+
+/* ---------- layout ---------- */
+.wrap{max-width:680px;margin:0 auto;padding:20px 16px 64px;padding-bottom:max(64px,env(safe-area-inset-bottom))}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(30px,7vw,44px);line-height:1.05;margin:6px 0 10px;letter-spacing:-.02em}
+h1 em{font-style:normal;color:var(--accent)}
+.h2{font-family:var(--display);font-weight:700;font-size:22px;margin:28px 0 10px}
+.lead{color:var(--ink2);margin:0 0 18px;font-size:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin:0 0 12px}
+.card h3{font-family:var(--display);font-size:20px;margin:0 0 4px}
+.card p{margin:0 0 12px;color:var(--ink2)}
+.lbl{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 8px}
+.steps div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px;color:var(--ink2);line-height:1.35}
+.steps b{display:block;font-family:var(--display);font-size:20px;color:var(--accent)}
+.list{display:flex;flex-direction:column;gap:8px}
+.gamecard{display:flex;align-items:center;gap:14px;text-align:left;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.gamecard:hover{border-color:var(--accent)}
+.gamecard .gc-t{font-family:var(--display);font-weight:700;font-size:18px}
+.gamecard .gc-d{font-size:13px;color:var(--muted)}
+.gamecard .arr{margin-left:auto;color:var(--accent);font-size:20px}
+.gamecard.resume{border-color:var(--accent);background:var(--accent-wash)}
+.meta{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 16px}
+
+/* ---------- buttons & form ---------- */
+.btn{border:0;border-radius:12px;padding:12px 18px;font-weight:600;background:var(--accent);color:var(--accent-ink);font-size:15px;transition:transform .08s,opacity .2s;text-align:center}
+.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+.btn.small{padding:7px 12px;font-size:13.5px;border-radius:10px}
+.btn.wide{width:100%}
+.btn.danger{background:none;border:1px solid var(--line);color:var(--accent)}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row .btn{flex:1 1 auto}
+.linkbtn{background:none;border:0;color:var(--muted);text-decoration:underline;font-size:13px;padding:4px}
+.seg{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}
+.seg button{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:8px 14px;font-size:15px;color:var(--ink2);min-width:46px}
+.seg button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg);font-weight:600}
+.seats{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px;margin:0 0 14px}
+.seats button{border:2px solid var(--line);background:var(--bg);border-radius:14px;padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:13px;color:var(--ink2)}
+.seats button i{width:26px;height:26px;border-radius:50%;background:var(--seat);display:grid;place-items:center;font-style:normal;font-weight:700;color:#fff;font-size:14px}
+.seats button[aria-pressed="true"]{border-color:var(--seat);background:color-mix(in srgb,var(--seat) 12%,var(--bg));color:var(--ink);font-weight:600}
+.note{font-size:13px;color:var(--muted);margin:0 0 14px}
+.f{display:block;margin:0 0 14px}
+.f>span{display:block;font-size:13px;font-weight:600;color:var(--ink2);margin:0 0 5px}
+.f>span i{font-style:normal;font-weight:400;color:var(--muted)}
+input[type=text],input:not([type]),input[type=number],textarea,select{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-size:15px}
+textarea{resize:vertical;line-height:1.45}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-wash)}
+.toggle{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--ink2);cursor:pointer;margin:0 0 10px}
+.toggle input{width:18px;height:18px;accent-color:var(--accent);margin-top:2px;flex:none}
+
+/* ---------- play ---------- */
+.sthead{margin:0 0 14px}
+.sthead h1{font-size:clamp(26px,6vw,36px);margin:4px 0 8px}
+.seat{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;padding:4px 11px 4px 5px;border-radius:999px;background:color-mix(in srgb,var(--seat) 14%,var(--surface));border:1px solid color-mix(in srgb,var(--seat) 45%,var(--line))}
+.seat i{width:20px;height:20px;border-radius:50%;background:var(--seat);color:#fff;font-style:normal;display:grid;place-items:center;font-size:12px}
+.common{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;margin:0 0 14px;white-space:pre-wrap;color:var(--ink2)}
+.part{position:relative;background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--seat);border-radius:var(--r);padding:16px;margin:0 0 10px;box-shadow:var(--shadow)}
+.part pre{margin:0;font:600 17px/1.55 var(--mono);white-space:pre-wrap;word-break:break-word;letter-spacing:.02em}
+.part img{display:block;max-width:100%;border-radius:10px;margin-top:10px}
+.part pre:empty{display:none}
+.part img:first-child{margin-top:0}
+.hintline{font-size:13px;color:var(--muted);margin:2px 0 18px}
+.ans{display:flex;gap:8px;margin:0 0 12px}
+.ans input{flex:1;font-size:17px;padding:12px 14px;border-radius:12px;min-width:0}
+.ans .btn{flex:none}
+.temp{--c:hsl(var(--h) 66% var(--tL));background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;margin:0 0 12px;animation:pop .3s ease}
+.temp .tl{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.temp .tn{font-family:var(--display);font-weight:700;font-size:26px;color:var(--c)}
+.temp .tg{font-family:var(--mono);font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.thermo{position:relative;height:10px;border-radius:99px;margin:10px 0 4px;background:linear-gradient(90deg,hsl(210 66% var(--tL)),hsl(150 50% var(--tL)),hsl(45 80% var(--tL)),hsl(8 72% var(--tL)))}
+.thermo b{position:absolute;top:50%;width:18px;height:18px;border-radius:50%;background:var(--surface);border:3px solid var(--c);transform:translate(-50%,-50%);transition:left .6s cubic-bezier(.2,.8,.2,1)}
+.temp .tnote{font-size:14px;color:var(--ink2);margin-top:8px}
+.msg{background:var(--info-wash);border:1px solid color-mix(in srgb,var(--info) 35%,var(--line));border-radius:var(--r);padding:14px 16px;margin:0 0 12px;animation:pop .3s ease}
+.msg .lbl{color:var(--info)}
+.msg p{margin:0;white-space:pre-wrap}
+@keyframes pop{from{transform:scale(.97);opacity:.4}to{transform:none;opacity:1}}
+.hist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
+.hist li{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;font-size:14px;padding:7px 12px;border-radius:10px;background:var(--surface);border:1px solid var(--line)}
+.hist .g{font-family:var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hist .t{font-weight:600;color:hsl(var(--h) 66% var(--tL));white-space:nowrap}
+.hist .t.i{color:var(--info)}
+.solved{background:var(--true-wash);border:1px solid color-mix(in srgb,var(--true) 40%,var(--line));border-radius:var(--r);padding:18px;margin:0 0 14px;animation:pop .35s ease}
+.solved .big{font-family:var(--display);font-weight:700;font-size:28px;color:var(--true);margin:0 0 4px}
+.solved .sol{font-family:var(--mono);font-weight:600;font-size:22px;letter-spacing:.06em;margin:4px 0 6px}
+.solved p{margin:0 0 14px;color:var(--ink2);white-space:pre-wrap}
+.cesta .dist{font-family:var(--display);font-weight:700;font-size:48px;line-height:1;margin:8px 0 4px;font-variant-numeric:tabular-nums;color:hsl(var(--h,210) 66% var(--tL))}
+.cesta .acc{font-size:13px;color:var(--muted)}
+.cesta .popis{white-space:pre-wrap;font-size:16px;color:var(--ink)}
+.playfoot{display:flex;justify-content:space-between;gap:10px;margin-top:26px;border-top:1px solid var(--line);padding-top:12px}
+
+/* ---------- end ---------- */
+.final{font-family:var(--display);font-weight:700;font-size:52px;line-height:1;color:var(--accent);font-variant-numeric:tabular-nums;margin:10px 0}
+.final small{font-size:17px;color:var(--muted);font-weight:500}
+.rows{list-style:none;margin:16px 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.rows li{display:grid;grid-template-columns:24px 1fr auto auto;gap:10px;align-items:center;font-size:14px;padding:8px 12px;border-radius:10px;background:var(--surface);border:1px solid var(--line)}
+.rows .n{color:var(--muted);font-variant-numeric:tabular-nums}
+.rows .d{color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rows .p{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* ---------- share ---------- */
+.share{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+.share canvas,.share img{background:#fff;padding:10px;border-radius:12px;max-width:100%;height:auto}
+.share textarea{font-family:var(--mono);font-size:12px}
+
+/* ---------- editor ---------- */
+details.st{padding:0;overflow:hidden}
+details.st>summary{list-style:none;display:flex;align-items:center;gap:10px;padding:14px 16px;cursor:pointer}
+details.st>summary::-webkit-details-marker{display:none}
+details.st>summary .stn{width:28px;height:28px;border-radius:9px;background:var(--accent-wash);color:var(--accent);display:grid;place-items:center;font-weight:700;flex:none}
+details.st>summary .stname{font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+details.st>summary::after{content:"▾";color:var(--muted);transition:transform .2s}
+details.st[open]>summary::after{transform:rotate(180deg)}
+details.st[open]>summary{border-bottom:1px solid var(--line)}
+.stbody{padding:16px}
+.dil{border:1px solid var(--line);border-radius:12px;padding:10px;margin:0 0 8px;background:var(--surface2)}
+.dil textarea{font-family:var(--mono);margin-bottom:6px}
+.dil input{font-size:13.5px;padding:7px 10px}
+.dilhead{display:flex;align-items:center;gap:8px;margin:0 0 6px;font-size:13px}
+.dilhead .who{display:flex;gap:4px;align-items:center;color:var(--muted)}
+.dot{width:16px;height:16px;border-radius:50%;background:var(--seat);color:#fff;font-size:10px;font-weight:700;display:inline-grid;place-items:center}
+.x{margin-left:auto;border:0;background:none;color:var(--muted);width:28px;height:28px;border-radius:8px;flex:none}
+.x:hover{color:var(--accent);background:var(--accent-wash)}
+.mk{display:grid;grid-template-columns:1fr 1.6fr auto;gap:6px;margin:0 0 6px;align-items:center}
+.mk .x{margin:0}
+.gpsf{display:grid;grid-template-columns:1fr 1fr 90px;gap:8px;border:1px dashed var(--line);border-radius:12px;padding:12px;margin:0 0 12px}
+.gpsf .f{margin:0}
+.gpsf .full{grid-column:1/-1}
+.stact{display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:12px;margin-top:6px}
+.stact .danger{margin-left:auto}
+.check{font-size:14px}
+.check ul{margin:6px 0 0;padding-left:18px}
+.check li{margin:2px 0}
+.check .err{color:var(--accent)}
+.check .ok{color:var(--true);font-weight:600}
+.dist-tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+.dist-tbl td,.dist-tbl th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.dist-tbl th{font-weight:600;color:var(--muted);font-size:12px}
+
+/* ---------- toast ---------- */
+.toast{position:fixed;left:50%;bottom:max(20px,env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);opacity:0;z-index:100;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;font-weight:500;transition:.25s;pointer-events:none;max-width:calc(100% - 32px);text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%)}
+
+@media (max-width:600px){
+  .back{display:none}
+  .steps{grid-template-columns:1fr}
+  .steps div{display:flex;gap:10px;align-items:center}
+  .steps b{font-size:17px}
+  .mk{grid-template-columns:1fr auto}
+  .mk input:nth-child(2){grid-column:1/2}
+  .mk .x{grid-row:1/3;grid-column:2}
+  .gpsf{grid-template-columns:1fr 1fr}
+  .final{font-size:44px}
+}
+@media (max-width:380px){ .hud .chip:first-child{display:none} }
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="#" id="home" aria-label="Šifrovačka v kapse — úvod">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.5" fill="currentColor" fill-opacity=".14"/><path d="M9.5 8h5M9.5 11.5h3M9.5 15h4"/></svg>
+    Šifrovačka
+  </a>
+  <a class="back" href="../index.html">← Rozcestník</a>
+  <div class="spacer"></div>
+  <div class="hud hidden" id="hud">
+    <span class="chip">Stanoviště <b id="hSt">1</b>/<b id="hTot">1</b></span>
+    <span class="chip">⏱ <b id="hTime">0:00</b></span>
+  </div>
+  <button class="iconbtn" id="themeBtn" aria-label="Přepnout vzhled" title="Vzhled: automaticky">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16z" fill="currentColor"/></svg>
+  </button>
+</header>
+
+<main class="wrap">
+  <section id="scrHome">
+    <div class="eyebrow">Týmová hra pro 2–6 telefonů</div>
+    <h1>Šifra, kterou <em>nikdo</em> nevyřeší sám.</h1>
+    <p class="lead">Každý z týmu uvidí na svém mobilu jen kus zadání, takže si musíte říkat, co máte. Místo nápověd vám hra prozradí, jak moc <b>přihořívá</b>. Volitelně s GPS stanovišti po městě.</p>
+    <div class="steps">
+      <div><b>1</b>Všichni otevřete stejnou hru a každý si vezme jiné číslo hráče</div>
+      <div><b>2</b>Každý vidí jiný díl šifry, tak se domluvte</div>
+      <div><b>3</b>Zkoušejte řešení, teploměr ukáže, jak blízko jste</div>
+    </div>
+    <div id="resume"></div>
+    <h2 class="h2">Hry</h2>
+    <div class="list" id="gameList"></div>
+    <p class="note" style="margin-top:10px">Máš odkaz od organizátora? Prostě ho otevři, hra se načte sama.</p>
+    <div class="card" style="margin-top:22px">
+      <h3>Píšeš šifry sám?</h3>
+      <p>V editoru poskládáš stanoviště, rozdělíš každou šifru na díly pro hráče, přidáš mezikroky místo nápověd a týmu pošleš jeden odkaz nebo QR kód.</p>
+      <button class="btn" id="toEditor">Otevřít editor</button>
+    </div>
+  </section>
+
+  <section id="scrJoin" class="hidden"></section>
+  <section id="scrPlay" class="hidden"></section>
+  <section id="scrEnd" class="hidden"></section>
+  <section id="scrEdit" class="hidden"></section>
+</main>
+<input type="file" id="fileIn" accept="application/json,.json" class="hidden">
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* =====================================================================
+   Šifrovačka v kapse
+   - Bez serveru: všechny telefony mají stejná data hry, každý podle
+     zvoleného čísla hráče zobrazí jen své díly.
+   - Postup = zadat správnou odpověď (kdo vyřeší, řekne ji ostatním).
+   - Vlastní hry: editor → odkaz #h=<zkomprimovaný JSON>.
+   - Vestavěné hry: přidej objekt do VESTAVENE níže, odkaz #hra=<id>.
+   ===================================================================== */
+
+const VESTAVENE = [
+  {
+    id: 'ukazka',
+    nazev: 'Zkušební výprava',
+    uvod: 'Krátká ukázka, jak hra funguje: tři jednoduché šifry, každý z vás uvidí jen kousek. Až si to osaháte, napište si vlastní šifrovačku v editoru.',
+    zaver: 'Hotovo! Teď už víte, jak to chodí. Vlastní šifry napíšete v editoru a týmu pošlete odkaz.',
+    stanoviste: [
+      {
+        nazev: 'Rozsypané slovo',
+        spolecne: 'Každý máte kus jednoho slova a číslo, kam patří. Řekněte si, co vidíte.',
+        dily: [{text:'③  PAS'},{text:'①  KO'},{text:'②  M'}],
+        odpovedi: ['kompas'],
+        mezikroky: [{odpoved:'paskom', zprava:'Kusy máte, jen ne ve správném pořadí. Koukněte na čísla.'}],
+        poVyreseni: 'Kompas vás dovede dál. Další šifra pracuje s čísly.',
+        prihoriva: true
+      },
+      {
+        nazev: 'Čísla a klíč',
+        spolecne: 'Jeden z vás má zprávu, jiný klíč. Jeden bez druhého nic nezmůže.',
+        dily: [
+          {text:'8 · 15 · 18 · 1'},
+          {text:'KLÍČ\nA=1  B=2  C=3 …\n(dál podle abecedy, bez háčků)'},
+          {text:'Řešením je jedno české slovo.'}
+        ],
+        odpovedi: ['hora'],
+        mezikroky: [{odpoved:'8 15 18 1', zprava:'To jsou jen čísla ze zprávy. Převeďte je klíčem na písmena.'}],
+        poVyreseni: 'Z hory je vidět daleko. Poslední šifra: první písmena.',
+        prihoriva: true
+      },
+      {
+        nazev: 'První písmena',
+        spolecne: 'Každý máte slovo s pořadovým číslem. Kam celá cesta vede?',
+        dily: [{text:'①  Cibule'},{text:'②  Indián'},{text:'③  Lampa'},{text:'Stačí první písmena\nv pořadí podle čísel.'}],
+        odpovedi: ['cíl'],
+        mezikroky: [],
+        poVyreseni: 'Jste v cíli.',
+        prihoriva: true
+      }
+    ]
+  }
+];
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
+const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+const lsDel = k => { try { localStorage.removeItem(k); } catch (e) {} };
+const lsJSON = k => { try { return JSON.parse(lsGet(k) || 'null'); } catch (e) { return null; } };
+const SEATC = ['#c2532f', '#2f6fa8', '#2f8a5b', '#a8742a', '#7b4fa8', '#b0386f'];
+const clone = o => JSON.parse(JSON.stringify(o));
+
+function toast(t) {
+  const el = $('#toast'); el.textContent = t; el.classList.add('show');
+  clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('show'), 2600);
+}
+function fmtTime(ms) {
+  const s = Math.max(0, Math.round(ms / 1000)), h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), ss = s % 60;
+  return h ? `${h}:${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}` : `${m}:${String(ss).padStart(2,'0')}`;
+}
+function fnv(str) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193); }
+  return (h >>> 0).toString(36).toUpperCase().padStart(7, '0');
+}
+function lev(a, b) {
+  if (a === b) return 0;
+  if (!a.length) return b.length; if (!b.length) return a.length;
+  let prev = Array.from({length: b.length + 1}, (_, i) => i), cur = new Array(b.length + 1);
+  for (let i = 1; i <= a.length; i++) {
+    cur[0] = i;
+    for (let j = 1; j <= b.length; j++)
+      cur[j] = Math.min(prev[j] + 1, cur[j-1] + 1, prev[j-1] + (a[i-1] === b[j-1] ? 0 : 1));
+    [prev, cur] = [cur, prev];
+  }
+  return prev[b.length];
+}
+function haversine(a, b) {
+  const R = 6371000, r = x => x * Math.PI / 180;
+  const dLat = r(b.lat - a.lat), dLon = r(b.lon - a.lon);
+  const s = Math.sin(dLat/2)**2 + Math.cos(r(a.lat)) * Math.cos(r(b.lat)) * Math.sin(dLon/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(s));
+}
+
+/* ---------- encoding hry do odkazu ---------- */
+function b64u(bytes) {
+  let bin = ''; for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function unb64u(s) {
+  s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '=';
+  const bin = atob(s), out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+async function encodeGame(g) {
+  const bytes = new TextEncoder().encode(JSON.stringify(g));
+  if ('CompressionStream' in window) {
+    try {
+      const st = new Blob([bytes]).stream().pipeThrough(new CompressionStream('deflate-raw'));
+      return 'z' + b64u(new Uint8Array(await new Response(st).arrayBuffer()));
+    } catch (e) {}
+  }
+  return 'j' + b64u(bytes);
+}
+async function decodeGame(code) {
+  let bytes = unb64u(code.slice(1));
+  if (code[0] === 'z') {
+    const st = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+    bytes = new Uint8Array(await new Response(st).arrayBuffer());
+  }
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
+
+/* ---------- normalizace dat hry ---------- */
+function sanitize(g, forPlay) {
+  const s = x => typeof x === 'string' ? x : (x == null ? '' : String(x));
+  g = g && typeof g === 'object' ? g : {};
+  const out = { nazev: s(g.nazev), uvod: s(g.uvod), zaver: s(g.zaver), stanoviste: [] };
+  for (const st of Array.isArray(g.stanoviste) ? g.stanoviste : []) {
+    if (!st || typeof st !== 'object') continue;
+    let dily = (Array.isArray(st.dily) ? st.dily : []).map(d => typeof d === 'string' ? {text: d, obr: ''} : {text: s(d && d.text), obr: s(d && d.obr)});
+    let odpovedi = (Array.isArray(st.odpovedi) ? st.odpovedi : [st.odpovedi]).map(s).map(x => x.trim()).filter(Boolean);
+    let mezikroky = (Array.isArray(st.mezikroky) ? st.mezikroky : []).map(m => ({odpoved: s(m && m.odpoved), zprava: s(m && m.zprava)}));
+    let misto = null;
+    if (st.misto && typeof st.misto === 'object') {
+      const lat = st.misto.lat === '' || st.misto.lat == null ? null : +st.misto.lat;
+      const lon = st.misto.lon === '' || st.misto.lon == null ? null : +st.misto.lon;
+      misto = {lat: Number.isFinite(lat) ? lat : null, lon: Number.isFinite(lon) ? lon : null, r: Math.max(5, +st.misto.r || 30), popis: s(st.misto.popis)};
+    }
+    if (forPlay) {
+      dily = dily.filter(d => d.text.trim() || d.obr.trim());
+      mezikroky = mezikroky.filter(m => norm(m.odpoved) && m.zprava.trim());
+      if (misto && (misto.lat == null || misto.lon == null)) misto = null;
+    }
+    out.stanoviste.push({ nazev: s(st.nazev), spolecne: s(st.spolecne), dily, odpovedi, mezikroky, poVyreseni: s(st.poVyreseni), prihoriva: st.prihoriva !== false, misto });
+  }
+  if (forPlay) { out.nazev = out.nazev || 'Šifrovačka'; }
+  return out;
+}
+
+/* Kdo dostane který díl: při K ≥ N jde díl j hráči j mod N, při K < N se díly opakují. */
+function partsFor(K, n, seat) {
+  if (!K) return [];
+  if (K >= n) { const r = []; for (let j = seat; j < K; j += n) r.push(j); return r; }
+  return [seat % K];
+}
+function playersOf(K, n, j) {
+  const r = []; for (let p = 0; p < n; p++) if (partsFor(K, n, p).includes(j)) r.push(p); return r;
+}
+
+/* ---------- přihořívá ---------- */
+const LEVELS = [
+  [.9, 'Hoří!', 8], [.75, 'Přihořívá', 25], [.55, 'Teplo', 45], [.35, 'Vlažno', 110], [.15, 'Studeno', 190], [0, 'Mrzne', 212]
+];
+function level(sim) { for (const L of LEVELS) if (sim >= L[0]) return {name: L[1], h: L[2]}; return {name: 'Mrzne', h: 212}; }
+function proximity(g, answers) {
+  let best = {sim: 0, note: ''};
+  for (const a0 of answers) {
+    const a = norm(a0); if (!a || !g) continue;
+    let sim = 1 - lev(g, a) / Math.max(g.length, a.length), note = '';
+    if (g.length > a.length && g.includes(a)) { sim = Math.max(sim, .9); note = 'Řešení v tom je, ale máte tam něco navíc.'; }
+    else if (a.includes(g) && g.length >= Math.ceil(a.length / 2)) {
+      note = a.startsWith(g) ? 'Začátek sedí, ještě něco chybí.' : a.endsWith(g) ? 'Konec sedí, něco chybí na začátku.' : 'Tohle je kus řešení, ale ne celé.';
+    }
+    else if (g.length >= 3 && a.length >= 3 && [...g].sort().join('') === [...a].sort().join('')) { sim = Math.max(sim, .75); note = 'Správná písmena, špatné pořadí.'; }
+    if (sim > best.sim || (sim === best.sim && note && !best.note)) best = {sim, note};
+  }
+  return best;
+}
+
+/* ---------- tema ---------- */
+let theme = lsGet('sifra:theme') || 'auto';
+function applyTheme() {
+  if (theme === 'auto') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme', theme);
+  $('#themeBtn').title = 'Vzhled: ' + ({auto: 'automaticky', light: 'světlý', dark: 'tmavý'})[theme];
+}
+$('#themeBtn').onclick = () => { theme = ({auto: 'light', light: 'dark', dark: 'auto'})[theme]; lsSet('sifra:theme', theme); applyTheme(); toast($('#themeBtn').title); };
+applyTheme();
+
+/* ---------- stav ---------- */
+let G = null;        // hra pro hraní (sanitizovaná)
+let GKEY = '';       // otisk hry
+let GSRC = null;     // {type:'vest', id} | {type:'link', code} | {type:'test'}
+let S = null;        // postup hráče na tomto zařízení
+let joinN = 3, joinSeat = 0;
+let tick = null, geoWatch = null, wakeLock = null, cooldown = false;
+
+function show(id) {
+  for (const s of ['scrHome', 'scrJoin', 'scrPlay', 'scrEnd', 'scrEdit']) $('#' + s).classList.toggle('hidden', s !== id);
+  $('#hud').classList.toggle('hidden', id !== 'scrPlay');
+  if (id !== 'scrPlay') { stopGeo(); clearInterval(tick); releaseWake(); }
+  window.scrollTo(0, 0);
+}
+function setHash(h) { history.replaceState(null, '', h ? '#' + h : location.pathname + location.search); }
+function shareUrl() {
+  const base = location.href.split('#')[0];
+  if (!GSRC) return base;
+  if (GSRC.type === 'vest') return base + '#hra=' + encodeURIComponent(GSRC.id);
+  if (GSRC.type === 'link') return base + '#h=' + GSRC.code;
+  return null;
+}
+const progKey = (n, seat) => `sifra:p:${GKEY}:${n}:${seat}`;
+function saveS() { if (S) { lsSet(progKey(S.n, S.seat), JSON.stringify(S)); lsSet('sifra:last', JSON.stringify({src: GSRC.type === 'test' ? null : GSRC, n: S.n, seat: S.seat, nazev: G.nazev, i: S.i, tot: G.stanoviste.length, done: S.phase === 'konec'})); } }
+
+function loadGame(game, src) {
+  G = sanitize(game, true); GSRC = src; GKEY = fnv(JSON.stringify(G));
+}
+
+/* =====================================================================
+   ÚVOD
+   ===================================================================== */
+function renderHome() {
+  setHash('');
+  $('#gameList').innerHTML = VESTAVENE.map(g => `
+    <button class="gamecard" data-vest="${esc(g.id)}">
+      <div><div class="gc-t">${esc(g.nazev)}</div><div class="gc-d">${g.stanoviste.length} stanoviště · ukázka mechaniky</div></div>
+      <span class="arr">→</span>
+    </button>`).join('');
+  const last = lsJSON('sifra:last');
+  $('#resume').innerHTML = last && last.src && !last.done ? `
+    <h2 class="h2">Rozehráno</h2>
+    <button class="gamecard resume" id="resumeBtn">
+      <div><div class="gc-t">${esc(last.nazev)}</div><div class="gc-d">Hráč ${last.seat + 1} ze ${last.n} · stanoviště ${last.i + 1}/${last.tot}</div></div>
+      <span class="arr">→</span>
+    </button>` : '';
+  const rb = $('#resumeBtn');
+  if (rb) rb.onclick = async () => {
+    try {
+      if (last.src.type === 'vest') { const g = VESTAVENE.find(x => x.id === last.src.id); if (!g) throw 0; loadGame(g, last.src); }
+      else loadGame(await decodeGame(last.src.code), last.src);
+      joinN = last.n; joinSeat = last.seat; startGame(false);
+    } catch (e) { toast('Rozehranou hru se nepodařilo načíst.'); }
+  };
+  show('scrHome');
+}
+$('#gameList').addEventListener('click', e => {
+  const b = e.target.closest('[data-vest]'); if (!b) return;
+  const g = VESTAVENE.find(x => x.id === b.dataset.vest);
+  loadGame(g, {type: 'vest', id: g.id}); renderJoin();
+});
+$('#home').onclick = e => { e.preventDefault(); renderHome(); };
+$('#toEditor').onclick = () => openEditor();
+
+/* =====================================================================
+   PŘIPOJENÍ (počet hráčů + číslo hráče)
+   ===================================================================== */
+function renderJoin() {
+  const url = shareUrl();
+  if (GSRC.type === 'vest') setHash('hra=' + encodeURIComponent(GSRC.id));
+  else if (GSRC.type === 'link') setHash('h=' + GSRC.code);
+  const gps = G.stanoviste.filter(s => s.misto).length;
+  const nSt = G.stanoviste.length;
+  const saved = lsJSON(progKey(joinN, joinSeat));
+  $('#scrJoin').innerHTML = `
+    <div class="eyebrow">${GSRC.type === 'test' ? 'Zkušební hraní z editoru · ' : ''}Kód hry <span class="mono">${GKEY.slice(0, 4)}</span></div>
+    <h1>${esc(G.nazev)}</h1>
+    ${G.uvod ? `<p class="lead" style="white-space:pre-wrap">${esc(G.uvod)}</p>` : ''}
+    <div class="meta">
+      <span class="chip"><b>${nSt}</b> ${nSt === 1 ? 'stanoviště' : nSt < 5 ? 'stanoviště' : 'stanovišť'}</span>
+      ${gps ? `<span class="chip">📍 <b>${gps}</b> s GPS</span>` : ''}
+    </div>
+    <div class="card">
+      <div class="lbl">Kolik vás je v týmu?</div>
+      <div class="seg" id="optN">${[2,3,4,5,6].map(n => `<button data-n="${n}" aria-pressed="${n === joinN}">${n}</button>`).join('')}</div>
+      <div class="lbl">Kdo jsi ty?</div>
+      <div class="seats" id="optSeat">${Array.from({length: joinN}, (_, i) => `<button data-s="${i}" style="--seat:${SEATC[i]}" aria-pressed="${i === joinSeat}"><i>${i + 1}</i>Hráč ${i + 1}</button>`).join('')}</div>
+      <p class="note">Všichni v týmu zvolte <b>stejný počet</b> a každý <b>jiné číslo</b>. Kód hry <b class="mono">${GKEY.slice(0, 4)}</b> musí všem svítit stejný.</p>
+      <button class="btn wide" id="joinGo">${saved && saved.phase !== 'konec' ? `Pokračovat · stanoviště ${saved.i + 1}` : `Začít jako hráč ${joinSeat + 1}`}</button>
+      ${saved ? `<div style="text-align:center;margin-top:6px"><button class="linkbtn" id="joinReset">Začít znovu od začátku</button></div>` : ''}
+    </div>
+    <div class="row">
+      ${url ? `<button class="btn ghost" id="shareBtn">Pozvat spoluhráče · QR a odkaz</button>` : ''}
+      ${GSRC.type === 'test' ? `<button class="btn ghost" id="backEdit">← Zpět do editoru</button>` : ''}
+    </div>
+    <div id="shareBox" style="margin-top:12px"></div>`;
+  $('#optN').onclick = e => { const b = e.target.closest('[data-n]'); if (!b) return; joinN = +b.dataset.n; if (joinSeat >= joinN) joinSeat = 0; renderJoin(); };
+  $('#optSeat').onclick = e => { const b = e.target.closest('[data-s]'); if (!b) return; joinSeat = +b.dataset.s; renderJoin(); };
+  $('#joinGo').onclick = () => startGame(false);
+  if ($('#joinReset')) $('#joinReset').onclick = () => { if (confirm('Smazat postup na tomto telefonu a začít znovu?')) startGame(true); };
+  if ($('#shareBtn')) $('#shareBtn').onclick = () => renderShare($('#shareBox'), url);
+  if ($('#backEdit')) $('#backEdit').onclick = () => openEditor();
+  show('scrJoin');
+}
+
+let qrLib = null;
+function loadQR() {
+  if (qrLib) return qrLib;
+  qrLib = new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+    s.onload = () => res(window.QRCode); s.onerror = () => { qrLib = null; rej(); };
+    document.head.appendChild(s);
+  });
+  return qrLib;
+}
+async function renderShare(box, url) {
+  box.innerHTML = `<div class="card share">
+    <div class="lbl" style="margin:0">Ať spoluhráči naskenují kód</div>
+    <div id="qr"></div>
+    <textarea readonly rows="2">${esc(url)}</textarea>
+    <div class="row" style="width:100%">
+      <button class="btn small" id="copyUrl">Zkopírovat odkaz</button>
+      ${navigator.share ? `<button class="btn ghost small" id="natShare">Sdílet…</button>` : ''}
+    </div></div>`;
+  $('#copyUrl').onclick = () => copyText(url);
+  if ($('#natShare')) $('#natShare').onclick = () => navigator.share({title: G ? G.nazev : 'Šifrovačka', url}).catch(() => {});
+  try {
+    const QR = await loadQR();
+    new QR($('#qr'), {text: url, width: 220, height: 220, colorDark: '#000', colorLight: '#fff', correctLevel: QR.CorrectLevel.L});
+  } catch (e) {
+    $('#qr').innerHTML = `<p class="note">QR kód se nepodařilo vytvořit${url.length > 1500 ? ' – hra je na QR moc dlouhá' : ''}. Pošlete odkaz.</p>`;
+  }
+}
+async function copyText(t) {
+  try { await navigator.clipboard.writeText(t); toast('Zkopírováno'); }
+  catch (e) { prompt('Zkopíruj odkaz:', t); }
+}
+
+/* =====================================================================
+   HRA
+   ===================================================================== */
+function enterStation(i) {
+  S.i = i;
+  const st = G.stanoviste[i];
+  S.phase = st.misto ? 'cesta' : 'sifra';
+  S.st[i] = S.st[i] || {tries: [], start: Date.now(), end: null, skip: false};
+  S.st[i].start = Date.now();
+}
+function startGame(reset) {
+  if (reset) lsDel(progKey(joinN, joinSeat));
+  const saved = lsJSON(progKey(joinN, joinSeat));
+  if (saved && saved.st && saved.i < G.stanoviste.length + 1) S = saved;
+  else { S = {n: joinN, seat: joinSeat, i: 0, phase: 'sifra', start: Date.now(), end: null, st: []}; enterStation(0); }
+  saveS();
+  if (S.phase === 'konec') return renderEnd();
+  show('scrPlay');
+  requestWake();
+  clearInterval(tick); tick = setInterval(updHud, 1000);
+  renderPlay();
+}
+function updHud() {
+  if (!S) return;
+  $('#hSt').textContent = Math.min(S.i + 1, G.stanoviste.length);
+  $('#hTot').textContent = G.stanoviste.length;
+  $('#hTime').textContent = fmtTime((S.end || Date.now()) - S.start);
+}
+function seatBadge() {
+  return `<span class="seat" style="--seat:${SEATC[S.seat]}"><i>${S.seat + 1}</i>Hráč ${S.seat + 1} ze ${S.n}</span>`;
+}
+function renderPlay() {
+  stopGeo();
+  const st = G.stanoviste[S.i], rec = S.st[S.i];
+  updHud();
+  let h = `<div class="sthead">
+    <div class="eyebrow">Stanoviště ${S.i + 1} z ${G.stanoviste.length}</div>
+    <h1>${esc(st.nazev || 'Stanoviště ' + (S.i + 1))}</h1>
+    ${seatBadge()}
+  </div>`;
+
+  if (S.phase === 'cesta') {
+    h += `<div class="card cesta">
+      <div class="lbl">Nejdřív musíte dojít na místo</div>
+      <p class="popis">${esc(st.misto.popis || 'Najděte místo, kde stanoviště leží. Čím blíž budete, tím víc bude přihořívat.')}</p>
+      <div id="gpsBox"><p class="note" style="margin:0">Zapněte polohu, ať hra pozná, že jste na místě.</p></div>
+      <div class="row" style="margin-top:14px"><button class="btn" id="gpsStart">Zapnout polohu</button></div>
+      <div style="margin-top:8px"><button class="linkbtn" id="gpsSkip">Jsme na místě, ale GPS nefunguje</button></div>
+    </div>`;
+  } else {
+    const mine = partsFor(st.dily.length, S.n, S.seat);
+    if (st.spolecne) h += `<div class="common">${esc(st.spolecne)}</div>`;
+    if (mine.length) {
+      h += `<div class="lbl">${mine.length > 1 ? 'Tvoje díly' : 'Tvůj díl'} <span style="text-transform:none;letter-spacing:0;font-weight:400">· ${mine.length} z ${st.dily.length}</span></div>`;
+      h += mine.map(j => { const d = st.dily[j]; return `<div class="part" style="--seat:${SEATC[S.seat]}"><pre>${esc(d.text)}</pre>${/^(https:|data:image\/)/i.test(d.obr.trim()) ? `<img src="${esc(d.obr.trim())}" alt="Obrázek k šifře" loading="lazy">` : ''}</div>`; }).join('');
+      h += `<p class="hintline">Ostatní vidí něco jiného. Nekoukejte si do telefonů, povídejte si.</p>`;
+    }
+    if (S.phase === 'sifra') {
+      h += `<form class="ans" id="ansForm" autocomplete="off">
+        <input id="ans" type="text" placeholder="Vaše řešení" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="send" aria-label="Řešení">
+        <button class="btn" id="ansBtn">Zkusit</button>
+      </form>
+      <div id="tempBox"></div>
+      <div id="histBox"></div>`;
+    } else if (S.phase === 'vyreseno') {
+      const last = S.i === G.stanoviste.length - 1;
+      h += `<div class="solved">
+        <div class="big">✓ Vyřešeno</div>
+        <div class="sol">${esc((st.odpovedi[0] || '').toUpperCase())}</div>
+        <p class="note">Řekněte řešení ostatním, ať si ho zadají taky. ${rec.end ? 'Čas: ' + fmtTime(rec.end - rec.start) + ' · pokusů: ' + rec.tries.length : ''}</p>
+        ${st.poVyreseni ? `<p>${esc(st.poVyreseni)}</p>` : ''}
+        <button class="btn wide" id="nextBtn">${last ? 'Do cíle →' : 'Další stanoviště →'}</button>
+      </div>`;
+    }
+  }
+  h += `<div class="playfoot">
+    <button class="linkbtn" id="leaveBtn">Opustit hru (postup zůstane)</button>
+    ${GSRC.type !== 'test' ? `<button class="linkbtn" id="inviteBtn">Pozvat další</button>` : `<button class="linkbtn" id="editBtn">Zpět do editoru</button>`}
+  </div>`;
+  $('#scrPlay').innerHTML = h;
+
+  if (S.phase === 'sifra') {
+    renderHist();
+    $('#ansForm').onsubmit = e => { e.preventDefault(); guess(); };
+  }
+  if ($('#nextBtn')) $('#nextBtn').onclick = next;
+  if ($('#gpsStart')) $('#gpsStart').onclick = startGeo;
+  if ($('#gpsSkip')) $('#gpsSkip').onclick = () => {
+    if (!confirm('Odemknout šifru bez ověření polohy? Ve výsledcích to bude vidět.')) return;
+    rec.skip = true; arrive();
+  };
+  $('#leaveBtn').onclick = () => renderHome();
+  if ($('#inviteBtn')) $('#inviteBtn').onclick = () => { renderJoin(); setTimeout(() => $('#shareBtn') && $('#shareBtn').click(), 0); };
+  if ($('#editBtn')) $('#editBtn').onclick = () => openEditor();
+}
+function renderHist() {
+  const rec = S.st[S.i], box = $('#histBox'); if (!box) return;
+  if (!rec.tries.length) { box.innerHTML = ''; return; }
+  box.innerHTML = `<div class="lbl" style="margin-top:14px">Vaše pokusy</div><ul class="hist">${rec.tries.slice().reverse().map(t =>
+    `<li><span class="g">${esc(t.g)}</span>${t.m != null ? `<span class="t i">💬 mezikrok</span>` : t.sim == null ? `<span class="t" style="--h:0;color:var(--muted)">✗</span>` : `<span class="t" style="--h:${level(t.sim).h}">${level(t.sim).name}</span>`}</li>`).join('')}</ul>`;
+}
+function guess() {
+  if (cooldown) return;
+  const st = G.stanoviste[S.i], rec = S.st[S.i];
+  const raw = $('#ans').value.trim(), g = norm(raw);
+  if (!g) { $('#ans').focus(); return; }
+  if (st.odpovedi.some(a => norm(a) === g)) {
+    rec.tries.push({g: raw, sim: 1});
+    rec.end = Date.now(); S.phase = 'vyreseno'; saveS();
+    if (navigator.vibrate) navigator.vibrate([60, 40, 120]);
+    renderPlay(); window.scrollTo({top: 0, behavior: 'smooth'});
+    return;
+  }
+  const mi = st.mezikroky.findIndex(m => norm(m.odpoved) === g);
+  const box = $('#tempBox');
+  // stejný pokus znovu se nepočítá
+  const dupe = rec.tries.findIndex(t => norm(t.g) === g);
+  if (dupe >= 0) rec.tries.splice(dupe, 1);
+  if (mi >= 0) {
+    rec.tries.push({g: raw, m: mi});
+    box.innerHTML = `<div class="msg"><div class="lbl">Mezikrok</div><p>${esc(st.mezikroky[mi].zprava)}</p></div>`;
+  } else if (st.prihoriva) {
+    const p = proximity(g, st.odpovedi), L = level(p.sim);
+    rec.tries.push({g: raw, sim: p.sim});
+    box.innerHTML = `<div class="temp" style="--h:${L.h}">
+      <div class="tl"><span class="tn">${L.name}</span><span class="tg">${esc(raw)}</span></div>
+      <div class="thermo"><b style="left:${Math.round(4 + p.sim * 92)}%"></b></div>
+      ${p.note ? `<div class="tnote">${esc(p.note)}</div>` : ''}
+    </div>`;
+  } else {
+    rec.tries.push({g: raw, sim: null});
+    box.innerHTML = `<div class="temp" style="--h:0"><div class="tl"><span class="tn" style="color:var(--ink)">Tohle to není</span><span class="tg">${esc(raw)}</span></div></div>`;
+  }
+  saveS(); renderHist();
+  $('#ans').select();
+  if (navigator.vibrate) navigator.vibrate(30);
+  cooldown = true; $('#ansBtn').disabled = true;
+  setTimeout(() => { cooldown = false; const b = $('#ansBtn'); if (b) b.disabled = false; }, 1200);
+}
+function next() {
+  if (S.i >= G.stanoviste.length - 1) { S.phase = 'konec'; S.end = Date.now(); saveS(); renderEnd(); return; }
+  enterStation(S.i + 1); saveS(); renderPlay();
+}
+
+/* ---------- GPS ---------- */
+function startGeo() {
+  if (!('geolocation' in navigator)) { $('#gpsBox').innerHTML = `<p class="note">Tenhle prohlížeč polohu neumí.</p>`; return; }
+  $('#gpsStart').disabled = true; $('#gpsStart').textContent = 'Hledám polohu…';
+  stopGeo();
+  geoWatch = navigator.geolocation.watchPosition(onGeo, err => {
+    $('#gpsBox').innerHTML = `<p class="note">${err.code === 1 ? 'Přístup k poloze je zakázaný. Povolte ho v nastavení prohlížeče.' : 'Polohu se nedaří zjistit. Zkuste to venku pod širým nebem.'}</p>`;
+    const b = $('#gpsStart'); if (b) { b.disabled = false; b.textContent = 'Zkusit znovu'; }
+  }, {enableHighAccuracy: true, maximumAge: 3000, timeout: 20000});
+}
+function stopGeo() { if (geoWatch != null) { navigator.geolocation.clearWatch(geoWatch); geoWatch = null; } }
+function onGeo(pos) {
+  if (S.phase !== 'cesta') return stopGeo();
+  const m = G.stanoviste[S.i].misto, acc = pos.coords.accuracy || 0;
+  const d = haversine({lat: pos.coords.latitude, lon: pos.coords.longitude}, m);
+  const b = $('#gpsStart'); if (b) b.classList.add('hidden');
+  if (d <= m.r + Math.min(acc, 25)) { arrive(); return; }
+  const h = d > 2000 ? 212 : d > 800 ? 190 : d > 300 ? 110 : d > 120 ? 45 : d > m.r * 2.5 ? 25 : 8;
+  const name = d > 2000 ? 'Mrzne' : d > 800 ? 'Studeno' : d > 300 ? 'Vlažno' : d > 120 ? 'Teplo' : d > m.r * 2.5 ? 'Přihořívá' : 'Hoří!';
+  $('#gpsBox').innerHTML = `<div class="dist" style="--h:${h}">${d >= 1000 ? (d / 1000).toFixed(1).replace('.', ',') + ' km' : Math.round(d) + ' m'}</div>
+    <div style="font-weight:600;color:hsl(${h} 66% var(--tL))">${name}</div>
+    <div class="acc">přesnost polohy ±${Math.round(acc)} m · odemkne se do ${m.r} m od místa</div>`;
+}
+function arrive() {
+  stopGeo();
+  S.phase = 'sifra'; S.st[S.i].start = Date.now(); saveS();
+  if (navigator.vibrate) navigator.vibrate([80, 60, 80]);
+  toast('Jste na místě! Šifra je odemčená.');
+  renderPlay();
+}
+
+/* ---------- wake lock (displej nezhasne) ---------- */
+async function requestWake() { try { if ('wakeLock' in navigator && document.visibilityState === 'visible') wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {} }
+function releaseWake() { try { wakeLock && wakeLock.release(); } catch (e) {} wakeLock = null; }
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && !$('#scrPlay').classList.contains('hidden')) {
+    requestWake();
+    if (S && S.phase === 'cesta' && geoWatch == null && $('#gpsStart') && $('#gpsStart').classList.contains('hidden')) startGeo();
+  }
+});
+
+/* =====================================================================
+   CÍL
+   ===================================================================== */
+function renderEnd() {
+  show('scrEnd');
+  const tries = S.st.reduce((a, r) => a + (r ? r.tries.length : 0), 0);
+  const skips = S.st.filter(r => r && r.skip).length;
+  $('#scrEnd').innerHTML = `
+    <div class="eyebrow">${esc(G.nazev)}</div>
+    <h1>V <em>cíli</em>!</h1>
+    ${G.zaver ? `<p class="lead" style="white-space:pre-wrap">${esc(G.zaver)}</p>` : ''}
+    <div class="final">${fmtTime(S.end - S.start)} <small>celkem · ${tries} ${tries === 1 ? 'pokus' : tries < 5 ? 'pokusy' : 'pokusů'}</small></div>
+    ${seatBadge()}
+    <ul class="rows">${G.stanoviste.map((st, i) => { const r = S.st[i] || {tries: []}; return `
+      <li><span class="n">${i + 1}</span><span>${esc(st.nazev || 'Stanoviště ' + (i + 1))}${r.skip ? ' <span class="muted small">· bez GPS</span>' : ''}</span>
+      <span class="d">${r.tries.length} ${r.tries.length === 1 ? 'pokus' : r.tries.length < 5 ? 'pokusy' : 'pokusů'}</span>
+      <span class="p">${r.end ? fmtTime(r.end - r.start) : '–'}</span></li>`; }).join('')}</ul>
+    ${skips ? `<p class="note">${skips}× odemčeno bez ověření GPS.</p>` : ''}
+    <p class="note">Čas na stanovišti se počítá od odemčení šifry po její vyřešení na tomto telefonu.</p>
+    <div class="row">
+      <button class="btn" id="endHome">Na úvod</button>
+      ${GSRC.type === 'test' ? `<button class="btn ghost" id="endEdit">Zpět do editoru</button>` : `<button class="btn ghost" id="endAgain">Hrát znovu</button>`}
+    </div>`;
+  $('#endHome').onclick = () => renderHome();
+  if ($('#endEdit')) $('#endEdit').onclick = () => openEditor();
+  if ($('#endAgain')) $('#endAgain').onclick = () => { if (confirm('Smazat výsledek a hrát znovu?')) { joinN = S.n; joinSeat = S.seat; startGame(true); } };
+}
+
+/* =====================================================================
+   EDITOR
+   ===================================================================== */
+let ED = null, edN = 3;
+const edOpen = new Set([0]);
+const newStation = () => ({nazev: '', spolecne: '', dily: [{text: '', obr: ''}, {text: '', obr: ''}], odpovedi: [], mezikroky: [], poVyreseni: '', prihoriva: true, misto: null});
+const emptyGame = () => ({nazev: '', uvod: '', zaver: '', stanoviste: [newStation()]});
+function edSave() { lsSet('sifra:draft', JSON.stringify(ED)); }
+function openEditor() {
+  if (!ED) ED = sanitize(lsJSON('sifra:draft') || emptyGame(), false);
+  if (!ED.stanoviste.length) ED.stanoviste.push(newStation());
+  setHash('editor');
+  edRender(); show('scrEdit');
+}
+function setPath(obj, path, v) {
+  const k = path.split('.'); let o = obj;
+  for (let i = 0; i < k.length - 1; i++) o = o[k[i]];
+  o[k[k.length - 1]] = v;
+}
+function whoHTML(K, j) {
+  return playersOf(K, edN, j).map(p => `<span class="dot" style="--seat:${SEATC[p]}">${p + 1}</span>`).join('');
+}
+function edStation(st, i) {
+  const p = `stanoviste.${i}`, K = st.dily.length;
+  return `<details class="card st" data-i="${i}" ${edOpen.has(i) ? 'open' : ''}>
+    <summary><span class="stn">${i + 1}</span><span class="stname" data-sum="${i}">${esc(st.nazev || 'Bez názvu')}</span><span class="muted small" data-meta="${i}">${stMeta(st)}</span></summary>
+    <div class="stbody">
+      <label class="f"><span>Název stanoviště</span><input data-k="${p}.nazev" value="${esc(st.nazev)}" placeholder="např. Na mostě"></label>
+      <label class="f"><span>Společné zadání <i>(vidí všichni)</i></span><textarea data-k="${p}.spolecne" rows="2" placeholder="Úvodní věta, příběh, pravidlo šifry…">${esc(st.spolecne)}</textarea></label>
+      <div class="f"><span>Díly šifry <i>(každý hráč uvidí jen své · tečky ukazují, kdo díl dostane při ${edN} hráčích)</i></span>
+        ${st.dily.map((d, j) => `<div class="dil">
+          <div class="dilhead"><b>Díl ${j + 1}</b><span class="who" data-who="${i}.${j}">→ ${whoHTML(K, j)}</span><button class="x" data-act="delDil" data-i="${i}" data-j="${j}" aria-label="Smazat díl" title="Smazat díl">✕</button></div>
+          <textarea data-k="${p}.dily.${j}.text" rows="3" placeholder="Text dílu – mezery a řádky se zachovají">${esc(d.text)}</textarea>
+          <input data-k="${p}.dily.${j}.obr" value="${esc(d.obr)}" placeholder="Obrázek – https:// odkaz (volitelné)">
+        </div>`).join('')}
+        <button class="btn ghost small" data-act="addDil" data-i="${i}">+ Přidat díl</button>
+      </div>
+      <label class="f"><span>Správné odpovědi <i>(víc variant oddělte čárkou · velká písmena, diakritika a mezery se ignorují)</i></span><input data-k="${p}.odpovedi" data-t="list" value="${esc(st.odpovedi.join(', '))}" placeholder="např. kompas"></label>
+      <div class="f"><span>Mezikroky <i>(když tým zadá tohle, dostane vaši zprávu – náhrada nápověd)</i></span>
+        ${st.mezikroky.map((m, j) => `<div class="mk">
+          <input data-k="${p}.mezikroky.${j}.odpoved" value="${esc(m.odpoved)}" placeholder="Když zadají…">
+          <input data-k="${p}.mezikroky.${j}.zprava" value="${esc(m.zprava)}" placeholder="…řekni jim">
+          <button class="x" data-act="delMk" data-i="${i}" data-j="${j}" aria-label="Smazat mezikrok">✕</button></div>`).join('')}
+        <button class="btn ghost small" data-act="addMk" data-i="${i}">+ Přidat mezikrok</button>
+      </div>
+      <label class="f"><span>Po vyřešení <i>(pokračování příběhu, kam dál)</i></span><textarea data-k="${p}.poVyreseni" rows="2">${esc(st.poVyreseni)}</textarea></label>
+      <label class="toggle"><input type="checkbox" data-k="${p}.prihoriva" data-t="bool" ${st.prihoriva ? 'checked' : ''}> Ukazovat „přihořívá“ u špatných odpovědí</label>
+      <label class="toggle"><input type="checkbox" data-act="toggleGps" data-i="${i}" ${st.misto ? 'checked' : ''}> GPS stanoviště – šifra se odemkne až na místě</label>
+      ${st.misto ? `<div class="gpsf">
+        <label class="f"><span>Zem. šířka</span><input data-k="${p}.misto.lat" data-t="num" inputmode="decimal" value="${st.misto.lat ?? ''}" placeholder="50.08743"></label>
+        <label class="f"><span>Zem. délka</span><input data-k="${p}.misto.lon" data-t="num" inputmode="decimal" value="${st.misto.lon ?? ''}" placeholder="14.42126"></label>
+        <label class="f"><span>Okruh (m)</span><input data-k="${p}.misto.r" data-t="num" inputmode="numeric" value="${st.misto.r}"></label>
+        <label class="f full"><span>Jak místo najít <i>(uvidí všichni před odemčením)</i></span><textarea data-k="${p}.misto.popis" rows="2" placeholder="Prázdné = jen teploměr podle vzdálenosti">${esc(st.misto.popis)}</textarea></label>
+        <div class="full row"><button class="btn ghost small" data-act="myPos" data-i="${i}">📍 Použít moji polohu</button>
+        ${st.misto.lat != null && st.misto.lon != null ? `<a class="btn ghost small" target="_blank" rel="noopener" href="https://mapy.cz/zakladni?source=coor&id=${st.misto.lon}%2C${st.misto.lat}">Ukázat na Mapy.cz</a>` : ''}</div>
+      </div>` : ''}
+      <div class="stact">
+        <button class="btn ghost small" data-act="upSt" data-i="${i}" ${i === 0 ? 'disabled' : ''} aria-label="Posunout výš">↑</button>
+        <button class="btn ghost small" data-act="downSt" data-i="${i}" ${i === ED.stanoviste.length - 1 ? 'disabled' : ''} aria-label="Posunout níž">↓</button>
+        <button class="btn ghost small" data-act="dupSt" data-i="${i}">Duplikovat</button>
+        <button class="btn small danger" data-act="delSt" data-i="${i}">Smazat</button>
+      </div>
+    </div>
+  </details>`;
+}
+function stMeta(st) {
+  const k = st.dily.filter(d => d.text.trim() || d.obr.trim()).length;
+  return `${k} ${k === 1 ? 'díl' : k < 5 && k > 0 ? 'díly' : 'dílů'}${st.misto ? ' · 📍' : ''}${st.odpovedi.length ? '' : ' · ⚠ bez odpovědi'}`;
+}
+function edCheck() {
+  const g = sanitize(ED, true), err = [], warn = [];
+  if (!ED.nazev.trim()) warn.push('Hra nemá název.');
+  if (!g.stanoviste.length) err.push('Přidej aspoň jedno stanoviště.');
+  g.stanoviste.forEach((st, i) => {
+    const n = `Stanoviště ${i + 1}`;
+    if (!st.odpovedi.length) err.push(`${n}: chybí správná odpověď.`);
+    if (!st.dily.length && !st.spolecne.trim()) err.push(`${n}: nemá žádné zadání.`);
+    else if (st.dily.length === 1) warn.push(`${n}: jen jeden díl – uvidí ho všichni stejně.`);
+    else if (st.dily.length && st.dily.length < edN) warn.push(`${n}: ${st.dily.length} díly na ${edN} hráče – někteří uvidí stejný díl.`);
+    const raw = ED.stanoviste[i].misto;
+    if (raw && (raw.lat == null || raw.lon == null)) err.push(`${n}: GPS je zapnuté, ale chybí souřadnice.`);
+    for (const m of st.mezikroky) if (st.odpovedi.some(a => norm(a) === norm(m.odpoved))) warn.push(`${n}: mezikrok „${m.odpoved}“ je zároveň správná odpověď.`);
+  });
+  return {err, warn};
+}
+function edCheckHTML() {
+  const {err, warn} = edCheck();
+  if (!err.length && !warn.length) return `<span class="ok">✓ Hra je připravená k rozeslání.</span>`;
+  return `<ul>${err.map(e => `<li class="err">${esc(e)}</li>`).join('')}${warn.map(w => `<li>${esc(w)}</li>`).join('')}</ul>`;
+}
+function edRender() {
+  const g = ED;
+  $('#scrEdit').innerHTML = `
+    <div class="eyebrow">Editor</div>
+    <h1>Vlastní <em>šifrovačka</em></h1>
+    <p class="lead">Šifry píšeš ty, hra je jen rozdělí mezi hráče a hlídá odpovědi. Vše se průběžně ukládá v tomto prohlížeči.</p>
+    <div class="card">
+      <label class="f"><span>Název hry</span><input data-k="nazev" value="${esc(g.nazev)}" placeholder="např. Tajemství Starého Města"></label>
+      <label class="f"><span>Úvod <i>(uvidí všichni před startem)</i></span><textarea data-k="uvod" rows="3">${esc(g.uvod)}</textarea></label>
+      <label class="f" style="margin:0"><span>Závěr <i>(po posledním stanovišti)</i></span><textarea data-k="zaver" rows="2">${esc(g.zaver)}</textarea></label>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span class="small" style="font-weight:600">Náhled rozdělení dílů pro</span>
+      <div class="seg" id="edNseg" style="margin:0">${[2,3,4,5,6].map(n => `<button data-en="${n}" aria-pressed="${n === edN}">${n}</button>`).join('')}</div>
+      <span class="small muted">hráčů</span>
+    </div>
+    ${g.stanoviste.map(edStation).join('')}
+    <button class="btn ghost wide" data-act="addSt" style="margin-bottom:22px">+ Přidat stanoviště</button>
+    <div class="card check"><div class="lbl">Kontrola</div><div id="edCheck">${edCheckHTML()}</div></div>
+    <div class="card">
+      <div class="lbl">Vyzkoušet a rozeslat</div>
+      <div class="row" style="margin-bottom:8px">
+        <button class="btn" data-act="test">▶ Vyzkoušet hru</button>
+        <button class="btn" data-act="link">Odkaz a QR pro tým</button>
+      </div>
+      <div id="edShare"></div>
+      <p class="note" style="margin:8px 0 12px">Celá hra (včetně řešení) je zabalená přímo v odkazu, žádný server. Kdo by chtěl podvádět, dokáže si ji rozbalit – je to hra mezi přáteli.</p>
+      <div class="row">
+        <button class="btn ghost small" data-act="export">Stáhnout JSON</button>
+        <button class="btn ghost small" data-act="import">Načíst JSON</button>
+        <button class="btn ghost small" data-act="fromDemo">Začít z ukázky</button>
+        <button class="btn small danger" data-act="clear">Nová prázdná</button>
+      </div>
+    </div>`;
+}
+function edRefresh() {
+  const c = $('#edCheck'); if (c) c.innerHTML = edCheckHTML();
+  ED.stanoviste.forEach((st, i) => {
+    const s = document.querySelector(`[data-sum="${i}"]`); if (s) s.textContent = st.nazev || 'Bez názvu';
+    const m = document.querySelector(`[data-meta="${i}"]`); if (m) m.textContent = stMeta(st);
+  });
+}
+const edBox = $('#scrEdit');
+function edInput(e) {
+  const el = e.target.closest('[data-k]'); if (!el) return;
+  const t = el.dataset.t; let v;
+  if (t === 'bool') v = el.checked;
+  else if (t === 'num') { const x = parseFloat(el.value.replace(',', '.')); v = Number.isFinite(x) ? x : null; if (el.dataset.k.endsWith('.r')) v = v == null ? 30 : Math.max(5, v); }
+  else if (t === 'list') v = el.value.split(',').map(s => s.trim()).filter(Boolean);
+  else v = el.value;
+  setPath(ED, el.dataset.k, v); edSave(); edRefresh();
+}
+edBox.addEventListener('input', edInput);
+edBox.addEventListener('change', edInput);
+edBox.addEventListener('toggle', e => {
+  const d = e.target; if (!d.matches || !d.matches('details.st')) return;
+  const i = +d.dataset.i; d.open ? edOpen.add(i) : edOpen.delete(i);
+}, true);
+edBox.addEventListener('click', async e => {
+  const nb = e.target.closest('[data-en]');
+  if (nb) { edN = +nb.dataset.en; edRender(); return; }
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  const a = b.dataset.act, i = +b.dataset.i, j = +b.dataset.j, sts = ED.stanoviste;
+  const rer = () => { edSave(); edRender(); };
+  switch (a) {
+    case 'addSt': sts.push(newStation()); edOpen.add(sts.length - 1); rer(); setTimeout(() => { const d = document.querySelector(`details[data-i="${sts.length - 1}"]`); d && d.scrollIntoView({behavior: 'smooth', block: 'start'}); }, 30); break;
+    case 'delSt': if (confirm(`Smazat stanoviště ${i + 1}?`)) { sts.splice(i, 1); if (!sts.length) sts.push(newStation()); shiftOpen(i, -1); rer(); } break;
+    case 'dupSt': sts.splice(i + 1, 0, clone(sts[i])); shiftOpen(i + 1, 1); edOpen.add(i + 1); rer(); break;
+    case 'upSt': if (i > 0) { [sts[i - 1], sts[i]] = [sts[i], sts[i - 1]]; swapOpen(i - 1, i); rer(); } break;
+    case 'downSt': if (i < sts.length - 1) { [sts[i + 1], sts[i]] = [sts[i], sts[i + 1]]; swapOpen(i, i + 1); rer(); } break;
+    case 'addDil': sts[i].dily.push({text: '', obr: ''}); rer(); break;
+    case 'delDil': {
+      const d = sts[i].dily[j];
+      if ((d.text.trim() || d.obr.trim()) && !confirm(`Smazat díl ${j + 1}?`)) break;
+      sts[i].dily.splice(j, 1); rer(); break;
+    }
+    case 'addMk': sts[i].mezikroky.push({odpoved: '', zprava: ''}); rer(); break;
+    case 'delMk': sts[i].mezikroky.splice(j, 1); rer(); break;
+    case 'toggleGps': sts[i].misto = sts[i].misto ? null : {lat: null, lon: null, r: 30, popis: ''}; rer(); break;
+    case 'myPos':
+      if (!navigator.geolocation) { toast('Prohlížeč neumí polohu.'); break; }
+      toast('Zjišťuji polohu…');
+      navigator.geolocation.getCurrentPosition(p => {
+        sts[i].misto.lat = +p.coords.latitude.toFixed(6); sts[i].misto.lon = +p.coords.longitude.toFixed(6);
+        rer(); toast(`Poloha uložena (±${Math.round(p.coords.accuracy)} m)`);
+      }, () => toast('Polohu se nepodařilo zjistit.'), {enableHighAccuracy: true, timeout: 20000});
+      break;
+    case 'test':
+      loadGame(clone(ED), {type: 'test'});
+      if (!G.stanoviste.length) { toast('Hra zatím nemá žádné stanoviště.'); break; }
+      joinN = edN; joinSeat = 0; renderJoin(); break;
+    case 'link': {
+      const {err} = edCheck();
+      if (err.length) { toast('Nejdřív oprav chyby v kontrole.'); $('#edCheck').scrollIntoView({behavior: 'smooth', block: 'center'}); break; }
+      const code = await encodeGame(sanitize(ED, true));
+      loadGame(sanitize(ED, true), {type: 'link', code});
+      renderShare($('#edShare'), shareUrl());
+      break;
+    }
+    case 'export': {
+      const blob = new Blob([JSON.stringify(sanitize(ED, false), null, 2)], {type: 'application/json'});
+      const u = URL.createObjectURL(blob), aEl = document.createElement('a');
+      aEl.href = u; aEl.download = 'sifrovacka-' + (norm(ED.nazev) || 'hra') + '.json';
+      document.body.appendChild(aEl); aEl.click(); aEl.remove(); setTimeout(() => URL.revokeObjectURL(u), 1000);
+      break;
+    }
+    case 'import': $('#fileIn').click(); break;
+    case 'fromDemo': if (confirm('Přepsat rozpracovanou hru ukázkou?')) { ED = sanitize(clone(VESTAVENE[0]), false); edOpen.clear(); edOpen.add(0); rer(); } break;
+    case 'clear': if (confirm('Smazat rozpracovanou hru a začít načisto?')) { ED = emptyGame(); edOpen.clear(); edOpen.add(0); rer(); } break;
+  }
+});
+function shiftOpen(from, d) {
+  const arr = [...edOpen]; edOpen.clear();
+  for (const x of arr) { if (x < from) edOpen.add(x); else if (d < 0 && x === from) continue; else edOpen.add(x + d); }
+}
+function swapOpen(a, b) {
+  const ha = edOpen.has(a), hb = edOpen.has(b);
+  edOpen.delete(a); edOpen.delete(b); if (ha) edOpen.add(b); if (hb) edOpen.add(a);
+}
+$('#fileIn').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  try {
+    const g = JSON.parse(await f.text());
+    if (!confirm('Nahradit rozpracovanou hru načteným souborem?')) return;
+    ED = sanitize(g, false); if (!ED.stanoviste.length) ED.stanoviste.push(newStation());
+    edOpen.clear(); edOpen.add(0); edSave(); edRender(); toast('Načteno');
+  } catch (err) { toast('Soubor se nepodařilo načíst.'); }
+};
+
+/* =====================================================================
+   START
+   ===================================================================== */
+async function route() {
+  const h = location.hash.slice(1);
+  try {
+    if (h.startsWith('h=')) {
+      const code = h.slice(2);
+      loadGame(await decodeGame(code), {type: 'link', code});
+      if (!G.stanoviste.length) throw new Error('prázdná hra');
+      return renderJoin();
+    }
+    if (h.startsWith('hra=')) {
+      const id = decodeURIComponent(h.slice(4)), g = VESTAVENE.find(x => x.id === id);
+      if (g) { loadGame(g, {type: 'vest', id}); return renderJoin(); }
+    }
+    if (h === 'editor') return openEditor();
+  } catch (e) {
+    renderHome(); toast('Odkaz na hru je poškozený nebo neúplný.'); return;
+  }
+  renderHome();
+}
+window.addEventListener('hashchange', route);
+route();
+</script>
+</body>
+</html>
