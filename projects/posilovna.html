@@ -444,12 +444,15 @@ const EX = [
   { id: 'dbbench', n: 'Bench s jednoručkami', g: 'Hrudník', eq: 'dumbbell', lo: 6, hi: 10, m: ['chest'], m2: ['triceps', 'delts'],
     tips: ['Jednoručky spouštěj do hlubšího protažení než s velkou činkou.', 'Lokty asi 45° od těla, předloktí kolmo k zemi.', 'Nahoře jednoručky nesrážej, drž napětí.'],
     a: { eq: 'dumbbell', props: [['bench', 40, 112, 100]], A: { H: [118, 106], t: -90, hand: [72, 52], foot: [150, 146] }, B: { hand: [80, 90] } } },
-  { id: 'chestpress', n: 'Tlaky na hrudník na stroji', g: 'Hrudník', eq: 'machine', lo: 8, hi: 12, m: ['chest'], m2: ['triceps', 'delts'],
+  { id: 'chestpress', n: 'Tlaky na stroji – rovné', g: 'Hrudník', eq: 'machine', lo: 8, hi: 12, m: ['chest'], m2: ['triceps', 'delts'],
     tips: ['Sedačku nastav tak, aby madla byla ve výšce středu hrudníku.', 'Lopatky drž u opěrky, netlač rameny dopředu.', 'Vpředu lokty úplně nezamykej.'],
     a: { eq: 'handle', props: [['bench', 50, 112, 40], ['line', 54, 112, 48, 50]], A: { H: [70, 106], t: 178, hand: [90, 60], foot: [110, 146] }, B: { hand: [124, 60] } } },
   { id: 'pecdeck', n: 'Peck deck – rozpažky', g: 'Hrudník', eq: 'machine', lo: 10, hi: 15, m: ['chest'], m2: ['delts'],
     tips: ['Lokty mírně pokrčené a ve výšce ramen.', 'Uprostřed madla stiskni a vteřinu podrž.', 'Zpátky jen do mírného protažení prsou.'],
-    a: { front: true, thl: 14, props: [['bench', 70, 104, 60]], A: { H: [100, 100], t: 180, ua: 92, fa: 175, th: 0, sh: 0 }, B: { ua: 35, fa: 172 } } },
+    a: { front: true, fly: true, thl: 14, eq: 'vhandle', props: [['bench', 70, 104, 60], ['line', 60, 104, 60, -14], ['line', 140, 104, 140, -14], ['line', 56, -14, 144, -14]], A: { H: [100, 100], t: 180, k: 1, th: 0, sh: 0 }, B: { k: -0.22 } } },
+  { id: 'inclinepress', n: 'Tlaky na stroji – šikmé', g: 'Hrudník', eq: 'machine', lo: 8, hi: 12, m: ['chest', 'delts'], m2: ['triceps'],
+    tips: ['Sedák nastav tak, aby madla byla v úrovni horní části hrudníku.', 'Tlač šikmo nahoru, lopatky drž u opěrky.', 'Dolů pomalu do protažení, nahoře lokty nezamykej.'],
+    a: { eq: 'handle', props: [['bench', 48, 112, 40], ['line', 62, 114, 25, 52]], A: { H: [66, 106], t: -150, hand: [64, 60], foot: [104, 146] }, B: { hand: [84, 18] } } },
   { id: 'crossover', n: 'Kabelové křížení', g: 'Hrudník', eq: 'cable', lo: 10, hi: 15, m: ['chest'], m2: ['delts'],
     tips: ['Krok vpřed, mírný předklon, lokty lehce pokrčené.', 'Ruce veď obloukem dolů před tělo.', 'Pohyb vychází z prsou, ne z rukou.'],
     a: { front: true, eq: 'handle', cables: [190, -24], A: { H: [100, 70], t: 180, ua: 128, fa: 118, th: 6, sh: 0 }, B: { ua: 22, fa: -8 } } },
@@ -488,7 +491,7 @@ const EX = [
     a: { eq: 'handle', props: [['bench', 50, 112, 40], ['line', 54, 112, 48, 50]], A: { H: [70, 106], t: 178, hand: [84, 52], foot: [110, 146] }, B: { hand: [80, 8] } } },
   { id: 'revfly', n: 'Reverse peck deck – zadní ramena', g: 'Ramena', eq: 'machine', lo: 12, hi: 20, m: ['delts', 'traps'], m2: [],
     tips: ['Hrudník opřený o opěrku, ruce ve výšce ramen.', 'Veď pohyb lokty dozadu a do stran.', 'Lopatky na konci stáhni, nehoupej se.'],
-    a: { front: true, thl: 14, props: [['bench', 70, 104, 60]], A: { H: [100, 100], t: 180, ua: 40, fa: 30, th: 0, sh: 0 }, B: { ua: 92, fa: 90 } } },
+    a: { front: true, fly: true, thl: 14, eq: 'vhandle', props: [['bench', 70, 104, 60], ['line', 60, 104, 60, -14], ['line', 140, 104, 140, -14], ['line', 56, -14, 144, -14]], A: { H: [100, 100], t: 180, k: -0.22, th: 0, sh: 0 }, B: { k: 1 } } },
 
   { id: 'preacher', n: 'Zdvih na Scottově lavici', g: 'Paže', eq: 'barbell', lo: 8, hi: 12, m: ['biceps'], m2: ['forearms'],
     tips: ['Paže celou délkou na opěrce.', 'Dole skoro propni, ale nepouštěj váhu.', 'Nahoře zatni, zápěstí drž rovně.'],
@@ -855,7 +858,9 @@ function solveFront(an, p) {
   const H = P.H, S = add(H, [0, -LEN.to]), Hd = add(S, [0, -LEN.nk]);
   const side = sg => {
     const Sx = add(S, [13 * sg, 2]), Hx = add(H, [7 * sg, 0]);
-    const E = add(Sx, V(P.ua * sg, LEN.ua)), W = add(E, V(P.fa * sg, LEN.fa));
+    // fly: paže ve výšce ramen, k = průmět do strany (1 = upaženo, záporné = ruce před hrudníkem)
+    const E = an.fly ? add(Sx, [sg * LEN.ua * P.k, 3]) : add(Sx, V(P.ua * sg, LEN.ua));
+    const W = an.fly ? add(E, [sg * LEN.fa * P.k, 3]) : add(E, V(P.fa * sg, LEN.fa));
     const K = add(Hx, V(P.th * sg, an.thl ?? LEN.th)), A = add(K, V(P.sh * sg, LEN.sh)), T = add(A, [6 * sg, 3]);
     return { Sx, Hx, E, W, K, A, T };
   };
@@ -864,6 +869,7 @@ function solveFront(an, p) {
 function eqShape(t) {
   if (t === 'barbell') return '<circle class="eq" r="13"/><circle class="eqh" r="3"/>';
   if (t === 'dumbbell') return '<circle class="eq" r="6.5"/><circle class="eqh" r="2"/>';
+  if (t === 'vhandle') return '<line class="eq" x1="0" y1="-9" x2="0" y2="9"/>';
   if (t === 'handle') return '<line class="eq" x1="-8" y1="0" x2="8" y2="0"/>';
   if (t === 'roller') return '<circle class="eq" r="6"/>';
   if (t === 'pad') return '<rect class="eq" x="-15" y="-13" width="30" height="7" rx="3"/>';
