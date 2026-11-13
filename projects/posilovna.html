@@ -66,6 +66,7 @@ h2.sec::after{content:"";flex:1;height:1px;background:var(--line)}
 .btn.sm{min-height:34px;padding:0 12px;font-size:11.5px;border-radius:10px}
 .chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;margin:0 -16px;padding:0 16px 2px}
 .chips::-webkit-scrollbar{display:none}
+.chips.wrapc{flex-wrap:wrap;margin:0;padding:0;overflow:visible}
 .chip{flex:none;padding:7px 12px;border-radius:999px;border:1px solid var(--line2);font-family:var(--mono);font-size:11.5px;color:var(--muted)}
 .chip.on{color:#03170a;background:var(--neon);border-color:var(--neon);font-weight:700}
 .seg{display:flex;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:3px}
@@ -255,6 +256,8 @@ svg.fig .pul{fill:#050505;stroke:#6a6a6a;stroke-width:2}
 .err-msg{color:var(--bad);font-size:13px;min-height:18px;margin-top:8px}
 .empty{color:var(--muted2);text-align:center;padding:28px 10px;font-size:14px}
 .note{font-size:12.5px;color:var(--muted2)}
+.how{display:grid;gap:10px;font-size:13.5px;color:#cfcfcf}
+.how b{color:var(--text)}
 .auth-links{display:flex;justify-content:space-between;gap:8px;margin-top:10px}
 .ok-msg{color:var(--neon);font-size:13.5px;margin-top:8px}
 .steps{display:grid;gap:10px;margin:0 0 14px;padding-left:20px;font-size:13.5px;color:#cfcfcf}
@@ -523,7 +526,7 @@ const ls = { get(k) { try { return localStorage.getItem(k); } catch { return nul
 
 let S = null;                 // dešifrovaný stav
 let view = 'train';
-const ui = { libGroup: 'Vše', libQ: '', pickGroup: 'Vše', pickQ: '', progEx: null, progMetric: 'e1', histOpen: null, setOpen: false };
+const ui = { genGroups: [], genDur: 60, plan: null, libGroup: 'Vše', libQ: '', pickGroup: 'Vše', pickQ: '', progEx: null, progMetric: 'e1', histOpen: null, setOpen: false };
 
 function blank() { return { v: 1, w: [], cx: [], set: { rest: 120, inc: {} }, setU: 0 }; }
 function allEx() { return [...EX, ...(S ? S.cx.filter(c => !c.del) : [])]; }
@@ -693,11 +696,17 @@ function sessions(exId, excludeId) {
 const bestE1 = sets => Math.max(0, ...sets.map(e1rm));
 function roundTo(v, inc, mode = 'round') { return Math[mode](v / inc - 1e-9 * (mode === 'ceil' ? 1 : 0)) * inc; }
 
+/* Pravidla (viz „Jak funguje doporučení“ v Progresu):
+   – dvojitá progrese: nejdřív opakování v rozsahu, váha až nad horní hranicí (opakování i váha fungují – Plotkin 2022)
+   – váhu přidat, až zvládneš horní hranici s rezervou (≈ 1–2 opakování navíc), krok 2–10 % (ACSM 2009)
+   – horní hranice dosažená až v selhání se musí potvrdit dalším tréninkem
+   – selhání není nutné: hypertrofie roste blíž k selhání, síla skoro nezávisle (Refalo 2023, Robinson 2024)
+   – slabší den = nepřidávat; stagnace = lehčí týden se sníženou zátěží, ne pauza (Bell 2023, Coleman 2024) */
 function recommend(ex, excludeId) {
   const H = sessions(ex.id, excludeId);
   const inc = incOf(ex), lo = ex.lo, hi = ex.hi, u = unitOf(ex), timed = ex.unit === 's';
   const heavy = lo <= 6;
-  const rirNote = heavy ? 'Cíl RIR 1–2, u těžkých vícekloubových cviků selhání nehoň.' : 'Cíl RIR 0–2, poslední sérii klidně do selhání.';
+  const rirNote = heavy ? 'Cíl RIR 1–2 – u těžkých vícekloubových cviků selhání nehoň.' : 'Cíl RIR 0–2, poslední sérii klidně do selhání.';
   if (!H.length) return { kind: 'new', w: null, r: lo, n: 3, head: `${lo}–${hi} ${u}`, txt: `První záznam. Zvol váhu, se kterou dáš ${lo}–${hi} ${u} a zbudou ti 2–3 v rezervě.` };
   const last = H[0].sets;
   const W = Math.max(...last.map(s => s.w));
@@ -705,52 +714,63 @@ function recommend(ex, excludeId) {
   const reps = top.map(s => s.r), minR = Math.min(...reps), maxR = Math.max(...reps);
   const fails = top.filter(s => s.q === 0).length;
   const avgQ = top.reduce((a, s) => a + rirOf(s), 0) / top.length;
-  const n = Math.max(2, Math.min(6, last.length));
-  const out = (kind, w, r, txt) => ({ kind, w, r: Math.round(r), n, head: (w > 0 ? `${fmt(w, 2)} kg × ` : (ex.eq === 'bw' ? 'vlastní váha × ' : '')) + `${Math.round(r)} ${u}`, txt: txt + (kind !== 'down' ? ' ' + rirNote : ''), last: H[0] });
+  let n = Math.max(2, Math.min(6, last.length));
+  const out = (kind, w, r, txt) => ({ kind, w, r: Math.round(r), n, head: (w > 0 ? `${fmt(w, 2)} kg × ` : (ex.eq === 'bw' ? 'vlastní váha × ' : '')) + `${Math.round(r)} ${u}`, txt: (txt + (kind !== 'down' ? ' ' + rirNote : '')).replace(/\.\./g, '.'), last: H[0] });
+  const prevTop = H[1] ? H[1].sets.filter(s => s.w === W) : [];
+  const prevHit = prevTop.length > 0 && Math.min(...prevTop.map(s => s.r)) >= hi;
 
-  // Vlastní váha bez zátěže – progrese přes opakování / čas
+  // Vlastní váha / trenažér bez zátěže – progrese přes opakování / čas
   if (W === 0) {
-    if (timed) return minR >= hi && !fails ? out('up', 0, maxR + inc, `Zvládáš ${hi} s – prodluž o ${inc} s nebo přidej těžší variantu.`) : out('reps', 0, Math.min(hi, maxR + (avgQ >= 2 ? 10 : 5)), 'Prodluž výdrž.');
-    if (minR >= hi && !fails) return out('up', inc, lo, `Všechny série na ${hi}+ ${u} s rezervou → přidej zátěž ${fmt(inc, 2)} kg (opasek/vesta/jednoručka).`);
+    if (timed) return minR >= hi && !fails ? out('up', 0, maxR + inc, `Zvládáš ${hi} s – prodluž o ${inc} s nebo zvol těžší variantu.`) : out('reps', 0, Math.min(hi, maxR + (avgQ >= 2 ? 10 : 5)), 'Prodluž výdrž.');
+    if (minR >= hi && (!fails || prevHit)) return out('up', inc, lo, `Všechny série na ${hi}+ ${u} → přidej zátěž ${fmt(inc, 2)} kg (opasek, vesta, jednoručka).`);
+    if (minR >= hi) return out('hold', 0, hi, `${hi} ${u} jsi dal, ale do selhání – potvrď to ještě jednou s rezervou, pak přidáme zátěž.`);
     if (fails && minR < lo) return out('hold', 0, lo, `Pod rozsahem a do selhání – drž a cíl ${lo} ${u}.`);
-    return out('reps', 0, Math.min(hi, maxR + (avgQ >= 2 && !fails ? 2 : 1)), avgQ >= 2 && !fails ? 'Měl jsi rezervu → +2 opakování.' : 'Přidej 1 opakování.');
+    return out('reps', 0, Math.min(hi, minR + 1), 'Přidej 1 opakování v nejslabší sérii.');
   }
 
-  // Stagnace: 3 tréninky bez zlepšení odhadu 1RM a se selháním → odlehčit
+  // Stagnace: 3 tréninky bez zlepšení a se selháním → lehčí týden (ne pauza)
   if (H.length >= 3 && fails) {
     const [a, b, c] = H.slice(0, 3).map(h => bestE1(h.sets));
     if (a <= Math.max(b, c) * 1.005 && b <= c * 1.01) {
       const w = Math.max(inc, roundTo(W * 0.9, inc, 'floor'));
-      return out('down', w, Math.min(hi, lo + 2), `Tři tréninky bez zlepšení a končíš v selhání → odlehčení na ~90 % (${fmt(w, 2)} kg), nech 2–3 opakování v rezervě. Příště zase nahoru.`);
+      n = Math.max(2, n - 1);
+      return out('down', w, Math.min(hi, lo + 2), `Tři tréninky bez zlepšení a končíš v selhání → lehčí týden: ~90 % (${fmt(w, 2)} kg), o sérii méně a 2–3 opakování v rezervě. Pauza úplně se nevyplácí – trénuj dál, jen lehčeji. Pak zase nahoru.`);
     }
   }
-  if (minR >= hi) {
-    const step = !fails && avgQ >= 3 ? inc * 2 : inc;
-    return out('up', W + step, lo, fails
-      ? `Horní hranici ${hi} ${u} jsi dal, i když na selhání → přidej ${fmt(step, 2)} kg a začni od ${lo} ${u}.`
-      : `Všechny série na ${hi}+ ${u} s rezervou → přidej ${fmt(step, 2)} kg.`);
+  // Slabší den (únava, spánek…) – nic nepřidávat
+  if (H[1]) {
+    const e0 = bestE1(H[0].sets), e1 = bestE1(H[1].sets);
+    if (e1 > 0 && e0 < e1 * 0.95) return out('hold', W, Math.min(hi, Math.max(lo, minR + 1)), `Minule o ${Math.round((1 - e0 / e1) * 100)} % slabší než předtím – to se stává. Nepřidávej, zopakuj stejnou váhu.`);
   }
+  // Horní hranice rozsahu
+  const big = inc / W > 0.10;             // krok by byl víc než 10 % (malé jednoručky, stroje)
+  const need = hi + (big ? 2 : 0);
+  if (minR >= need) {
+    if (fails && !prevHit) return out('hold', W, hi, `${hi} ${u} jsi dal, ale na selhání. Potvrď to ještě jednou s rezervou aspoň 1 opakování – pak přidáme váhu.`);
+    return out('up', W + inc, lo, `Horní hranici jsi zvládl${fails ? ' už podruhé' : ' s rezervou'} → přidej ${fmt(inc, 2)} kg (+${Math.round(inc / W * 100)} %) a začni od ${lo} ${u}.`);
+  }
+  if (minR >= hi && big) return out('reps', W, need, `Krok ${fmt(inc, 2)} kg by byl skok o ${Math.round(inc / W * 100)} % (doporučuje se 2–10 %) → nejdřív dotáhni na ${need} ${u}, pak přidej.`);
+  // Pod rozsahem
   if (minR < lo) {
     if (fails) {
-      const prev = H[1] && H[1].sets.filter(s => s.w === W);
-      const prevBad = prev && prev.length && Math.min(...prev.map(s => s.r)) < lo && prev.some(s => s.q === 0);
+      const prevBad = prevTop.length && Math.min(...prevTop.map(s => s.r)) < lo && prevTop.some(s => s.q === 0);
       if (lo - minR >= 2 || prevBad) {
         const w = Math.max(inc, Math.min(W - inc, roundTo(W * 0.92, inc, 'floor')));
         return out('down', w, lo, `Pod rozsahem (${minR} < ${lo}) a do selhání${prevBad ? ' už podruhé' : ''} → váha je zatím moc. Uber na ${fmt(w, 2)} kg a dej ${lo}–${hi} ${u} s rezervou 1–2.`);
       }
       return out('hold', W, lo, `Těsně pod rozsahem se selháním → drž ${fmt(W, 2)} kg a zkus dotáhnout všechny série na ${lo} ${u}.`);
     }
-    return out('hold', W, lo, `Pod rozsahem, ale s rezervou → stejná váha, víc se zaber.`);
+    return out('hold', W, lo, 'Pod rozsahem, ale s rezervou → stejná váha, víc se zaber.');
   }
   // V rozsahu
   if (avgQ >= 3 && !fails) {
-    if (maxR >= Math.round((lo + hi) / 2)) return out('up', W + inc, lo, `Šlo to snadno (rezerva 3+) → rovnou přidej ${fmt(inc, 2)} kg.`);
+    if (H.length <= 2 && maxR >= Math.round((lo + hi) / 2) && !big) return out('up', W + inc, lo, `Šlo to moc snadno (rezerva 3+) a jsi teprve v začátcích → přidej ${fmt(inc, 2)} kg, ať najdeš pracovní váhu.`);
     return out('reps', W, Math.min(hi, minR + 2), 'Velká rezerva → +2 opakování v každé sérii.');
   }
   if (fails >= Math.ceil(top.length / 2) || top[0].q === 0) {
     return out('hold', W, Math.min(hi, minR + 1), `Většina sérií do selhání → drž ${fmt(W, 2)} kg, cíl ${Math.min(hi, minR + 1)} ${u} v nejslabší sérii a nech 1 v rezervě.`);
   }
-  return out('reps', W, Math.min(hi, minR + 1), `Přidej 1 opakování. Až dáš ${hi} ${u} ve všech sériích, přidá se váha.`);
+  return out('reps', W, Math.min(hi, minR + 1), `Přidej 1 opakování. Až dáš ${need} ${u} ve všech sériích, přidá se váha.`);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -980,7 +1000,14 @@ function vTrain() {
     const lastW = doneWorkouts()[0];
     return `<div class="kicker">${esc(dLong(now()))}</div>
       <h1 class="title">Jdeme<br>makat<span class="d">.</span></h1>
-      <button class="btn p big wide" data-act="start">▶ Začít trénink</button>
+      <button class="btn p big wide" data-act="start">▶ Začít prázdný trénink</button>
+      <h2 class="sec">Navrhnout trénink</h2>
+      <div class="card stack">
+        <div class="chips wrapc">${GROUPS.map(g => `<button class="chip ${ui.genGroups.includes(g) ? 'on' : ''}" data-act="gg" data-g="${g}">${g}</button>`).join('')}</div>
+        <div class="seg">${[45, 60, 75, 90].map(d => `<button class="${ui.genDur === d ? 'on' : ''}" data-act="gdur" data-d="${d}">${d} min</button>`).join('')}</div>
+        <button class="btn p wide" data-act="gen">✦ ${ui.genGroups.length ? 'Navrhnout: ' + esc(ui.genGroups.join(' + ')) : 'Náhodný trénink'}</button>
+        <p class="note">Vyber 1–3 partie, nebo nech prázdné a návrh vybere partie, které máš nejdéle neodcvičené. Váhy a opakování se doplní podle tvých minulých výkonů.</p>
+      </div>
       <h2 class="sec">Tento týden</h2>
       <div class="stats"><div class="stat"><div class="v">${st.n}</div><div class="l">tréninky</div></div><div class="stat"><div class="v">${st.sets}</div><div class="l">série</div></div><div class="stat"><div class="v">${st.vol >= 10000 ? fmt(st.vol / 1000, 1) + 't' : fmtInt(st.vol)}</div><div class="l">objem kg</div></div></div>
       <h2 class="sec">Kdy naposledy</h2>
@@ -1018,10 +1045,91 @@ function exCard(w, it, i) {
     ${i === 0 ? '<div class="legend-rir">Rezerva (RIR): S = selhání, 1–3+ = kolik opakování ještě zbývalo.</div>' : ''}
   </div>`;
 }
-function newSetsFor(ex, w) {
+function newSetsFor(ex, w, n) {
   const rc = recommend(ex, w.id);
   const sw = rc.w ?? (isBW(ex) ? 0 : null);
-  return Array.from({ length: rc.n }, () => ({ w: sw, r: rc.r, q: null, ok: false }));
+  return Array.from({ length: n || rc.n }, () => ({ w: sw, r: rc.r, q: null, ok: false }));
+}
+
+/* ── Generátor tréninku ──
+   Vícekloubové cviky první (pořadí ovlivňuje výkon), izolace potom, core a kondice na konec.
+   Větší partie dostanou víc cviků. Preferuje cviky, které jsi dlouho nedělal, a různé hlavní svaly. */
+const ISO = new Set(['pecdeck', 'crossover', 'latraise', 'revfly', 'facepull', 'curl', 'hammer', 'pushdown', 'preacher', 'skull', 'ohtri', 'legext', 'legcurl', 'calf', 'abduction', 'kickback', 'shrug', 'hyperext']);
+const BIG = { 'Hrudník': 2, 'Záda': 2, 'Nohy': 2.5, 'Ramena': 1.2, 'Paže': 1.2, 'Core': 0.8, 'Kondice': 0.8 };
+const isIso = ex => ISO.has(ex.id) || ex.g === 'Core' || ex.g === 'Kondice';
+function lastDone(exId) { const h = sessions(exId)[0]; return h ? new Date(h.d).getTime() : 0; }
+function weightedPick(list, wf) { const ws = list.map(wf), t = ws.reduce((a, b) => a + b, 0); let r = Math.random() * t; for (let i = 0; i < list.length; i++) { r -= ws[i]; if (r <= 0) return list[i]; } return list[list.length - 1]; }
+function pickGroups() {
+  const lb = lastByGroup();
+  const pool = GROUPS.filter(g => g !== 'Kondice');
+  const k = 2 + (Math.random() < .5 ? 1 : 0), out = [];
+  while (out.length < k) {
+    const g = weightedPick(pool.filter(x => !out.includes(x)), x => { const d = lb[x] ? (now() - new Date(lb[x]).getTime()) / DAY : 14; return 0.5 + Math.min(d, 14) * (BIG[x] || 1); });
+    out.push(g);
+  }
+  return out;
+}
+function pickExercise(g, taken, wantIso) {
+  const used = new Set(taken.map(t => t.ex));
+  const usedMuscles = new Set(taken.map(t => getEx(t.ex)).filter(e => e.g === g).map(e => e.m[0]));
+  let pool = allEx().filter(e => e.g === g && !used.has(e.id));
+  if (wantIso != null) { const f = pool.filter(e => isIso(e) === wantIso); if (f.length) pool = f; }
+  const fresh = pool.filter(e => !usedMuscles.has(e.m[0])); if (fresh.length) pool = fresh;
+  if (!pool.length) return null;
+  return weightedPick(pool, e => { const d = lastDone(e.id); const days = d ? (now() - d) / DAY : 10; return 1 + Math.min(days, 21) / 4 + (d ? 1 : 0); });
+}
+function setsFor(ex) {
+  const h = sessions(ex.id)[0];
+  if (h) return Math.max(2, Math.min(5, h.sets.length));
+  return ex.g === 'Kondice' ? 4 : isIso(ex) ? 3 : (ex.lo <= 6 ? 4 : 3);
+}
+function generatePlan(groups, dur) {
+  const N = { 45: 4, 60: 5, 75: 6, 90: 7 }[dur] || 5;
+  const gs = groups.length ? groups : pickGroups();
+  // rozdělení počtu cviků podle velikosti partie
+  const wsum = gs.reduce((a, g) => a + (BIG[g] || 1), 0);
+  const cnt = Object.fromEntries(gs.map(g => [g, Math.max(1, Math.round(N * (BIG[g] || 1) / wsum))]));
+  let tot = Object.values(cnt).reduce((a, b) => a + b, 0);
+  while (tot > N) { const g = gs.filter(x => cnt[x] > 1).sort((a, b) => (BIG[a] || 1) - (BIG[b] || 1))[0]; if (!g) break; cnt[g]--; tot--; }
+  while (tot < N) { const g = gs.slice().sort((a, b) => (BIG[b] || 1) / cnt[b] - (BIG[a] || 1) / cnt[a])[0]; cnt[g]++; tot++; }
+  const items = [];
+  for (const g of gs) for (let i = 0; i < cnt[g]; i++) {
+    const want = g === 'Core' || g === 'Kondice' ? null : i === 0 ? false : (i === 1 && cnt[g] > 2 ? false : true);
+    const e = pickExercise(g, items, want); if (e) items.push({ ex: e.id, n: setsFor(e) });
+  }
+  const rank = it => { const e = getEx(it.ex); return e.g === 'Kondice' ? 4 : e.g === 'Core' ? 3 : isIso(e) ? 2 : 1; };
+  items.sort((a, b) => rank(a) - rank(b) || gs.indexOf(getEx(a.ex).g) - gs.indexOf(getEx(b.ex).g));
+  return { groups: gs, dur, items, random: !groups.length };
+}
+function weekSetsByGroup() {
+  const ws = startOfWeek(now()), r = Object.fromEntries(GROUPS.map(g => [g, 0]));
+  doneWorkouts().filter(w => new Date(w.d).getTime() >= ws).forEach(w => w.it.forEach(i => { r[getEx(i.ex).g] += doneSets(i).length; }));
+  return r;
+}
+function planSheet() {
+  const P = ui.plan; if (!P) return;
+  const wk = weekSetsByGroup(), add = {};
+  P.items.forEach(it => { const g = getEx(it.ex).g; add[g] = (add[g] || 0) + it.n; });
+  const totalSets = P.items.reduce((a, b) => a + b.n, 0);
+  openSheet(`<div class="kicker">${P.random ? 'Náhodný návrh' : 'Návrh tréninku'} · ~${P.dur} min · ${pl(totalSets, 'série', 'série', 'sérií')}</div>
+    <h3>${esc(P.groups.join(' + '))}</h3>
+    <div class="pick-list">${P.items.map((it, i) => { const e = getEx(it.ex), rc = recommend(e); return `<div class="pick" style="cursor:default">
+        <button data-act="detail" data-ex="${e.id}" aria-label="Ukázka">${figSvg(e, 'static')}</button>
+        <div style="flex:1;min-width:0"><b>${esc(e.n)}</b><span>${it.n} × ${rc.kind === 'new' ? esc(rc.head) : esc(rc.head)}</span></div>
+        <button class="icon-btn" data-act="planswap" data-i="${i}" aria-label="Vyměnit cvik">↻</button>
+        <button class="icon-btn" data-act="planrm" data-i="${i}" aria-label="Odebrat">✕</button></div>`; }).join('')}</div>
+    <p class="note" style="margin-top:10px">Série tento týden po tréninku: ${Object.entries(add).map(([g, n]) => `<b>${g}</b> ${wk[g]} → ${wk[g] + n}`).join(' · ')} <span class="muted">(doporučeno 10–20 týdně)</span></p>
+    <div class="stack" style="margin-top:14px">
+      <button class="btn p big wide" data-act="planstart">▶ Začít tento trénink</button>
+      <div class="row"><button class="btn wide" data-act="gen">↻ Jiný návrh</button><button class="btn wide" data-act="planadd">＋ Cvik</button></div>
+    </div>`);
+}
+function startPlan() {
+  const P = ui.plan; if (!P || !P.items.length) return;
+  const w = { id: uid(), d: localISO(), open: true, it: [], u: now() };
+  S.w.push(w);
+  P.items.forEach(it => w.it.push({ ex: it.ex, s: newSetsFor(getEx(it.ex), w, it.n) }));
+  touch(w); ui.plan = null; closeSheet(); view = 'train'; commit(true); keepAwake(); scrollTo(0, 0);
 }
 
 /* ── Knihovna cviků ── */
@@ -1050,6 +1158,7 @@ function detailSheet(id) {
       <div class="stat"><div class="v">${H.length}</div><div class="l">tréninků</div></div></div>
     <div class="reco ${rc.kind === 'down' ? 'down' : rc.kind === 'new' ? 'new' : ''}"><div class="rt"><span class="k">Příště</span><b>${esc(rc.head)}</b><span class="mono muted" style="font-size:11px">${rc.n} série</span></div><p>${esc(rc.txt)}</p></div>
     <div style="margin-top:16px" class="stack">
+      ${ui.plan && !w ? '<button class="btn wide" data-act="planback">← Zpět na návrh</button>' : ''}
       ${w ? (inW ? '<button class="btn wide" disabled style="opacity:.5">Už je v tréninku</button>' : `<button class="btn p wide big" data-act="addex" data-ex="${ex.id}">＋ Přidat do tréninku</button>`) : `<button class="btn p wide big" data-act="startwith" data-ex="${ex.id}">▶ Začít trénink s tímto cvikem</button>`}
       ${H.length ? `<button class="btn wide" data-act="toprog" data-ex="${ex.id}">Graf progresu</button>` : ''}
       ${ex.custom ? `<button class="btn danger wide sm" data-act="delcx" data-ex="${ex.id}">Smazat vlastní cvik</button>` : ''}
@@ -1112,7 +1221,7 @@ function exWithData() {
 }
 function vProg() {
   const list = exWithData();
-  if (!list.length) return `<h1 class="title">Progres<span class="d">.</span></h1><div class="empty">Až dokončíš první trénink, uvidíš tu grafy progresivního přetížení.</div>`;
+  if (!list.length) return `<h1 class="title">Progres<span class="d">.</span></h1><div class="empty">Až dokončíš první trénink, uvidíš tu grafy progresivního přetížení.</div><h2 class="sec">Jak funguje doporučení</h2>${HOWTO}`;
   if (!ui.progEx || !list.find(e => e.id === ui.progEx)) ui.progEx = list[0].id;
   const ex = getEx(ui.progEx), bw = isBW(ex) && sessions(ex.id).every(h => h.sets.every(s => !s.w));
   const metrics = bw ? [['reps', ex.unit === 's' ? 'Max výdrž' : ex.unit === 'm' ? 'Max metrů' : 'Max opak.'], ['tot', 'Celkem']] : [['e1', 'Odhad 1RM'], ['top', 'Top váha'], ['vol', 'Objem']];
@@ -1139,7 +1248,8 @@ function vProg() {
     <h2 class="sec">Série týdně podle partie</h2>
     <p class="note" style="margin:-4px 0 10px">Pás = doporučených 10–20 pracovních sérií na partii za týden.</p>
     <div class="mult">${GROUPS.map(g => { const v = per[g]; const avg = v.slice(0, -1).reduce((a, b) => a + b, 0) / (nW - 1); return `<div class="card"><div class="hdr"><b>${g}</b><span>Ø ${fmt(avg, 1)}</span></div><div class="big">${v[nW - 1]}<small>sérií</small></div>${weekBars(v, labels)}</div>`; }).join('')}</div>
-    ${prs.length ? `<h2 class="sec">Rekordy (odhad 1RM)</h2><div class="card" style="padding:2px 14px">${prs.slice(0, 12).map(p => `<div class="pr"><span class="nm">${esc(p.e.n)}</span><span class="v">${fmt(p.v, 1)} kg</span><span class="d">${dShort(p.d)}</span></div>`).join('')}</div>` : ''}`;
+    ${prs.length ? `<h2 class="sec">Rekordy (odhad 1RM)</h2><div class="card" style="padding:2px 14px">${prs.slice(0, 12).map(p => `<div class="pr"><span class="nm">${esc(p.e.n)}</span><span class="v">${fmt(p.v, 1)} kg</span><span class="d">${dShort(p.d)}</span></div>`).join('')}</div>` : ''}
+    <h2 class="sec">Jak funguje doporučení</h2>${HOWTO}`;
 }
 function mountProg() {
   const el = $('#chart'); if (!el) return;
@@ -1158,6 +1268,15 @@ function mountProg() {
   lineChart(el, pts, m === 'reps' || m === 'tot' ? unitOf(ex) : 'kg');
 }
 
+const HOWTO = `<div class="card how">
+  <p><b>Dvojitá progrese.</b> V rozsahu opakování nejdřív přidáváš opakování, váhu až nad horní hranicí. Přidávat opakování i váhu vede k podobnému růstu svalů (Plotkin a kol., 2022).</p>
+  <p><b>Kdy přidat váhu.</b> Až všechny série zvládneš na horní hranici s rezervou – zhruba 1–2 opakování navíc. Krok 2–10 % (ACSM, 2009). Když by krok byl víc než 10 % (malé jednoručky), aplikace chce nejdřív o 2 opakování víc.</p>
+  <p><b>Ne každý trénink.</b> Když horní hranici dáš až v selhání, musíš ji potvrdit ještě jednou. Po slabším dni (−5 % a víc) se nepřidává. U pokročilých jsou přírůstky pomalejší – to je normální.</p>
+  <p><b>Selhání není nutné.</b> Pro růst svalů pomáhá končit blízko selhání, samotné selhání přidá jen málo; síla na blízkosti k selhání skoro nezávisí (Refalo a kol., 2023; Robinson a kol., 2024). Proto cíl RIR 1–2 u těžkých cviků.</p>
+  <p><b>Stagnace.</b> Tři tréninky bez zlepšení a se selháním = lehčí týden (~90 % váhy, o sérii méně), ne pauza – úplná týdenní pauza v jedné studii mírně snížila nárůst síly (Coleman a kol., 2024; Bell a kol., 2023).</p>
+  <p><b>Objem.</b> Víc sérií týdně = víc růstu, s klesajícím přínosem (Pelland a kol., 2024). Orientačně 10–20 sérií na partii týdně.</p>
+  <p class="note"><a href="https://peerj.com/articles/14142" target="_blank" rel="noopener">Plotkin 2022</a> · <a href="https://pubmed.ncbi.nlm.nih.gov/19204579/" target="_blank" rel="noopener">ACSM 2009</a> · <a href="https://openrepository.aut.ac.nz/items/78679612-6ff4-4d00-95d1-7920d072a760" target="_blank" rel="noopener">Refalo 2023</a> · <a href="https://doi.org/10.1007/s40279-024-02069-2" target="_blank" rel="noopener">Robinson 2024</a> · <a href="https://pubmed.ncbi.nlm.nih.gov/38274324/" target="_blank" rel="noopener">Coleman 2024</a> · <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10511399/" target="_blank" rel="noopener">Bell 2023</a> · <a href="https://sportrxiv.org/index.php/server/preprint/view/460" target="_blank" rel="noopener">Pelland 2024</a></p>
+</div>`;
 /* ── Nastavení ── */
 function vSet() {
   const custom = S.cx.filter(c => !c.del);
@@ -1251,6 +1370,14 @@ document.addEventListener('click', async e => {
   const it = card && w ? w.it[+card.dataset.i] : null;
   switch (act) {
     case 'start': startWorkout(); break;
+    case 'gg': { const g = b.dataset.g, a = ui.genGroups; if (a.includes(g)) a.splice(a.indexOf(g), 1); else { if (a.length >= 3) a.shift(); a.push(g); } render(); break; }
+    case 'gdur': ui.genDur = +b.dataset.d; render(); break;
+    case 'gen': ui.plan = generatePlan(ui.genGroups, ui.genDur); planSheet(); break;
+    case 'planswap': { const P = ui.plan, i = +b.dataset.i, cur = getEx(P.items[i].ex); const rest = P.items.filter((_, k) => k !== i); const e = pickExercise(cur.g, [...rest, P.items[i]], isIso(cur)) || pickExercise(cur.g, [...rest, P.items[i]], null); if (e) P.items[i] = { ex: e.id, n: setsFor(e) }; else toast('Pro tuhle partii už nemám jiný cvik.'); planSheet(); break; }
+    case 'planrm': ui.plan.items.splice(+b.dataset.i, 1); planSheet(); break;
+    case 'planadd': { const P = ui.plan; const g = P.groups[Math.floor(Math.random() * P.groups.length)]; const e = pickExercise(g, P.items, true) || pickExercise(g, P.items, null); if (e) P.items.push({ ex: e.id, n: setsFor(e) }); planSheet(); break; }
+    case 'planstart': startPlan(); break;
+    case 'planback': planSheet(); break;
     case 'startwith': closeSheet(); startWorkout(b.dataset.ex); break;
     case 'pick': ui.pickQ = ''; pickSheet(); break;
     case 'pickg': ui.pickGroup = b.dataset.g; pickSheet(); break;
