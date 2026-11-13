@@ -75,7 +75,7 @@ h2.sec::after{content:"";flex:1;height:1px;background:var(--line)}
 
 /* nav */
 nav.bottom{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(5,5,5,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
-nav .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);height:var(--nav)}
+nav .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);height:var(--nav)}
 nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2)}
 nav button svg{width:22px;height:22px}
 nav button.on{color:var(--neon)}
@@ -119,10 +119,6 @@ nav button.on svg{filter:drop-shadow(0 0 6px rgba(57,255,136,.8))}
 .set .n{font-family:var(--mono);font-size:12px;color:var(--muted2);text-align:center}
 .set input{padding:9px 6px;text-align:center;font-family:var(--mono);font-size:16px;border-radius:9px}
 .set:not(.ok) input{color:var(--muted)}
-.rir{display:flex;gap:3px}
-.rir button{width:30px;height:38px;border-radius:8px;border:1px solid var(--line2);font-family:var(--mono);font-size:11.5px;color:var(--muted2)}
-.rir button.on{color:#03170a;background:var(--neon);border-color:var(--neon);font-weight:700}
-.rir button.f.on{background:var(--warn);border-color:var(--warn)}
 .chk{width:42px;height:38px;border-radius:9px;border:1px solid var(--line2);display:grid;place-items:center;color:var(--muted2)}
 .set.ok .chk{background:var(--neon);border-color:var(--neon);color:#03170a;box-shadow:0 0 14px rgba(57,255,136,.35)}
 .set.ok .n{color:var(--neon)}
@@ -151,6 +147,103 @@ nav button.on svg{filter:drop-shadow(0 0 6px rgba(57,255,136,.8))}
 .xh-n{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:3px}
 .legend-rir{font-size:11px;color:var(--muted2);margin-top:8px;font-family:var(--mono)}
 
+/* náročnost série */
+.set-h,.set{grid-template-columns:22px minmax(48px,1fr) minmax(42px,.8fr) 76px 42px}
+.diff{height:38px;border-radius:9px;border:1px dashed var(--line2);font-family:var(--mono);font-size:10px;letter-spacing:.02em;color:var(--muted2);padding:0 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:all .15s}
+.diff.on{border:1px solid var(--dc);color:var(--dc);background:color-mix(in srgb,var(--dc) 11%,transparent);font-weight:700}
+.diff.open{border-style:solid;border-color:var(--text);color:var(--text)}
+.rate{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin:0 0 4px;animation:pop .18s ease-out}
+.rate button{position:relative;overflow:hidden;border:1px solid var(--line2);border-radius:10px;padding:9px 2px 7px;display:flex;flex-direction:column;align-items:center;gap:2px;background:#0d0d0d}
+.rate button::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--dc);box-shadow:0 0 8px var(--dc)}
+.rate button b{font-size:11.5px;font-weight:600;color:var(--text);white-space:nowrap}
+.rate button span{font-family:var(--mono);font-size:8.5px;color:var(--muted2);line-height:1.2;text-align:center}
+.rate button.on{border-color:var(--dc);background:color-mix(in srgb,var(--dc) 14%,transparent)}
+.rate button:active{transform:scale(.96)}
+@keyframes pop{from{opacity:0;transform:translateY(-4px)}}
+.prb{display:inline-block;font-size:8.5px;color:#03170a;background:var(--neon);padding:2px 3px;border-radius:4px;font-family:var(--mono);box-shadow:0 0 10px rgba(57,255,136,.7);animation:pop .3s ease-out}
+.qd{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--dc);margin-left:3px;vertical-align:middle;box-shadow:0 0 5px var(--dc)}
+.dq{font-family:var(--mono);font-size:11px;color:var(--dc)}
+/* kotouče, rozcvičení */
+.plates{display:flex;align-items:center;gap:3px;flex-wrap:wrap;margin-top:8px;font-family:var(--mono);font-size:10.5px;color:var(--muted2)}
+.plates>span{margin-right:4px}
+.plates em{font-style:normal;margin-left:6px}
+.pl{display:inline-grid;place-items:center;width:20px;border-radius:3px;font-size:8px;font-weight:700;color:#0a0a0a;font-style:normal}
+.p25{height:34px;background:#e2463b}.p20{height:30px;background:#3d8bff}.p15{height:26px;background:#f2d23a}.p10{height:22px;background:#37c871}.p5{height:18px;background:#e8e8e8}.p2_5{height:15px;background:#8a8a8a}.p1_25{height:12px;background:#5d5d5d;color:#ddd}
+.plates .bar{width:26px;height:4px;background:#9a9a9a;border-radius:2px}
+.warm{margin-top:10px;font-size:12px;color:var(--muted2)}
+.warm summary{cursor:pointer;font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--muted);list-style:none}
+.warm summary::-webkit-details-marker{display:none}
+.warm summary::before{content:"▸ ";color:var(--neon)}
+.warm[open] summary::before{content:"▾ "}
+.warm div{font-family:var(--mono);font-size:12.5px;color:var(--text);margin:6px 0 2px}
+/* menu, toast */
+.menu{display:grid;gap:6px;margin-top:14px}
+.menu button{text-align:left;padding:13px 14px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
+.menu button:active{border-color:var(--neon-d)}
+.menu b{display:block;font-weight:500;font-size:15px}
+.menu span{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
+.menu .danger b{color:var(--bad)}
+.t-undo{margin-left:14px;color:var(--neon);font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;padding:4px 2px;font-weight:700}
+/* týdenní cíl */
+.goal{display:flex;gap:14px;align-items:center;margin-bottom:14px}
+.ringw{position:relative;width:84px;height:84px;flex:none}
+.ring{width:84px;height:84px;transform:rotate(-90deg)}
+.ring .trk{fill:none;stroke:#191919;stroke-width:7}
+.ring .prg{fill:none;stroke:var(--neon);stroke-width:7;stroke-linecap:round;filter:drop-shadow(0 0 5px rgba(57,255,136,.6));transition:stroke-dashoffset .8s cubic-bezier(.2,.8,.2,1)}
+.ring-t{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+.ring-t b{display:block;font-family:var(--display);font-size:27px;font-weight:600;line-height:1}
+.ring-t span{font-family:var(--mono);font-size:10px;color:var(--muted2)}
+.goal-r{flex:1;min-width:0}
+.goal-r>b{display:block;font-family:var(--display);font-size:19px;font-weight:600;margin:3px 0 8px}
+.days{display:flex;gap:4px;margin-bottom:7px}
+.days i{flex:1;text-align:center;font-style:normal;font-family:var(--mono);font-size:9.5px;color:var(--muted2);padding:4px 0;border-radius:6px;background:#121212}
+.days i.on{background:var(--neon);color:#03170a;font-weight:700;box-shadow:0 0 8px rgba(57,255,136,.35)}
+.days i.today{outline:1px solid var(--muted2);outline-offset:1px}
+/* shrnutí */
+.sum-hero{position:relative}
+.sum-hero h3 .d{color:var(--neon);text-shadow:0 0 16px var(--neon)}
+.burst{position:absolute;right:60px;top:26px;width:0;height:0;pointer-events:none}
+.burst i{position:absolute;width:5px;height:9px;border-radius:2px;background:var(--neon);box-shadow:0 0 8px var(--neon);opacity:0;animation:burst 1.2s cubic-bezier(.15,.7,.3,1) forwards}
+.burst i:nth-child(3n){background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
+.burst i:nth-child(4n){background:#d4ff3a}
+@keyframes burst{0%{opacity:1;transform:rotate(var(--a)) translateY(0)}100%{opacity:0;transform:rotate(var(--a)) translateY(calc(var(--d) * -1))}}
+.pr-card{margin:12px 0 0;padding:12px 14px;border-radius:14px;border:1px solid var(--neon-d);background:rgba(57,255,136,.06);display:grid;gap:4px;font-size:14px}
+.pr-card b{color:var(--neon);font-weight:600}
+.sum-ex{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.sum-ex span{font-size:14px}
+.sum-ex small{grid-column:1;font-family:var(--mono);font-size:11px;color:var(--muted2)}
+.sum-ex b{grid-row:1/3;grid-column:2;align-self:center;font-family:var(--mono);font-size:13px;color:var(--muted);font-weight:500}
+.sum-ex b.up{color:var(--neon)}.sum-ex b.dn{color:var(--warn)}
+.rpe{display:grid;grid-template-columns:repeat(10,1fr);gap:3px}
+.rpe button{height:42px;border-radius:8px;border:1px solid var(--line2);font-family:var(--mono);font-size:13px;color:var(--muted);border-bottom:3px solid var(--rc)}
+.rpe button.on{background:var(--rc);border-color:var(--rc);color:#050505;font-weight:700;box-shadow:0 0 14px color-mix(in srgb,var(--rc) 50%,transparent)}
+.rpe-l{font-size:13px;color:var(--muted);margin:8px 0 12px;min-height:18px}
+/* tělo a fotky */
+.gal h4{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2);margin:16px 0 8px;font-weight:400}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.ph{position:relative;display:block;aspect-ratio:3/4;border-radius:12px;overflow:hidden;background:#111;border:1px solid var(--line);padding:0}
+.ph img{width:100%;height:100%;object-fit:cover;display:block}
+.ph span{position:absolute;left:6px;bottom:5px;font-family:var(--mono);font-size:9.5px;color:#fff;text-shadow:0 1px 4px #000}
+.ph.sel{outline:2px solid var(--neon);outline-offset:2px}
+.ph .num{left:auto;right:6px;top:6px;bottom:auto;background:var(--neon);color:#03170a;border-radius:6px;padding:1px 6px;text-shadow:none;font-weight:700;font-size:11px}
+.ph.add{display:grid;place-items:center;font-size:22px;color:var(--muted);border-style:dashed;cursor:pointer}
+.thumbs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.thumbs .ph{width:68px;flex:none}
+.thumbs.mini{margin-top:8px}.thumbs.mini .ph{width:44px;border-radius:8px}
+.viewer{position:relative;margin:12px 0;border-radius:16px;overflow:hidden;background:#000;border:1px solid var(--line)}
+.viewer img{width:100%;display:block;max-height:66dvh;object-fit:contain}
+.pv-load{position:absolute;left:10px;bottom:8px;font-family:var(--mono);font-size:10px;color:var(--muted);background:rgba(0,0,0,.6);padding:3px 7px;border-radius:6px}
+.cmp{position:relative;aspect-ratio:3/4;border-radius:16px;overflow:hidden;margin:12px 0 8px;touch-action:none;background:#000;user-select:none;-webkit-user-select:none;cursor:ew-resize}
+.cmp img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
+.cmp .ca{position:absolute;inset:0}
+.cmp-line{position:absolute;top:0;bottom:0;width:2px;background:var(--neon);box-shadow:0 0 12px var(--neon);transform:translateX(-1px);pointer-events:none}
+.cmp-line::after{content:"⇆";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%;background:var(--neon);color:#03170a;display:grid;place-items:center;font-weight:700;box-shadow:0 0 16px rgba(57,255,136,.6)}
+.cl{position:absolute;top:10px;font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;background:rgba(0,0,0,.65);padding:4px 7px;border-radius:6px;pointer-events:none}
+.cl.l{left:10px}.cl.r{right:10px}
+.cmpr{padding:0;accent-color:var(--neon);height:28px;border:0;background:none}
+.bwrows .row{padding:4px 0;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:12.5px}
+.bwrows .row:last-child{border-bottom:0}
+label.btn{cursor:pointer}
 /* library */
 .lib{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .lib-it{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:8px 8px 10px;text-align:left;display:flex;flex-direction:column;gap:6px}
@@ -253,7 +346,7 @@ svg.fig .pul{fill:#050505;stroke:#6a6a6a;stroke-width:2}
 .rest{position:fixed;left:12px;right:12px;bottom:calc(var(--nav) + env(safe-area-inset-bottom) + 10px);z-index:25;max-width:536px;margin:0 auto;background:#0d0d0d;border:1px solid var(--neon-d);border-radius:16px;padding:10px 12px;display:flex;align-items:center;gap:10px;box-shadow:0 10px 30px rgba(0,0,0,.7),0 0 24px rgba(57,255,136,.12);overflow:hidden}
 .rest .bar{position:absolute;left:0;bottom:0;height:3px;background:var(--neon);box-shadow:0 0 10px var(--neon)}
 .rest .t{font-family:var(--display);font-size:28px;font-weight:600;color:var(--neon);min-width:76px;letter-spacing:-.02em}
-.rest .l{flex:1;font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.rest .l{line-height:1.3;flex:1;font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
 .rest.done{border-color:var(--warn);animation:pulse .8s ease-in-out 3}
 .rest.done .t{color:var(--warn)}
 @keyframes pulse{50%{box-shadow:0 0 30px rgba(255,166,48,.5)}}
@@ -286,6 +379,7 @@ svg.fig .pul{fill:#050505;stroke:#6a6a6a;stroke-width:2}
 .steps b{color:var(--text)}
 pre.code{font-variant-ligatures:none;background:var(--panel2);border:1px solid var(--line2);border-radius:10px;padding:10px;font-family:var(--mono);font-size:10.5px;line-height:1.5;overflow:auto;color:#bdbdbd;margin-top:6px}
 textarea{min-height:120px;font-family:var(--mono);font-size:12px}
+#rest-l{text-transform:none;letter-spacing:.02em;font-size:11.5px;color:var(--text)}
 </style>
 </head>
 <body>
@@ -315,12 +409,13 @@ textarea{min-height:120px;font-family:var(--mono);font-size:12px}
   <button data-view="lib"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4.5" r="2"/><path d="M12 7v7l-3 7M12 14l3 7M6 10l6-2 6 2"/></svg>Cviky</button>
   <button data-view="hist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Historie</button>
   <button data-view="prog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18M5 16l4-5 4 3 6-8"/><path d="M15 6h4v4"/></svg>Progres</button>
+  <button data-view="body"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><path d="M7.5 9a6.5 6.5 0 0 1 9 0l-2.6 3.2a2.4 2.4 0 0 0-3.8 0z"/></svg>Tělo</button>
 </div></nav>
 
 <div class="rest hidden" id="rest">
   <div class="bar" id="rest-bar"></div>
   <div class="t" id="rest-t">0:00</div>
-  <div class="l">Pauza</div>
+  <div class="l" id="rest-l">Pauza</div>
   <button class="btn sm" data-rest="-15">−15</button>
   <button class="btn sm" data-rest="15">+15</button>
   <button class="btn sm ghost" data-rest="x" aria-label="Zavřít">✕</button>
@@ -563,9 +658,10 @@ const ls = { get(k) { try { return localStorage.getItem(k); } catch { return nul
 
 let S = null;                 // dešifrovaný stav
 let view = 'train';
-const ui = { cardOpen: {}, genGroups: [], genDur: 60, plan: null, libGroup: 'Vše', libQ: '', pickGroup: 'Vše', pickQ: '', progEx: null, progMetric: 'e1', histOpen: null, setOpen: false };
+const ui = { rate: null, cmp: [], cardOpen: {}, genGroups: [], genDur: 60, plan: null, libGroup: 'Vše', libQ: '', pickGroup: 'Vše', pickQ: '', progEx: null, progMetric: 'e1', histOpen: null, setOpen: false };
 
-function blank() { return { v: 1, w: [], cx: [], notes: [], set: { rest: 120, inc: {} }, setU: 0 }; }
+const setDefaults = s => ({ rest: 120, restIso: 90, goal: 3, bar: 20, sound: true, inc: {}, ...(s || {}) });
+function blank() { return { v: 1, w: [], cx: [], notes: [], photos: [], body: [], set: setDefaults(), setU: 0 }; }
 const getNote = id => ((S.notes || []).find(n => n.id === id) || {}).t || '';
 function setNote(id, t) { S.notes = S.notes || []; let n = S.notes.find(x => x.id === id); if (!n) { n = { id }; S.notes.push(n); } n.t = t; n.u = now(); dirty.notes.add(id); commit(); }
 function allEx() { return [...EX, ...(S ? S.cx.filter(c => !c.del) : [])]; }
@@ -579,6 +675,16 @@ function openWorkout() { return liveWorkouts().filter(w => w.open).sort((a, b) =
 function doneWorkouts() { return liveWorkouts().filter(w => !w.open).sort((a, b) => b.d.localeCompare(a.d)); }
 function touch(w) { w.u = now(); dirty.w.add(w.id); }
 const rirOf = s => s.q == null ? 2 : s.q;
+/* Náročnost série = odhad opakování v rezervě (RIR). Vstupuje do odhadu 1RM i do doporučení. */
+const DIFF = [
+  { q: 4, l: 'Lehká', s: '4+ v rezervě', c: '#5cf2c2' },
+  { q: 3, l: 'Střední', s: '3 v rezervě', c: '#39ff88' },
+  { q: 2, l: 'Těžká', s: '2 v rezervě', c: '#d4ff3a' },
+  { q: 1, l: 'Na hraně', s: '1 v rezervě', c: '#ffa630' },
+  { q: 0, l: 'Selhání', s: 'víc nešlo', c: '#ff4d6d' },
+];
+const diffOf = q => DIFF.find(d => d.q === q);
+const vib = p => { try { if (navigator.userActivation && !navigator.userActivation.hasBeenActive) return; navigator.vibrate && navigator.vibrate(p); } catch {} };
 const e1rm = s => s.w > 0 ? s.w * (1 + (s.r + rirOf(s)) / 30) : 0;
 const doneSets = it => it.s.filter(s => s.ok && s.r > 0);
 
@@ -599,16 +705,20 @@ const FIREBASE_CONFIG = {
 const K_FB = 'posilovna-fb';
 function fbConfig() { if (FIREBASE_CONFIG) return FIREBASE_CONFIG; try { return JSON.parse(ls.get(K_FB) || 'null'); } catch { return null; } }
 let auth = null, db = null, USER = null, PROFILE = null, unsubs = [], loaded = false;
-const dirty = { w: new Set(), cx: new Set(), notes: new Set(), set: false };
+// kolekce ve Firestore: klíč ve stavu → název kolekce users/{uid}/…
+const COLLS = { w: 'workouts', cx: 'cx', notes: 'notes', photos: 'photos', body: 'body' };
+const dirty = Object.assign(Object.fromEntries(Object.keys(COLLS).map(k => [k, new Set()])), { set: false });
 const userDoc = () => db.collection('users').doc(USER.uid);
 const nameKey = n => n.trim().toLowerCase();
 const clean = o => JSON.parse(JSON.stringify(o));
 const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
 
-function markAll() { S.w.forEach(w => dirty.w.add(w.id)); S.cx.forEach(c => dirty.cx.add(c.id)); (S.notes || []).forEach(n => dirty.notes.add(n.id)); dirty.set = true; }
+function markAll() { for (const k in COLLS) (S[k] || []).forEach(x => dirty[k].add(x.id)); dirty.set = true; }
 function mergeState(a, b) {
   const pick = (x, y) => { const m = new Map(); for (const it of [...x, ...y]) { const o = m.get(it.id); if (!o || (it.u || 0) > (o.u || 0)) m.set(it.id, it); } return [...m.values()]; };
-  return { v: 1, w: pick(a.w || [], b.w || []), cx: pick(a.cx || [], b.cx || []), notes: pick(a.notes || [], b.notes || []), set: (a.setU || 0) >= (b.setU || 0) ? a.set : b.set, setU: Math.max(a.setU || 0, b.setU || 0) };
+  const o = { v: 1, set: setDefaults((a.setU || 0) >= (b.setU || 0) ? a.set : b.set), setU: Math.max(a.setU || 0, b.setU || 0) };
+  for (const k in COLLS) o[k] = pick(a[k] || [], b[k] || []);
+  return o;
 }
 
 /* ── Ukládání: změněné záznamy se po chvíli odešlou dávkou; offline je Firestore podrží ── */
@@ -622,11 +732,12 @@ async function flush() {
   clearTimeout(saveT);
   if (!USER || !db || !S) return;
   const ops = [];
-  for (const id of dirty.w) { const w = S.w.find(x => x.id === id); if (w) ops.push([userDoc().collection('workouts').doc(id), clean(w)]); }
-  for (const id of dirty.cx) { const c = S.cx.find(x => x.id === id); if (c) ops.push([userDoc().collection('cx').doc(id), clean(c)]); }
-  for (const id of dirty.notes) { const n = (S.notes || []).find(x => x.id === id); if (n) ops.push([userDoc().collection('notes').doc(id), clean(n)]); }
+  for (const k in COLLS) {
+    for (const id of dirty[k]) { const x = (S[k] || []).find(o => o.id === id); if (x) ops.push([userDoc().collection(COLLS[k]).doc(id), clean(x)]); }
+    dirty[k].clear();
+  }
   if (dirty.set) ops.push([userDoc(), { set: clean(S.set), setU: S.setU }, true]);
-  dirty.w.clear(); dirty.cx.clear(); dirty.notes.clear(); dirty.set = false;
+  dirty.set = false;
   if (!ops.length) { syncStatus(navigator.onLine ? 'ok' : 'off'); return; }
   const commits = [];
   for (let i = 0; i < ops.length; i += 400) {
@@ -650,20 +761,48 @@ function applyChanges(q, arr, pend) {
 function subscribe() {
   loaded = false;
   let got = 0;
-  const once = () => { let d = false; return () => { if (!d) { d = true; if (++got === 4) { loaded = true; afterLoad(); } } }; };
-  const r1 = once(), r2 = once(), r3 = once(), r4 = once();
+  const total = Object.keys(COLLS).length + 1;
+  const once = () => { let d = false; return () => { if (!d) { d = true; if (++got === total) { loaded = true; afterLoad(); } } }; };
+  const r1 = once();
   const onErr = e => { syncStatus('err', fbErr(e)); if (!loaded) showLock(fbErr(e)); };
   unsubs.push(userDoc().onSnapshot(d => {
     const v = d.data() || {};
     PROFILE = v;
-    if ((v.setU || 0) > (S.setU || 0)) { S.set = { rest: 120, inc: {}, ...v.set }; S.setU = v.setU; }
+    if ((v.setU || 0) > (S.setU || 0)) { S.set = setDefaults(v.set); S.setU = v.setU; }
     r1(); if (loaded && !d.metadata.hasPendingWrites) safeRender();
   }, onErr));
-  unsubs.push(userDoc().collection('workouts').onSnapshot(q => { applyChanges(q, S.w, dirty.w); r2(); if (loaded && !q.metadata.hasPendingWrites) safeRender(); }, onErr));
-  unsubs.push(userDoc().collection('cx').onSnapshot(q => { applyChanges(q, S.cx, dirty.cx); r3(); if (loaded && !q.metadata.hasPendingWrites) safeRender(); }, onErr));
-  unsubs.push(userDoc().collection('notes').onSnapshot(q => { S.notes = S.notes || []; applyChanges(q, S.notes, dirty.notes); r4(); if (loaded && !q.metadata.hasPendingWrites) safeRender(); }, onErr));
+  for (const k in COLLS) {
+    const rk = once();
+    unsubs.push(userDoc().collection(COLLS[k]).onSnapshot(q => { S[k] = S[k] || []; applyChanges(q, S[k], dirty[k]); rk(); if (loaded && !q.metadata.hasPendingWrites) safeRender(); }, onErr));
+  }
 }
 async function afterLoad() { showApp(); await migrateLocal(); }
+
+/* ── Fotky: náhled (~20 kB) je v kolekci photos, plná fotka v photoData/{id} a načítá se až při otevření ── */
+const photoCache = new Map();
+function savePhotoData(id, data) { photoCache.set(id, data); if (USER && db) userDoc().collection('photoData').doc(id).set({ id, data }).catch(e => syncStatus('err', fbErr(e))); }
+async function loadPhotoData(id) {
+  if (photoCache.has(id)) return photoCache.get(id);
+  if (!USER || !db) return null;
+  try { const d = await userDoc().collection('photoData').doc(id).get(); const v = d.exists ? d.data().data : null; if (v) photoCache.set(id, v); return v; } catch { return null; }
+}
+function dropPhotoData(id) { photoCache.delete(id); if (USER && db) userDoc().collection('photoData').doc(id).delete().catch(() => {}); }
+const livePhotos = (kind, ex) => (S.photos || []).filter(p => !p.del && p.kind === kind && (!ex || p.ex === ex)).sort((a, b) => b.d.localeCompare(a.d));
+const liveBody = () => (S.body || []).filter(x => !x.del && x.kg > 0).sort((a, b) => a.d.localeCompare(b.d));
+function loadImage(file) { return new Promise((res, rej) => { const u = URL.createObjectURL(file), im = new Image(); im.onload = () => { res(im); setTimeout(() => URL.revokeObjectURL(u), 1000); }; im.onerror = rej; im.src = u; }); }
+function toJpeg(im, max, q) {
+  const sc = Math.min(1, max / Math.max(im.naturalWidth, im.naturalHeight));
+  const c = document.createElement('canvas'); c.width = Math.round(im.naturalWidth * sc); c.height = Math.round(im.naturalHeight * sc);
+  c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+  return c.toDataURL('image/jpeg', q);
+}
+// Firestore dokument má limit 1 MB → plná fotka se zmenšuje, dokud se nevejde pod ~850 kB
+async function processPhoto(file) {
+  const im = await loadImage(file);
+  let max = 1440, q = .82, full = toJpeg(im, max, q);
+  while (full.length > 850000 && q > .35) { q -= .08; max *= .9; full = toJpeg(im, max, q); }
+  return { full, thumb: toJpeg(im, 360, .7) };
+}
 // Přenos dat z předchozí verze (šifrovaně v tomto prohlížeči)
 async function migrateLocal() {
   const old = ['posilovna-vault', 'posilovna-key', 'posilovna-dirty', 'posilovna-lastct'];
@@ -747,7 +886,7 @@ function recommend(ex, excludeId) {
   const H = sessions(ex.id, excludeId);
   const inc = incOf(ex), lo = ex.lo, hi = ex.hi, u = unitOf(ex), timed = ex.unit === 's';
   const heavy = lo <= 6;
-  const rirNote = heavy ? 'Cíl RIR 1–2 – u těžkých vícekloubových cviků selhání nehoň.' : 'Cíl RIR 0–2, poslední sérii klidně do selhání.';
+  const rirNote = heavy ? 'Cíl náročnosti: Těžká až Na hraně – u těžkých vícekloubových cviků selhání nehoň.' : 'Cíl náročnosti: Na hraně, poslední sérii klidně do selhání.';
   if (!H.length) return { kind: 'new', w: null, r: lo, n: 3, head: `${lo}–${hi} ${u}`, txt: `První záznam. Zvol váhu, se kterou dáš ${lo}–${hi} ${u} a zbudou ti 2–3 v rezervě.` };
   const last = H[0].sets;
   const W = Math.max(...last.map(s => s.w));
@@ -804,6 +943,7 @@ function recommend(ex, excludeId) {
     return out('hold', W, lo, 'Pod rozsahem, ale s rezervou → stejná váha, víc se zaber.');
   }
   // V rozsahu
+  if (avgQ >= 3.5 && !fails && maxR >= Math.round((lo + hi) / 2) && !big) return out('up', W + inc, lo, `Série byly lehké (4+ opakování v rezervě) – efektivní podnět je blíž selhání, takže přidej ${fmt(inc, 2)} kg.`);
   if (avgQ >= 3 && !fails) {
     if (H.length <= 2 && maxR >= Math.round((lo + hi) / 2) && !big) return out('up', W + inc, lo, `Šlo to moc snadno (rezerva 3+) a jsi teprve v začátcích → přidej ${fmt(inc, 2)} kg, ať najdeš pracovní váhu.`);
     return out('reps', W, Math.min(hi, minR + 2), 'Velká rezerva → +2 opakování v každé sérii.');
@@ -1020,8 +1160,9 @@ function render() {
   $$('nav button').forEach(b => b.classList.toggle('on', b.dataset.view === view));
   $('#btn-set').classList.toggle('on', view === 'set');
   const m = $('#main');
-  m.innerHTML = ({ train: vTrain, lib: vLib, hist: vHist, prog: vProg, set: vSet })[view]();
+  m.innerHTML = ({ train: vTrain, lib: vLib, hist: vHist, prog: vProg, body: vBody, set: vSet })[view]();
   if (view === 'prog') mountProg();
+  if (view === 'body') mountBody();
   if (view === 'train') tickTimers();
 }
 
@@ -1031,6 +1172,18 @@ function weekStats() {
   let sets = 0, vol = 0;
   wk.forEach(w => w.it.forEach(it => doneSets(it).forEach(s => { sets++; vol += s.w * s.r; })));
   return { n: wk.length, sets, vol };
+}
+function goalCard() {
+  const goal = S.set.goal || 3, ws = startOfWeek(now()), dw = doneWorkouts();
+  const inWeek = (a, b) => dw.filter(w => { const t = new Date(w.d).getTime(); return t >= a && t < b; });
+  const cur = inWeek(ws, ws + 7 * DAY), n = cur.length, days = new Set(cur.map(w => (new Date(w.d).getDay() + 6) % 7));
+  let streak = 0; for (let k = 1; k < 260; k++) { const a = ws - k * 7 * DAY; if (inWeek(a, a + 7 * DAY).length >= goal) streak++; else break; }
+  if (n >= goal) streak++;
+  const C = 2 * Math.PI * 34, pr = Math.min(1, n / goal), today = (new Date().getDay() + 6) % 7;
+  return `<div class="card goal"><div class="ringw"><svg class="ring" viewBox="0 0 84 84" aria-hidden="true"><circle class="trk" cx="42" cy="42" r="34"/><circle class="prg" cx="42" cy="42" r="34" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - pr)).toFixed(1)}"/></svg><div class="ring-t"><div><b>${n}</b><span>z ${goal}</span></div></div></div>
+    <div class="goal-r"><div class="kicker">Týdenní cíl</div><b>${n >= goal ? 'Splněno ✓' : `Ještě ${pl(goal - n, 'trénink', 'tréninky', 'tréninků')}`}</b>
+    <div class="days">${['Po', 'Út', 'St', 'Čt', 'Pá', 'So', 'Ne'].map((d, i) => `<i class="${days.has(i) ? 'on' : ''}${i === today ? ' today' : ''}">${d}</i>`).join('')}</div>
+    <span class="note">${streak ? `🔥 ${pl(streak, 'týden', 'týdny', 'týdnů')} v řadě` : 'Splň cíl a rozjeď sérii týdnů.'}</span></div></div>`;
 }
 function lastByGroup() {
   const res = {}; for (const g of GROUPS) res[g] = null;
@@ -1045,6 +1198,7 @@ function vTrain() {
     const lastW = doneWorkouts()[0];
     return `<div class="kicker">${esc(dLong(now()))}</div>
       <h1 class="title">Jdeme<br>makat<span class="d">.</span></h1>
+      ${goalCard()}
       <button class="btn p big wide" data-act="start">▶ Začít prázdný trénink</button>
       <h2 class="sec">Navrhnout trénink</h2>
       <div class="card stack">
@@ -1058,7 +1212,7 @@ function vTrain() {
       <h2 class="sec">Kdy naposledy</h2>
       <div class="recency">${rec.map((r, i) => `<div class="rec ${i < 2 ? 'due' : ''}"><b>${r.g}</b><span>${r.d == null ? 'ještě ne' : r.d === 0 ? 'dnes' : r.d === 1 ? 'včera' : `před ${r.d} d`}</span></div>`).join('')}</div>
       <p class="note" style="margin-top:8px">Zvýrazněné partie máš nejdéle neodcvičené.</p>
-      ${lastW ? `<h2 class="sec">Poslední trénink</h2>${histItem(lastW, false)}` : ''}`;
+      ${lastW ? `<h2 class="sec">Poslední trénink</h2>${histItem(lastW, false)}<button class="btn wide" data-act="repeat" data-id="${lastW.id}">↻ Zopakovat tento trénink</button>` : ''}`;
   }
   const items = w.it.map((it, i) => exCard(w, it, i)).join('');
   return `<div class="wo-head"><div><div class="kicker">Trénink běží</div><div class="timer" id="wo-timer">0:00</div></div>
@@ -1068,7 +1222,7 @@ function vTrain() {
     <div class="row"><button class="btn p wide big" data-act="finish">✓ Dokončit trénink</button></div>
     <div class="row" style="margin-top:8px"><button class="btn ghost wide sm" data-act="discard">Zahodit trénink</button></div>`;
 }
-const setTxt = (s, ex) => `${s.w > 0 ? fmt(s.w, 2) + '×' : ''}${s.r}${ex.unit && !(s.w > 0) ? ' ' + ex.unit : ''}${s.q === 0 ? '<span class="f-mark">S</span>' : ''}`;
+const setTxt = (s, ex) => `${s.w > 0 ? fmt(s.w, 2) + '×' : ''}${s.r}${ex.unit && !(s.w > 0) ? ' ' + ex.unit : ''}${s.q === 0 ? '<span class="f-mark">S</span>' : s.q != null ? `<i class="qd" style="--dc:${diffOf(s.q).c}" title="${diffOf(s.q).l}"></i>` : ''}`;
 const topSet = sets => sets.reduce((a, s) => s.w > a.w || (s.w === a.w && s.r > a.r) ? s : a, sets[0]);
 function recoBox(rc, ex, kicker) {
   const timed = ex.unit === 's';
@@ -1098,29 +1252,88 @@ function exHistory(ex, excludeId, limit = 8) {
 function exCard(w, it, i) {
   const ex = getEx(it.ex), rc = recommend(ex, w.id);
   const u = unitOf(ex);
-  const nH = sessions(ex.id, w.id).length, open = ui.cardOpen[it.ex], pin = getNote(ex.id);
-  const rows = it.s.map((s, j) => `<div class="set ${s.ok ? 'ok' : ''}" data-i="${i}" data-j="${j}">
-      <span class="n">${j + 1}</span>
+  const nH = sessions(ex.id, w.id).length, open = ui.cardOpen[it.ex], pin = getNote(ex.id), exPh = livePhotos('ex', ex.id);
+  // živé rekordy: série, jejíž odhad 1RM překonal všechno předtím
+  const prevBest = Math.max(0, ...sessions(ex.id, w.id).map(h => bestE1(h.sets)));
+  let run = prevBest;
+  const rateJ = ui.rate && ui.rate.i === i ? ui.rate.j : -1;
+  const rows = it.s.map((s, j) => {
+    let pr = false;
+    if (s.ok && s.r > 0 && s.w > 0) { const e = e1rm(s); if (prevBest > 0 && e > run + 0.01) pr = true; run = Math.max(run, e); }
+    const d = diffOf(s.q);
+    return `<div class="set ${s.ok ? 'ok' : ''}${pr ? ' is-pr' : ''}" data-i="${i}" data-j="${j}">
+      <span class="n">${pr ? '<b class="prb">PR</b>' : j + 1}</span>
       <input inputmode="decimal" data-f="w" value="${s.w ?? ''}" placeholder="${ex.eq === 'cardio' ? '–' : ex.eq === 'bw' ? '+kg' : 'kg'}" aria-label="Váha série ${j + 1}">
       <input inputmode="numeric" data-f="r" value="${s.r ?? ''}" placeholder="${u === 'opak.' ? 'op.' : u}" aria-label="Opakování série ${j + 1}">
-      <div class="rir">${[[0, 'S'], [1, '1'], [2, '2'], [3, '3+']].map(([q, l]) => `<button class="${q === 0 ? 'f ' : ''}${s.q === q ? 'on' : ''}" data-act="q" data-q="${q}" aria-label="${q === 0 ? 'Selhání' : 'Rezerva ' + l}">${l}</button>`).join('')}</div>
+      <button class="diff ${d ? 'on' : ''}${rateJ === j ? ' open' : ''}" data-act="rate" ${d ? `style="--dc:${d.c}"` : ''} aria-label="Náročnost série ${j + 1}">${d ? d.l : 'náročnost'}</button>
       <button class="chk" data-act="ok" aria-label="Série hotová"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></button>
-    </div>`).join('');
+    </div>${rateJ === j ? `<div class="rate" data-j="${j}" role="group" aria-label="Jak těžká byla série?">${DIFF.map(x => `<button class="${s.q === x.q ? 'on' : ''}" style="--dc:${x.c}" data-act="q" data-q="${x.q}"><b>${x.l}</b><span>${x.s}</span></button>`).join('')}</div>` : ''}`;
+  }).join('');
+  // kotouče a rozcvičení pro první nedokončenou sérii
+  const nextSet = it.s.find(x => !x.ok) || it.s[it.s.length - 1];
+  const tw = nextSet && nextSet.w > 0 ? nextSet.w : 0;
+  const pls = ex.eq === 'barbell' && tw ? platesFor(tw, S.set.bar) : null;
+  const wu = !it.s.some(x => x.ok) ? warmup(ex, tw) : null;
   return `<div class="exc" data-i="${i}">
     <div class="exc-h"><button data-act="detail" data-ex="${ex.id}" aria-label="Ukázka cviku">${figSvg(ex, 'fig-mini')}</button>
       <div class="nm"><b>${esc(ex.n)}</b><span>${ex.g.toUpperCase()} · ${ex.lo}–${ex.hi} ${u} · ${EQ[ex.eq]?.n || ''}</span></div>
-      <button class="icon-btn" data-act="rmex" aria-label="Odebrat cvik">✕</button></div>
+      <button class="icon-btn" data-act="cardmenu" aria-label="Možnosti cviku">⋯</button></div>
     ${recoBox(rc, ex)}
     ${pin ? `<div class="xnote"><span>Poznámka</span>${esc(pin)}</div>` : ''}
     <div class="ctabs"><button class="${open === 'hist' ? 'on' : ''}" data-act="ctab" data-t="hist">Historie${nH ? ` (${nH})` : ''}</button><button class="${open === 'note' ? 'on' : ''}" data-act="ctab" data-t="note">Poznámky${it.note ? ' •' : ''}</button></div>
     ${open === 'hist' ? `<div class="cpanel">${exHistory(ex, w.id, 5)}</div>` : ''}
     ${open === 'note' ? `<div class="cpanel stack">
       <label class="field" style="margin:0"><span class="help">K cviku / stroji – ukáže se pokaždé (nastavení sedáku, úchop…)</span><textarea data-f="exnote" data-ex="${ex.id}" rows="2" placeholder="např. sedák 4, opěrka 2, široký úchop">${esc(pin)}</textarea></label>
-      <label class="field" style="margin:0"><span class="help">K dnešnímu tréninku – uloží se do historie</span><textarea data-f="itnote" rows="2" placeholder="např. bolelo rameno, šlo to lehce…">${esc(it.note || '')}</textarea></label></div>` : ''}
-    <div class="sets"><div class="set-h"><span>#</span><span>${ex.eq === 'bw' ? '+kg' : 'kg'}</span><span>${unitHead(ex)}</span><span>rezerva</span><span></span></div>${rows}</div>
+      <label class="field" style="margin:0"><span class="help">K dnešnímu tréninku – uloží se do historie</span><textarea data-f="itnote" rows="2" placeholder="např. bolelo rameno, šlo to lehce…">${esc(it.note || '')}</textarea></label>
+      ${photoStrip(exPh, ex.id)}</div>` : ''}
+    ${exPh.length && open !== 'note' ? `<div class="thumbs mini">${exPh.slice(0, 4).map(p => `<button class="ph" data-act="photo" data-id="${p.id}"><img src="${p.thumb}" alt="Fotka ke cviku"></button>`).join('')}</div>` : ''}
+    ${wu && wu.length ? `<details class="warm"><summary>Rozcvičení · ${pl(wu.length, 'série', 'série', 'sérií')}</summary><div>${wu.map(([x, r]) => `${fmt(x, 2)} kg × ${r}`).join(' · ')}</div><p>Rozcvičovací série neodškrtávej – do objemu se nepočítají.</p></details>` : ''}
+    <div class="sets"><div class="set-h"><span>#</span><span>${ex.eq === 'bw' ? '+kg' : 'kg'}</span><span>${unitHead(ex)}</span><span>náročnost</span><span></span></div>${rows}</div>
+    ${pls ? `<div class="plates" title="Kotouče na každou stranu osy"><span>${fmt(tw, 2)} kg →</span>${pls.out.length ? pls.out.map(x => `<i class="pl p${String(x).replace('.', '_')}">${fmt(x, 2)}</i>`).join('') : '<em>jen osa</em>'}<i class="bar"></i><em>osa ${fmt(S.set.bar, 1)} kg${pls.rest > 0.01 ? ' · přesně nejde' : ''}</em></div>` : ''}
     <div class="set-actions"><button class="btn sm" data-act="addset">＋ Série</button><button class="btn sm ghost" data-act="rmset">− Série</button></div>
-    ${i === 0 ? '<div class="legend-rir">Rezerva (RIR): S = selhání, 1–3+ = kolik opakování ještě zbývalo.</div>' : ''}
+    ${i === 0 && !it.s.some(x => x.q != null) ? '<div class="legend-rir">Po odškrtnutí série vyber, jak byla těžká – podle toho se plánuje další přetížení.</div>' : ''}
   </div>`;
+}
+const PLATES = [25, 20, 15, 10, 5, 2.5, 1.25];
+function platesFor(w, bar = 20) {
+  let r = (w - bar) / 2; if (r < -1e-9) return null;
+  const out = []; for (const p of PLATES) while (r >= p - 1e-9) { out.push(p); r -= p; }
+  return { out, rest: r };
+}
+// Rozcvičení: osa, ~40 / 60 / 80 % pracovní váhy s klesajícím počtem opakování
+function warmup(ex, W) {
+  if (isIso(ex) || isBW(ex) || !(W > 0)) return null;
+  const bar = ex.eq === 'barbell' ? (S.set.bar || 20) : 0;
+  if (W < (ex.eq === 'barbell' ? 40 : 30)) return null;
+  const inc = incOf(ex), out = [];
+  if (bar && W - bar >= 15) out.push([bar, 10]);
+  for (const [k, r] of [[.4, 8], [.6, 5], [.8, 3]]) { const x = Math.max(bar, roundTo(W * k, inc)); if (x < W && (!out.length || x > out[out.length - 1][0])) out.push([x, r]); }
+  return out;
+}
+function restFor(ex) { return isIso(ex) || ex.g === 'Kondice' ? (S.set.restIso ?? 90) : (S.set.rest ?? 120); }
+function photoStrip(list, exId) {
+  return `<div class="thumbs">${list.map(p => `<button class="ph" data-act="photo" data-id="${p.id}"><img src="${p.thumb}" alt="Fotka ke cviku"><span>${dShort(p.d)}</span></button>`).join('')}<label class="ph add" aria-label="Přidat fotku">＋<input type="file" accept="image/*" data-photo="ex" data-ex="${exId}" hidden></label></div>`;
+}
+function renderCard(i) { const w = openWorkout(), el = $(`.exc[data-i="${i}"]`); if (!w || !el || !w.it[i]) return render(); el.outerHTML = exCard(w, w.it[i], i); }
+function cardMenu(i) {
+  const w = openWorkout(), it = w && w.it[i]; if (!it) return;
+  const ex = getEx(it.ex);
+  openSheet(`<div class="kicker">${ex.g} · ${i + 1}. cvik z ${w.it.length}</div><h3>${esc(ex.n)}</h3>
+    <div class="menu">
+      <button data-act="swapex" data-i="${i}"><b>⇄ Vyměnit cvik</b><span>Stroj je obsazený? Vyber náhradu na stejné svaly.</span></button>
+      ${i > 0 ? `<button data-act="mvex" data-i="${i}" data-d="-1"><b>↑ Posunout výš</b></button>` : ''}
+      ${i < w.it.length - 1 ? `<button data-act="mvex" data-i="${i}" data-d="1"><b>↓ Posunout níž</b></button>` : ''}
+      <button data-act="detail" data-ex="${ex.id}"><b>Technika a historie</b><span>Animace, svaly, poznámky a fotky.</span></button>
+      <button class="danger" data-act="rmex" data-i="${i}"><b>✕ Odebrat z tréninku</b></button>
+    </div>`);
+}
+function swapSheet(i) {
+  const w = openWorkout(), it = w && w.it[i]; if (!it) return;
+  const cur = getEx(it.ex), used = new Set(w.it.map(x => x.ex));
+  const score = e => (e.m[0] === cur.m[0] ? 4 : 0) + e.m.filter(m => cur.m.includes(m)).length * 2 + (isIso(e) === isIso(cur) ? 1 : 0) + (sessions(e.id).length ? .5 : 0);
+  const list = allEx().filter(e => !used.has(e.id) && e.g === cur.g).sort((a, b) => score(b) - score(a));
+  openSheet(`<div class="kicker">Náhrada za</div><h3>${esc(cur.n)}</h3>
+    <div class="pick-list">${list.map(e => { const rc = recommend(e, w.id); return `<button class="pick" data-act="doswap" data-i="${i}" data-ex="${e.id}">${figSvg(e, 'static')}<div><b>${esc(e.n)}</b><span>${e.m.map(m => MUSCLE[m]).join(', ')}${rc.kind !== 'new' ? ' · ' + esc(rc.head) : ''}</span></div></button>`; }).join('') || '<div class="empty">Žádná náhrada v této partii.</div>'}</div>`);
 }
 function newSetsFor(ex, w, n) {
   const rc = recommend(ex, w.id);
@@ -1176,7 +1389,11 @@ function generatePlan(groups, dur) {
   }
   const rank = it => { const e = getEx(it.ex); return e.g === 'Kondice' ? 4 : e.g === 'Core' ? 3 : isIso(e) ? 2 : 1; };
   items.sort((a, b) => rank(a) - rank(b) || gs.indexOf(getEx(a.ex).g) - gs.indexOf(getEx(b.ex).g));
-  return { groups: gs, dur, items, random: !groups.length };
+  // poslední trénink na maximum (RPE 9–10) před méně než 36 h → o sérii méně
+  let note = '';
+  const lw = doneWorkouts()[0];
+  if (lw && lw.rpe >= 9 && now() - (lw.end || new Date(lw.d).getTime()) < 36 * 3600e3) { items.forEach(it => { it.n = Math.max(2, it.n - 1); }); note = `Poslední trénink byl na ${lw.rpe}/10 a ještě nejsi úplně zregenerovaný – návrh má u každého cviku o sérii méně.`; }
+  return { groups: gs, dur, items, random: !groups.length, note };
 }
 function weekSetsByGroup() {
   const ws = startOfWeek(now()), r = Object.fromEntries(GROUPS.map(g => [g, 0]));
@@ -1190,6 +1407,7 @@ function planSheet() {
   const totalSets = P.items.reduce((a, b) => a + b.n, 0);
   openSheet(`<div class="kicker">${P.random ? 'Náhodný návrh' : 'Návrh tréninku'} · ~${P.dur} min · ${pl(totalSets, 'série', 'série', 'sérií')}</div>
     <h3>${esc(P.groups.join(' + '))}</h3>
+    ${P.note ? `<p class="note" style="margin-top:6px;color:var(--warn)">${esc(P.note)}</p>` : ''}
     <div class="pick-list">${P.items.map((it, i) => { const e = getEx(it.ex), rc = recommend(e); return `<div class="pick" style="cursor:default">
         <button data-act="detail" data-ex="${e.id}" aria-label="Ukázka">${figSvg(e, 'static')}</button>
         <div style="flex:1;min-width:0"><b>${esc(e.n)}</b><span>${it.n} × ${rc.kind === 'new' ? esc(rc.head) : esc(rc.head)}</span></div>
@@ -1236,6 +1454,9 @@ function detailSheet(id) {
     ${recoBox(rc, ex)}
     <h2 class="sec">Poznámka ke cviku</h2>
     <textarea data-f="exnote" data-ex="${ex.id}" rows="2" style="min-height:64px" placeholder="např. sedák 4, opěrka 2, široký úchop">${esc(getNote(ex.id))}</textarea>
+    <h2 class="sec">Fotky ke cviku</h2>
+    ${photoStrip(livePhotos('ex', ex.id), ex.id)}
+    <p class="note" style="margin-top:6px">Vyfoť si nastavení stroje nebo úchop – uvidíš to i při tréninku.</p>
     <h2 class="sec">Historie${H.length ? ` · ${H.length}×` : ''}</h2>
     ${exHistory(ex, null, 30)}
     <div style="margin-top:16px" class="stack">
@@ -1268,11 +1489,11 @@ function histItem(w, expandable = true) {
   const groups = [...new Set(exs.map(i => getEx(i.ex).g))].join(' · ');
   return `<div class="hist-it"><button data-act="${expandable ? 'histtog' : 'gohist'}" data-id="${w.id}">
       <div class="dt"><b>${t.getDate()}</b><span>${t.toLocaleDateString('cs-CZ', { month: 'short' })}</span></div>
-      <div class="sm"><b>${esc(groups || 'Bez cviků')}</b><span>${pl(exs.length, 'cvik', 'cviky', 'cviků')} · ${pl(sets, 'série', 'série', 'sérií')} · ${fmtInt(vol)} kg${dur && dur > 0 && dur < 600 ? ` · ${dur} min` : ''}</span></div>
+      <div class="sm"><b>${esc(groups || 'Bez cviků')}</b><span>${pl(exs.length, 'cvik', 'cviky', 'cviků')} · ${pl(sets, 'série', 'série', 'sérií')} · ${fmtInt(vol)} kg${dur && dur > 0 && dur < 600 ? ` · ${dur} min` : ''}${w.rpe ? ` · <span style="color:${rpeColor(w.rpe)}">RPE ${w.rpe}</span>` : ''}</span></div>
       <span class="mono muted" style="font-size:12px">${open ? '−' : '+'}</span></button>
-    ${open ? `<div class="hist-body">${exs.map(i => { const ex = getEx(i.ex); return `<div class="hist-ex"><b>${esc(ex.n)}</b><div>${doneSets(i).map(s => `${s.w > 0 ? fmt(s.w, 2) + ' kg × ' : ''}${s.r}${ex.unit ? ' ' + ex.unit : ''}${s.q === 0 ? ' <span class="f-mark">selhání</span>' : s.q != null ? ` <span class="muted">RIR ${s.q === 3 ? '3+' : s.q}</span>` : ''}`).join('<br>')}${i.note ? `<br><i class="muted">„${esc(i.note)}“</i>` : ''}</div></div>`; }).join('')}
+    ${open ? `<div class="hist-body">${exs.map(i => { const ex = getEx(i.ex); return `<div class="hist-ex"><b>${esc(ex.n)}</b><div>${doneSets(i).map(s => `${s.w > 0 ? fmt(s.w, 2) + ' kg × ' : ''}${s.r}${ex.unit ? ' ' + ex.unit : ''}${s.q != null ? ` <span class="dq" style="--dc:${diffOf(s.q).c}">${diffOf(s.q).l}</span>` : ''}`).join('<br>')}${i.note ? `<br><i class="muted">„${esc(i.note)}“</i>` : ''}</div></div>`; }).join('')}
       ${w.note ? `<p class="note" style="margin-top:8px">${esc(w.note)}</p>` : ''}
-      <div class="row" style="margin-top:12px"><button class="btn sm wide" data-act="editw" data-id="${w.id}">Upravit</button><button class="btn sm danger wide" data-act="delw" data-id="${w.id}">Smazat</button></div></div>` : ''}</div>`;
+      <div class="row" style="margin-top:12px"><button class="btn sm wide" data-act="repeat" data-id="${w.id}">↻ Zopakovat</button><button class="btn sm wide" data-act="editw" data-id="${w.id}">Upravit</button><button class="btn sm danger wide" data-act="delw" data-id="${w.id}">Smazat</button></div></div>` : ''}</div>`;
 }
 function vHist() {
   const ws = doneWorkouts();
@@ -1353,11 +1574,72 @@ const HOWTO = `<div class="card how">
   <p><b>Dvojitá progrese.</b> V rozsahu opakování nejdřív přidáváš opakování, váhu až nad horní hranicí. Přidávat opakování i váhu vede k podobnému růstu svalů (Plotkin a kol., 2022).</p>
   <p><b>Kdy přidat váhu.</b> Až všechny série zvládneš na horní hranici s rezervou – zhruba 1–2 opakování navíc. Krok 2–10 % (ACSM, 2009). Když by krok byl víc než 10 % (malé jednoručky), aplikace chce nejdřív o 2 opakování víc.</p>
   <p><b>Ne každý trénink.</b> Když horní hranici dáš až v selhání, musíš ji potvrdit ještě jednou. Po slabším dni (−5 % a víc) se nepřidává. U pokročilých jsou přírůstky pomalejší – to je normální.</p>
+  <p><b>Náročnost série.</b> Po každé sérii vybereš, jak byla těžká: Lehká (4+ opakování v rezervě), Střední (3), Těžká (2), Na hraně (1), Selhání. Z toho se počítá odhad 1RM a plánuje přetížení – lehké série posunou váhu rychleji, série na hraně a v selhání ji drží. Odhad rezervy je u zkušenějších přesnější a nejlepší je těsně u selhání (Zourdos a kol., 2016).</p>
   <p><b>Selhání není nutné.</b> Pro růst svalů pomáhá končit blízko selhání, samotné selhání přidá jen málo; síla na blízkosti k selhání skoro nezávisí (Refalo a kol., 2023; Robinson a kol., 2024). Proto cíl RIR 1–2 u těžkých cviků.</p>
   <p><b>Stagnace.</b> Tři tréninky bez zlepšení a se selháním = lehčí týden (~90 % váhy, o sérii méně), ne pauza – úplná týdenní pauza v jedné studii mírně snížila nárůst síly (Coleman a kol., 2024; Bell a kol., 2023).</p>
   <p><b>Objem.</b> Víc sérií týdně = víc růstu, s klesajícím přínosem (Pelland a kol., 2024). Orientačně 10–20 sérií na partii týdně.</p>
   <p class="note"><a href="https://peerj.com/articles/14142" target="_blank" rel="noopener">Plotkin 2022</a> · <a href="https://pubmed.ncbi.nlm.nih.gov/19204579/" target="_blank" rel="noopener">ACSM 2009</a> · <a href="https://openrepository.aut.ac.nz/items/78679612-6ff4-4d00-95d1-7920d072a760" target="_blank" rel="noopener">Refalo 2023</a> · <a href="https://doi.org/10.1007/s40279-024-02069-2" target="_blank" rel="noopener">Robinson 2024</a> · <a href="https://pubmed.ncbi.nlm.nih.gov/38274324/" target="_blank" rel="noopener">Coleman 2024</a> · <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10511399/" target="_blank" rel="noopener">Bell 2023</a> · <a href="https://sportrxiv.org/index.php/server/preprint/view/460" target="_blank" rel="noopener">Pelland 2024</a></p>
 </div>`;
+/* ── Tělo: váha, fotky postavy, porovnání ── */
+function vBody() {
+  const B = liveBody(), last = B[B.length - 1], today = localISO().slice(0, 10);
+  const since = d => B.filter(x => x.d >= localISO(now() - d * DAY).slice(0, 10));
+  const w7 = since(6), avg7 = w7.length ? w7.reduce((a, x) => a + x.kg, 0) / w7.length : null;
+  const base = B.filter(x => x.d <= localISO(now() - 30 * DAY).slice(0, 10)).pop() || B[0];
+  const ch = last && base && base !== last ? last.kg - base.kg : null;
+  const ph = livePhotos('body');
+  const months = {}; ph.forEach(x => { const k = new Date(x.d).toLocaleDateString('cs-CZ', { month: 'long', year: 'numeric' }); (months[k] = months[k] || []).push(x); });
+  return `<div class="kicker">Váha · fotky · proměna</div><h1 class="title">Tělo<span class="d">.</span></h1>
+    <div class="card stack">
+      <div class="row"><input id="bw" inputmode="decimal" placeholder="${last ? fmt(last.kg, 1) : 'Váha v kg'}" aria-label="Dnešní váha v kg" style="flex:1"><button class="btn p" data-act="bwsave">${last && last.d === today ? 'Přepsat dnešní' : 'Uložit váhu'}</button></div>
+      <div class="stats"><div class="stat"><div class="v">${last ? fmt(last.kg, 1) : '–'}</div><div class="l">${last ? dShort(last.d) : 'poslední'}</div></div><div class="stat"><div class="v">${avg7 ? fmt(avg7, 1) : '–'}</div><div class="l">Ø 7 dní</div></div><div class="stat"><div class="v" style="${ch ? `color:${ch < 0 ? 'var(--cyan)' : 'var(--neon)'}` : ''}">${ch == null ? '–' : (ch > 0 ? '+' : '−') + fmt(Math.abs(ch), 1)}</div><div class="l">za 30 dní</div></div></div>
+      ${B.length > 1 ? '<div class="chart" id="bwchart"></div>' : '<p class="note">Važ se ideálně ráno po probuzení – denní výkyvy jsou normální, důležitý je trend (Ø 7 dní).</p>'}
+      ${B.length ? `<div class="bwrows">${B.slice(-4).reverse().map(x => `<div class="row"><span style="flex:1">${dShort(x.d)}</span><span>${fmt(x.kg, 1)} kg</span><button class="btn sm ghost" data-act="bwdel" data-id="${x.id}" aria-label="Smazat záznam">✕</button></div>`).join('')}</div>` : ''}
+    </div>
+    <h2 class="sec">Fotky postavy</h2>
+    <div class="row"><label class="btn p wide">＋ Přidat fotku<input type="file" accept="image/*" data-photo="body" hidden></label>${ph.length >= 2 ? '<button class="btn wide" data-act="cmp">⇆ Porovnat</button>' : ''}</div>
+    <div class="gal">${Object.entries(months).map(([m, list]) => `<h4>${m}</h4><div class="grid3">${list.map(x => `<button class="ph" data-act="photo" data-id="${x.id}"><img src="${x.thumb}" alt="Fotka postavy ${dShort(x.d)}" loading="lazy"><span>${dShort(x.d)}${x.bw ? ' · ' + fmt(x.bw, 1) : ''}</span></button>`).join('')}</div>`).join('') || '<div class="empty">Zatím žádná fotka. Vyfoť se dnes – za pár měsíců budeš rád za srovnání.</div>'}</div>
+    <p class="note" style="margin-top:12px">Tip: foť se ve stejném světle, stejnou denní dobu a ze stejného místa – porovnání pak opravdu něco řekne. Fotky vidíš jen ty.</p>`;
+}
+function mountBody() {
+  const el = $('#bwchart'); if (!el) return;
+  lineChart(el, liveBody().map(x => ({ x: new Date(x.d + 'T12:00').getTime(), y: x.kg })), 'kg');
+}
+async function photoSheet(id) {
+  const x = (S.photos || []).find(o => o.id === id); if (!x) return;
+  const ex = x.ex ? getEx(x.ex) : null;
+  openSheet(`<div class="kicker">${esc(dLong(x.d))}${x.bw ? ` · ${fmt(x.bw, 1)} kg` : ''}${ex ? ' · ' + esc(ex.n) : ''}</div>
+    <div class="viewer"><img id="pv" src="${x.thumb}" alt="Fotka"><div class="pv-load">načítám plné rozlišení…</div></div>
+    <textarea data-f="pnote" data-id="${x.id}" rows="2" style="min-height:56px" placeholder="${ex ? 'např. sedák 4, opěrka 2' : 'Poznámka k fotce'}">${esc(x.note || '')}</textarea>
+    <div class="row" style="margin-top:10px">${x.kind === 'body' ? `<button class="btn wide" data-act="cmpfrom" data-id="${x.id}">⇆ Porovnat s…</button>` : ''}<button class="btn danger wide" data-act="delphoto" data-id="${x.id}">Smazat</button></div>`, 'photo');
+  const full = await loadPhotoData(id), im = $('#pv');
+  if (im) { if (full) im.src = full; $('.pv-load')?.remove(); }
+}
+function comparePick() {
+  const ph = livePhotos('body');
+  openSheet(`<div class="kicker">Porovnání</div><h3>Vyber dvě fotky</h3>
+    <p class="note" style="margin:6px 0 12px">${ui.cmp.length ? 'Teď vyber druhou.' : 'Nejdřív jednu, potom druhou – pořadí je jedno, starší bude vlevo.'}</p>
+    <div class="grid3">${ph.map(x => { const k = ui.cmp.indexOf(x.id); return `<button class="ph ${k >= 0 ? 'sel' : ''}" data-act="cmpsel" data-id="${x.id}"><img src="${x.thumb}" alt=""><span>${dShort(x.d)}</span>${k >= 0 ? `<span class="num">${k + 1}</span>` : ''}</button>`; }).join('')}</div>`, 'photo');
+}
+async function compareSheet(a, b) {
+  let A = S.photos.find(o => o.id === a), B = S.photos.find(o => o.id === b);
+  if (A.d > B.d) [A, B] = [B, A];
+  const days = Math.round((new Date(B.d) - new Date(A.d)) / DAY), dk = A.bw && B.bw ? B.bw - A.bw : null;
+  openSheet(`<div class="kicker">Porovnání · ${pl(days, 'den', 'dny', 'dní')}${dk != null ? ` · ${dk > 0 ? '+' : '−'}${fmt(Math.abs(dk), 1)} kg` : ''}</div><h3>Před a po</h3>
+    <div class="cmp" id="cmp"><img id="cmpB" src="${B.thumb}" alt="Po"><div class="ca" id="cmpA"><img id="cmpAi" src="${A.thumb}" alt="Před"></div><div class="cmp-line" id="cmpL"></div>
+      <span class="cl l">PŘED · ${dShort(A.d)}${A.bw ? ' · ' + fmt(A.bw, 1) : ''}</span><span class="cl r">PO · ${dShort(B.d)}${B.bw ? ' · ' + fmt(B.bw, 1) : ''}</span></div>
+    <input type="range" min="0" max="100" value="50" data-f="cmpr" aria-label="Posuvník porovnání" class="cmpr">
+    <p class="note">Táhni prstem po fotce nebo posuvníkem.</p>
+    <button class="btn wide" style="margin-top:10px" data-act="cmp">Vybrat jiné</button>`, 'photo');
+  ui.cmp = []; setCmp(50);
+  const el = $('#cmp'), mv = ev => { const r = el.getBoundingClientRect(); setCmp(Math.max(0, Math.min(100, (ev.clientX - r.left) / r.width * 100))); };
+  el.addEventListener('pointerdown', ev => { el.setPointerCapture(ev.pointerId); mv(ev); });
+  el.addEventListener('pointermove', ev => { if (ev.buttons || ev.pointerType === 'touch') mv(ev); });
+  const [fa, fb] = await Promise.all([loadPhotoData(A.id), loadPhotoData(B.id)]);
+  if (fa && $('#cmpAi')) $('#cmpAi').src = fa; if (fb && $('#cmpB')) $('#cmpB').src = fb;
+}
+function setCmp(v) { const a = $('#cmpA'), l = $('#cmpL'), r = $('.cmpr'); if (!a) return; a.style.clipPath = `inset(0 ${100 - v}% 0 0)`; l.style.left = v + '%'; if (r && +r.value !== Math.round(v)) r.value = Math.round(v); }
+
 /* ── Nastavení ── */
 function vSet() {
   const custom = S.cx.filter(c => !c.del);
@@ -1371,7 +1653,14 @@ function vSet() {
     </div>
     <h2 class="sec">Trénink</h2>
     <div class="card stack">
-      <div class="field" style="margin:0"><label for="s-rest">Pauza mezi sériemi (s)</label><input id="s-rest" inputmode="numeric" data-f="rest" value="${S.set.rest}"></div>
+      <div class="kv" style="grid-template-columns:repeat(2,1fr)">
+        <label class="field" style="margin:0"><span class="help">Pauza – vícekloubové (s)</span><input inputmode="numeric" data-f="rest" value="${S.set.rest}"></label>
+        <label class="field" style="margin:0"><span class="help">Pauza – izolované a kondice (s)</span><input inputmode="numeric" data-f="restiso" value="${S.set.restIso}"></label>
+        <label class="field" style="margin:0"><span class="help">Týdenní cíl (tréninků)</span><input inputmode="numeric" data-f="goal" value="${S.set.goal}"></label>
+        <label class="field" style="margin:0"><span class="help">Osa velké činky (kg)</span><input inputmode="decimal" data-f="bar" value="${fmt(S.set.bar, 1)}"></label>
+      </div>
+      <label class="check" style="margin:0"><input type="checkbox" data-f="sound" ${S.set.sound !== false ? 'checked' : ''}> Zvuk na konci pauzy</label>
+      <p class="note">Delší pauza u vícekloubových cviků (2–3 min) vede k většímu objemu i růstu svalů než krátká (Schoenfeld a kol., 2016).</p>
       <div class="field" style="margin:0"><label>Krok přidávání váhy (kg)</label>
         <div class="kv" style="grid-template-columns:repeat(2,1fr)">${['barbell', 'dumbbell', 'machine', 'cable'].map(k => `<label class="field" style="margin:0"><span class="help">${EQ[k].n}</span><input inputmode="decimal" data-f="inc" data-k="${k}" value="${fmt(S.set.inc[k] ?? EQ[k].inc, 2)}"></label>`).join('')}</div></div>
     </div>
@@ -1398,10 +1687,26 @@ let sheetKind = null;
 function openSheet(html, kind = 'x') { $('#sheet-c').innerHTML = html; $('#sheet').classList.add('on'); $('#sheet-bg').classList.add('on'); sheetKind = kind; }
 function closeSheet() { const was = sheetKind; $('#sheet').classList.remove('on'); $('#sheet-bg').classList.remove('on'); sheetKind = null; setTimeout(() => { if (!sheetKind) $('#sheet-c').innerHTML = ''; }, 300); if (was && S) safeRender(); }
 let toastT;
-function toast(msg, ms = 2600) { const t = $('#toast'); t.innerHTML = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), ms); }
+let undoFn = null;
+function toast(msg, ms = 2600, undo) {
+  const t = $('#toast'); undoFn = undo || null;
+  t.innerHTML = msg + (undo ? '<button class="t-undo" data-undo>Vrátit</button>' : '');
+  t.classList.add('on'); clearTimeout(toastT);
+  toastT = setTimeout(() => { t.classList.remove('on'); undoFn = null; }, undo ? Math.max(ms, 5000) : ms);
+}
+document.addEventListener('click', e => { if (!e.target.closest('[data-undo]')) return; const f = undoFn; undoFn = null; $('#toast').classList.remove('on'); if (f) { f(); vib(10); } });
 const mmss = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 let restEnd = 0, restTotal = 0, restDone = false;
-function startRest(sec = S.set.rest) { restTotal = sec; restEnd = now() + sec * 1000; restDone = false; $('#rest').classList.remove('hidden', 'done'); tickTimers(); }
+function startRest(sec = S.set.rest, label = 'Pauza') { restTotal = sec; restEnd = now() + sec * 1000; restDone = false; $('#rest-l').textContent = label; $('#rest').classList.remove('hidden', 'done'); tickTimers(); }
+let AC = null;
+function audioUnlock() { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume(); } catch {} }
+function beep() {
+  if (!AC || !S || S.set.sound === false) return;
+  try {
+    const t = AC.currentTime;
+    [0, .2, .4].forEach((d, k) => { const o = AC.createOscillator(), g = AC.createGain(); o.type = 'sine'; o.frequency.value = k === 2 ? 1320 : 880; g.gain.setValueAtTime(.0001, t + d); g.gain.exponentialRampToValueAtTime(.22, t + d + .015); g.gain.exponentialRampToValueAtTime(.0001, t + d + .16); o.connect(g).connect(AC.destination); o.start(t + d); o.stop(t + d + .18); });
+  } catch {}
+}
 function tickTimers() {
   if (!S) return;
   const w = openWorkout(), el = $('#wo-timer');
@@ -1410,7 +1715,7 @@ function tickTimers() {
     const left = Math.max(0, (restEnd - now()) / 1000);
     $('#rest-t').textContent = mmss(Math.ceil(left));
     $('#rest-bar').style.width = (100 * left / restTotal) + '%';
-    if (left <= 0 && !restDone) { restDone = true; $('#rest').classList.add('done'); try { navigator.vibrate && navigator.vibrate([250, 120, 250]); } catch {} setTimeout(() => { if (restDone) { restEnd = 0; $('#rest').classList.add('hidden'); } }, 6000); }
+    if (left <= 0 && !restDone) { restDone = true; $('#rest').classList.add('done'); vib([250, 120, 250]); beep(); setTimeout(() => { if (restDone) { restEnd = 0; $('#rest').classList.add('hidden'); } }, 6000); }
   }
 }
 setInterval(tickTimers, 1000);
@@ -1434,12 +1739,53 @@ function finishWorkout() {
   w.it = w.it.filter(i => i.s.length);
   if (!w.it.length) { if (!confirm('Žádná série není odškrtnutá. Zahodit trénink?')) { return; } w.del = true; touch(w); commit(true); return; }
   w.open = false; w.end = Math.max(now(), new Date(w.d).getTime()); touch(w);
-  const prs = w.it.filter(i => prev[i.ex] > 0 && bestE1(i.s) > prev[i.ex]).map(i => getEx(i.ex).n);
-  restEnd = 0; $('#rest').classList.add('hidden');
+  const prs = w.it.filter(i => prev[i.ex] > 0 && bestE1(i.s) > prev[i.ex]).map(i => ({ n: getEx(i.ex).n, e: bestE1(i.s), p: prev[i.ex] }));
+  restEnd = 0; ui.rate = null; $('#rest').classList.add('hidden');
   if (wakeLock) { wakeLock.release().catch(() => {}); wakeLock = null; }
-  commit(true); schedulePush(300);
-  const sets = w.it.reduce((a, i) => a + i.s.length, 0);
-  toast(prs.length ? `🔥 Nový rekord: <b>${esc(prs.join(', '))}</b>` : `✓ Uloženo – ${pl(w.it.length, 'cvik', 'cviky', 'cviků')}, ${pl(sets, 'série', 'série', 'sérií')}`, 3800);
+  commit(true); flush();
+  summarySheet(w.id, prs);
+  vib(prs.length ? [40, 60, 40, 60, 80] : 20);
+}
+const RPE_L = ['', 'Skoro nic', 'Velmi lehké', 'Lehké', 'Lehké až střední', 'Střední', 'Střední až těžké', 'Těžké', 'Velmi těžké', 'Skoro maximum', 'Maximum'];
+const rpeColor = v => v <= 4 ? '#5cf2c2' : v <= 6 ? '#39ff88' : v === 7 ? '#d4ff3a' : v === 8 ? '#ffa630' : '#ff4d6d';
+const rpeLabel = v => v ? `<b style="color:${rpeColor(v)}">${v}/10 · ${RPE_L[v]}</b>${v >= 9 ? ' – příští návrh tréninku bude o sérii kratší, pokud přijde do 36 hodin.' : ''}` : 'Celkový pocit z tréninku (RPE 1–10). Pomáhá plánovat další zátěž.';
+function summarySheet(wid, prs = []) {
+  const w = S.w.find(x => x.id === wid); if (!w) return;
+  const dur = Math.max(1, Math.round((w.end - new Date(w.d).getTime()) / 60000));
+  const sets = w.it.reduce((a, i) => a + i.s.length, 0), vol = w.it.reduce((a, i) => a + i.s.reduce((b, x) => b + x.w * x.r, 0), 0);
+  const rows = w.it.map(it => {
+    const ex = getEx(it.ex), e = bestE1(it.s), prev = sessions(ex.id, w.id)[0], pe = prev ? bestE1(prev.sets) : 0;
+    const pct = pe && e ? (e / pe - 1) * 100 : null;
+    return `<div class="sum-ex"><span>${esc(ex.n)}</span><small>${it.s.map(x => setTxt(x, ex)).join(' · ')}</small><b class="${pct > .5 ? 'up' : pct < -.5 ? 'dn' : ''}">${pct == null ? (prev ? '=' : 'nový') : (pct > 0 ? '+' : '') + fmt(pct, 1) + ' %'}</b></div>`;
+  }).join('');
+  const burst = prs.length ? `<div class="burst">${Array.from({ length: 18 }, (_, k) => `<i style="--a:${k * 20}deg;--d:${60 + (k % 3) * 22}px;animation-delay:${(k % 4) * 40}ms"></i>`).join('')}</div>` : '';
+  openSheet(`<div class="sum-hero">${burst}<div class="kicker">Trénink hotový · ${esc(dLong(w.d))}</div><h3>${prs.length ? 'Nový rekord' : 'Dobrá práce'}<span class="d">.</span></h3></div>
+    <div class="stats" style="margin-top:14px"><div class="stat"><div class="v">${dur}</div><div class="l">minut</div></div><div class="stat"><div class="v">${sets}</div><div class="l">sérií</div></div><div class="stat"><div class="v">${vol >= 10000 ? fmt(vol / 1000, 1) + 't' : fmtInt(vol)}</div><div class="l">objem kg</div></div></div>
+    ${prs.length ? `<div class="pr-card">${prs.map(x => `<div>🔥 <b>${esc(x.n)}</b> – odhad 1RM ${fmt(x.e, 1)} kg <span class="muted">(+${fmt(x.e - x.p, 1)})</span></div>`).join('')}</div>` : ''}
+    <h2 class="sec">Oproti minule (odhad 1RM)</h2>${rows}
+    <h2 class="sec">Jak náročné to bylo?</h2>
+    <div class="rpe">${Array.from({ length: 10 }, (_, k) => k + 1).map(v => `<button class="${w.rpe === v ? 'on' : ''}" style="--rc:${rpeColor(v)}" data-act="rpe" data-id="${w.id}" data-v="${v}">${v}</button>`).join('')}</div>
+    <div class="rpe-l">${rpeLabel(w.rpe)}</div>
+    <textarea data-f="wnote" data-id="${w.id}" rows="2" style="min-height:56px" placeholder="Poznámka k tréninku (nepovinné)">${esc(w.note || '')}</textarea>
+    <button class="btn p big wide" style="margin-top:14px" data-act="sumdone">Hotovo</button>`, 'summary');
+}
+function repeatWorkout(id) {
+  if (openWorkout()) { toast('Nejdřív dokonči rozběhnutý trénink.'); return; }
+  const src = S.w.find(x => x.id === id); if (!src) return;
+  const w = { id: uid(), d: localISO(), open: true, it: [], u: now() };
+  S.w.push(w);
+  src.it.forEach(i => w.it.push({ ex: i.ex, s: newSetsFor(getEx(i.ex), w, doneSets(i).length || undefined) }));
+  touch(w); view = 'train'; commit(true); keepAwake(); scrollTo(0, 0);
+  toast('Trénink zopakován – váhy podle posledních výkonů');
+}
+function saveBodyWeight() {
+  const kg = num($('#bw') && $('#bw').value);
+  if (!(kg > 25 && kg < 350)) { toast('Zadej váhu v kg.'); return; }
+  const d = localISO().slice(0, 10), id = 'bw-' + d;
+  S.body = S.body || [];
+  let x = S.body.find(o => o.id === id); if (!x) { x = { id, d }; S.body.push(x); }
+  x.kg = kg; x.del = false; x.u = now(); dirty.body.add(id); commit(true); vib(10);
+  toast(`Váha ${fmt(kg, 1)} kg uložena`);
 }
 document.addEventListener('click', async e => {
   const b = e.target.closest('[data-act],[data-view],[data-rest]');
@@ -1470,33 +1816,80 @@ document.addEventListener('click', async e => {
       setTimeout(() => { const c = $$('.exc').pop(); c && c.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
       break;
     }
-    case 'rmex': if (it && confirm(`Odebrat ${getEx(it.ex).n}?`)) { w.it.splice(+card.dataset.i, 1); touch(w); commit(true); } break;
-    case 'addset': { const l = it.s[it.s.length - 1]; it.s.push(l ? { w: l.w, r: l.r, q: null, ok: false } : { w: null, r: null, q: null, ok: false }); touch(w); commit(true); break; }
-    case 'rmset': if (it.s.length) { it.s.pop(); touch(w); commit(true); } break;
-    case 'q': { const s = it.s[+setEl.dataset.j], q = +b.dataset.q; s.q = s.q === q ? null : q; touch(w); commit(); $$('.rir button', setEl).forEach(x => x.classList.toggle('on', +x.dataset.q === s.q)); break; }
+    case 'cardmenu': cardMenu(+card.dataset.i); break;
+    case 'swapex': swapSheet(+b.dataset.i); break;
+    case 'doswap': {
+      const i = +b.dataset.i, cur = w.it[i], ex = getEx(b.dataset.ex);
+      if (cur.s.some(x => x.ok)) { w.it.splice(i + 1, 0, { ex: ex.id, s: newSetsFor(ex, w) }); toast('Původní cvik zůstal – už má hotové série.'); }
+      else { const old = { ...cur }; cur.ex = ex.id; cur.s = newSetsFor(ex, w, cur.s.length || undefined); delete cur.note; toast(`Vyměněno za <b>${esc(ex.n)}</b>`, 4000, () => { Object.assign(cur, old); touch(w); commit(true); }); }
+      touch(w); closeSheet(); commit(true); break;
+    }
+    case 'mvex': { const i = +b.dataset.i, k = i + +b.dataset.d; [w.it[i], w.it[k]] = [w.it[k], w.it[i]]; ui.rate = null; touch(w); closeSheet(); commit(true); setTimeout(() => $(`.exc[data-i="${k}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 60); break; }
+    case 'rmex': {
+      const i = card ? +card.dataset.i : +b.dataset.i, gone = w.it.splice(i, 1)[0]; if (!gone) return;
+      ui.rate = null; touch(w); closeSheet(); commit(true);
+      toast(`Odebráno: <b>${esc(getEx(gone.ex).n)}</b>`, 5000, () => { w.it.splice(i, 0, gone); touch(w); commit(true); });
+      break;
+    }
+    case 'addset': { const l = it.s[it.s.length - 1]; it.s.push(l ? { w: l.w, r: l.r, q: null, ok: false } : { w: null, r: null, q: null, ok: false }); touch(w); commit(); renderCard(+card.dataset.i); break; }
+    case 'rmset': { if (!it.s.length) return; const i = +card.dataset.i, gone = it.s.pop(); if (ui.rate && ui.rate.i === i && ui.rate.j >= it.s.length) ui.rate = null; touch(w); commit(); renderCard(i); if (gone.ok) toast('Série odebrána', 4000, () => { it.s.push(gone); touch(w); commit(); renderCard(i); }); break; }
+    case 'rate': { const i = +card.dataset.i, j = +setEl.dataset.j; ui.rate = ui.rate && ui.rate.i === i && ui.rate.j === j ? null : { i, j }; renderCard(i); break; }
+    case 'q': {
+      const i = +card.dataset.i, j = +b.closest('[data-j]').dataset.j, s = it.s[j];
+      s.q = +b.dataset.q; ui.rate = null; touch(w); commit(); vib(8); renderCard(i);
+      break;
+    }
     case 'ok': {
-      const j = +setEl.dataset.j, s = it.s[j];
+      audioUnlock();
+      const i = +card.dataset.i, j = +setEl.dataset.j, s = it.s[j], ex = getEx(it.ex);
       s.w = num($('[data-f=w]', setEl).value); s.r = num($('[data-f=r]', setEl).value);
       if (!s.ok && !(s.r > 0)) { toast('Zadej počet opakování.'); $('[data-f=r]', setEl).focus(); return; }
       if (s.w == null) s.w = 0;
       s.ok = !s.ok; touch(w); commit();
-      setEl.classList.toggle('ok', s.ok);
       if (s.ok) {
-        // propsat váhu do dalších nevyplněných sérií
-        it.s.slice(j + 1).forEach((n, k) => { if (!n.ok) { n.w = s.w; const row = $(`.set[data-j="${j + 1 + k}"]`, card); if (row) $('[data-f=w]', row).value = s.w; } });
-        if (S.set.rest > 0) startRest();
-      }
+        vib(12);
+        it.s.slice(j + 1).forEach(n => { if (!n.ok) n.w = s.w; });   // propsat váhu do dalších sérií
+        const prev = Math.max(0, ...sessions(ex.id, w.id).map(h => bestE1(h.sets)));
+        const inW = Math.max(0, ...it.s.filter((x, k) => k !== j && x.ok && x.r > 0).map(e1rm));
+        const e = e1rm(s);
+        if (prev > 0 && e > Math.max(prev, inW) + 0.01) { toast(`🔥 Rekord! Odhad 1RM <b>${fmt(e, 1)} kg</b> <span class="muted">(dosud ${fmt(Math.max(prev, inW), 1)})</span>`, 3800); vib([30, 50, 30]); }
+        ui.rate = s.q == null ? { i, j } : null;
+        const nx = it.s.find(x => !x.ok), nextEx = w.it[i + 1];
+        const label = nx ? `Další: ${nx.w > 0 ? fmt(nx.w, 2) + ' kg × ' : ''}${nx.r ?? ''}` : nextEx ? `Další: ${getEx(nextEx.ex).n}` : 'Poslední série ✓';
+        const sec = restFor(ex); if (sec > 0) startRest(sec, label);
+      } else if (ui.rate && ui.rate.i === i && ui.rate.j === j) ui.rate = null;
+      renderCard(i);
       break;
     }
     case 'finish': finishWorkout(); break;
-    case 'discard': if (confirm('Opravdu zahodit celý rozběhnutý trénink?')) { w.del = true; touch(w); restEnd = 0; $('#rest').classList.add('hidden'); commit(true); } break;
+    case 'discard': {
+      w.del = true; touch(w); restEnd = 0; ui.rate = null; $('#rest').classList.add('hidden'); commit(true);
+      toast('Trénink zahozen', 6000, () => { w.del = false; touch(w); commit(true); });
+      break;
+    }
+    case 'rpe': { const x = S.w.find(o => o.id === b.dataset.id); if (x) { x.rpe = +b.dataset.v; touch(x); commit(); vib(8); $$('.rpe button').forEach(o => o.classList.toggle('on', +o.dataset.v === x.rpe)); $('.rpe-l').innerHTML = rpeLabel(x.rpe); } break; }
+    case 'sumdone': closeSheet(); break;
+    case 'repeat': repeatWorkout(b.dataset.id); break;
+    case 'bwsave': saveBodyWeight(); break;
+    case 'bwdel': { const x = (S.body || []).find(o => o.id === b.dataset.id); if (x) { x.del = true; x.u = now(); dirty.body.add(x.id); commit(true); toast('Záznam smazán', 5000, () => { x.del = false; x.u = now(); dirty.body.add(x.id); commit(true); }); } break; }
+    case 'photo': photoSheet(b.dataset.id); break;
+    case 'delphoto': {
+      const x = (S.photos || []).find(o => o.id === b.dataset.id); if (!x) return;
+      x.del = true; x.u = now(); dirty.photos.add(x.id); closeSheet(); commit(true);
+      setTimeout(() => { if (x.del) dropPhotoData(x.id); }, 7000);
+      toast('Fotka smazána', 6000, () => { x.del = false; x.u = now(); dirty.photos.add(x.id); commit(true); });
+      break;
+    }
+    case 'cmp': ui.cmp = []; comparePick(); break;
+    case 'cmpfrom': ui.cmp = [b.dataset.id]; comparePick(); break;
+    case 'cmpsel': { const id = b.dataset.id, a = ui.cmp; if (a.includes(id)) a.splice(a.indexOf(id), 1); else a.push(id); if (a.length >= 2) compareSheet(a[0], a[1]); else comparePick(); break; }
     case 'detail': detailSheet(b.dataset.ex); break;
     case 'libg': ui.libGroup = b.dataset.g; render(); break;
     case 'toprog': ui.progEx = b.dataset.ex; closeSheet(); view = 'prog'; render(); scrollTo(0, 0); break;
     case 'metric': ui.progMetric = b.dataset.m; render(); break;
     case 'histtog': ui.histOpen = ui.histOpen === b.dataset.id ? null : b.dataset.id; render(); break;
     case 'gohist': ui.histOpen = b.dataset.id; view = 'hist'; render(); break;
-    case 'delw': { const x = S.w.find(x => x.id === b.dataset.id); if (x && confirm('Smazat tento trénink?')) { x.del = true; touch(x); commit(true); toast('Trénink smazán'); } break; }
+    case 'delw': { const x = S.w.find(x => x.id === b.dataset.id); if (x) { x.del = true; touch(x); commit(true); toast('Trénink smazán', 6000, () => { x.del = false; touch(x); commit(true); }); } break; }
     case 'editw': {
       if (w) { toast('Nejdřív dokonči rozběhnutý trénink.'); return; }
       const x = S.w.find(x => x.id === b.dataset.id); x.open = true; x.it.forEach(i => i.s.forEach(s => s.ok = true)); touch(x); view = 'train'; commit(true); scrollTo(0, 0); break;
@@ -1532,6 +1925,9 @@ document.addEventListener('input', e => {
     touch(w); commit();
   } else if (f === 'exnote') { setNote(e.target.dataset.ex, e.target.value); }
   else if (f === 'itnote') { const card = e.target.closest('.exc'); if (!w || !card) return; w.it[+card.dataset.i].note = e.target.value; touch(w); commit(); }
+  else if (f === 'wnote') { const x = S.w.find(o => o.id === e.target.dataset.id); if (x) { x.note = e.target.value; touch(x); commit(); } }
+  else if (f === 'pnote') { const x = (S.photos || []).find(o => o.id === e.target.dataset.id); if (x) { x.note = e.target.value; x.u = now(); dirty.photos.add(x.id); commit(); } }
+  else if (f === 'cmpr') setCmp(+e.target.value);
   else if (f === 'libq') { ui.libQ = e.target.value; const pos = e.target.selectionStart; render(); const i = $('[data-f=libq]'); i.focus(); i.setSelectionRange(pos, pos); }
   else if (f === 'pickq') { ui.pickQ = e.target.value; const pos = e.target.selectionStart; pickSheet(); const i = $('[data-f=pickq]'); i.focus(); i.setSelectionRange(pos, pos); }
 });
@@ -1539,8 +1935,31 @@ document.addEventListener('change', e => {
   const f = e.target.dataset.f; if (!f) return;
   if (f === 'wdate') { const w = openWorkout(); if (w && e.target.value) { w.d = e.target.value; touch(w); commit(); } }
   else if (f === 'progex') { ui.progEx = e.target.value; render(); }
-  else if (f === 'rest') { S.set.rest = Math.max(0, Math.round(num(e.target.value) || 0)); S.setU = now(); dirty.set = true; commit(); toast('Uloženo'); }
+  else if (['rest', 'restiso', 'goal', 'bar', 'sound'].includes(f)) {
+    const v = num(e.target.value);
+    if (f === 'rest') S.set.rest = Math.max(0, Math.round(v || 0));
+    if (f === 'restiso') S.set.restIso = Math.max(0, Math.round(v || 0));
+    if (f === 'goal') S.set.goal = Math.min(14, Math.max(1, Math.round(v || 3)));
+    if (f === 'bar') { if (!(v >= 0 && v <= 30)) { toast('Osa má mít 0–30 kg.'); return; } S.set.bar = v; }
+    if (f === 'sound') { S.set.sound = e.target.checked; if (e.target.checked) { audioUnlock(); beep(); } }
+    S.setU = now(); dirty.set = true; commit(); toast('Uloženo');
+  }
   else if (f === 'inc') { const v = num(e.target.value); if (v > 0) { S.set.inc[e.target.dataset.k] = v; S.setU = now(); dirty.set = true; commit(); toast('Uloženo'); } }
+});
+document.addEventListener('change', async e => {
+  const kind = e.target.dataset.photo; if (!kind) return;
+  const file = e.target.files && e.target.files[0]; e.target.value = ''; if (!file) return;
+  toast('Zpracovávám fotku…', 8000);
+  try {
+    const { full, thumb } = await processPhoto(file);
+    const last = liveBody().slice(-1)[0];
+    const ph = { id: 'p' + uid(), d: localISO(), kind, thumb, note: '', u: now() };
+    if (kind === 'ex') ph.ex = e.target.dataset.ex; else if (last) ph.bw = last.kg;
+    S.photos = S.photos || []; S.photos.push(ph); dirty.photos.add(ph.id);
+    savePhotoData(ph.id, full); commit(); vib(10);
+    toast(`Fotka uložena <span class="muted">(${Math.round(full.length / 1024)} kB)</span>`);
+    if (sheetKind && kind === 'ex' && $('#sheet-c [data-photo]')) detailSheet(ph.ex); else render();
+  } catch { toast('Fotku se nepodařilo načíst.'); }
 });
 document.addEventListener('change', async e => {
   if (e.target.id !== 'imp') return;
@@ -1554,7 +1973,17 @@ $('#sheet-bg').addEventListener('click', closeSheet);
 let sy0 = null;
 $('#sheet').addEventListener('touchstart', e => { sy0 = $('#sheet').scrollTop <= 0 ? e.touches[0].clientY : null; }, { passive: true });
 $('#sheet').addEventListener('touchend', e => { if (sy0 != null && e.changedTouches[0].clientY - sy0 > 90) closeSheet(); sy0 = null; }, { passive: true });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeSheet();
+  // Enter ve sloupcích série → další políčko
+  if (e.key === 'Enter' && e.target.matches && e.target.matches('.set input')) {
+    e.preventDefault();
+    const ins = $$('.set:not(.ok) input'), k = ins.indexOf(e.target);
+    if (ins[k + 1]) ins[k + 1].focus(); else e.target.blur();
+  }
+});
+// klepnutím do políčka se hodnota označí, takže se rovnou přepisuje
+document.addEventListener('focusin', e => { if (e.target.matches && e.target.matches('.set input')) setTimeout(() => { try { e.target.select(); } catch {} }, 0); });
 document.addEventListener('visibilitychange', () => {
   if (!S) return;
   if (document.hidden) flush();
