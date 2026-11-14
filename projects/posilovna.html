@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#050505">
+<link rel="apple-touch-icon" id="ico-apple" href="./posilovna-icons/posilovna-neon-180.png">
+<link rel="icon" id="ico-png" type="image/png" sizes="192x192" href="./posilovna-icons/posilovna-neon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -759,6 +761,10 @@ function applyTheme(id) {
   const st = document.documentElement.style;
   for (const [k, v] of Object.entries({ '--neon': t.a, '--neon-rgb': t.rgb, '--neon-d': t.d, '--neon-dd': t.dd, '--on-neon': t.on, '--acc2': t.c2, '--bg': t.bg, '--panel': t.p, '--panel2': t.p2, '--line': t.l, '--line2': t.l2 })) st.setProperty(k, v);
   const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = t.bg;
+  // ikona na ploše se bere ve chvíli přidání, takže odpovídá vzhledu zvolenému v tu chvíli
+  const ia = document.getElementById('ico-apple'), ip = document.getElementById('ico-png');
+  if (ia) ia.href = `./posilovna-icons/posilovna-${id}-180.png`;
+  if (ip) ip.href = `./posilovna-icons/posilovna-${id}-192.png`;
   ls.set('posilovna-theme', id);
 }
 applyTheme(ls.get('posilovna-theme') || 'neon');
@@ -1966,6 +1972,7 @@ function vSet() {
         <button class="th${(S.set.theme || 'neon') === id ? ' on' : ''}" data-act="theme" data-id="${id}" aria-pressed="${(S.set.theme || 'neon') === id}" style="--ta:${t.a};--tr:${t.rgb};--tb:${t.bg};--tp:${t.p};--td:${t.d};--tl:${t.l2}">
           <span class="th-sw"><i></i><b></b><em></em></span><span class="th-n">${t.n}</span></button>`).join('')}</div></div>`).join('')}
       <p class="note">Barvy se ukládají do tvého profilu, takže je uvidíš na všech zařízeních. Barvy náročnosti sérií a RPE zůstávají stejné, protože nesou význam.</p>
+      <p class="note">Ikona na ploše telefonu dostane barvu, kterou máš zvolenou ve chvíli přidání na plochu. Po změně barvy ikonu z plochy smaž a přidej znovu.</p>
     </div>
     <h2 class="sec">Trénink</h2>
     <div class="card stack">
