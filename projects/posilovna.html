@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#050505">
 <link rel="apple-touch-icon" id="ico-apple" href="./posilovna-icons/posilovna-neon-180.png">
 <link rel="icon" id="ico-png" type="image/png" sizes="192x192" href="./posilovna-icons/posilovna-neon-192.png">
@@ -2321,6 +2321,9 @@ document.addEventListener('visibilitychange', () => {
 });
 addEventListener('online', () => { if (S) { syncStatus('pend'); flush(); } });
 addEventListener('offline', () => { if (S) syncStatus('off'); });
+// Bez přibližování dvěma prsty: Android to řídí viewport (user-scalable=no), iOS ho ignoruje, proto se gesto ruší tady
+for (const ev of ['gesturestart', 'gesturechange', 'gestureend']) document.addEventListener(ev, e => e.preventDefault(), { passive: false });
+document.addEventListener('touchmove', e => { if (e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, { passive: false });
 
 /* ═══════════════════════════════════════════════════════════════
    PŘIHLÁŠENÍ
