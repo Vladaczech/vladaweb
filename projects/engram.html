@@ -1,0 +1,1545 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" content="#f5f5f2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1013" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Engram">
+<meta name="description" content="Engram – opakování s rozestupy (FSRS) pro každodenní učení na telefonu.">
+<title>Engram</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%234f5bd5'/%3E%3Cpath d='M20 18h24M20 32h18M20 46h24M20 18v28' stroke='white' stroke-width='6' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%234f5bd5'/%3E%3Cpath d='M20 18h24M20 32h18M20 46h24M20 18v28' stroke='white' stroke-width='6' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f5f2;--surface:#ffffff;--surface-2:#f0efea;--surface-3:#e8e6df;--line:#e5e3dc;--line-2:#d6d3ca;
+  --text:#17171a;--text-2:#4d4d55;--muted:#85858e;
+  --accent:#4f5bd5;--accent-ink:#ffffff;--accent-soft:rgba(79,91,213,.10);
+  --new:#3b7ff2;--learn:#d9732b;--review:#2c9465;
+  --again:#d94848;--hard:#c98417;--good:#2c9465;--easy:#3b7ff2;
+  --shadow:0 1px 2px rgba(20,20,30,.05),0 8px 24px rgba(20,20,30,.06);
+  --r:16px;--tab:64px;
+  --font:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1013;--surface:#17181c;--surface-2:#1f2126;--surface-3:#272a30;--line:#25272d;--line-2:#33363e;
+    --text:#ececef;--text-2:#b3b5bc;--muted:#7c7f89;
+    --accent:#8c95ff;--accent-ink:#0f1013;--accent-soft:rgba(140,149,255,.13);
+    --new:#6aa2ff;--learn:#f0955a;--review:#4cc28c;
+    --again:#f06a6a;--hard:#e6a443;--good:#4cc28c;--easy:#6aa2ff;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1013;--surface:#17181c;--surface-2:#1f2126;--surface-3:#272a30;--line:#25272d;--line-2:#33363e;
+  --text:#ececef;--text-2:#b3b5bc;--muted:#7c7f89;
+  --accent:#8c95ff;--accent-ink:#0f1013;--accent-soft:rgba(140,149,255,.13);
+  --new:#6aa2ff;--learn:#f0955a;--review:#4cc28c;
+  --again:#f06a6a;--hard:#e6a443;--good:#4cc28c;--easy:#6aa2ff;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.45;min-height:100dvh;-webkit-font-smoothing:antialiased;font-feature-settings:"cv11","ss01";overscroll-behavior-y:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:disabled{cursor:default}
+a{color:var(--accent);text-decoration:none}
+input,select,textarea{font:inherit;font-size:16px;color:var(--text);background:var(--surface);border:1px solid var(--line-2);border-radius:12px;padding:11px 13px;outline:none;width:100%;min-width:0}
+textarea{resize:vertical;min-height:88px;line-height:1.45}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+select{appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 17px) 52%,calc(100% - 12px) 52%;background-size:5px 5px;background-repeat:no-repeat;padding-right:34px}
+.i{flex:none;display:block}
+.hidden{display:none!important}
+.num{font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---------- shell ---------- */
+.app{max-width:600px;margin:0 auto;padding:0 16px calc(var(--tab) + env(safe-area-inset-bottom) + 28px)}
+header.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top) + 10px) 0 10px;background:linear-gradient(var(--bg) 75%,transparent)}
+.brand{flex:1;display:flex;align-items:center;gap:9px;font-weight:600;font-size:15px;letter-spacing:-.01em}
+.logo{width:26px;height:26px;border-radius:8px;background:var(--accent);display:grid;place-items:center;color:var(--accent-ink)}
+.hbtn{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:var(--text-2)}
+.hbtn:active{background:var(--surface-2)}
+.hbtn.acc{background:var(--accent);color:var(--accent-ink);box-shadow:0 4px 14px var(--accent-soft)}
+.hbtn.acc:active{filter:brightness(1.08)}
+h1.page{font-size:30px;font-weight:650;letter-spacing:-.025em;line-height:1.1;margin:6px 0 4px}
+.sub{color:var(--muted);font-size:13.5px;margin-bottom:18px}
+.sub::first-letter{text-transform:uppercase}
+h2.sec{font-size:13px;font-weight:600;color:var(--muted);margin:26px 4px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+h2.sec button{color:var(--accent);font-weight:600;font-size:13px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.pad{padding:16px}
+
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;background:color-mix(in srgb,var(--surface) 86%,transparent);backdrop-filter:saturate(1.6) blur(18px);-webkit-backdrop-filter:saturate(1.6) blur(18px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav.tabs .in{max-width:600px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);height:var(--tab)}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;font-weight:500;color:var(--muted)}
+.tab.on{color:var(--accent)}
+
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 18px;border-radius:13px;background:var(--surface-2);color:var(--text);font-weight:600;font-size:15px;white-space:nowrap;transition:transform .08s,filter .15s}
+.btn:active{transform:scale(.98)}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn.primary:disabled{opacity:.45}
+.btn.ghost{background:transparent;color:var(--text-2)}
+.btn.outline{background:transparent;border:1px solid var(--line-2)}
+.btn.danger{color:var(--again)}
+.btn.block{width:100%}
+.btn.lg{min-height:54px;font-size:16px;border-radius:15px}
+.btn.sm{min-height:36px;padding:0 13px;font-size:13.5px;border-radius:10px}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.btns>.btn{flex:1}
+.link{color:var(--accent);font-weight:500;font-size:15px;padding:8px 4px}
+.link.strong{font-weight:650}
+
+/* ---------- home ---------- */
+.hero{padding:20px 20px 18px}
+.hero-k{font-size:13px;font-weight:600;color:var(--muted)}
+.hero-row{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:2px 0 14px}
+.hero-n{font-size:60px;font-weight:650;letter-spacing:-.045em;line-height:1}
+.hero-meta{text-align:right;color:var(--muted);font-size:13px;line-height:1.5}
+.hero-meta b{color:var(--text);font-weight:600}
+.split{display:flex;height:6px;border-radius:6px;overflow:hidden;background:var(--surface-2);margin-bottom:10px}
+.split i{display:block;height:100%}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--text-2);margin-bottom:16px}
+.legend>span{display:inline-flex;align-items:center;gap:6px}
+.legend>span::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--c)}
+.done-hero{display:flex;gap:14px;align-items:center;padding:20px}
+.done-ic{width:46px;height:46px;border-radius:14px;background:color-mix(in srgb,var(--good) 14%,transparent);color:var(--good);display:grid;place-items:center;flex:none}
+.done-hero h3{font-size:17px;font-weight:650;letter-spacing:-.01em}
+.done-hero p{color:var(--muted);font-size:13.5px}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.tile{padding:12px 10px;text-align:left}
+.tile .v{font-size:19px;font-weight:650;letter-spacing:-.02em;display:flex;align-items:center;gap:4px}
+.tile .v small{font-size:12px;color:var(--muted);font-weight:500;align-self:flex-end;margin-bottom:2px}
+.tile .k{font-size:11.5px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.list{overflow:hidden}
+.deck{display:flex;align-items:center;gap:12px;padding:14px 14px 14px 16px;width:100%;text-align:left;border-bottom:1px solid var(--line)}
+.deck:last-child{border-bottom:0}
+.deck:active{background:var(--surface-2)}
+.dot{width:10px;height:10px;border-radius:4px;flex:none}
+.deck .nm{flex:1;min-width:0}
+.deck .nm b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.deck .nm small{display:block;color:var(--muted);font-size:12.5px}
+.cnts{display:flex;gap:2px;font-size:14px;font-weight:600}
+.cnts span{min-width:28px;text-align:right}
+.cnts .z{color:var(--line-2);font-weight:500}
+.c-new{color:var(--new)}.c-learn{color:var(--learn)}.c-rev{color:var(--review)}
+.banner{display:flex;gap:12px;align-items:center;padding:12px 14px;margin-top:12px;border-radius:14px;background:var(--accent-soft);color:var(--text);font-size:13.5px}
+.banner .btn{margin-left:auto}
+.empty{padding:32px 22px;text-align:center}
+.empty .big{width:58px;height:58px;border-radius:18px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;margin:0 auto 14px}
+.empty h3{font-size:19px;font-weight:650;letter-spacing:-.015em;margin-bottom:6px}
+.empty p{color:var(--muted);font-size:14px;max-width:360px;margin:0 auto 18px}
+.empty .btns{flex-direction:column}
+
+/* ---------- browse ---------- */
+.searchbar{position:sticky;top:calc(env(safe-area-inset-top) + 60px);z-index:10;background:var(--bg);padding:2px 0 10px}
+.search{position:relative}
+.search .i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.search input{padding-left:38px;background:var(--surface)}
+.filters{display:flex;gap:8px;margin-top:8px}
+.filters select{font-size:14px;padding:8px 30px 8px 11px;border-radius:10px}
+.nitem{display:block;width:100%;text-align:left;padding:13px 16px;border-bottom:1px solid var(--line)}
+.nitem:last-child{border-bottom:0}
+.nitem:active{background:var(--surface-2)}
+.nitem .f{font-weight:550;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
+.nitem .b{color:var(--text-2);font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.nitem .m{display:flex;gap:8px;align-items:center;margin-top:6px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px;background:var(--surface-2);font-size:11.5px;font-weight:550;color:var(--text-2)}
+.pill.new{color:var(--new);background:color-mix(in srgb,var(--new) 12%,transparent)}
+.pill.learn{color:var(--learn);background:color-mix(in srgb,var(--learn) 12%,transparent)}
+.pill.rev{color:var(--review);background:color-mix(in srgb,var(--review) 12%,transparent)}
+.pill.due{color:var(--accent);background:var(--accent-soft)}
+.pill.warn{color:var(--again);background:color-mix(in srgb,var(--again) 12%,transparent)}
+.count-line{font-size:12.5px;color:var(--muted);margin:2px 4px 8px}
+
+/* ---------- stats ---------- */
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kpi{padding:14px}
+.kpi .k{font-size:12.5px;color:var(--muted);font-weight:500}
+.kpi .v{font-size:26px;font-weight:650;letter-spacing:-.03em;margin-top:2px}
+.kpi .v small{font-size:14px;color:var(--muted);font-weight:500;letter-spacing:0;margin-left:2px}
+.kpi .h{font-size:12px;color:var(--muted);margin-top:2px}
+.chart{padding:16px}
+.chart h3{font-size:15px;font-weight:600;letter-spacing:-.01em}
+.chart .d{font-size:12.5px;color:var(--muted);margin:2px 0 12px}
+.chart svg{width:100%;height:auto;display:block;overflow:visible}
+.chart svg text{fill:var(--muted);font-size:9.5px;font-family:var(--font)}
+.chart .foot{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:12.5px;color:var(--text-2)}
+.chart .foot b{color:var(--text);font-weight:600}
+.hbar{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--surface-2)}
+.hbar i{height:100%}
+
+/* ---------- settings ---------- */
+.group{overflow:hidden}
+.srow{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 16px;min-height:54px;border-bottom:1px solid var(--line);width:100%;text-align:left}
+.srow:last-child{border-bottom:0}
+button.srow:active{background:var(--surface-2)}
+.srow .l{flex:1;min-width:0}
+.srow .l b{display:block;font-weight:500}
+.srow .l small{display:block;color:var(--muted);font-size:12.5px;line-height:1.35;margin-top:1px}
+.srow input:not([type=checkbox]):not([type=range]),.srow select{width:auto;max-width:150px;font-size:15px;padding:8px 11px;text-align:right}
+.srow select{padding-right:30px;text-align:left}
+.srow .val{color:var(--muted);font-size:14px}
+.srow.col{flex-direction:column;align-items:stretch}
+.range-row{display:flex;align-items:center;gap:12px;margin-top:8px}
+.range-row output{min-width:46px;text-align:right;font-weight:650;font-variant-numeric:tabular-nums}
+input[type=range]{-webkit-appearance:none;appearance:none;height:28px;background:transparent;border:0;padding:0;box-shadow:none}
+input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:4px;background:var(--surface-3)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:var(--surface);border:1px solid var(--line-2);box-shadow:0 2px 6px rgba(0,0,0,.18);margin-top:-10px}
+input[type=range]::-moz-range-track{height:4px;border-radius:4px;background:var(--surface-3)}
+input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:var(--surface);border:1px solid var(--line-2)}
+.sw{-webkit-appearance:none;appearance:none;width:46px!important;height:28px;border-radius:28px;background:var(--surface-3);position:relative;flex:none;cursor:pointer;transition:background .2s;border:0!important;padding:0!important;box-shadow:none!important}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
+.sw:checked{background:var(--good)}
+.sw:checked::after{transform:translateX(18px)}
+.seg{display:flex;background:var(--surface-2);border-radius:11px;padding:3px;gap:2px}
+.seg button{flex:1;min-height:34px;border-radius:9px;font-size:13.5px;font-weight:550;color:var(--text-2);padding:0 6px}
+.seg button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.about{text-align:center;color:var(--muted);font-size:12.5px;margin:26px 0 8px;line-height:1.6}
+
+/* ---------- sheets ---------- */
+.sheet-wrap{position:fixed;inset:0;z-index:60}
+.backdrop{position:absolute;inset:0;background:rgba(10,10,15,.42);opacity:0;transition:opacity .25s}
+.sheet{position:absolute;left:0;right:0;bottom:0;max-width:600px;margin:0 auto;max-height:92dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;background:var(--surface);border-radius:22px 22px 0 0;padding:6px 18px calc(18px + env(safe-area-inset-bottom));transform:translateY(100%);transition:transform .3s cubic-bezier(.2,.85,.25,1);box-shadow:0 -10px 40px rgba(0,0,0,.15)}
+.sheet.full{height:96dvh;max-height:96dvh;padding-top:0;display:flex;flex-direction:column}
+.sheet-wrap.open .backdrop{opacity:1}
+.sheet-wrap.open .sheet{transform:none}
+.grab{width:38px;height:5px;border-radius:5px;background:var(--line-2);margin:4px auto 12px}
+.sheet h3.t{font-size:20px;font-weight:650;letter-spacing:-.02em}
+.sheet p.d{color:var(--muted);font-size:14px;margin-top:4px}
+.sh-head{position:sticky;top:0;z-index:2;background:var(--surface);display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:12px 0 10px;border-bottom:1px solid var(--line);margin:0 -18px;padding-left:12px;padding-right:12px}
+.sh-head h3{font-size:16px;font-weight:650;text-align:center}
+.sh-head .link:first-child{justify-self:start}
+.sh-head .link:last-child{justify-self:end}
+.sh-body{flex:1;overflow-y:auto;margin:0 -18px;padding:14px 18px 24px;overscroll-behavior:contain}
+.sh-foot{padding-top:10px;border-top:1px solid var(--line);margin:0 -18px;padding-left:18px;padding-right:18px}
+.form{display:grid;gap:14px}
+.field{display:grid;gap:6px}
+.field>span{font-size:13px;font-weight:600;color:var(--text-2);display:flex;justify-content:space-between}
+.field>span em{font-style:normal;font-weight:500;color:var(--muted)}
+.hint{font-size:12.5px;color:var(--muted);line-height:1.4}
+.hint.warn{color:var(--hard)}
+.toolbar{display:flex;gap:4px;flex-wrap:wrap;position:sticky;top:0;z-index:1;background:var(--surface);padding:4px 0}
+.toolbar button{height:36px;min-width:40px;padding:0 10px;border-radius:10px;background:var(--surface-2);display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:13px;font-weight:600;color:var(--text-2)}
+.toolbar button:active{background:var(--surface-3)}
+.toolbar .sp{flex:1}
+.pv{border:1px dashed var(--line-2);border-radius:14px;padding:12px}
+.pv-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pv-grid>div{min-width:0}
+.pv-h{font-size:11.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.pv .content{font-size:14.5px;text-align:left}
+.menu{display:grid;gap:2px;margin-top:8px}
+.menu button{display:flex;align-items:center;gap:14px;padding:13px 6px;border-radius:12px;text-align:left;font-size:15.5px;font-weight:500}
+.menu button:active{background:var(--surface-2)}
+.menu button .i{color:var(--text-2)}
+.menu button.danger,.menu button.danger .i{color:var(--again)}
+.menu button:disabled{opacity:.4}
+.menu hr{border:0;border-top:1px solid var(--line);margin:4px 0}
+.swatches{display:flex;gap:10px;flex-wrap:wrap}
+.swatches button{width:32px;height:32px;border-radius:10px;border:2px solid transparent;outline:2px solid transparent;outline-offset:1px}
+.swatches button.on{outline-color:var(--text)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13.5px}
+.kv dt{color:var(--muted)}
+.kv dd{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
+.cinfo{border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.cinfo+.cinfo{margin-top:8px}
+.cinfo .hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;font-weight:600;font-size:14px}
+.hist{display:flex;gap:3px;flex-wrap:wrap;margin-top:10px}
+.hist i{width:10px;height:10px;border-radius:3px}
+.dlg{text-align:center;padding:8px 4px 4px}
+.dlg h3{font-size:18px;font-weight:650;margin-bottom:6px}
+.dlg p{color:var(--text-2);font-size:14.5px;margin-bottom:18px}
+
+/* ---------- study ---------- */
+.study{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;transform:translateY(16px);opacity:0;transition:opacity .2s,transform .25s cubic-bezier(.2,.85,.25,1)}
+.study.open{opacity:1;transform:none}
+.st-top{max-width:640px;width:100%;margin:0 auto;display:flex;align-items:center;gap:6px;padding:calc(env(safe-area-inset-top) + 8px) 10px 6px}
+.st-counts{flex:1;display:flex;justify-content:center;gap:14px;font-weight:650;font-size:15px}
+.st-counts span{position:relative;padding-bottom:3px}
+.st-counts span.cur::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;border-radius:2px;background:currentColor}
+.st-prog{max-width:620px;width:calc(100% - 32px);margin:2px auto 0;height:3px;background:var(--surface-3);border-radius:3px;overflow:hidden}
+.st-prog i{display:block;height:100%;background:var(--accent);width:0;transition:width .35s}
+.st-stage{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px 20px;display:flex;flex-direction:column}
+.st-card{max-width:620px;width:100%;margin:0 auto;flex:1;background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:16px 20px 26px;display:flex;flex-direction:column;touch-action:pan-y;position:relative;user-select:none;-webkit-user-select:none;will-change:transform}
+.st-card.anim{animation:cardIn .28s cubic-bezier(.2,.85,.25,1)}
+@keyframes cardIn{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
+.st-meta{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);min-height:32px}
+.st-meta .dk{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:7px}
+.st-meta .mini{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;color:var(--text-2)}
+.st-meta .mini:active{background:var(--surface-2)}
+.st-meta .mini.on{color:var(--hard)}
+.st-q,.st-a{font-size:23px;line-height:1.42;text-align:center;word-break:break-word;letter-spacing:-.005em}
+.st-q{margin:auto 0;padding:18px 0}
+.st-card.rev .st-q{margin:auto 0 0;padding:6px 0 0;font-size:19px;color:var(--text-2)}
+.st-end{margin-top:auto}
+.st-card.rev.cz .st-q{display:none}
+.st-a{padding:6px 0 0;animation:fadeUp .25s ease}
+.st-card.rev.cz .st-a{margin-top:auto}
+.st-div{height:1px;background:var(--line);margin:18px 0 16px;animation:fadeUp .25s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.st-x{margin-top:16px;padding-top:14px;border-top:1px dashed var(--line-2);font-size:15.5px;color:var(--text-2);text-align:center}
+.content img{max-width:100%;max-height:46vh;border-radius:12px;display:block;margin:8px auto}
+.content ul{text-align:left;display:inline-block;padding-left:1.1em;margin:4px 0}
+.content li{margin:2px 0}
+.content code{font-family:ui-monospace,Menlo,monospace;font-size:.88em;background:var(--surface-2);padding:1px 6px;border-radius:6px}
+.content mark{background:color-mix(in srgb,var(--hard) 28%,transparent);color:inherit;padding:0 3px;border-radius:4px}
+.cz-q{display:inline-block;min-width:2.4em;padding:0 8px;border-radius:8px;background:var(--accent-soft);color:var(--accent);font-weight:650}
+.cz-a{color:var(--accent);font-weight:650}
+.type-in{margin-top:18px}
+.type-in input{text-align:center;font-size:18px;padding:13px}
+.diff{margin-top:16px;font-size:18px;text-align:center;line-height:1.7;font-family:ui-monospace,Menlo,monospace;word-break:break-word}
+.diff .ok{color:var(--good)}
+.diff .bad{color:var(--again);text-decoration:line-through}
+.diff .miss{color:var(--again);background:color-mix(in srgb,var(--again) 14%,transparent);border-radius:3px}
+.diff .lb{font-family:var(--font);font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:block}
+.sw-lbl{position:absolute;top:18px;padding:6px 12px;border-radius:10px;font-weight:700;font-size:14px;opacity:0;transition:opacity .12s;pointer-events:none}
+.sw-lbl.l{left:16px;color:var(--again);border:2px solid var(--again);transform:rotate(-8deg)}
+.sw-lbl.r{right:16px;color:var(--good);border:2px solid var(--good);transform:rotate(8deg)}
+.st-card[data-sw="again"] .sw-lbl.l,.st-card[data-sw="good"] .sw-lbl.r{opacity:1}
+.st-bottom{max-width:640px;width:100%;margin:0 auto;padding:10px 16px calc(12px + env(safe-area-inset-bottom))}
+.rates{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.rate{min-height:66px;border-radius:15px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-weight:650;font-size:15px;color:var(--c);background:color-mix(in srgb,var(--c) 11%,var(--surface));border:1px solid color-mix(in srgb,var(--c) 22%,transparent);transition:transform .08s}
+.rate:active{transform:scale(.96)}
+.rate small{font-size:12px;font-weight:550;opacity:.85;font-variant-numeric:tabular-nums}
+.kbd-hint{text-align:center;font-size:11.5px;color:var(--muted);margin-top:8px}
+@media (hover:none){.kbd-hint{display:none}}
+.st-done{max-width:520px;width:100%;margin:auto;text-align:center;padding:20px 8px}
+.st-done .big{width:72px;height:72px;border-radius:22px;background:color-mix(in srgb,var(--good) 14%,transparent);color:var(--good);display:grid;place-items:center;margin:0 auto 18px}
+.st-done h2{font-size:26px;font-weight:650;letter-spacing:-.025em}
+.st-done p{color:var(--muted);margin:6px 0 20px}
+.st-done .kpis{margin-bottom:20px;text-align:left}
+.st-done .btns{flex-direction:column}
+
+#toast{position:fixed;left:0;right:0;margin:0 auto;width:max-content;bottom:calc(var(--tab) + env(safe-area-inset-bottom) + 14px);transform:translateY(20px);z-index:90;background:#1c1d22;color:#f2f2f4;border-radius:14px;padding:11px 16px;font-size:14px;display:flex;gap:14px;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .2s,transform .25s;max-width:calc(100% - 32px)}
+#toast.show{opacity:1;transform:none;pointer-events:auto}
+#toast button{color:#a9b1ff;font-weight:650}
+:root[data-theme="dark"] #toast{background:#2a2c33}
+@media (min-width:700px){.app{padding-top:8px}.st-q,.st-a{font-size:26px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <a class="hbtn" href="../index.html" aria-label="Zpět na rozcestník" id="backLink"></a>
+    <div class="brand"><span class="logo" id="logo"></span>Engram</div>
+    <button class="hbtn acc" data-act="add" aria-label="Přidat kartu" id="addBtn"></button>
+  </header>
+  <main id="view"></main>
+</div>
+<nav class="tabs" aria-label="Hlavní navigace"><div class="in" id="tabs"></div></nav>
+
+<section id="study" class="study hidden" aria-label="Studium">
+  <div class="st-top">
+    <button class="hbtn" data-act="study-close" aria-label="Ukončit studium" id="stClose"></button>
+    <div class="st-counts num" id="stCounts"></div>
+    <button class="hbtn" data-act="study-undo" aria-label="Vrátit poslední hodnocení" id="stUndo"></button>
+    <button class="hbtn" data-act="study-menu" aria-label="Další akce" id="stMenu"></button>
+  </div>
+  <div class="st-prog"><i id="stProg"></i></div>
+  <div class="st-stage" id="stStage"></div>
+  <div class="st-bottom" id="stBottom"></div>
+</section>
+<div id="toast" role="status" aria-live="polite"></div>
+<input type="file" id="fileImg" accept="image/*" class="hidden">
+<input type="file" id="fileAny" class="hidden">
+
+<script>
+'use strict';
+/* =========================================================
+   Engram – spaced repetition (FSRS-5), offline, single file
+   ========================================================= */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const DAY=864e5, MIN=6e4;
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const nf=(n,d=0)=>Number(n).toLocaleString('cs-CZ',{maximumFractionDigits:d,minimumFractionDigits:0});
+const pl=(n,a,b,c)=>{n=Math.abs(n);return n===1?a:(n>=2&&n<=4?b:c)};
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+
+/* ---------- icons ---------- */
+const IC={
+  home:'<path d="M3.5 10.5 12 3.5l8.5 7"/><path d="M5.5 9v11.5h13V9"/><path d="M10 20.5v-6h4v6"/>',
+  cards:'<rect x="3.5" y="7" width="13" height="13.5" rx="2.5"/><path d="M7.5 3.5h10.5a2.5 2.5 0 0 1 2.5 2.5v10.5"/>',
+  stats:'<path d="M4 20.5h16"/><path d="M7 16.5v-5M12 16.5v-11M17 16.5v-8"/>',
+  settings:'<path d="M4 7h9M17 7h3M4 12h3M11 12h9M4 17h11M19 17h1"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="17" r="2"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  x:'<path d="M6 6l12 12M18 6 6 18"/>',
+  more:'<circle cx="5.5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="18.5" cy="12" r="1.2"/>',
+  undo:'<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>',
+  edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>',
+  volume:'<path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z"/><path d="M15.5 9a4.5 4.5 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/>',
+  play:'<path d="M8 5.5v13l10.5-6.5z"/>',
+  check:'<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+  trash:'<path d="M4.5 7h15M10 11v6M14 11v6M6.5 7l1 13h9l1-13M9.5 7V4h5v3"/>',
+  upload:'<path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M4.5 15v5h15v-5"/>',
+  download:'<path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M4.5 15v5h15v-5"/>',
+  flame:'<path d="M12 21c-3.9 0-6.5-2.6-6.5-6.2 0-3 2-5 3.4-6.4.4 1.5 1.2 2.5 2.3 3 0-3.2 1.4-5.6 3.8-7.4-.3 2.8.8 4.4 2 5.9 1 1.3 1.5 2.8 1.5 4.7 0 3.8-2.6 6.4-6.5 6.4z"/>',
+  clock:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+  image:'<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="m20.5 16-5-5L6 19.5"/>',
+  bold:'<path d="M7 5h5.5a3.5 3.5 0 0 1 0 7H7zM7 12h6.5a3.5 3.5 0 0 1 0 7H7z"/>',
+  italic:'<path d="M10 5h8M6 19h8M14 5l-4 14"/>',
+  cloze:'<path d="M8 5H5v14h3M16 5h3v14h-3"/><path d="M9.5 12h5"/>',
+  star:'<path d="m12 3.8 2.5 5.2 5.7.8-4.1 4 1 5.6L12 16.7l-5.1 2.7 1-5.6-4.1-4 5.7-.8z"/>',
+  eye:'<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>',
+  chev:'<path d="m9.5 6 6 6-6 6"/>',
+  back:'<path d="m14.5 6-6 6 6 6"/>',
+  bolt:'<path d="M13 3 5 13.5h6L10 21l8-10.5h-6z"/>',
+  calendar:'<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
+  info:'<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5M12 7.8v.2"/>',
+  ban:'<circle cx="12" cy="12" r="8.5"/><path d="m6 6 12 12"/>',
+  reset:'<path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3L4.5 9"/><path d="M4.5 4.5V9H9"/>',
+  later:'<path d="M12 7.5V12l3 2"/><path d="M20.5 12A8.5 8.5 0 1 1 12 3.5"/><path d="M16.5 3.5h4v4"/>',
+  deck:'<rect x="4" y="4" width="16" height="16" rx="3.5"/><path d="M8 9h8M8 13h5"/>',
+  logo:'<path d="M7 6h10M7 12h7.5M7 18h10M7 6v12"/>',
+  search:'<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/>',
+  shield:'<path d="M12 3.5 5 6v5.5c0 4.4 3 7.7 7 9 4-1.3 7-4.6 7-9V6z"/><path d="m9 12 2 2 4-4"/>'
+};
+const icon=(n,s=20,w=1.8)=>`<svg class="i" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n]||''}</svg>`;
+
+/* ---------- state & persistence ---------- */
+const DEF_SET={theme:'system',retention:0.9,learnSteps:[1,10],relearnSteps:[10],maxIvl:36500,rollover:4,newOrder:'added',newMix:'mix',
+  leechThreshold:8,leechAction:'tag',haptics:true,gestures:true,autoTTS:false,showIvl:true,fuzz:true,learnAhead:20,reminder:'19:00',w:null};
+const COLORS=['#4f5bd5','#2c9465','#d94848','#d9732b','#8e4ec6','#0e9fb3','#d6409f','#6b7280'];
+let S=null, LOGS=[], MEDIA={};
+const freshCore=()=>({v:1,decks:{},notes:{},cards:{},settings:{...DEF_SET},meta:{created:Date.now(),lastBackup:0,lastDeck:null,lastType:'basic',extra:{day:-1,n:{}}}});
+
+const Store={
+  db:null,
+  async open(){
+    try{
+      this.db=await new Promise((res,rej)=>{
+        const r=indexedDB.open('engram',1);
+        r.onupgradeneeded=()=>r.result.createObjectStore('kv');
+        r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);r.onblocked=()=>rej(new Error('blocked'));
+      });
+    }catch(e){this.db=null}
+  },
+  get(k){
+    if(!this.db){try{const v=localStorage.getItem('engram:'+k);return Promise.resolve(v?JSON.parse(v):undefined)}catch(e){return Promise.resolve(undefined)}}
+    return new Promise(res=>{try{const r=this.db.transaction('kv','readonly').objectStore('kv').get(k);r.onsuccess=()=>res(r.result);r.onerror=()=>res(undefined)}catch(e){res(undefined)}});
+  },
+  set(k,v){
+    if(!this.db){try{localStorage.setItem('engram:'+k,JSON.stringify(v));return Promise.resolve(true)}catch(e){return Promise.resolve(false)}}
+    return new Promise(res=>{try{const tx=this.db.transaction('kv','readwrite');tx.objectStore('kv').put(v,k);tx.oncomplete=()=>res(true);tx.onerror=tx.onabort=()=>res(false)}catch(e){res(false)}});
+  }
+};
+const dirty=new Set();let saveT=null;
+function save(...keys){(keys.length?keys:['core']).forEach(k=>dirty.add(k));clearTimeout(saveT);saveT=setTimeout(flush,250)}
+async function flush(){
+  clearTimeout(saveT);const ks=[...dirty];dirty.clear();
+  for(const k of ks){const ok=await Store.set(k,k==='core'?S:k==='logs'?LOGS:MEDIA);if(!ok)toast('Uložení se nezdařilo – v zařízení může docházet místo')}
+}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flush();else if(!Study.open&&!Layers.stack.length)render()});
+window.addEventListener('pagehide',flush);
+async function persistStorage(){try{if(navigator.storage?.persist&&!(await navigator.storage.persisted()))await navigator.storage.persist()}catch(e){}}
+
+/* ---------- time ---------- */
+function dayStart(ts=Date.now()){const d=new Date(ts),h=S.settings.rollover;const s=new Date(d.getFullYear(),d.getMonth(),d.getDate(),h);if(d<s)s.setDate(s.getDate()-1);return s.getTime()}
+function addDays(ts,n){const d=new Date(ts);d.setDate(d.getDate()+n);return d.getTime()}
+function dayIdx(ts=Date.now()){const s=new Date(dayStart(ts));return Math.round(Date.UTC(s.getFullYear(),s.getMonth(),s.getDate())/DAY)}
+function fmtIvl(days){
+  if(days<1){const m=Math.max(1,Math.round(days*1440));return m<60?m+' min':nf(m/60,m%60&&m<600?1:0)+' h'}
+  if(days<30)return Math.round(days)+' d';
+  if(days<365)return nf(days/30.44,1)+' měs.';
+  return nf(days/365.25,1)+' r.';
+}
+function fmtDate(ts,opt={day:'numeric',month:'numeric',year:'numeric'}){return new Date(ts).toLocaleDateString('cs-CZ',opt)}
+function relDue(c,now=Date.now()){
+  if(c.state===0)return 'Nová';
+  if(c.due<=now)return 'K opakování';
+  if(c.state===2){const d=dayIdx(c.due)-dayIdx(now);return d<=0?'Dnes':d===1?'Zítra':'Za '+fmtIvl(d)}
+  return 'Za '+fmtIvl((c.due-now)/DAY);
+}
+
+/* ---------- FSRS-5 ---------- */
+const W5=[0.40255,1.18385,3.173,15.69105,7.1949,0.5345,1.4604,0.0046,1.54575,0.1192,1.01925,1.9395,0.11,0.29605,2.2698,0.2315,2.9898,0.51655,0.6621];
+const DECAY=-0.5, FACTOR=19/81;
+const FSRS={
+  get w(){const w=S.settings.w;return Array.isArray(w)&&w.length===19?w:W5},
+  R(t,s){return Math.pow(1+FACTOR*t/Math.max(s,0.01),DECAY)},
+  ivl(s){const r=S.settings.retention;return clamp(Math.round(s/FACTOR*(Math.pow(r,1/DECAY)-1)),1,S.settings.maxIvl)},
+  initS(g){return Math.max(this.w[g-1],0.1)},
+  initD(g){const w=this.w;return clamp(w[4]-Math.exp(w[5]*(g-1))+1,1,10)},
+  nextD(d,g){const w=this.w;const d1=d+(-w[6]*(g-3))*(10-d)/9;const d0=w[4]-Math.exp(w[5]*3)+1;return clamp(w[7]*d0+(1-w[7])*d1,1,10)},
+  recallS(d,s,r,g){const w=this.w;const hp=g===2?w[15]:1,eb=g===4?w[16]:1;
+    return s*(1+Math.exp(w[8])*(11-d)*Math.pow(s,-w[9])*(Math.exp((1-r)*w[10])-1)*hp*eb)},
+  forgetS(d,s,r){const w=this.w;const f=w[11]*Math.pow(d,-w[12])*(Math.pow(s+1,w[13])-1)*Math.exp((1-r)*w[14]);return Math.min(f,s/Math.exp(w[17]*w[18]))},
+  shortS(s,g){const w=this.w;return s*Math.exp(w[17]*(g-3+w[18]))}
+};
+function hashRand(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}h^=h>>>13;h=Math.imul(h,0x5bd1e995);h^=h>>>15;return (h>>>0)/4294967296}
+function fuzz(ivl,seed){
+  if(!S.settings.fuzz||ivl<2.5)return ivl;
+  let delta=1;for(const [a,b,f] of [[2.5,7,.15],[7,20,.1],[20,Infinity,.05]])delta+=f*Math.max(Math.min(ivl,b)-a,0);
+  const lo=Math.max(2,Math.round(ivl-delta)),hi=Math.min(Math.round(ivl+delta),S.settings.maxIvl);
+  return Math.floor(hashRand(seed)*(hi-lo+1))+lo;
+}
+function hardDelay(steps,i){if(steps.length===1)return Math.min(steps[0]*1.5,steps[0]+1440);if(i===0)return (steps[0]+steps[1])/2;return steps[i]}
+/* returns {1..4: newCard} with .lbl (interval label) */
+function preview(c,now=Date.now()){
+  const st=S.settings,out={};
+  const t=c.last!=null?Math.max(0,dayIdx(now)-dayIdx(c.last)):0;
+  const r=c.state===0?1:FSRS.R(t,c.s);
+  for(const g of [1,2,3,4]){
+    const n={...c,reps:c.reps+1,last:now};
+    if(c.state===0){n.s=FSRS.initS(g);n.d=FSRS.initD(g)}
+    else if(t===0){n.s=FSRS.shortS(c.s,g);n.d=FSRS.nextD(c.d,g)}
+    else{n.s=g===1?FSRS.forgetS(c.d,c.s,r):FSRS.recallS(c.d,c.s,r,g);n.d=FSRS.nextD(c.d,g)}
+    n.s=clamp(n.s,0.01,36500);
+    out[g]=n;
+  }
+  const learning=c.state!==2, steps=c.state===3?st.relearnSteps:st.learnSteps, step=c.state===0?0:(c.step||0);
+  const setMin=(n,m)=>{n._min=m;n.due=m>=1440?addDays(dayStart(now),Math.round(m/1440)):now+m*MIN};
+  const grad=n=>{n.state=2;n.step=0;n._ivl=FSRS.ivl(n.s)};
+  for(const g of [1,2,3,4]){
+    const n=out[g];
+    if(learning){
+      const ls=c.state===0?1:c.state;
+      if(!steps.length||g===4)grad(n);
+      else if(g===1){n.state=ls;n.step=0;setMin(n,steps[0])}
+      else if(g===2){n.state=ls;n.step=step;setMin(n,hardDelay(steps,step))}
+      else{const ns=step+1;if(ns>=steps.length)grad(n);else{n.state=ls;n.step=ns;setMin(n,steps[ns])}}
+    }else{
+      if(g===1){n.lapses=c.lapses+1;if(st.relearnSteps.length){n.state=3;n.step=0;setMin(n,st.relearnSteps[0])}else grad(n)}
+      else grad(n);
+    }
+  }
+  // order & fuzz graduating intervals
+  const G=[1,2,3,4].filter(g=>out[g]._ivl!=null);
+  for(const g of G)out[g]._ivl=fuzz(out[g]._ivl,c.id+':'+c.reps+':'+g);
+  if(!learning){const h=out[2],gd=out[3],e=out[4];h._ivl=Math.min(h._ivl,gd._ivl);gd._ivl=Math.max(gd._ivl,h._ivl+1);e._ivl=Math.max(e._ivl,gd._ivl+1)}
+  else if(out[3]._ivl!=null)out[4]._ivl=Math.max(out[4]._ivl,out[3]._ivl+1);
+  for(const g of [1,2,3,4]){
+    const n=out[g];
+    if(n._ivl!=null){n._ivl=Math.min(n._ivl,st.maxIvl);n.ivl=n._ivl;n.due=addDays(dayStart(now),n.ivl);n.lbl=fmtIvl(n.ivl)}
+    else n.lbl=fmtIvl(n._min/1440);
+    delete n._ivl;delete n._min;
+  }
+  return out;
+}
+
+/* ---------- content rendering ---------- */
+const CLOZE_RE=/\{\{c(\d+)::([\s\S]*?)(?:::([\s\S]*?))?\}\}/g;
+function fmt(text){
+  const media=[];
+  let s=String(text||'').replace(/!\[([^\]]*)\]\((m:[\w-]+|https?:\/\/[^)\s]+)\)/g,(m,alt,src)=>{
+    const url=src.startsWith('m:')?MEDIA[src.slice(2)]:src;media.push(url?`<img src="${esc(url)}" alt="${esc(alt)}" loading="lazy" draggable="false">`:'');return `${media.length-1}`;
+  });
+  s=esc(s)
+    .replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/__(.+?)__/g,'<u>$1</u>').replace(/==(.+?)==/g,'<mark>$1</mark>')
+    .replace(/(^|[^*\w])\*(?!\s)([^*]+?)\*(?!\*)/g,'$1<i>$2</i>').replace(/`([^`]+?)`/g,'<code>$1</code>');
+  let out='',inL=false;
+  for(const l of s.split('\n')){
+    const m=l.match(/^\s*[-•]\s+(.*)$/);
+    if(m){if(!inL){out+='<ul>';inL=true}out+='<li>'+m[1]+'</li>'}
+    else{if(inL){out+='</ul>';inL=false}out+=l+'\n'}
+  }
+  if(inL)out+='</ul>';
+  return out.replace(/\n+$/,'').replace(/\n/g,'<br>').replace(/<\/ul><br>/g,'</ul>').replace(/(\d+)/g,(m,i)=>media[i]);
+}
+function clozeHTML(text,ord,reveal){
+  const parts=[];
+  const s=String(text||'').replace(CLOZE_RE,(m,n,ans,hint)=>{
+    n=+n;let h;
+    if(n===ord)h=reveal?`<span class="cz-a">${fmt(ans)}</span>`:`<span class="cz-q">${hint?esc(hint):'…'}</span>`;
+    else h=fmt(ans);
+    parts.push(h);return `${parts.length-1}`;
+  });
+  return fmt(s).replace(/(\d+)/g,(m,i)=>parts[i]);
+}
+function plain(t){return String(t||'').replace(CLOZE_RE,(m,n,a)=>a).replace(/!\[[^\]]*\]\([^)]*\)/g,'').replace(/\*\*|__|==|`/g,'').replace(/(^|[^*\w])\*([^*]+?)\*/g,'$1$2').replace(/\s+/g,' ').trim()}
+function clozeAnswers(text,ord){const a=[];for(const m of String(text).matchAll(CLOZE_RE))if(+m[1]===ord)a.push(plain(m[2]));return a.join(', ')}
+function faces(c){
+  const n=S.notes[c.nid],f=n.fields,dk=S.decks[n.deck]||{};
+  if(n.type==='cloze')return {q:clozeHTML(f.front,c.ord,false),a:clozeHTML(f.front,c.ord,true),x:f.extra?fmt(f.extra):'',qT:plain(f.front.replace(CLOZE_RE,(m,k,a,h)=>+k===c.ord?'…':a)),aT:plain(f.front),lq:dk.ttsF,la:dk.ttsF,ans:clozeAnswers(f.front,c.ord),cloze:true};
+  const rev=n.type==='reverse'&&c.ord===1;
+  const Q=rev?f.back:f.front,A=rev?f.front:f.back;
+  return {q:fmt(Q),a:fmt(A),x:f.extra?fmt(f.extra):'',qT:plain(Q),aT:plain(A),lq:rev?dk.ttsB:dk.ttsF,la:rev?dk.ttsF:dk.ttsB,ans:plain(A),cloze:false};
+}
+
+/* ---------- data ops ---------- */
+function newDeck(name,o={}){const id=uid();S.decks[id]={id,name,desc:'',color:COLORS[Object.keys(S.decks).length%COLORS.length],newPerDay:20,revPerDay:200,ttsF:'',ttsB:'',created:Date.now(),...o};save();return id}
+function ordsFor(n){
+  if(n.type==='cloze'){const s=new Set();for(const m of String(n.fields.front).matchAll(CLOZE_RE))s.add(+m[1]);return [...s].sort((a,b)=>a-b)}
+  return n.type==='reverse'?[0,1]:[0];
+}
+function cardsOf(nid){return Object.values(S.cards).filter(c=>c.nid===nid).sort((a,b)=>a.ord-b.ord)}
+function newCard(nid,ord){const id=uid();S.cards[id]={id,nid,ord,state:0,due:0,s:0,d:0,reps:0,lapses:0,step:0,last:null,ivl:0,susp:false,buried:-1};return id}
+function saveNote(n){
+  n.modified=Date.now();S.notes[n.id]=n;
+  const want=ordsFor(n),have=cardsOf(n.id);
+  for(const c of have)if(!want.includes(c.ord))delete S.cards[c.id];
+  for(const o of want)if(!have.some(c=>c.ord===o))newCard(n.id,o);
+  save();
+}
+function deleteNote(nid){for(const c of cardsOf(nid))delete S.cards[c.id];delete S.notes[nid];gcMedia();save()}
+function gcMedia(){
+  const used=new Set();
+  for(const n of Object.values(S.notes))for(const v of Object.values(n.fields))for(const m of String(v).matchAll(/\]\(m:([\w-]+)\)/g))used.add(m[1]);
+  let ch=false;for(const k of Object.keys(MEDIA))if(!used.has(k)){delete MEDIA[k];ch=true}
+  if(ch)save('media');
+}
+function resetCard(c){Object.assign(c,{state:0,due:0,s:0,d:0,reps:0,lapses:0,step:0,last:null,ivl:0,buried:-1});save()}
+function deckOf(c){return S.notes[c.nid]?.deck}
+function extraNew(d){const e=S.meta.extra;return e.day===dayIdx()?(e.n[d]||0):0}
+function addExtraNew(ids,k){const e=S.meta.extra,t=dayIdx();if(e.day!==t){e.day=t;e.n={}}for(const d of ids)e.n[d]=(e.n[d]||0)+k;save()}
+
+/* ---------- aggregates ---------- */
+function todayStats(){
+  const start=dayStart(),r={count:0,time:0,again:0,rev:{},newc:{},revN:0,revPass:0};
+  for(let i=LOGS.length-1;i>=0;i--){
+    const l=LOGS[i];if(l[0]<start)break;
+    r.count++;r.time+=l[5]||0;if(l[2]===1)r.again++;
+    const c=S.cards[l[1]],d=c&&deckOf(c);
+    if(l[3]===0&&d)r.newc[d]=(r.newc[d]||0)+1;
+    if(l[3]===2){r.revN++;if(l[2]>1)r.revPass++;if(d)r.rev[d]=(r.rev[d]||0)+1}
+  }
+  return r;
+}
+function deckCounts(){
+  const now=Date.now(),tom=addDays(dayStart(now),1),today=dayIdx(now),T=todayStats(),res={};
+  for(const id in S.decks)res[id]={new:0,learn:0,rev:0,newRaw:0,revRaw:0,total:0,susp:0};
+  const seenR=new Set(),seenN=new Set(),cs=Object.values(S.cards);
+  for(const c of cs)if(c.state===2&&!c.susp&&c.buried!==today&&c.due<tom)seenR.add(c.nid);
+  for(const c of cs){
+    const d=deckOf(c),r=res[d];if(!r)continue;r.total++;
+    if(c.susp){r.susp++;continue}
+    if(c.buried===today)continue;
+    if(c.state===0){if(!seenR.has(c.nid)&&!seenN.has(c.nid)){seenN.add(c.nid);r.newRaw++}}
+    else if(c.state===2){if(c.due<tom&&!seenN.has('r'+c.nid)){seenN.add('r'+c.nid);r.revRaw++}}
+    else if(c.due<tom)r.learn++;
+  }
+  for(const id in res){const dk=S.decks[id],r=res[id];
+    r.new=Math.min(r.newRaw,Math.max(0,dk.newPerDay+extraNew(id)-(T.newc[id]||0)));
+    r.rev=Math.min(r.revRaw,Math.max(0,dk.revPerDay-(T.rev[id]||0)));
+  }
+  return res;
+}
+function streak(){
+  if(!LOGS.length)return 0;
+  const days=new Set();for(let i=LOGS.length-1;i>=0&&days.size<4000;i--)days.add(dayIdx(LOGS[i][0]));
+  let d=dayIdx(),s=0;if(!days.has(d))d--;while(days.has(d)){s++;d--}return s;
+}
+function avgSec(){let n=0,t=0;for(let i=LOGS.length-1;i>=0&&n<400;i--){if(LOGS[i][5]){t+=LOGS[i][5];n++}}return n>20?t/n/1000:9}
+
+/* ---------- UI primitives ---------- */
+const Layers={stack:[],entry:false,
+  push(fn){this.stack.push(fn);if(!this.entry){try{history.pushState({engram:1},'')}catch(e){}this.entry=true}},
+  remove(fn){const i=this.stack.indexOf(fn);if(i>=0)this.stack.splice(i,1)},
+  closeTop(){const f=this.stack[this.stack.length-1];f&&f()}};
+window.addEventListener('popstate',()=>{Layers.entry=false;if(Layers.stack.length){Layers.closeTop();if(Layers.stack.length){try{history.pushState({engram:1},'')}catch(e){}Layers.entry=true}}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&Layers.stack.length){e.preventDefault();Layers.closeTop()}});
+
+function sheet(html,{cls='',onClose}={}){
+  const w=document.createElement('div');w.className='sheet-wrap';
+  w.innerHTML=`<div class="backdrop"></div><div class="sheet ${cls}" role="dialog" aria-modal="true">${cls.includes('full')?'':'<div class="grab"></div>'}${html}</div>`;
+  document.body.appendChild(w);
+  const close=()=>{Layers.remove(close);w.classList.remove('open');setTimeout(()=>w.remove(),300);onClose&&onClose()};
+  w.close=close;Layers.push(close);
+  w.querySelector('.backdrop').onclick=close;
+  void w.offsetHeight;w.classList.add('open');
+  return w;
+}
+function confirmDlg(title,text,ok='Potvrdit',danger=false){
+  return new Promise(res=>{
+    let done=false;
+    const w=sheet(`<div class="dlg"><h3>${esc(title)}</h3>${text?`<p>${esc(text)}</p>`:''}<div class="btns" style="flex-direction:column"><button class="btn lg ${danger?'danger':'primary'}" data-ok>${esc(ok)}</button><button class="btn ghost" data-no>Zrušit</button></div></div>`,{onClose:()=>{if(!done)res(false)}});
+    w.querySelector('[data-ok]').onclick=()=>{done=true;w.close();res(true)};
+    w.querySelector('[data-no]').onclick=()=>w.close();
+  });
+}
+function toast(msg,action){
+  const t=$('#toast');t.innerHTML=`<span>${esc(msg)}</span>${action?`<button>${esc(action.label)}</button>`:''}`;
+  t.style.bottom=Study.open?'calc(150px + env(safe-area-inset-bottom))':'';
+  if(action)t.querySelector('button').onclick=()=>{t.classList.remove('show');action.fn()};
+  t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),action?5000:2400);
+}
+function haptic(p=8){if(S.settings.haptics&&navigator.vibrate)try{navigator.vibrate(p)}catch(e){}}
+function download(name,data,type){
+  const b=data instanceof Blob?data:new Blob([data],{type});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500);
+}
+function pickFile(accept){return new Promise(res=>{const f=$('#fileAny');f.value='';f.accept=accept||'';f.onchange=()=>res(f.files[0]||null);f.click()})}
+function applyTheme(){const t=S.settings.theme;if(t==='system')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',t)}
+function deckOptions(sel,all=false){
+  const ds=Object.values(S.decks).sort((a,b)=>a.name.localeCompare(b.name,'cs'));
+  return (all?`<option value="">Všechny balíčky</option>`:'')+ds.map(d=>`<option value="${d.id}" ${d.id===sel?'selected':''}>${esc(d.name)}</option>`).join('');
+}
+const LANGS=[['','Vypnuto'],['cs-CZ','Čeština'],['sk-SK','Slovenština'],['en-US','Angličtina (US)'],['en-GB','Angličtina (UK)'],['de-DE','Němčina'],['fr-FR','Francouzština'],['es-ES','Španělština'],['it-IT','Italština'],['pt-PT','Portugalština'],['pl-PL','Polština'],['ru-RU','Ruština'],['uk-UA','Ukrajinština'],['nl-NL','Nizozemština'],['sv-SE','Švédština'],['ja-JP','Japonština'],['zh-CN','Čínština'],['ko-KR','Korejština']];
+function speak(text,lang){
+  if(!lang||!('speechSynthesis' in window)||!text)return;
+  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=lang;u.rate=.95;
+    const v=speechSynthesis.getVoices().find(v=>v.lang.replace('_','-').toLowerCase()===lang.toLowerCase())||speechSynthesis.getVoices().find(v=>v.lang.toLowerCase().startsWith(lang.slice(0,2).toLowerCase()));
+    if(v)u.voice=v;speechSynthesis.speak(u)}catch(e){}
+}
+
+/* ---------- router ---------- */
+let VIEW='home';
+const TABS=[['home','Dnes','home'],['browse','Karty','cards'],['stats','Statistiky','stats'],['settings','Nastavení','settings']];
+function render(){
+  const v=$('#view');
+  v.innerHTML=({home:vHome,browse:vBrowse,stats:vStats,settings:vSettings})[VIEW]();
+  $('#tabs').innerHTML=TABS.map(([k,l,i])=>`<button class="tab ${k===VIEW?'on':''}" data-act="tab" data-v="${k}" aria-current="${k===VIEW?'page':'false'}">${icon(i,22,k===VIEW?2:1.8)}<span>${l}</span></button>`).join('');
+  if(VIEW==='browse')bindBrowse();
+  if(VIEW==='settings')bindSettings();
+  if(VIEW==='stats')$('#stDeck')?.addEventListener('change',e=>{STF=e.target.value;render()});
+}
+function go(v){VIEW=v;window.scrollTo(0,0);render()}
+
+/* ---------- HOME ---------- */
+function vHome(){
+  const now=new Date(),date=now.toLocaleDateString('cs-CZ',{weekday:'long',day:'numeric',month:'long'});
+  const decks=Object.values(S.decks).sort((a,b)=>a.name.localeCompare(b.name,'cs'));
+  if(!decks.length)return `<h1 class="page">Vítejte</h1><div class="sub">${date}</div>
+    <div class="card empty"><div class="big">${icon('logo',28,2.2)}</div><h3>Učte se chytřeji, ne déle</h3>
+    <p>Engram plánuje každou kartu algoritmem FSRS přesně ve chvíli, kdy byste ji začali zapomínat. Stačí pár minut denně.</p>
+    <div class="btns"><button class="btn primary lg" data-act="deck-new">${icon('plus')}Vytvořit balíček</button>
+    <button class="btn outline" data-act="sample">${icon('eye')}Vyzkoušet ukázkové balíčky</button>
+    <button class="btn ghost" data-act="import">${icon('upload')}Importovat karty</button></div></div>`;
+  const C=deckCounts();let n=0,l=0,r=0;for(const d of decks){n+=C[d.id].new;l+=C[d.id].learn;r+=C[d.id].rev}
+  const tot=n+l+r,T=todayStats(),stk=streak(),est=Math.max(1,Math.round(tot*avgSec()/60));
+  let hero;
+  if(tot){
+    hero=`<div class="card hero"><div class="hero-k">K opakování dnes</div>
+      <div class="hero-row"><div class="hero-n num">${tot}</div><div class="hero-meta">přibližně<br><b>${est} min</b></div></div>
+      <div class="split">${n?`<i style="flex:${n};background:var(--new)"></i>`:''}${l?`<i style="flex:${l};background:var(--learn)"></i>`:''}${r?`<i style="flex:${r};background:var(--review)"></i>`:''}</div>
+      <div class="legend num"><span style="--c:var(--new)">${n} ${pl(n,'nová','nové','nových')}</span><span style="--c:var(--learn)">${l} v učení</span><span style="--c:var(--review)">${r} k opakování</span></div>
+      <button class="btn primary lg block" data-act="study">${icon('play',18)}Začít studovat</button></div>`;
+  }else{
+    const nx=nextDueInfo();
+    hero=`<div class="card done-hero"><div class="done-ic">${icon('check',24,2.2)}</div><div><h3>Pro dnešek hotovo</h3><p>${nx}</p></div></div>`;
+  }
+  const succ=T.count?Math.round((1-T.again/T.count)*100)+'<small>%</small>':'–';
+  const tiles=`<div class="tiles num">
+    <div class="card tile"><div class="v">${T.count}</div><div class="k">Dnes karet</div></div>
+    <div class="card tile"><div class="v">${Math.round(T.time/60000)}<small>min</small></div><div class="k">Čas dnes</div></div>
+    <div class="card tile"><div class="v">${succ}</div><div class="k">Úspěšnost</div></div>
+    <div class="card tile"><div class="v" style="color:${stk?'var(--learn)':'inherit'}">${stk?icon('flame',17,2):''}${stk}</div><div class="k">${pl(stk,'Den v řadě','Dny v řadě','Dní v řadě')}</div></div></div>`;
+  const nCards=Object.keys(S.cards).length,lb=S.meta.lastBackup;
+  const banner=nCards>=30&&Date.now()-lb>14*DAY?`<div class="banner">${icon('shield',20)}<div>${lb?'Poslední záloha je starší než 14 dní.':'Data máte jen v tomto zařízení.'} Zálohujte je.</div><button class="btn sm primary" data-act="backup">Zálohovat</button></div>`:'';
+  const rows=decks.map(d=>{const c=C[d.id];const z=(v,cl)=>`<span class="${v?cl:'z'}">${v}</span>`;
+    return `<button class="deck" data-act="deck" data-id="${d.id}"><span class="dot" style="background:${d.color}"></span><span class="nm"><b>${esc(d.name)}</b><small>${c.total} ${pl(c.total,'karta','karty','karet')}${c.susp?` · ${c.susp} pozastaveno`:''}</small></span><span class="cnts num">${z(c.new,'c-new')}${z(c.learn,'c-learn')}${z(c.rev,'c-rev')}</span>${icon('chev',18)}</button>`}).join('');
+  return `<h1 class="page">Dnes</h1><div class="sub">${date}</div>${hero}${tiles}${banner}
+    <h2 class="sec">Balíčky<button data-act="deck-new">${icon('plus',16)}</button></h2>
+    <div class="card list">${rows}</div>
+    <div class="btns" style="margin-top:12px"><button class="btn outline sm" data-act="deck-new">${icon('plus',16)}Nový balíček</button><button class="btn outline sm" data-act="import">${icon('upload',16)}Import</button></div>`;
+}
+function nextDueInfo(){
+  const now=Date.now(),tom=addDays(dayStart(now),1),tom2=addDays(tom,1);let first=Infinity,cnt=0,learnNext=Infinity;
+  for(const c of Object.values(S.cards)){if(c.susp||c.state===0)continue;
+    if(c.state!==2&&c.due>now)learnNext=Math.min(learnNext,c.due);
+    if(c.due>=tom){first=Math.min(first,c.due);if(c.due<tom2)cnt++}}
+  if(learnNext<tom)return `Karty v učení se vrátí za ${fmtIvl((learnNext-now)/DAY)}.`;
+  if(cnt)return `Zítra vás čeká ${cnt} ${pl(cnt,'karta','karty','karet')}.`;
+  if(first<Infinity)return `Další opakování ${fmtDate(first,{day:'numeric',month:'long'})}.`;
+  const nw=Object.values(S.cards).filter(c=>c.state===0&&!c.susp).length;
+  return nw?'Denní limit nových karet je vyčerpán.':'Přidejte nové karty a pokračujte v učení.';
+}
+
+/* ---------- DECK sheet / editor ---------- */
+function openDeck(id){
+  const d=S.decks[id],c=deckCounts()[id],tot=c.new+c.learn+c.rev;
+  const moreNew=c.newRaw>c.new;
+  const w=sheet(`<div style="display:flex;gap:12px;align-items:center"><span class="dot" style="background:${d.color};width:14px;height:14px"></span><h3 class="t" style="flex:1">${esc(d.name)}</h3></div>
+    ${d.desc?`<p class="d">${esc(d.desc)}</p>`:''}
+    <div class="legend num" style="margin:14px 0 14px"><span style="--c:var(--new)">${c.new} nových</span><span style="--c:var(--learn)">${c.learn} v učení</span><span style="--c:var(--review)">${c.rev} k opakování</span></div>
+    <button class="btn primary lg block" data-x="study" ${tot?'':'disabled'}>${icon('play',18)}${tot?'Studovat':'Dnes hotovo'}</button>
+    <div class="menu">
+      <button data-x="add">${icon('plus')}Přidat kartu</button>
+      ${moreNew?`<button data-x="more">${icon('bolt')}Dnes přidat 10 nových karet navíc</button>`:''}
+      <button data-x="cram" ${c.total-c.susp?'':'disabled'}>${icon('reset')}Procvičit bez vlivu na plán</button>
+      <button data-x="browse">${icon('cards')}Procházet karty (${c.total})</button>
+      <button data-x="edit">${icon('settings')}Nastavení balíčku</button>
+      <button data-x="export">${icon('download')}Exportovat do CSV</button>
+      <hr><button data-x="del" class="danger">${icon('trash')}Smazat balíček</button>
+    </div>`);
+  w.addEventListener('click',async e=>{const b=e.target.closest('[data-x]');if(!b||b.disabled)return;const x=b.dataset.x;
+    if(x==='study'){w.close();Study.start([id])}
+    if(x==='add'){w.close();openEditor(null,{deck:id})}
+    if(x==='more'){addExtraNew([id],10);w.close();render();toast('Limit nových karet navýšen o 10')}
+    if(x==='cram'){w.close();Study.start([id],{cram:true})}
+    if(x==='browse'){w.close();BR.deck=id;BR.q='';BR.state='';go('browse')}
+    if(x==='edit'){w.close();editDeck(id)}
+    if(x==='export'){exportCSV(id)}
+    if(x==='del'){if(await confirmDlg(`Smazat „${d.name}“?`,`Smaže se ${c.total} ${pl(c.total,'karta','karty','karet')} včetně historie plánování. Akci nelze vrátit.`,'Smazat balíček',true)){
+      const gone=new Set(Object.values(S.notes).filter(n=>n.deck===id).map(n=>n.id));for(const c of Object.values(S.cards))if(gone.has(c.nid))delete S.cards[c.id];for(const k of gone)delete S.notes[k];delete S.decks[id];gcMedia();save();w.close();render();toast('Balíček smazán')}}
+  });
+}
+function editDeck(id){
+  const isNew=!id,d=isNew?{name:'',desc:'',color:COLORS[Object.keys(S.decks).length%COLORS.length],newPerDay:20,revPerDay:200,ttsF:'',ttsB:''}:S.decks[id];
+  let color=d.color;
+  const lo=sel=>LANGS.map(([v,l])=>`<option value="${v}" ${v===sel?'selected':''}>${l}</option>`).join('');
+  const w=sheet(`<h3 class="t">${isNew?'Nový balíček':'Nastavení balíčku'}</h3>
+    <div class="form" style="margin-top:16px">
+      <label class="field"><span>Název</span><input id="dName" value="${esc(d.name)}" placeholder="např. Angličtina B2" maxlength="80"></label>
+      <label class="field"><span>Popis <em>nepovinný</em></span><input id="dDesc" value="${esc(d.desc)}" maxlength="160"></label>
+      <div class="field"><span>Barva</span><div class="swatches">${COLORS.map(c=>`<button type="button" data-c="${c}" style="background:${c}" class="${c===color?'on':''}" aria-label="Barva ${c}"></button>`).join('')}</div></div>
+      <div class="pv-grid"><label class="field"><span>Nových / den</span><input id="dNew" type="number" inputmode="numeric" min="0" max="9999" value="${d.newPerDay}"></label>
+      <label class="field"><span>Opakování / den</span><input id="dRev" type="number" inputmode="numeric" min="0" max="99999" value="${d.revPerDay}"></label></div>
+      <p class="hint">Doporučení: opakování alespoň 10× víc než nových karet. Každá nová karta znamená v příštích týdnech zhruba 5–8 opakování.</p>
+      <div class="pv-grid"><label class="field"><span>Čtení přední strany</span><select id="dTF">${lo(d.ttsF)}</select></label>
+      <label class="field"><span>Čtení zadní strany</span><select id="dTB">${lo(d.ttsB)}</select></label></div>
+      <button class="btn primary lg block" id="dSave">${isNew?'Vytvořit balíček':'Uložit'}</button>
+    </div>`);
+  const name=$('#dName',w);if(isNew)setTimeout(()=>name.focus(),320);
+  $('.swatches',w).onclick=e=>{const b=e.target.closest('[data-c]');if(!b)return;color=b.dataset.c;$$('.swatches button',w).forEach(x=>x.classList.toggle('on',x===b))};
+  $('#dSave',w).onclick=()=>{
+    const nm=name.value.trim();if(!nm){name.focus();toast('Zadejte název balíčku');return}
+    const o={name:nm,desc:$('#dDesc',w).value.trim(),color,newPerDay:clamp(parseInt($('#dNew',w).value)||0,0,9999),revPerDay:clamp(parseInt($('#dRev',w).value)||0,0,99999),ttsF:$('#dTF',w).value,ttsB:$('#dTB',w).value};
+    if(isNew){const nid=newDeck(nm,o);S.meta.lastDeck=nid}else Object.assign(S.decks[id],o);
+    save();w.close();render();toast(isNew?'Balíček vytvořen':'Uloženo');
+  };
+}
+
+/* ---------- NOTE editor ---------- */
+function openEditor(nid,opt={}){
+  if(!Object.keys(S.decks).length){const id=newDeck('Můj balíček');S.meta.lastDeck=id}
+  const ex=nid?S.notes[nid]:null;
+  const firstDeck=Object.keys(S.decks)[0];
+  const startDeck=opt.deck||(S.decks[S.meta.lastDeck]?S.meta.lastDeck:firstDeck);
+  let n=ex?JSON.parse(JSON.stringify(ex)):{id:uid(),deck:startDeck,type:S.meta.lastType||'basic',fields:{front:'',back:'',extra:''},tags:[],typein:false,marked:false,created:Date.now()};
+  let lastTA=null;
+  const w=sheet(`<div class="sh-head"><button class="link" data-x="cancel">Zrušit</button><h3>${ex?'Upravit kartu':'Nová karta'}</h3><button class="link strong" data-x="save">Uložit</button></div>
+    <div class="sh-body"><div class="form">
+      <label class="field"><span>Balíček</span><select id="eDeck">${deckOptions(n.deck)}</select></label>
+      <div><div class="seg" id="eType"><button data-t="basic">Základní</button><button data-t="reverse">Oboustranná</button><button data-t="cloze">Doplňovačka</button></div>
+      <p class="hint" id="eTypeHint" style="margin-top:6px"></p></div>
+      <div class="toolbar"><button data-w="b" aria-label="Tučně">${icon('bold',17,2)}</button><button data-w="i" aria-label="Kurzíva">${icon('italic',17,2)}</button><button data-w="m" aria-label="Zvýraznit">==</button><button data-w="l" aria-label="Odrážka">• –</button><button data-w="c" id="eCz">${icon('cloze',17,2)}Mezera</button><span class="sp"></span><button data-w="img" aria-label="Vložit obrázek">${icon('image',17,2)}</button></div>
+      <label class="field"><span id="lF">Přední strana</span><textarea id="eF" rows="3"></textarea><span class="hint warn hidden" id="eDup"></span></label>
+      <label class="field" id="wB"><span>Zadní strana</span><textarea id="eB" rows="3"></textarea></label>
+      <label class="field"><span id="lX">Poznámka <em>zobrazí se po odkrytí</em></span><textarea id="eX" rows="2" style="min-height:60px"></textarea></label>
+      <label class="field"><span>Štítky <em>oddělte mezerou</em></span><input id="eTags" autocapitalize="off" autocomplete="off" spellcheck="false"></label>
+      <label class="srow card" id="wTI" style="box-shadow:none"><span class="l"><b>Vpisovat odpověď</b><small>Při studiu odpověď napíšete a Engram ji porovná.</small></span><input type="checkbox" class="sw" id="eTI"></label>
+      <div class="pv"><div class="pv-grid"><div><div class="pv-h">Otázka</div><div class="content" id="pQ"></div></div><div><div class="pv-h">Odpověď</div><div class="content" id="pA"></div></div></div></div>
+      ${ex?`<div id="eInfo"></div><div class="btns"><button class="btn outline danger" data-x="del">${icon('trash',18)}Smazat</button></div>`:''}
+    </div></div>
+    ${ex?'':`<div class="sh-foot"><button class="btn primary lg block" data-x="savenext">Uložit a přidat další</button></div>`}`,{cls:'full'});
+  const F=$('#eF',w),B=$('#eB',w),X=$('#eX',w),TG=$('#eTags',w),TI=$('#eTI',w),DK=$('#eDeck',w);
+  const fill=()=>{F.value=n.fields.front;B.value=n.fields.back;X.value=n.fields.extra||'';TG.value=(n.tags||[]).join(' ');TI.checked=!!n.typein};
+  fill();
+  const read=()=>{n.fields.front=F.value;n.fields.back=B.value;n.fields.extra=X.value;n.tags=TG.value.split(/[\s,]+/).filter(Boolean);n.typein=TI.checked;n.deck=DK.value};
+  const typeUI=()=>{
+    $$('#eType button',w).forEach(b=>b.classList.toggle('on',b.dataset.t===n.type));
+    const cz=n.type==='cloze';
+    $('#wB',w).classList.toggle('hidden',cz);$('#wTI',w).classList.toggle('hidden',cz);$('#eCz',w).classList.toggle('hidden',!cz);
+    $('#lF',w).textContent=cz?'Text s mezerami':'Přední strana';
+    $('#eTypeHint',w).textContent=cz?'Označte slovo a klepněte na „Mezera“. Každé číslo {{c1::…}} vytvoří samostatnou kartu. Nápověda: {{c1::odpověď::nápověda}}.':n.type==='reverse'?'Vytvoří dvě karty: přední → zadní i zadní → přední.':'Jedna karta: přední strana je otázka, zadní odpověď.';
+    F.placeholder=cz?'Praha je hlavním městem {{c1::Česka}}.':'Otázka';B.placeholder='Odpověď';
+  };
+  const preview_=()=>{
+    read();
+    if(n.type==='cloze'){const o=ordsFor(n)[0]||1;$('#pQ',w).innerHTML=clozeHTML(n.fields.front,o,false)||'<span class="muted">–</span>';$('#pA',w).innerHTML=(clozeHTML(n.fields.front,o,true)||'<span class="muted">–</span>')+(n.fields.extra?'<hr style="border:0;border-top:1px solid var(--line);margin:6px 0">'+fmt(n.fields.extra):'')}
+    else{$('#pQ',w).innerHTML=fmt(n.fields.front)||'<span class="muted">–</span>';$('#pA',w).innerHTML=(fmt(n.fields.back)||'<span class="muted">–</span>')+(n.fields.extra?'<hr style="border:0;border-top:1px solid var(--line);margin:6px 0">'+fmt(n.fields.extra):'')}
+    const p=plain(n.fields.front).toLowerCase();
+    const dup=p&&Object.values(S.notes).some(o=>o.id!==n.id&&o.deck===n.deck&&plain(o.fields.front).toLowerCase()===p);
+    const de=$('#eDup',w);de.classList.toggle('hidden',!dup);de.textContent='Stejná karta už v balíčku existuje.';
+  };
+  const info=()=>{
+    if(!ex)return;const el=$('#eInfo',w);const cs=cardsOf(n.id);
+    el.innerHTML=`<h2 class="sec" style="margin-top:6px">Plánování</h2>`+cs.map(c=>cardInfoHTML(c,n)).join('');
+  };
+  typeUI();preview_();info();
+  [F,B,X].forEach(t=>{t.addEventListener('focus',()=>lastTA=t);t.addEventListener('input',()=>{autosize(t);preview_()});autosize(t)});
+  TG.addEventListener('input',read);TI.addEventListener('change',read);DK.addEventListener('change',preview_);
+  if(!ex)setTimeout(()=>F.focus(),350);
+  $('#eType',w).onclick=e=>{const b=e.target.closest('[data-t]');if(!b)return;n.type=b.dataset.t;typeUI();preview_()};
+  const doSave=async next=>{
+    read();
+    const fp=plain(n.fields.front),hasImg=/!\[/.test(n.fields.front);
+    if(!fp&&!hasImg){toast(n.type==='cloze'?'Zadejte text':'Vyplňte přední stranu');F.focus();return false}
+    if(n.type==='cloze'&&!ordsFor(n).length){toast('Doplňovačka potřebuje alespoň jednu mezeru {{c1::…}}');F.focus();return false}
+    if(n.type!=='cloze'&&!plain(n.fields.back)&&!/!\[/.test(n.fields.back)){toast('Vyplňte zadní stranu');B.focus();return false}
+    if(ex&&n.type!==ex.type&&cardsOf(n.id).some(c=>c.reps>0)){
+      if(!await confirmDlg('Změnit typ karty?','Karty, které po změně typu zaniknou, ztratí historii plánování.','Změnit'))return false;
+    }
+    saveNote(n);gcMedia();S.meta.lastDeck=n.deck;S.meta.lastType=n.type;save();persistStorage();
+    if(next){
+      const keep={deck:n.deck,type:n.type,tags:n.tags,typein:n.typein};
+      n={id:uid(),...keep,fields:{front:'',back:'',extra:''},marked:false,created:Date.now()};fill();typeUI();preview_();[F,B,X].forEach(autosize);F.focus();
+      toast('Karta přidána');
+    }else{w.close();toast(ex?'Uloženo':'Karta přidána')}
+    if(Study.open)Study.refresh();else render();
+    return true;
+  };
+  w.addEventListener('click',async e=>{
+    const t=e.target.closest('[data-x],[data-w],[data-ca]');if(!t)return;
+    if(t.dataset.x==='cancel')w.close();
+    if(t.dataset.x==='save')doSave(false);
+    if(t.dataset.x==='savenext')doSave(true);
+    if(t.dataset.x==='del'){if(await confirmDlg('Smazat kartu?','Smaže se poznámka i všechny z ní vytvořené karty.','Smazat',true)){deleteNote(n.id);w.close();toast('Karta smazána');if(Study.open)Study.afterRemoval();else render()}}
+    if(t.dataset.w){
+      const ta=lastTA||F;const wr=t.dataset.w;
+      if(wr==='img'){const id=await addImage();if(id)insertAt(ta,`![](m:${id})`);preview_();return}
+      if(wr==='c'){const mx=Math.max(0,...[...F.value.matchAll(CLOZE_RE)].map(m=>+m[1]));wrapSel(F,`{{c${mx+1}::`,'}}');}
+      else if(wr==='l'){insertLinePrefix(ta,'- ')}
+      else wrapSel(ta,...({b:['**','**'],i:['*','*'],m:['==','==']})[wr]);
+      preview_();
+    }
+    if(t.dataset.ca){const c=S.cards[t.dataset.id];if(!c)return;
+      if(t.dataset.ca==='susp'){c.susp=!c.susp;save();toast(c.susp?'Karta pozastavena':'Karta obnovena')}
+      if(t.dataset.ca==='reset'){if(!await confirmDlg('Zapomenout kartu?','Karta se vrátí mezi nové a začne se učit od začátku. Historie hodnocení zůstane ve statistikách.','Zapomenout',true))return;resetCard(c);toast('Karta je opět nová')}
+      if(t.dataset.ca==='mark'){const nn=S.notes[n.id];nn.marked=!nn.marked;n.marked=nn.marked;save()}
+      info();
+    }
+  });
+  w.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){e.preventDefault();doSave(!ex)}});
+}
+function cardInfoHTML(c,n){
+  const now=Date.now(),lbl=n.type==='cloze'?`Mezera c${c.ord}`:n.type==='reverse'?(c.ord?'Zadní → přední':'Přední → zadní'):'Karta';
+  const st=c.susp?'<span class="pill warn">Pozastavená</span>':c.state===0?'<span class="pill new">Nová</span>':c.state===2?'<span class="pill rev">Opakování</span>':'<span class="pill learn">'+(c.state===3?'Přeučování':'Učení')+'</span>';
+  const R=c.state===0?null:FSRS.R(Math.max(0,dayIdx(now)-dayIdx(c.last)),c.s);
+  const hist=LOGS.filter(l=>l[1]===c.id);
+  const col=['','var(--again)','var(--hard)','var(--good)','var(--easy)'];
+  return `<div class="cinfo"><div class="hd"><span>${lbl}</span>${st}</div>
+   ${c.state===0?'<p class="hint">Karta zatím nebyla studována.</p>':`<dl class="kv">
+    <dt>Další opakování</dt><dd>${c.state===2?fmtDate(c.due):new Date(c.due).toLocaleString('cs-CZ',{day:'numeric',month:'numeric',hour:'2-digit',minute:'2-digit'})}</dd>
+    ${c.state===2?`<dt>Interval</dt><dd>${fmtIvl(c.ivl)}</dd>`:''}
+    <dt>Stabilita</dt><dd>${fmtIvl(c.s)}</dd>
+    <dt>Obtížnost</dt><dd>${Math.round((c.d-1)/9*100)} %</dd>
+    <dt>Vybavitelnost nyní</dt><dd>${Math.round(R*100)} %</dd>
+    <dt>Opakování / zapomenutí</dt><dd>${c.reps} / ${c.lapses}</dd>
+    <dt>Naposledy</dt><dd>${fmtDate(c.last)}</dd></dl>
+    ${hist.length?`<div class="hist" title="Historie hodnocení">${hist.slice(-60).map(l=>`<i style="background:${col[l[2]]}"></i>`).join('')}</div>`:''}`}
+   <div class="btns" style="margin-top:12px"><button class="btn sm outline" data-ca="susp" data-id="${c.id}">${icon(c.susp?'play':'ban',16)}${c.susp?'Obnovit':'Pozastavit'}</button>${c.state!==0?`<button class="btn sm outline" data-ca="reset" data-id="${c.id}">${icon('reset',16)}Zapomenout</button>`:''}</div></div>`;
+}
+function autosize(t){t.style.height='auto';t.style.height=Math.min(Math.max(t.scrollHeight+2,t.rows*24+24),window.innerHeight*.4)+'px'}
+function wrapSel(ta,a,b){const s=ta.selectionStart,e=ta.selectionEnd,v=ta.value,sel=v.slice(s,e);ta.value=v.slice(0,s)+a+sel+b+v.slice(e);ta.focus();const p=sel?s+a.length+sel.length+b.length:s+a.length;ta.setSelectionRange(p,p);ta.dispatchEvent(new Event('input'))}
+function insertAt(ta,txt){const s=ta.selectionStart??ta.value.length,v=ta.value;const pre=s&&v[s-1]!=='\n'?'\n':'';ta.value=v.slice(0,s)+pre+txt+v.slice(s);ta.focus();const p=s+pre.length+txt.length;ta.setSelectionRange(p,p);ta.dispatchEvent(new Event('input'))}
+function insertLinePrefix(ta,p){const s=ta.selectionStart,v=ta.value,ls=v.lastIndexOf('\n',s-1)+1;ta.value=v.slice(0,ls)+p+v.slice(ls);ta.focus();ta.setSelectionRange(s+p.length,s+p.length);ta.dispatchEvent(new Event('input'))}
+function addImage(){
+  return new Promise(res=>{const f=$('#fileImg');f.value='';f.onchange=async()=>{const file=f.files[0];if(!file)return res(null);
+    try{const data=await compressImage(file);const id=uid();MEDIA[id]=data;save('media');res(id)}catch(e){toast('Obrázek se nepodařilo načíst');res(null)}};f.click()});
+}
+async function compressImage(file,max=1280,q=.82){
+  const url=URL.createObjectURL(file);
+  try{const img=new Image();img.src=url;await img.decode();
+    const k=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));const c=document.createElement('canvas');c.width=Math.round(img.naturalWidth*k);c.height=Math.round(img.naturalHeight*k);
+    const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(img,0,0,c.width,c.height);return c.toDataURL('image/jpeg',q)}
+  finally{URL.revokeObjectURL(url)}
+}
+
+/* ---------- STUDY ---------- */
+const Study={
+  open:false,decks:[],queue:[],cur:null,revealed:false,shownAt:0,undo:[],seen:new Set(),cram:false,
+  st:{done:0,time:0,again:0,start:0},total:0,typed:'',
+  start(decks,o={}){
+    this.decks=decks;this.cram=!!o.cram;this.undo=[];this.seen=new Set();this.st={done:0,time:0,again:0,start:Date.now()};
+    this.queue=this.cram?this.buildCram():this.build();
+    this.total=this.remaining();
+    const el=$('#study');el.classList.remove('hidden');void el.offsetHeight;el.classList.add('open');
+    document.body.style.overflow='hidden';
+    if(!this.open){this.open=true;Layers.push(this.closeFn)}
+    this.next();
+  },
+  closeFn:()=>Study.close(),
+  close(){
+    Layers.remove(this.closeFn);this.open=false;try{speechSynthesis.cancel()}catch(e){}
+    const el=$('#study');el.classList.remove('open');setTimeout(()=>el.classList.add('hidden'),220);document.body.style.overflow='';flush();render();
+  },
+  build(){
+    const now=Date.now(),today=dayIdx(now),tom=addDays(dayStart(now),1),scope=new Set(this.decks),T=todayStats(),st=S.settings;
+    const news={},revs={};
+    for(const c of Object.values(S.cards)){const n=S.notes[c.nid];if(!n||!scope.has(n.deck)||c.susp||c.buried===today)continue;
+      if(c.state===0)(news[n.deck]??=[]).push(c);else if(c.state===2&&c.due<tom)(revs[n.deck]??=[]).push(c)}
+    const used=new Set(),R=[],N=[];
+    for(const d of this.decks){const dk=S.decks[d];let left=Math.max(0,dk.revPerDay-(T.rev[d]||0));
+      for(const c of (revs[d]||[]).sort((a,b)=>a.due-b.due||hashRand(a.id)-hashRand(b.id))){if(!left)break;if(used.has(c.nid))continue;used.add(c.nid);R.push(c);left--}}
+    for(const d of this.decks){const dk=S.decks[d];let left=Math.max(0,dk.newPerDay+extraNew(d)-(T.newc[d]||0));
+      let arr=news[d]||[];arr=st.newOrder==='random'?shuffle(arr):arr.sort((a,b)=>(S.notes[a.nid].created-S.notes[b.nid].created)||a.ord-b.ord);
+      for(const c of arr){if(!left)break;if(used.has(c.nid))continue;used.add(c.nid);N.push(c);left--}}
+    R.sort((a,b)=>a.due-b.due);
+    let q;
+    if(st.newMix==='first')q=[...N,...R];else if(st.newMix==='last')q=[...R,...N];
+    else{q=[];const k=N.length?Math.max(1,Math.floor(R.length/N.length)):0;let ni=0;R.forEach((c,i)=>{q.push(c);if(k&&(i+1)%k===0&&ni<N.length)q.push(N[ni++])});while(ni<N.length)q.splice(Math.min(q.length,ni*2),0,N[ni++])}
+    return q.map(c=>c.id);
+  },
+  buildCram(){
+    const scope=new Set(this.decks);
+    const all=Object.values(S.cards).filter(c=>!c.susp&&scope.has(deckOf(c)));
+    all.sort((a,b)=>(a.state===0)-(b.state===0)||(FSRS.R(Math.max(0,dayIdx()-dayIdx(a.last||Date.now())),a.s||1)-FSRS.R(Math.max(0,dayIdx()-dayIdx(b.last||Date.now())),b.s||1)));
+    return shuffle(all.slice(0,60)).slice(0,40).map(c=>c.id);
+  },
+  learnCards(now=Date.now()){
+    if(this.cram)return [];
+    const tom=addDays(dayStart(now),1),scope=new Set(this.decks),today=dayIdx(now);
+    return Object.values(S.cards).filter(c=>(c.state===1||c.state===3)&&!c.susp&&c.buried!==today&&c.due<tom&&scope.has(deckOf(c))).sort((a,b)=>a.due-b.due);
+  },
+  valid(id){const c=S.cards[id];if(!c||c.susp||c.buried===dayIdx())return false;if(this.cram)return true;if(this.seen.has(c.nid))return false;return c.state===0||c.state===2},
+  counts(){
+    const now=Date.now();let n=0,r=0;for(const id of this.queue){if(!this.valid(id))continue;const c=S.cards[id];if(this.cram||c.state===2)r++;else n++}
+    return {n,l:this.learnCards(now).length,r};
+  },
+  remaining(){const c=this.counts();return c.n+c.l+c.r},
+  pick(){
+    const now=Date.now();const L=this.learnCards(now);
+    if(L.length&&L[0].due<=now)return L[0].id;
+    while(this.queue.length){const id=this.queue[0];if(this.valid(id))return id;this.queue.shift()}
+    if(L.length&&L[0].due<=now+S.settings.learnAhead*MIN)return L[0].id;
+    return null;
+  },
+  next(){
+    this.cur=this.pick();this.revealed=false;this.typed='';
+    if(!this.cur)return this.renderDone();
+    const qi=this.queue.indexOf(this.cur);if(qi===0)this.queue.shift();
+    this.shownAt=Date.now();this.renderCard(true);
+    const f=faces(S.cards[this.cur]);if(S.settings.autoTTS&&f.lq)speak(f.qT,f.lq);
+  },
+  refresh(){if(this.cur&&S.cards[this.cur])this.renderCard(false);else this.afterRemoval()},
+  afterRemoval(){this.queue=this.queue.filter(id=>S.cards[id]);this.next()},
+  header(){
+    const c=this.counts(),cur=this.cur&&S.cards[this.cur];
+    const k=!cur?'':this.cram?'r':cur.state===0?'n':cur.state===2?'r':'l';
+    $('#stCounts').innerHTML=this.cram?`<span class="c-rev cur">${c.r+(cur?1:0)}</span>`:`<span class="c-new ${k==='n'?'cur':''}">${c.n+(k==='n'?1:0)}</span><span class="c-learn ${k==='l'?'cur':''}">${c.l}</span><span class="c-rev ${k==='r'?'cur':''}">${c.r+(k==='r'?1:0)}</span>`;
+    const rem=this.remaining()+(cur&&k!=='l'?1:0);const tot=this.st.done+rem;
+    $('#stProg').style.width=(tot?this.st.done/tot*100:100)+'%';
+    $('#stUndo').disabled=!this.undo.length;$('#stUndo').style.opacity=this.undo.length?1:.35;
+    $('#stMenu').style.visibility=cur?'visible':'hidden';
+  },
+  renderCard(anim){
+    const c=S.cards[this.cur],n=S.notes[c.nid],f=faces(c),dk=S.decks[n.deck];
+    const badge=this.cram?'Procvičování':c.state===0?'Nová':c.state===2?'Opakování':c.state===3?'Přeučování':'Učení';
+    const ti=n.typein&&!f.cloze&&!this.cram;
+    let body=`<div class="st-meta"><span class="dk"><span class="dot" style="background:${dk.color}"></span>${esc(dk.name)} · ${badge}</span>
+      ${f.lq||f.la?`<button class="mini" data-act="speak" aria-label="Přečíst nahlas">${icon('volume',19)}</button>`:''}
+      <button class="mini ${n.marked?'on':''}" data-act="study-mark" aria-label="Označit hvězdičkou">${icon('star',19)}</button>
+      <button class="mini" data-act="study-edit" aria-label="Upravit kartu">${icon('edit',19)}</button></div>
+      <div class="st-q content">${f.q}</div>`;
+    if(ti&&!this.revealed)body+=`<div class="type-in"><input id="tiInput" placeholder="Napište odpověď" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done"></div>`;
+    if(this.revealed){
+      body+=f.cloze?'':'<div class="st-div"></div>';
+      body+=`<div class="st-a content">${f.a}</div>`;
+      if(ti)body+=diffHTML(this.typed,f.ans);
+      if(f.x)body+=`<div class="st-x content">${f.x}</div>`;
+    }
+    if(this.revealed)body+='<div class="st-end"></div>';
+    body+=`<span class="sw-lbl l">ZNOVU</span><span class="sw-lbl r">DOBŘE</span>`;
+    const stage=$('#stStage');
+    stage.innerHTML=`<article class="st-card ${anim?'anim':''} ${this.revealed?'rev':''} ${f.cloze?'cz':''}" id="stCard">${body}</article>`;
+    const card=$('#stCard');
+    card.addEventListener('click',e=>{if(e.target.closest('button,input,a'))return;if(!this.revealed)this.reveal()});
+    bindSwipe(card);
+    const inp=$('#tiInput');if(inp){inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();this.reveal()}});setTimeout(()=>inp.focus({preventScroll:true}),anim?280:0)}
+    this.renderBottom();this.header();
+    if(this.revealed)stage.scrollTop=0;
+  },
+  renderBottom(){
+    const b=$('#stBottom');
+    if(!this.revealed){b.innerHTML=`<button class="btn primary lg block" data-act="reveal" style="min-height:62px">Zobrazit odpověď</button><div class="kbd-hint">Mezerník – odkrýt · 1–4 – hodnocení · Z – zpět · E – upravit</div>`;return}
+    const c=S.cards[this.cur],p=this.cram?null:preview(c);
+    const L=[[1,'Znovu','again'],[2,'Těžké','hard'],[3,'Dobře','good'],[4,'Snadné','easy']];
+    b.innerHTML=`<div class="rates">${L.map(([g,l,k])=>`<button class="rate" style="--c:var(--${k})" data-act="rate" data-g="${g}">${S.settings.showIvl&&p?`<small>${p[g].lbl}</small>`:''}${l}</button>`).join('')}</div>`;
+  },
+  reveal(){
+    if(this.revealed||!this.cur)return;
+    const inp=$('#tiInput');if(inp)this.typed=inp.value;
+    this.revealed=true;this.renderCard(false);haptic(5);
+    const f=faces(S.cards[this.cur]);if(S.settings.autoTTS&&f.la)speak(f.aT,f.la);
+  },
+  answer(g){
+    if(!this.revealed||!this.cur)return;
+    const now=Date.now(),c=S.cards[this.cur],n=S.notes[c.nid],dur=Math.min(now-this.shownAt,60000);
+    const sibs=this.cram?[]:Object.values(S.cards).filter(x=>x.nid===c.nid&&x.id!==c.id&&(x.state===0||x.state===2));
+    this.undo.push({card:{...c},sibs:sibs.map(x=>[x.id,x.buried]),tags:[...(n.tags||[])],logLen:LOGS.length,queue:[...this.queue],seen:[...this.seen],st:{...this.st},cur:this.cur});
+    if(this.undo.length>30)this.undo.shift();
+    this.st.done++;this.st.time+=dur;if(g===1)this.st.again++;
+    if(this.cram){
+      if(g===1)this.queue.splice(Math.min(this.queue.length,3+(Math.random()*3|0)),0,c.id);
+      else if(g===2)this.queue.splice(Math.min(this.queue.length,8+(Math.random()*4|0)),0,c.id);
+    }else{
+      const nc=preview(c,now)[g];delete nc.lbl;
+      S.cards[c.id]=nc;
+      LOGS.push([now,c.id,g,c.state,nc.state===2?nc.ivl:0,dur]);
+      this.seen.add(c.nid);
+      const td=dayIdx(now);for(const x of sibs)x.buried=td;
+      if(g===1&&c.state===2){const th=S.settings.leechThreshold;
+        if(th>0&&nc.lapses>=th&&(nc.lapses-th)%Math.max(1,Math.ceil(th/2))===0){
+          if(!n.tags.includes('pijavice'))n.tags.push('pijavice');
+          if(S.settings.leechAction==='suspend'){nc.susp=true;toast('Karta je pijavice – pozastavena. Zkuste ji přeformulovat.')}
+          else toast('Karta je pijavice – zkuste ji přeformulovat');
+        }}
+      save('core','logs');
+    }
+    haptic(g===1?[12,40,12]:8);
+    this.next();
+  },
+  doUndo(){
+    const u=this.undo.pop();if(!u)return;
+    S.cards[u.card.id]=u.card;for(const [id,b] of u.sibs||[])if(S.cards[id])S.cards[id].buried=b;const n=S.notes[u.card.nid];if(n)n.tags=u.tags;
+    if(!this.cram){LOGS.length=u.logLen;save('core','logs')}
+    this.queue=u.queue;this.seen=new Set(u.seen);this.st=u.st;this.cur=u.cur;this.revealed=false;this.typed='';this.shownAt=Date.now();
+    this.renderCard(true);toast('Hodnocení vráceno');
+  },
+  renderDone(){
+    this.cur=null;this.header();
+    const now=Date.now(),L=this.learnCards(now),mins=Math.round(this.st.time/60000),succ=this.st.done?Math.round((1-this.st.again/this.st.done)*100):0;
+    let moreNew=0;if(!this.cram){const C=deckCounts();for(const d of this.decks)moreNew+=C[d].newRaw-C[d].new}
+    const pending=L.length?`<p>${L.length} ${pl(L.length,'karta','karty','karet')} v učení se vrátí za ${fmtIvl((L[0].due-now)/DAY)}.</p>`:`<p>${this.cram?'Procvičování dokončeno. Plán opakování zůstal beze změny.':'Skvělá práce. Engram naplánoval další opakování.'}</p>`;
+    $('#stStage').innerHTML=`<div class="st-done"><div class="big">${icon('check',34,2.2)}</div><h2>${L.length?'Prozatím hotovo':'Hotovo!'}</h2>${pending}
+      ${this.st.done?`<div class="kpis num"><div class="card kpi"><div class="k">Karet</div><div class="v">${this.st.done}</div></div><div class="card kpi"><div class="k">Čas</div><div class="v">${mins<1?'<1':mins}<small>min</small></div></div><div class="card kpi"><div class="k">Úspěšnost</div><div class="v">${succ}<small>%</small></div></div><div class="card kpi"><div class="k">Průměr na kartu</div><div class="v">${Math.round(this.st.time/this.st.done/1000)}<small>s</small></div></div></div>`:''}
+      <div class="btns">${L.length?`<button class="btn primary lg" data-act="study-wait">${icon('clock',18)}Pokračovat v učení</button>`:''}
+      ${moreNew>0?`<button class="btn outline" data-act="study-more">${icon('plus',18)}Studovat 10 nových navíc</button>`:''}
+      <button class="btn ${L.length?'ghost':'primary lg'}" data-act="study-close">Zavřít</button></div></div>`;
+    $('#stBottom').innerHTML='';
+  },
+  menu(){
+    const c=S.cards[this.cur];if(!c)return;const n=S.notes[c.nid];
+    const w=sheet(`<div class="menu">
+      <button data-m="edit">${icon('edit')}Upravit kartu</button>
+      <button data-m="info">${icon('info')}Informace o kartě</button>
+      <button data-m="mark">${icon('star')}${n.marked?'Zrušit označení':'Označit hvězdičkou'}</button>
+      ${this.cram?'':`<button data-m="bury">${icon('later')}Odložit na zítra</button>`}
+      <button data-m="susp">${icon('ban')}Pozastavit kartu</button>
+      <hr><button data-m="del" class="danger">${icon('trash')}Smazat kartu</button></div>`);
+    w.addEventListener('click',async e=>{const b=e.target.closest('[data-m]');if(!b)return;const m=b.dataset.m;
+      if(m==='edit'){w.close();openEditor(n.id)}
+      if(m==='info'){w.close();const iw=sheet(`<h3 class="t" style="margin-bottom:12px">Informace o kartě</h3><div id="ciBox">${cardInfoHTML(c,n)}</div>`);iw.addEventListener('click',async ev=>{const t=ev.target.closest('[data-ca]');if(!t)return;if(t.dataset.ca==='susp'){c.susp=!c.susp;save();toast(c.susp?'Karta pozastavena':'Karta obnovena')}if(t.dataset.ca==='reset'){if(!await confirmDlg('Zapomenout kartu?','Karta se vrátí mezi nové.','Zapomenout',true))return;resetCard(c)}$('#ciBox',iw).innerHTML=cardInfoHTML(c,n);if(c.susp||c.state===0){iw.close();this.next()}})}
+      if(m==='mark'){n.marked=!n.marked;save();w.close();this.renderCard(false)}
+      if(m==='bury'){c.buried=dayIdx();save();w.close();toast('Odloženo na zítra');this.next()}
+      if(m==='susp'){c.susp=true;save();w.close();toast('Karta pozastavena',{label:'Zpět',fn:()=>{c.susp=false;save();this.queue.unshift(c.id);this.next()}});this.next()}
+      if(m==='del'){w.close();if(await confirmDlg('Smazat kartu?','Smaže se poznámka i všechny z ní vytvořené karty.','Smazat',true)){deleteNote(n.id);toast('Karta smazána');this.afterRemoval()}}
+    });
+  }
+};
+function diffHTML(typed,correct){
+  const norm=s=>s.trim().replace(/\s+/g,' ');const a=norm(typed),b=norm(correct);
+  if(!a)return `<div class="diff"><span class="lb">Nenapsali jste odpověď</span></div>`;
+  if(a.toLocaleLowerCase('cs')===b.toLocaleLowerCase('cs'))return `<div class="diff"><span class="ok">${esc(a)} ✓</span></div>`;
+  const A=[...a.toLocaleLowerCase('cs')],Bc=[...b.toLocaleLowerCase('cs')],aa=[...a],bb=[...b];
+  if(A.length*Bc.length>40000)return `<div class="diff"><span class="lb">Vaše odpověď</span><span class="bad">${esc(a)}</span></div>`;
+  const m=A.length,n=Bc.length,dp=Array.from({length:m+1},()=>new Uint16Array(n+1));
+  for(let i=m-1;i>=0;i--)for(let j=n-1;j>=0;j--)dp[i][j]=A[i]===Bc[j]?dp[i+1][j+1]+1:Math.max(dp[i+1][j],dp[i][j+1]);
+  let i=0,j=0,ya='',yb='';
+  while(i<m||j<n){
+    if(i<m&&j<n&&A[i]===Bc[j]){ya+=`<span class="ok">${esc(aa[i])}</span>`;yb+=esc(bb[j]);i++;j++}
+    else if(j<n&&(i>=m||dp[i][j+1]>=dp[i+1][j])){yb+=`<span class="miss">${esc(bb[j])}</span>`;j++}
+    else{ya+=`<span class="bad">${esc(aa[i])}</span>`;i++}
+  }
+  return `<div class="diff"><span class="lb">Vaše odpověď</span>${ya}<span class="lb" style="margin-top:6px">Správně</span>${yb}</div>`;
+}
+function bindSwipe(el){
+  let x0=null,y0=0,dx=0,act=false,pid=null;
+  el.addEventListener('pointerdown',e=>{if(!Study.revealed||!S.settings.gestures||e.target.closest('button,input,a'))return;x0=e.clientX;y0=e.clientY;dx=0;act=false;pid=e.pointerId});
+  el.addEventListener('pointermove',e=>{
+    if(x0==null||e.pointerId!==pid)return;dx=e.clientX-x0;const dy=e.clientY-y0;
+    if(!act){if(Math.abs(dx)>14&&Math.abs(dx)>Math.abs(dy)*1.4){act=true;try{el.setPointerCapture(pid)}catch(_){}}else if(Math.abs(dy)>14){x0=null;return}else return}
+    el.style.transition='none';el.style.transform=`translateX(${dx}px) rotate(${dx/28}deg)`;el.dataset.sw=dx>70?'good':dx<-70?'again':'';
+  });
+  const end=()=>{
+    if(x0==null)return;x0=null;if(!act)return;act=false;
+    const g=dx>90?3:dx<-90?1:0;el.style.transition='transform .22s ease';
+    if(g){el.style.transform=`translateX(${dx>0?110:-110}vw) rotate(${dx/14}deg)`;setTimeout(()=>Study.answer(g),170)}
+    else{el.style.transform='';el.dataset.sw=''}
+  };
+  el.addEventListener('pointerup',end);el.addEventListener('pointercancel',end);
+}
+document.addEventListener('keydown',e=>{
+  if(!Study.open||Layers.stack[Layers.stack.length-1]!==Study.closeFn)return;
+  if(e.target.matches('input,textarea,select')&&e.key!=='Enter')return;
+  if(e.target.id==='tiInput')return;
+  const k=e.key.toLowerCase();
+  if(k===' '||k==='enter'){e.preventDefault();if(!Study.cur)return;Study.revealed?Study.answer(3):Study.reveal()}
+  else if(['1','2','3','4'].includes(k)&&Study.revealed){e.preventDefault();Study.answer(+k)}
+  else if(k==='z'||k==='u'){Study.doUndo()}
+  else if(k==='e'&&Study.cur){openEditor(S.cards[Study.cur].nid)}
+  else if(k==='r'&&Study.cur){const f=faces(S.cards[Study.cur]);Study.revealed?speak(f.aT,f.la):speak(f.qT,f.lq)}
+});
+
+/* ---------- BROWSE ---------- */
+const BR={q:'',deck:'',state:'',sort:'created',limit:80};
+function vBrowse(){
+  const total=Object.keys(S.notes).length;
+  return `<h1 class="page">Karty</h1><div class="sub">${total} ${pl(total,'poznámka','poznámky','poznámek')} · ${Object.keys(S.cards).length} ${pl(Object.keys(S.cards).length,'karta','karty','karet')}</div>
+  <div class="searchbar"><div class="search">${icon('search',18)}<input id="bQ" type="search" placeholder="Hledat v kartách a štítcích" value="${esc(BR.q)}" autocomplete="off"></div>
+  <div class="filters"><select id="bDeck">${deckOptions(BR.deck,true)}</select>
+  <select id="bState">${[['','Vše'],['due','K opakování'],['new','Nové'],['learn','V učení'],['review','Opakování'],['marked','Označené'],['leech','Pijavice'],['susp','Pozastavené']].map(([v,l])=>`<option value="${v}" ${v===BR.state?'selected':''}>${l}</option>`).join('')}</select>
+  <select id="bSort">${[['created','Nejnovější'],['due','Podle termínu'],['diff','Nejtěžší'],['alpha','Abecedně']].map(([v,l])=>`<option value="${v}" ${v===BR.sort?'selected':''}>${l}</option>`).join('')}</select></div></div>
+  <div id="bList"></div>`;
+}
+function browseList(){
+  const now=Date.now(),q=BR.q.trim().toLocaleLowerCase('cs'),tom=addDays(dayStart(now),1);
+  const byNote={};for(const c of Object.values(S.cards))(byNote[c.nid]??=[]).push(c);
+  let items=[];
+  for(const n of Object.values(S.notes)){
+    if(BR.deck&&n.deck!==BR.deck)continue;
+    const cs=byNote[n.id]||[];
+    if(q){const hay=(plain(n.fields.front)+' '+plain(n.fields.back)+' '+plain(n.fields.extra)+' '+(n.tags||[]).join(' ')).toLocaleLowerCase('cs');if(!hay.includes(q))continue}
+    const s=BR.state;
+    if(s==='new'&&!cs.some(c=>c.state===0&&!c.susp))continue;
+    if(s==='learn'&&!cs.some(c=>(c.state===1||c.state===3)&&!c.susp))continue;
+    if(s==='review'&&!cs.some(c=>c.state===2&&!c.susp))continue;
+    if(s==='due'&&!cs.some(c=>c.state!==0&&!c.susp&&c.due<tom))continue;
+    if(s==='susp'&&!cs.some(c=>c.susp))continue;
+    if(s==='marked'&&!n.marked)continue;
+    if(s==='leech'&&!(n.tags||[]).includes('pijavice'))continue;
+    items.push({n,cs});
+  }
+  const minDue=cs=>Math.min(...cs.filter(c=>c.state!==0).map(c=>c.due),Infinity);
+  const sorters={created:(a,b)=>b.n.created-a.n.created,due:(a,b)=>minDue(a.cs)-minDue(b.cs),diff:(a,b)=>Math.max(0,...b.cs.map(c=>c.d))-Math.max(0,...a.cs.map(c=>c.d)),alpha:(a,b)=>plain(a.n.fields.front).localeCompare(plain(b.n.fields.front),'cs')};
+  items.sort(sorters[BR.sort]);
+  const shown=items.slice(0,BR.limit);
+  const el=$('#bList');if(!el)return;
+  if(!items.length){el.innerHTML=`<div class="card empty"><div class="big">${icon('search',26)}</div><h3>${Object.keys(S.notes).length?'Nic nenalezeno':'Zatím žádné karty'}</h3><p>${Object.keys(S.notes).length?'Zkuste jiný výraz nebo filtr.':'Přidejte první kartu tlačítkem + nahoře.'}</p></div>`;return}
+  el.innerHTML=`<div class="count-line">${items.length} ${pl(items.length,'výsledek','výsledky','výsledků')}</div><div class="card list">${shown.map(({n,cs})=>{
+    const dk=S.decks[n.deck];const c=cs.slice().sort((a,b)=>(a.state===0)-(b.state===0)||a.due-b.due)[0];
+    let pill='';
+    if(cs.length&&cs.every(c=>c.susp))pill='<span class="pill warn">Pozastaveno</span>';
+    else if(c){const d=relDue(c,now);pill=c.state===0?'<span class="pill new">Nová</span>':c.due<tom?`<span class="pill due">${d}</span>`:`<span class="pill ${c.state===2?'rev':'learn'}">${d}</span>`}
+    const back=n.type==='cloze'?plain(n.fields.extra):plain(n.fields.back);
+    return `<button class="nitem" data-act="note" data-id="${n.id}"><div class="f">${n.marked?`<span style="color:var(--hard)">★</span> `:''}${esc(plain(n.fields.front)||'(obrázek)')}</div>${back?`<div class="b">${esc(back)}</div>`:''}
+      <div class="m"><span style="display:inline-flex;align-items:center;gap:5px"><span class="dot" style="background:${dk?.color};width:8px;height:8px;border-radius:3px"></span>${esc(dk?.name||'')}</span>${pill}${n.type!=='basic'?`<span>${n.type==='cloze'?'Doplňovačka · '+cs.length:'Oboustranná'}</span>`:''}${(n.tags||[]).slice(0,3).map(t=>`<span>#${esc(t)}</span>`).join('')}</div></button>`}).join('')}</div>
+    ${items.length>BR.limit?`<button class="btn block outline" style="margin-top:12px" data-act="more">Zobrazit další (${items.length-BR.limit})</button>`:''}`;
+}
+function bindBrowse(){
+  let t;$('#bQ').addEventListener('input',e=>{clearTimeout(t);t=setTimeout(()=>{BR.q=e.target.value;BR.limit=80;browseList()},150)});
+  $('#bDeck').onchange=e=>{BR.deck=e.target.value;BR.limit=80;browseList()};
+  $('#bState').onchange=e=>{BR.state=e.target.value;BR.limit=80;browseList()};
+  $('#bSort').onchange=e=>{BR.sort=e.target.value;browseList()};
+  browseList();
+}
+
+/* ---------- STATS ---------- */
+let STF='';
+function vStats(){
+  const now=Date.now(),today=dayIdx(now),scope=STF?new Set([STF]):null;
+  const cards=Object.values(S.cards).filter(c=>!scope||scope.has(deckOf(c)));
+  const cset=scope?new Set(cards.map(c=>c.id)):null;
+  const logs=cset?LOGS.filter(l=>cset.has(l[1])):LOGS;
+  if(!cards.length&&!logs.length)return `<h1 class="page">Statistiky</h1><div class="sub">Přehled vašeho učení</div>${deckSel()}<div class="card empty"><div class="big">${icon('stats',26)}</div><h3>Zatím žádná data</h3><p>Statistiky se objeví po prvních opakováních.</p></div>`;
+  // per-day counts
+  const perDay=new Map();let totalTime=0;
+  for(const l of logs){const d=dayIdx(l[0]);const e=perDay.get(d)||{n:0,t:0};e.n++;e.t+=l[5]||0;perDay.set(d,e);totalTime+=l[5]||0}
+  const stk=(()=>{let d=today,s=0;if(!perDay.has(d))d--;while(perDay.has(d)){s++;d--}return s})();
+  let best=0,run=0,prev=null;for(const d of [...perDay.keys()].sort((a,b)=>a-b)){run=prev!=null&&d===prev+1?run+1:1;best=Math.max(best,run);prev=d}
+  // retention (review-state reviews, last 30 days)
+  const since=addDays(dayStart(now),-29);let rn=0,rp=0;
+  for(const l of logs){if(l[0]<since||l[3]!==2)continue;rn++;if(l[2]>1)rp++}
+  const ret=rn?rp/rn:null;
+  // states
+  let sNew=0,sLearn=0,sYoung=0,sMature=0,sSusp=0,sumR=0,nR=0;const stab=[0,0,0,0,0,0];
+  for(const c of cards){
+    if(c.susp){sSusp++;continue}
+    if(c.state===0)sNew++;else if(c.state!==2)sLearn++;else if(c.ivl<21)sYoung++;else sMature++;
+    if(c.state!==0){const r=FSRS.R(Math.max(0,today-dayIdx(c.last)),c.s);sumR+=r;nR++;
+      const s=c.s;stab[s<1?0:s<7?1:s<30?2:s<90?3:s<365?4:5]++}
+  }
+  const avgR=nR?sumR/nR:null;
+  // forecast
+  const fc=new Array(30).fill(0);
+  for(const c of cards){if(c.susp||c.state===0)continue;const d=Math.max(0,dayIdx(c.due)-today);if(d<30)fc[d]++}
+  const T=todayStats();
+  const tc=perDay.get(today)||{n:0,t:0};
+  const kp=(k,v,h)=>`<div class="card kpi"><div class="k">${k}</div><div class="v num">${v}</div>${h?`<div class="h">${h}</div>`:''}</div>`;
+  const target=Math.round(S.settings.retention*100);
+  return `<h1 class="page">Statistiky</h1><div class="sub">Přehled vašeho učení</div>${deckSel()}
+  <div class="kpis">
+    ${kp('Série',`${stk}<small>${pl(stk,'den','dny','dní')}</small>`,`Nejdelší ${best} ${pl(best,'den','dny','dní')}`)}
+    ${kp('Dnes',`${tc.n}<small>${pl(tc.n,'karta','karty','karet')}</small>`,`${Math.round(tc.t/60000)} min studia`)}
+    ${kp('Skutečná retence',ret==null?'–':`${nf(ret*100,1)}<small>%</small>`,`30 dní · cíl ${target} %`)}
+    ${kp('Odhad zapamatování',avgR==null?'–':`${nf(avgR*100,1)}<small>%</small>`,`průměrná vybavitelnost teď`)}
+    ${kp('Karet celkem',`${cards.length}`,`${sMature} ${pl(sMature,'zralá','zralé','zralých')} (≥ 21 d)`)}
+    ${kp('Čas celkem',`${totalTime>=36e5?nf(totalTime/36e5,1)+'<small>h</small>':Math.round(totalTime/6e4)+'<small>min</small>'}`,`${logs.length} ${pl(logs.length,'opakování','opakování','opakování')}`)}
+  </div>
+  <h2 class="sec">Aktivita</h2>${heatmap(perDay,today)}
+  <h2 class="sec">Předpověď</h2>${forecastChart(fc)}
+  <h2 class="sec">Stav karet</h2>${statesChart([[sNew,'Nové','var(--new)'],[sLearn,'V učení','var(--learn)'],[sYoung,'Mladé','color-mix(in srgb,var(--review) 55%,var(--surface))'],[sMature,'Zralé','var(--review)'],[sSusp,'Pozastavené','var(--muted)']])}
+  <h2 class="sec">Hodnocení (30 dní)</h2>${ratingsChart(logs,since)}
+  <h2 class="sec">Stabilita paměti</h2>${stabChart(stab)}
+  <p class="about">Stabilita = doba, za kterou vybavitelnost klesne na 90 %.<br>Retence se počítá z opakování karet ve fázi opakování.</p>`;
+}
+function deckSel(){return Object.keys(S.decks).length>1?`<select id="stDeck" style="margin-bottom:12px">${deckOptions(STF,true)}</select>`:''}
+function heatmap(perDay,today){
+  const weeks=26,cell=11,gap=3;
+  const td=new Date(today*DAY);const dow=(td.getUTCDay()+6)%7; // Monday=0
+  const start=today-dow-(weeks-1)*7;
+  const vals=[...perDay.values()].map(v=>v.n).sort((a,b)=>a-b);const q=p=>vals.length?vals[Math.floor((vals.length-1)*p)]:1;
+  const th=[q(.25),q(.5),q(.75)];
+  const lvl=n=>!n?0:n<=th[0]?1:n<=th[1]?2:n<=th[2]?3:4;
+  const op=[0,.28,.5,.75,1];
+  let rects='',months='',lastM=-1,active=0,tot=0;
+  for(let w=0;w<weeks;w++){
+    for(let d=0;d<7;d++){const di=start+w*7+d;if(di>today)continue;const e=perDay.get(di);const n=e?e.n:0;if(n){active++;tot+=n}
+      const L=lvl(n);rects+=`<rect x="${w*(cell+gap)}" y="${14+d*(cell+gap)}" width="${cell}" height="${cell}" rx="2.5" fill="${L?'var(--accent)':'var(--surface-3)'}" fill-opacity="${L?op[L]:1}"><title>${fmtDate(di*DAY,{day:'numeric',month:'numeric',timeZone:'UTC'})}: ${n}</title></rect>`}
+    const m=new Date((start+w*7)*DAY).getUTCMonth();
+    if(m!==lastM&&w<weeks-1){months+=`<text x="${w*(cell+gap)}" y="9">${new Date((start+w*7)*DAY).toLocaleDateString('cs-CZ',{month:'short',timeZone:'UTC'})}</text>`;lastM=m}
+  }
+  const W=weeks*(cell+gap)-gap,H=14+7*(cell+gap)-gap;
+  return `<div class="card chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Aktivita za posledních 26 týdnů">${months}${rects}</svg>
+  <div class="foot"><span><b>${active}</b> aktivních dní</span><span><b>${tot}</b> opakování</span><span>Ø <b>${active?Math.round(tot/active):0}</b> za aktivní den</span></div></div>`;
+}
+function forecastChart(fc){
+  const W=320,H=120,bw=W/30,max=Math.max(1,...fc);
+  const bars=fc.map((v,i)=>{const h=v/max*(H-18);return `<rect x="${i*bw+1}" y="${H-14-h}" width="${bw-2}" height="${Math.max(h,v?1.5:0)}" rx="2" fill="${i===0?'var(--accent)':'color-mix(in srgb,var(--accent) 55%,var(--surface))'}"><title>${i===0?'Dnes':'Za '+i+' d'}: ${v}</title></rect>`}).join('');
+  const lbl=[0,7,14,21,29].map(i=>`<text x="${i*bw+bw/2}" y="${H-2}" text-anchor="middle">${i===0?'dnes':'+'+i}</text>`).join('');
+  const wk=fc.slice(1,8).reduce((a,b)=>a+b,0),avg=fc.reduce((a,b)=>a+b,0)/30;
+  return `<div class="card chart"><h3>Opakování v příštích 30 dnech</h3><div class="d">Včetně karet po termínu (započteny do dneška)</div>
+  <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Předpověď opakování"><line x1="0" x2="${W}" y1="${H-14}" y2="${H-14}" stroke="var(--line)"/>${bars}${lbl}<text x="0" y="8">${max}</text></svg>
+  <div class="foot"><span>Zítra <b>${fc[1]}</b></span><span>Příštích 7 dní <b>${wk}</b></span><span>Ø <b>${nf(avg,1)}</b>/den</span></div></div>`;
+}
+function statesChart(arr){
+  const tot=arr.reduce((a,[v])=>a+v,0)||1;
+  return `<div class="card chart"><div class="hbar">${arr.filter(a=>a[0]).map(([v,,c])=>`<i style="flex:${v};background:${c}"></i>`).join('')}</div>
+  <div class="legend num" style="margin:12px 0 0">${arr.map(([v,l,c])=>`<span style="--c:${c}">${l} <b style="font-weight:600;color:var(--text)">${v}</b> <span class="muted" style="gap:0">(${Math.round(v/tot*100)} %)</span></span>`).join('')}</div></div>`;
+}
+function ratingsChart(logs,since){
+  const r=[0,0,0,0,0];let n=0;for(const l of logs)if(l[0]>=since){r[l[2]]++;n++}
+  if(!n)return `<div class="card chart"><div class="d" style="margin:0">Za posledních 30 dní žádná opakování.</div></div>`;
+  const L=[[1,'Znovu','var(--again)'],[2,'Těžké','var(--hard)'],[3,'Dobře','var(--good)'],[4,'Snadné','var(--easy)']];
+  return `<div class="card chart"><div class="hbar">${L.filter(([g])=>r[g]).map(([g,,c])=>`<i style="flex:${r[g]};background:${c}"></i>`).join('')}</div>
+  <div class="legend num" style="margin:12px 0 0">${L.map(([g,l,c])=>`<span style="--c:${c}">${l} <b style="font-weight:600;color:var(--text)">${Math.round(r[g]/n*100)} %</b></span>`).join('')}</div>
+  <p class="hint" style="margin-top:8px">Tlačítko „Těžké“ znamená, že jste si odpověď vybavili s obtížemi – ne že jste ji zapomněli.</p></div>`;
+}
+function stabChart(stab){
+  const L=['< 1 d','1–7 d','1–4 t','1–3 m','3–12 m','> 1 r'],max=Math.max(1,...stab),W=320,H=110,bw=W/6;
+  return `<div class="card chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Rozložení stability">${stab.map((v,i)=>{const h=v/max*(H-32);return `<rect x="${i*bw+8}" y="${H-16-h}" width="${bw-16}" height="${Math.max(h,v?2:0)}" rx="4" fill="var(--review)" fill-opacity="${.35+i*.13}"/><text x="${i*bw+bw/2}" y="${H-16-h-4}" text-anchor="middle" style="fill:var(--text-2)">${v||''}</text><text x="${i*bw+bw/2}" y="${H-2}" text-anchor="middle">${L[i]}</text>`}).join('')}</svg></div>`;
+}
+
+/* ---------- SETTINGS ---------- */
+function vSettings(){
+  const s=S.settings,lb=S.meta.lastBackup;
+  const seg=(key,opts)=>`<div class="seg" data-seg="${key}">${opts.map(([v,l])=>`<button data-v="${v}" class="${String(s[key])===String(v)?'on':''}">${l}</button>`).join('')}</div>`;
+  const sw=(key,l,h)=>`<label class="srow"><span class="l"><b>${l}</b>${h?`<small>${h}</small>`:''}</span><input type="checkbox" class="sw" data-set="${key}" ${s[key]?'checked':''}></label>`;
+  return `<h1 class="page">Nastavení</h1><div class="sub">Plánovač FSRS-5 · data uložená v tomto zařízení</div>
+  <h2 class="sec">Vzhled</h2><div class="card group"><div class="srow col"><span class="l"><b>Motiv</b></span><div style="margin-top:8px">${seg('theme',[['system','Systém'],['light','Světlý'],['dark','Tmavý']])}</div></div></div>
+
+  <h2 class="sec">Plánování</h2><div class="card group">
+    <div class="srow col"><span class="l"><b>Cílová retence</b><small>Pravděpodobnost, že si kartu při opakování vybavíte. Vyšší = jistější paměť, ale výrazně víc opakování. Doporučeno 85–92 %.</small></span>
+      <div class="range-row"><input type="range" min="70" max="97" step="1" value="${Math.round(s.retention*100)}" data-set="retention" id="sRet"><output id="sRetO">${Math.round(s.retention*100)} %</output></div>
+      <p class="hint" id="sRetH">${retHint(s.retention)}</p></div>
+    <label class="srow"><span class="l"><b>Kroky učení</b><small>Nové karty, např. „1m 10m“</small></span><input data-set="learnSteps" value="${stepsStr(s.learnSteps)}" autocapitalize="off"></label>
+    <label class="srow"><span class="l"><b>Kroky přeučení</b><small>Po zapomenutí, např. „10m“</small></span><input data-set="relearnSteps" value="${stepsStr(s.relearnSteps)}" autocapitalize="off"></label>
+    <label class="srow"><span class="l"><b>Maximální interval</b><small>Ve dnech</small></span><input type="number" inputmode="numeric" data-set="maxIvl" value="${s.maxIvl}" min="1" max="36500"></label>
+    <label class="srow"><span class="l"><b>Nový den začíná</b><small>Hodina, kdy se obnoví denní limity</small></span><select data-set="rollover">${Array.from({length:12},(_,h)=>`<option value="${h}" ${h===s.rollover?'selected':''}>${h}:00</option>`).join('')}</select></label>
+    ${sw('fuzz','Rozptyl intervalů','Mírně náhodné intervaly zabrání hromadění karet ve stejný den.')}
+  </div>
+
+  <h2 class="sec">Nové karty</h2><div class="card group">
+    <label class="srow"><span class="l"><b>Pořadí</b></span><select data-set="newOrder"><option value="added" ${s.newOrder==='added'?'selected':''}>Podle přidání</option><option value="random" ${s.newOrder==='random'?'selected':''}>Náhodně</option></select></label>
+    <label class="srow"><span class="l"><b>Zařazení</b></span><select data-set="newMix"><option value="mix" ${s.newMix==='mix'?'selected':''}>Promíchat</option><option value="first" ${s.newMix==='first'?'selected':''}>Nejdřív nové</option><option value="last" ${s.newMix==='last'?'selected':''}>Nakonec</option></select></label>
+    <label class="srow"><span class="l"><b>Pijavice</b><small>Počet zapomenutí, po kterém je karta označena jako problematická</small></span><input type="number" inputmode="numeric" data-set="leechThreshold" value="${s.leechThreshold}" min="0" max="99"></label>
+    <label class="srow"><span class="l"><b>Akce u pijavice</b></span><select data-set="leechAction"><option value="tag" ${s.leechAction==='tag'?'selected':''}>Jen označit</option><option value="suspend" ${s.leechAction==='suspend'?'selected':''}>Označit a pozastavit</option></select></label>
+  </div>
+
+  <h2 class="sec">Studium</h2><div class="card group">
+    ${sw('gestures','Gesta','Po odkrytí potáhněte kartu doprava = Dobře, doleva = Znovu.')}
+    ${sw('showIvl','Intervaly na tlačítkách','Zobrazí, kdy se karta vrátí.')}
+    ${sw('haptics','Vibrace','Jemná odezva při hodnocení (Android).')}
+    ${sw('autoTTS','Automatické čtení','Přečte kartu nahlas, pokud má balíček nastavený jazyk.')}
+  </div>
+
+  <h2 class="sec">Připomínka</h2><div class="card group">
+    <label class="srow"><span class="l"><b>Čas denního opakování</b></span><input type="time" data-set="reminder" value="${esc(s.reminder)}"></label>
+    <button class="srow" data-act="ics"><span class="l"><b>Přidat do kalendáře</b><small>Opakující se událost s upozorněním – funguje i bez otevřené aplikace.</small></span>${icon('calendar',20)}</button>
+  </div>
+
+  <h2 class="sec">Data</h2><div class="card group">
+    <button class="srow" data-act="backup"><span class="l"><b>Zálohovat</b><small>${lb?'Poslední záloha '+fmtDate(lb,{day:'numeric',month:'long',year:'numeric'}):'Zatím nezálohováno'}</small></span>${icon('download',20)}</button>
+    <button class="srow" data-act="restore"><span class="l"><b>Obnovit ze zálohy</b><small>Nahradí současná data souborem .json</small></span>${icon('upload',20)}</button>
+    <button class="srow" data-act="import"><span class="l"><b>Importovat karty</b><small>CSV, TSV nebo textový export z Anki</small></span>${icon('upload',20)}</button>
+    <div class="srow"><span class="l"><b>Úložiště</b><small id="sStore">Zjišťuji…</small></span></div>
+    <button class="srow" data-act="wipe"><span class="l"><b style="color:var(--again)">Smazat všechna data</b></span>${icon('trash',20)}</button>
+  </div>
+
+  <h2 class="sec">Pokročilé</h2><div class="card group">
+    <div class="srow col"><span class="l"><b>Parametry FSRS</b><small>19 vah z optimalizátoru FSRS (např. z Anki → Možnosti → FSRS). Prázdné = výchozí parametry FSRS-5.</small></span>
+    <textarea data-set="w" rows="3" style="margin-top:8px;font-family:ui-monospace,Menlo,monospace;font-size:13px;min-height:72px" placeholder="${W5.join(', ')}">${s.w?s.w.join(', '):''}</textarea></div>
+  </div>
+  <p class="about">Engram · plánovač FSRS-5 (Free Spaced Repetition Scheduler)<br>Bez účtu a bez serveru – vše zůstává ve vašem zařízení.<br><a href="../index.html">Zpět na rozcestník</a></p>`;
+}
+function retHint(r){
+  // relative workload vs 90 %: interval scales with (r^(1/DECAY)-1)
+  const k=(Math.pow(.9,1/DECAY)-1)/(Math.pow(r,1/DECAY)-1);
+  return `Zátěž oproti 90 %: ~${nf(k,1)}× ${k>1.05?'víc':k<.95?'méně':'stejně'} opakování.`;
+}
+function stepsStr(a){return a.map(m=>m>=1440&&m%1440===0?m/1440+'d':m>=60&&m%60===0?m/60+'h':nf(m,1).replace(',','.')+'m').join(' ')}
+function parseSteps(s){return String(s).split(/[\s,;]+/).filter(Boolean).map(t=>{const m=t.match(/^(\d+(?:[.,]\d+)?)\s*(m|min|h|d)?$/i);if(!m)return null;const v=parseFloat(m[1].replace(',','.'));const u=(m[2]||'m').toLowerCase();return u==='h'?v*60:u==='d'?v*1440:v}).filter(v=>v!=null&&v>0)}
+function bindSettings(){
+  const v=$('#view');
+  v.querySelectorAll('[data-seg]').forEach(sg=>sg.onclick=e=>{const b=e.target.closest('[data-v]');if(!b)return;S.settings[sg.dataset.seg]=b.dataset.v;save();applyTheme();sg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b))});
+  $('#sRet').oninput=e=>{const r=e.target.value/100;$('#sRetO').textContent=e.target.value+' %';$('#sRetH').textContent=retHint(r)};
+  v.querySelectorAll('[data-set]').forEach(el=>el.addEventListener('change',()=>{
+    const k=el.dataset.set,s=S.settings;
+    if(el.type==='checkbox')s[k]=el.checked;
+    else if(k==='retention')s[k]=clamp(el.value/100,.7,.97);
+    else if(k==='learnSteps'||k==='relearnSteps'){const p=parseSteps(el.value);if(k==='learnSteps'&&!p.length){toast('Zadejte alespoň jeden krok, např. 10m');el.value=stepsStr(s[k]);return}s[k]=p;el.value=stepsStr(p)}
+    else if(k==='maxIvl'){s[k]=clamp(parseInt(el.value)||36500,1,36500);el.value=s[k]}
+    else if(k==='leechThreshold'){s[k]=clamp(parseInt(el.value)||0,0,99);el.value=s[k]}
+    else if(k==='rollover')s[k]=parseInt(el.value);
+    else if(k==='w'){const t=el.value.trim();if(!t){s.w=null}else{const a=t.split(/[\s,;]+/).map(Number);if(a.length!==19||a.some(x=>!isFinite(x))){toast('Parametry musí obsahovat 19 čísel');return}s.w=a}}
+    else s[k]=el.value;
+    save();toast('Uloženo');
+  }));
+  (async()=>{const el=$('#sStore');if(!el)return;try{const e=await navigator.storage?.estimate?.();const p=await navigator.storage?.persisted?.();
+    const media=Object.keys(MEDIA).length;el.textContent=(e?`${nf((e.usage||0)/1048576,1)} MB využito`:'Neznámé')+` · ${media} ${pl(media,'obrázek','obrázky','obrázků')} · ${p?'trvalé úložiště':'prohlížeč může data při nedostatku místa smazat'}`}catch(_){el.textContent='Neznámé'}})();
+}
+
+/* ---------- import / export ---------- */
+function backupJSON(){return JSON.stringify({app:'engram',v:1,exported:Date.now(),core:S,logs:LOGS,media:MEDIA})}
+async function doBackup(){
+  await flush();
+  const name=`engram-zaloha-${new Date().toISOString().slice(0,10)}.json`;
+  const blob=new Blob([backupJSON()],{type:'application/json'});
+  try{
+    const file=new File([blob],name,{type:'application/json'});
+    if(navigator.canShare&&navigator.canShare({files:[file]})&&matchMedia('(hover:none)').matches){await navigator.share({files:[file],title:'Engram – záloha'})}
+    else download(name,blob);
+  }catch(e){if(e.name==='AbortError')return;download(name,blob)}
+  S.meta.lastBackup=Date.now();save();if(VIEW!=='browse')render();toast('Záloha vytvořena');
+}
+async function doRestore(){
+  const f=await pickFile('.json,application/json');if(!f)return;
+  let d;try{d=JSON.parse(await f.text())}catch(e){toast('Soubor není platná záloha');return}
+  if(d?.app!=='engram'||!d.core?.cards){toast('Soubor není záloha Engramu');return}
+  const nc=Object.keys(d.core.cards).length;
+  if(!await confirmDlg('Obnovit ze zálohy?',`Záloha z ${fmtDate(d.exported,{day:'numeric',month:'long',year:'numeric'})} obsahuje ${nc} ${pl(nc,'kartu','karty','karet')}. Současná data budou nahrazena.`,'Obnovit',true))return;
+  S=d.core;S.settings={...DEF_SET,...S.settings};S.meta={...freshCore().meta,...S.meta};LOGS=d.logs||[];MEDIA=d.media||{};
+  save('core','logs','media');await flush();applyTheme();render();toast('Data obnovena');
+}
+function csvField(s){s=String(s??'');return /[",\n\r]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}
+function exportCSV(deckId){
+  const d=S.decks[deckId];const rows=[['front','back','extra','tags','type']];
+  for(const n of Object.values(S.notes))if(n.deck===deckId)rows.push([n.fields.front,n.fields.back,n.fields.extra||'',(n.tags||[]).join(' '),n.type]);
+  download(`${d.name.replace(/[^\p{L}\p{N}_ -]/gu,'').trim()||'balicek'}.csv`,'﻿'+rows.map(r=>r.map(csvField).join(',')).join('\r\n'),'text/csv;charset=utf-8');
+}
+function parseDelim(text,d){
+  const rows=[];let row=[],f='',q=false;
+  for(let i=0;i<text.length;i++){const ch=text[i];
+    if(q){if(ch==='"'){if(text[i+1]==='"'){f+='"';i++}else q=false}else f+=ch}
+    else if(ch==='"'&&f==='')q=true;
+    else if(ch===d){row.push(f);f=''}
+    else if(ch==='\n'||ch==='\r'){if(ch==='\r'&&text[i+1]==='\n')i++;row.push(f);rows.push(row);row=[];f=''}
+    else f+=ch}
+  if(f!==''||row.length){row.push(f);rows.push(row)}
+  return rows.filter(r=>r.some(x=>x.trim())&&!(r.length===1&&r[0].startsWith('#')));
+}
+function detectDelim(t){
+  const m=t.match(/^#separator:(\w+)/m);if(m)return {tab:'\t',semicolon:';',comma:',',pipe:'|',space:' '}[m[1].toLowerCase()]||'\t';
+  const s=t.split(/\r?\n/).filter(l=>l&&!l.startsWith('#')).slice(0,8).join('\n');const c={'\t':0,';':0,',':0,'|':0};for(const ch of s)if(ch in c)c[ch]++;
+  const best=Object.entries(c).sort((a,b)=>b[1]-a[1])[0];return best[1]?best[0]:'\t';
+}
+function htmlToText(s){
+  if(!/[<&]/.test(s))return s;
+  s=s.replace(/<br\s*\/?>/gi,'\n').replace(/<\/(div|p|li)>/gi,'\n').replace(/<(b|strong)>(.*?)<\/\1>/gi,'**$2**').replace(/<(i|em)>(.*?)<\/\1>/gi,'*$2*').replace(/<[^>]+>/g,'');
+  const t=document.createElement('textarea');t.innerHTML=s;return t.value.replace(/\n{3,}/g,'\n\n').trim();
+}
+function openImport(){
+  if(!Object.keys(S.decks).length)newDeck('Importované');
+  const w=sheet(`<h3 class="t">Importovat karty</h3><p class="d">Každý řádek = jedna karta. Sloupce: přední strana, zadní strana, (poznámka), (štítky). Podporuje CSV, TSV a textový export z Anki.</p>
+   <div class="form" style="margin-top:16px">
+    <button class="btn outline block" id="iFile">${icon('upload',18)}Vybrat soubor</button>
+    <label class="field"><span>Nebo vložte text</span><textarea id="iText" rows="5" placeholder="dog;pes&#10;cat;kočka" spellcheck="false"></textarea></label>
+    <div class="pv-grid"><label class="field"><span>Do balíčku</span><select id="iDeck">${deckOptions(S.meta.lastDeck)}<option value="__new">+ Nový balíček…</option></select></label>
+    <label class="field"><span>Typ karet</span><select id="iType"><option value="basic">Základní</option><option value="reverse">Oboustranné</option></select></label></div>
+    <input id="iNewName" class="hidden" placeholder="Název nového balíčku">
+    <label class="srow card" style="box-shadow:none"><span class="l"><b>První řádek je záhlaví</b></span><input type="checkbox" class="sw" id="iHead"></label>
+    <label class="srow card" style="box-shadow:none"><span class="l"><b>Přeskočit duplicity</b><small>Stejná přední strana v balíčku</small></span><input type="checkbox" class="sw" id="iDup" checked></label>
+    <div class="hint" id="iInfo">Zatím nic k importu.</div>
+    <button class="btn primary lg block" id="iGo" disabled>Importovat</button></div>`);
+  const T=$('#iText',w);let rows=[];
+  const parse=()=>{const t=T.value;if(!t.trim()){rows=[];$('#iInfo',w).textContent='Zatím nic k importu.';$('#iGo',w).disabled=true;return}
+    const d=detectDelim(t);rows=parseDelim(t,d).filter(r=>r.length>=2||(r[0]||'').includes('{{c'));if($('#iHead',w).checked)rows=rows.slice(1);
+    const ex=rows.slice(0,2).map(r=>`„${esc(htmlToText(r[0]).slice(0,30))}“ → „${esc(htmlToText(r[1]||'').slice(0,30))}“`).join(', ');
+    $('#iInfo',w).innerHTML=`Nalezeno <b>${rows.length}</b> ${pl(rows.length,'karta','karty','karet')} · oddělovač <b>${{'\t':'tabulátor',';':'středník',',':'čárka','|':'svislice',' ':'mezera'}[d]}</b>${ex?`<br>${ex}`:''}`;
+    $('#iGo',w).disabled=!rows.length};
+  T.addEventListener('input',parse);$('#iHead',w).onchange=parse;
+  $('#iDeck',w).onchange=e=>$('#iNewName',w).classList.toggle('hidden',e.target.value!=='__new');
+  $('#iFile',w).onclick=async()=>{const f=await pickFile('.csv,.tsv,.txt,text/*');if(!f)return;T.value=await f.text();autosize(T);parse()};
+  $('#iGo',w).onclick=()=>{
+    let deck=$('#iDeck',w).value;
+    if(deck==='__new'){const nm=$('#iNewName',w).value.trim();if(!nm){toast('Zadejte název balíčku');return}deck=newDeck(nm)}
+    const type=$('#iType',w).value,skip=$('#iDup',w).checked;
+    const exist=new Set(Object.values(S.notes).filter(n=>n.deck===deck).map(n=>plain(n.fields.front).toLowerCase()));
+    let added=0,dups=0;const base=Date.now();
+    rows.forEach((r,i)=>{
+      const front=htmlToText(r[0]||'').trim(),back=htmlToText(r[1]||'').trim();if(!front)return;
+      const key=plain(front).toLowerCase();if(skip&&exist.has(key)){dups++;return}exist.add(key);
+      const isCz=/\{\{c\d+::/.test(front);
+      const known=['basic','reverse','cloze'].includes((r[4]||'').trim())?r[4].trim():null;
+      const t=known||(isCz?'cloze':type);
+      saveNote({id:uid(),deck,type:t,fields:{front,back:t==='cloze'?'':back,extra:t==='cloze'?(htmlToText(r[2]||'')||back):htmlToText(r[2]||'')},tags:(r[3]||'').split(/[\s,]+/).filter(Boolean),typein:false,marked:false,created:base+i});
+      added++;
+    });
+    S.meta.lastDeck=deck;save();persistStorage();w.close();render();
+    toast(`Importováno ${added} ${pl(added,'karta','karty','karet')}${dups?` · ${dups} duplicit přeskočeno`:''}`);
+  };
+}
+function downloadICS(){
+  const [h,m]=(S.settings.reminder||'19:00').split(':').map(Number);const d=new Date();d.setHours(h,m,0,0);if(d<new Date())d.setDate(d.getDate()+1);
+  const p=n=>String(n).padStart(2,'0');const dt=`${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}T${p(h)}${p(m)}00`;
+  const now=new Date();const st=`${now.getUTCFullYear()}${p(now.getUTCMonth()+1)}${p(now.getUTCDate())}T${p(now.getUTCHours())}${p(now.getUTCMinutes())}00Z`;
+  const url=location.href.split('#')[0];
+  const ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Engram//CS','CALSCALE:GREGORIAN','BEGIN:VEVENT',`UID:engram-${uid()}@engram`,`DTSTAMP:${st}`,`DTSTART:${dt}`,'DURATION:PT15M','RRULE:FREQ=DAILY','SUMMARY:Engram – denní opakování',`DESCRIPTION:Pár minut opakování. ${url}`,`URL:${url}`,'BEGIN:VALARM','TRIGGER:PT0M','ACTION:DISPLAY','DESCRIPTION:Čas na opakování v Engramu','END:VALARM','END:VEVENT','END:VCALENDAR'].join('\r\n');
+  download('engram-pripominka.ics',ics,'text/calendar;charset=utf-8');
+}
+
+/* ---------- sample decks ---------- */
+function createSamples(){
+  const a=newDeck('Hlavní města Evropy',{desc:'Ukázkový balíček',color:COLORS[0],newPerDay:10});
+  const caps=[['Francie','Paříž'],['Německo','Berlín'],['Itálie','Řím'],['Španělsko','Madrid'],['Portugalsko','Lisabon'],['Rakousko','Vídeň'],['Polsko','Varšava'],['Maďarsko','Budapešť'],['Slovinsko','Lublaň'],['Chorvatsko','Záhřeb'],['Nizozemsko','Amsterdam'],['Belgie','Brusel'],['Dánsko','Kodaň'],['Norsko','Oslo'],['Švédsko','Stockholm'],['Finsko','Helsinky'],['Irsko','Dublin'],['Řecko','Atény'],['Rumunsko','Bukurešť'],['Bulharsko','Sofie'],['Litva','Vilnius'],['Lotyšsko','Riga'],['Estonsko','Tallinn'],['Island','Reykjavík']];
+  const t=Date.now();
+  caps.forEach(([c,m],i)=>saveNote({id:uid(),deck:a,type:'basic',fields:{front:`Hlavní město: **${c}**`,back:m,extra:''},tags:['zeměpis'],typein:i%6===5,marked:false,created:t+i}));
+  const b=newDeck('Jak funguje Engram',{desc:'Krátký průvodce aplikací',color:COLORS[1],newPerDay:10});
+  const g=[
+    ['basic','Jak hodnotit odpověď?','- **Znovu** – nevybavím si ji\n- **Těžké** – vybavím, ale s velkým úsilím\n- **Dobře** – vybavím po chvilce\n- **Snadné** – vybavím okamžitě','Nejčastěji byste měli mačkat „Dobře“.'],
+    ['cloze','Engram plánuje opakování algoritmem {{c1::FSRS}}, který pro každou kartu odhaduje {{c2::stabilitu}} a {{c3::obtížnost}}.','',''],
+    ['basic','Jaká gesta fungují po odkrytí odpovědi?','Potažení **doprava** = Dobře\nPotažení **doleva** = Znovu','Gesta lze vypnout v Nastavení.'],
+    ['cloze','Cílová retence 90 % znamená, že při opakování si vybavíte zhruba {{c1::9 z 10::kolik}} karet.','','Vyšší retence = víc opakování.'],
+    ['basic','Co je „pijavice“?','Karta, kterou opakovaně zapomínáte. Obvykle pomůže ji přeformulovat nebo rozdělit na menší.',''],
+    ['reverse','pes','dog','Oboustranná karta – vytvoří dvě karty.']
+  ];
+  g.forEach(([type,f,bk,x],i)=>saveNote({id:uid(),deck:b,type,fields:{front:f,back:bk,extra:x},tags:['průvodce'],typein:false,marked:false,created:t-100+i}));
+  S.meta.lastDeck=b;save();render();toast('Ukázkové balíčky vytvořeny');
+}
+
+/* ---------- actions ---------- */
+const ACT={
+  tab:el=>go(el.dataset.v),
+  add:()=>openEditor(null),
+  study:()=>{const ids=Object.keys(S.decks);Study.start(ids)},
+  deck:el=>openDeck(el.dataset.id),
+  'deck-new':()=>editDeck(null),
+  sample:createSamples,
+  import:openImport,
+  backup:doBackup,
+  restore:doRestore,
+  ics:downloadICS,
+  note:el=>openEditor(el.dataset.id),
+  more:()=>{BR.limit+=100;browseList()},
+  wipe:async()=>{if(!await confirmDlg('Smazat všechna data?','Všechny balíčky, karty a historie budou nenávratně odstraněny. Doporučujeme nejdřív zálohovat.','Smazat vše',true))return;
+    S=freshCore();LOGS=[];MEDIA={};save('core','logs','media');await flush();applyTheme();go('home');toast('Data smazána')},
+  reveal:()=>Study.reveal(),
+  rate:el=>Study.answer(+el.dataset.g),
+  'study-close':()=>Study.close(),
+  'study-undo':()=>Study.doUndo(),
+  'study-menu':()=>Study.menu(),
+  'study-edit':()=>{if(Study.cur)openEditor(S.cards[Study.cur].nid)},
+  'study-mark':()=>{const c=S.cards[Study.cur];if(!c)return;const n=S.notes[c.nid];n.marked=!n.marked;save();Study.renderCard(false);toast(n.marked?'Označeno hvězdičkou':'Označení zrušeno')},
+  'study-wait':()=>{Study.queue=Study.queue.filter(id=>Study.valid(id));const L=Study.learnCards();if(L.length){const now=Date.now();Study.cur=L[0].id;Study.revealed=false;Study.shownAt=now;Study.renderCard(true)}else Study.next()},
+  'study-more':()=>{addExtraNew(Study.decks,10);const q=Study.build();Study.queue=q.filter(id=>!Study.queue.includes(id)&&S.cards[id].state===0).concat(Study.queue);Study.next()},
+  speak:()=>{const c=S.cards[Study.cur];if(!c)return;const f=faces(c);if(Study.revealed&&f.la)speak(f.aT,f.la);else if(f.lq)speak(f.qT,f.lq);else toast('Nastavte jazyk čtení v nastavení balíčku')}
+};
+document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el||el.disabled)return;const f=ACT[el.dataset.act];if(f){e.preventDefault();f(el,e)}});
+
+/* ---------- init ---------- */
+(async function init(){
+  $('#backLink').innerHTML=icon('back',22);$('#addBtn').innerHTML=icon('plus',22,2.2);$('#logo').innerHTML=icon('logo',16,2.6);
+  $('#stClose').innerHTML=icon('x',22);$('#stUndo').innerHTML=icon('undo',21);$('#stMenu').innerHTML=icon('more',22,2.4);
+  await Store.open();
+  let core=await Store.get('core');
+  S=core&&core.v?core:freshCore();
+  S.settings={...DEF_SET,...S.settings};S.meta={...freshCore().meta,...S.meta};
+  LOGS=(await Store.get('logs'))||[];MEDIA=(await Store.get('media'))||{};
+  applyTheme();render();
+  if('speechSynthesis' in window)speechSynthesis.getVoices();
+  let lastDay=dayIdx();setInterval(()=>{const d=dayIdx();if(d!==lastDay){lastDay=d;if(!Study.open&&!Layers.stack.length)render()}},60000);
+})();
+</script>
+</body>
+</html>
