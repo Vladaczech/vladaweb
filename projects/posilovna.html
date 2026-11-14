@@ -633,6 +633,49 @@ const EX = [
   { id: 'seatedcalf', n: 'Výpony vsedě', g: 'Nohy', eq: 'machine', lo: 12, hi: 20, m: ['calves'], m2: [],
     tips: ['Opěrka těsně na kolenou, špičky na hraně plošiny.', 'Dole pořádně protáhni, nahoře vteřinu podrž.', 'Vsedě pracuje hlavně hlubší sval lýtka (šikmý) – doplněk ke stojným výponům.'],
     a: { eq: 'pad', eqAt: 'K', props: [['bench', 30, 110, 44], ['step', 92, 144, 24]], A: { H: [60, 104], t: 178, hand: [100, 92], th: 90, sh: 2, ft: 80 }, B: { H: [60, 97], th: 88, ft: 15, hand: [100, 85] } } },
+  /* ── Hýždě a nohy – stroje glute zóny a cviky s oporou ve studiích ── */
+  { id: 'hipthrustm', n: 'Hip thrust na stroji', g: 'Nohy', eq: 'machine', lo: 8, hi: 12, m: ['glutes'], m2: ['hamstrings', 'quads'],
+    tips: ['Opěrka pod lopatkami, pás nebo polstr přes kyčle, chodidla na šíři boků.', 'Nahoře propni kyčle do linie s trupem a vteřinu zatni hýždě – bez prohnutí v bedrech.', 'Na stroji odpadá balancování s činkou, takže se dá bezpečně jít blíž k selhání.'],
+    a: { eq: 'pad', eqAt: 'H', props: [['bench', 8, 104, 46], ['line', 150, 146, 150, 60]], A: { H: [80, 130], t: -139, hand: [84, 120], foot: [118, 146] }, B: { H: [96, 98], t: -90, hand: [98, 90] } } },
+  { id: 'seatedcurl', n: 'Zakopávání vsedě', g: 'Nohy', eq: 'machine', lo: 10, hi: 15, m: ['hamstrings'], m2: ['calves'],
+    tips: ['Kolena v ose otáčení stroje, polstr pevně přes stehna.', 'Trup mírně předkloň – hamstringy se víc protáhnou. Vsedě rostly ve studii víc než vleže.', 'Paty táhni pod sedák, nahoru pomalu do plného propnutí.'],
+    a: { eq: 'roller', eqAt: 'A', props: [['bench', 46, 108, 62], ['line', 50, 108, 56, 48], ['line', 82, 94, 114, 94]], A: { H: [70, 102], t: 168, hand: [98, 104], th: 90, sh: 76, ft: 160 }, B: { sh: -18, ft: 70 } } },
+  { id: 'glutekickm', n: 'Zanožování na stroji', g: 'Nohy', eq: 'machine', lo: 10, hi: 15, m: ['glutes'], m2: ['hamstrings'],
+    tips: ['Hrudník nebo předloktí opři o polstr, stojná noha mírně pokrčená.', 'Tlač chodidlem (patou) dozadu a nahoru, pohyb jde z kyčle, ne z beder.', 'Nahoře zatni hýždi, dolů pomalu až do protažení – tam roste nejvíc.'],
+    a: { eq: 'roller', eqAt: 'A', props: [['line', 118, 56, 134, 86], ['line', 140, 40, 140, 150]], A: { H: [90, 76], t: 128, hand: [134, 72], foot: [96, 136], foot2: [102, 146], ft: 50 }, B: { foot: [28, 96], ft: 10 } } },
+  { id: 'pendulum', n: 'Pendulum dřep', g: 'Nohy', eq: 'machine', lo: 8, hi: 12, m: ['quads', 'glutes'], m2: ['adductors'],
+    tips: ['Ramena pod polstry, záda celou dobu na opěrce.', 'Stroj vede dráhu po oblouku – kolena můžou jít přes špičky, jdi do plné hloubky.', 'Hluboký dřep zatěžuje stehna i hýždě v protažení, což podporuje růst.'],
+    a: { props: [['line', 98, 146, 132, 132], ['line', 30, -20, 120, -20], ['line', 40, -20, 76, 40]], A: { H: [84, 66], t: -168, ua: 22, fa: 162, foot: [110, 136], ft: 100 }, B: { H: [94, 108], t: -150 } } },
+  { id: 'smithsquat', n: 'Dřep v multipressu', g: 'Nohy', eq: 'machine', inc: 2.5, lo: 6, hi: 10, m: ['quads', 'glutes'], m2: ['hamstrings', 'adductors'],
+    tips: ['Chodidla kousek před tělem, ať můžeš jít hluboko s rovnými zády.', 'Kolena ve směru špiček, paty celou dobu na zemi.', 'Pojistky nastav těsně pod spodní pozici – můžeš bezpečně jet blíž k selhání.'],
+    a: { eq: 'barbell', props: [['line', 91, -30, 91, 150]], A: { H: [92, 70], t: 180, ua: -20, fa: 165, foot: [104, 146] }, B: { H: [74, 106], t: 156 } } },
+  { id: 'frontsquat', n: 'Čelní dřep', g: 'Nohy', eq: 'barbell', lo: 4, hi: 8, m: ['quads', 'glutes'], m2: ['abs', 'lowerback', 'adductors'],
+    tips: ['Činka na předních ramenou, lokty vysoko dopředu, prsty jen přidržují.', 'Trup zůstává vzpřímenější než u dřepu vzadu – víc stehna, míň záda.', 'Dolů pod paralelu, kolena tlač ven nad špičky.'],
+    a: { eq: 'barbell', A: { H: [95, 70], t: 180, hand: [106, 26], foot: [95, 146] }, B: { H: [80, 110], t: 166, hand: [101, 69] } } },
+  { id: 'sumodl', n: 'Sumo mrtvý tah', g: 'Nohy', eq: 'barbell', lo: 3, hi: 6, m: ['glutes', 'quads', 'adductors'], m2: ['hamstrings', 'lowerback', 'traps', 'forearms'],
+    tips: ['Široký postoj, špičky ven, úchop uvnitř kolen.', 'Trup vzpřímenější než u klasiky – tlač kolena ven a „rozevírej“ podlahu.', 'Činka těsně u holení, nahoře propni kyčle a zatni hýždě.'],
+    a: { eq: 'barbell', A: { H: [82, 102], t: 130, hand: [100, 137], foot: [95, 146] }, B: { H: [92, 70], t: 178, hand: [97, 82] } } },
+  { id: 'slrdl', n: 'Rumunský mrtvý tah na jedné noze', g: 'Nohy', eq: 'dumbbell', lo: 8, hi: 12, m: ['hamstrings', 'glutes'], m2: ['lowerback', 'adductors'],
+    tips: ['Stojná noha mírně pokrčená, volná noha jde dozadu v linii s trupem.', 'Pánev drž rovně – nevytáčej kyčel volné nohy ke stropu.', 'Jednoručku drž v protější ruce, dolů jen s rovnými zády.'],
+    a: { eq: 'dumbbell', A: { H: [95, 70], t: 180, hand: [97, 82], foot: [95, 146], foot2: [90, 146], ft2: 70 }, B: { H: [90, 73], t: 98, hand: [126, 122], foot2: [20, 74], ft2: 0 } } },
+  { id: 'nordic', n: 'Nordic hamstring curl', g: 'Nohy', eq: 'bw', lo: 3, hi: 8, m: ['hamstrings'], m2: ['glutes', 'calves'],
+    tips: ['Kotníky zaklesni pod opěrku nebo je nech držet partnera, pod kolena podložku.', 'Tělo v jedné linii od kolen k hlavě, padej dopředu co nejpomaleji.', 'Na konci se zachyť rukama a odraz zpátky. Pravidelně zařazovaný snižuje riziko zranění hamstringů zhruba o polovinu.'],
+    a: { eq: 'pad', eqAt: 'A', A: { H: [80, 106], t: 180, hand: 'chest', th: 0, sh: -90, ft: -90 }, B: { H: [112, 126], t: 120, th: -58 } } },
+  { id: 'sissy', n: 'Sissy dřep', g: 'Nohy', eq: 'bw', lo: 8, hi: 15, m: ['quads'], m2: ['abs'],
+    tips: ['Drž se tyče, postav se na špičky a zakloň trup v linii se stehny.', 'Kolena jdou daleko dopředu, kyčle zůstávají propnuté.', 'Silně protahuje přímý sval stehenní – začni s malým rozsahem.'],
+    a: { props: [['line', 142, 30, 142, 150]], A: { H: [92, 68], t: 182, hand: [140, 58], foot: [96, 140], ft: 80 }, B: { H: [104, 102], t: -156 } } },
+  { id: 'pullthrough', n: 'Pull-through na kladce', g: 'Nohy', eq: 'cable', lo: 10, hi: 15, m: ['glutes', 'hamstrings'], m2: ['lowerback'],
+    tips: ['Zády ke spodní kladce, lano mezi nohama, krok vpřed.', 'Zadek posílej dozadu, záda rovná, kolena jen lehce pokrčená.', 'Nahoru vytlač kyčle dopředu a zatni hýždě – nezakláněj se.'],
+    a: { cable: [8, 140], props: [['line', 4, 30, 4, 150]], A: { H: [78, 72], t: 108, hand: [86, 118], foot: [96, 146] }, B: { H: [92, 70], t: 180, hand: [98, 104] } } },
+  { id: 'cableabd', n: 'Unožování na kladce', g: 'Nohy', eq: 'cable', inc: 1.25, lo: 12, hi: 20, m: ['glutes'], m2: [],
+    tips: ['Manžeta na kotníku vnější nohy, druhou rukou se drž rámu.', 'Unožuj do strany a lehce dozadu, špička míří dopředu.', 'Cílí na střední hýžďový sval (boky) – trup drž rovně, nenakláněj se.'],
+    a: { front: true, one: true, cable: [6, 146], cableAt: 'A', props: [['line', 2, 20, 2, 150]], A: { H: [100, 70], t: 180, ua: 8, fa: 4, th: 3, sh: 1 }, B: { th: 38, sh: 36 } } },
+  { id: 'standcalf', n: 'Výpony vestoje na stroji', g: 'Nohy', eq: 'machine', lo: 8, hi: 15, m: ['calves'], m2: [],
+    tips: ['Ramena pod polstry, špičky na hraně plošiny, kolena propnutá.', 'Dole vteřinu podrž v plném protažení – lýtka rostou hlavně v protažení.', 'Nahoru do plné špičky, bez houpání.'],
+    a: { eq: 'spad', eqAt: 'S', props: [['step', 92, 146, 40], ['line', 76, 12, 76, 150]], A: { H: [95, 70], t: 180, hand: [104, 30], foot: [95, 142], ft: 70 }, B: { H: [95, 60], hand: [104, 20], foot: [95, 132], ft: 20 } } },
+  { id: 'hyper45', n: 'Hyperextenze 45° na hýždě', g: 'Nohy', eq: 'bw', lo: 12, hi: 20, m: ['glutes'], m2: ['hamstrings', 'lowerback'],
+    tips: ['Opěrku posuň níž (pod kyčle), špičky vytoč ven.', 'Horní záda drž mírně kulatá a bradu u hrudníku – práci tak převezmou hýždě místo beder.', 'Nahoře zatni hýždě, kyčle tlač do opěrky. Zátěž: kotouč nebo jednoručka na hrudníku.'],
+    a: { props: [['line', 50, 148, 104, 98], ['line', 92, 90, 110, 72], ['line', 44, 144, 58, 132]], A: { H: [100, 80], t: 24, hand: 'chest', foot: [52, 140], ft: 140 }, B: { t: 136 } } },
 ];
 EX.forEach(e => { if (e.a) e.a.B = { ...e.a.A, ...e.a.B }; });
 
@@ -1001,7 +1044,9 @@ function solveFront(an, p) {
     // fly: paže ve výšce ramen, k = průmět do strany (1 = upaženo, záporné = ruce před hrudníkem)
     const E = an.fly ? add(Sx, [sg * LEN.ua * P.k, 3]) : add(Sx, V(P.ua * sg, LEN.ua));
     const W = an.fly ? add(E, [sg * LEN.fa * P.k, 3]) : add(E, V(P.fa * sg, LEN.fa));
-    const K = add(Hx, V(P.th * sg, an.thl ?? LEN.th)), A = add(K, V(P.sh * sg, LEN.sh)), T = add(A, [6 * sg, 3]);
+    // one: pohybuje se jen pravá noha, levá zůstává ve výchozí pozici
+    const L0 = an.one && sg < 0 ? an.A : P;
+    const K = add(Hx, V(L0.th * sg, an.thl ?? LEN.th)), A = add(K, V(L0.sh * sg, LEN.sh)), T = add(A, [6 * sg, 3]);
     return { Sx, Hx, E, W, K, A, T };
   };
   return { H, S, Hd, R: side(1), L: side(-1) };
@@ -1012,6 +1057,7 @@ function eqShape(t) {
   if (t === 'vhandle') return '<line class="eq" x1="0" y1="-9" x2="0" y2="9"/>';
   if (t === 'handle') return '<line class="eq" x1="-8" y1="0" x2="8" y2="0"/>';
   if (t === 'roller') return '<circle class="eq" r="6"/>';
+  if (t === 'spad') return '<rect class="eq" x="-8" y="-6" width="16" height="6" rx="3"/>';
   if (t === 'pad') return '<rect class="eq" x="-15" y="-13" width="30" height="7" rx="3"/>';
   if (t === 'kettlebell') return '<path class="eq" d="M-4,2 Q0,-6 4,2" style="fill:none;stroke-width:2.5"/><circle class="eq" cy="8" r="7"/>';
   if (t === 'wheel') return '<circle class="eq" r="8"/><circle class="eqh" r="2.5"/>';
@@ -1035,7 +1081,7 @@ function figSvg(ex, cls = '') {
   const eq = an.eq ? `<g data-k="eq">${eqShape(an.eq)}</g>` : '';
   if (an.front) {
     const fp = an.cables ? ['R', 'L'].map((s, i) => { const x = i ? 200 - an.cables[0] : an.cables[0]; return `<line class="cable" data-k="cab${s}"/><circle class="pul" cx="${x}" cy="${an.cables[1]}" r="5"/>`; }).join('') : '';
-    return `<svg class="fig ${cls}" viewBox="-10 -36 220 192" data-ex="${ex.id}"><line class="floor" x1="0" y1="150" x2="200" y2="150"/>${props}${fp}
+    return `<svg class="fig ${cls}" viewBox="-10 -36 220 192" data-ex="${ex.id}"><line class="floor" x1="0" y1="150" x2="200" y2="150"/>${props}${fp}${pul}
       <g class="glow">${L('to')}${L('sl')}${L('hl')}${['R', 'L'].map(s => L('ua' + s) + L('fa' + s) + L('th' + s) + L('sh' + s) + L('ft' + s)).join('')}<circle class="hd" r="9" data-k="hd"/></g>
       ${an.eq ? `<g data-k="eqR">${eqShape(an.eq)}</g><g data-k="eqL">${eqShape(an.eq)}</g>` : ''}</svg>`;
   }
@@ -1057,6 +1103,7 @@ function drawFig(svg, ex, p) {
       if (g['cab' + s]) setL(g['cab' + s], [s === 'R' ? an.cables[0] : 200 - an.cables[0], an.cables[1]], q.W);
       if (g['eq' + s]) g['eq' + s].setAttribute('transform', `translate(${q.W[0].toFixed(1)} ${q.W[1].toFixed(1)})`);
     }
+    if (g.cab) setL(g.cab, an.cable, an.cableAt === 'A' ? o.R.A : o.R.W);
     return;
   }
   const o = solve(an, p);
@@ -1066,7 +1113,7 @@ function drawFig(svg, ex, p) {
   setL(g.th, o.H, o.K); setL(g.sh, o.K, o.A); setL(g.ft, o.A, o.T);
   if (o.K2) { setL(g.th2, o.H, o.K2); setL(g.sh2, o.K2, o.A2); setL(g.ft2, o.A2, o.T2); }
   if (g.cab) setL(g.cab, an.cable, an.cableAt === 'A' ? o.A : an.cableAt === 'H' ? o.H : o.W);
-  if (g.eq) { const at = an.eqAt === 'A' ? (an.eq === 'sled' ? o.T : o.A) : an.eqAt === 'K' ? o.K : o.W; g.eq.setAttribute('transform', `translate(${at[0].toFixed(1)} ${at[1].toFixed(1)})`); }
+  if (g.eq) { const at = an.eqAt === 'A' && an.eq === 'sled' ? o.T : o[an.eqAt || 'W'] || o.W; g.eq.setAttribute('transform', `translate(${at[0].toFixed(1)} ${at[1].toFixed(1)})`); }
 }
 const RM = matchMedia('(prefers-reduced-motion: reduce)');
 const PERIOD = 2800;
@@ -1344,7 +1391,7 @@ function newSetsFor(ex, w, n) {
 /* ── Generátor tréninku ──
    Vícekloubové cviky první (pořadí ovlivňuje výkon), izolace potom, core a kondice na konec.
    Větší partie dostanou víc cviků. Preferuje cviky, které jsi dlouho nedělal, a různé hlavní svaly. */
-const ISO = new Set(['adduction', 'seatedcalf', 'pecdeck', 'crossover', 'latraise', 'revfly', 'facepull', 'curl', 'hammer', 'pushdown', 'preacher', 'skull', 'ohtri', 'legext', 'legcurl', 'calf', 'abduction', 'kickback', 'shrug', 'hyperext']);
+const ISO = new Set(['adduction', 'seatedcalf', 'pecdeck', 'crossover', 'latraise', 'revfly', 'facepull', 'curl', 'hammer', 'pushdown', 'preacher', 'skull', 'ohtri', 'legext', 'legcurl', 'calf', 'abduction', 'kickback', 'shrug', 'hyperext', 'seatedcurl', 'glutekickm', 'sissy', 'nordic', 'pullthrough', 'cableabd', 'standcalf', 'hyper45']);
 const BIG = { 'Hrudník': 2, 'Záda': 2, 'Nohy': 2.5, 'Ramena': 1.2, 'Paže': 1.2, 'Core': 0.8, 'Kondice': 0.8 };
 const isIso = ex => ISO.has(ex.id) || ex.g === 'Core' || ex.g === 'Kondice';
 function lastDone(exId) { const h = sessions(exId)[0]; return h ? new Date(h.d).getTime() : 0; }
