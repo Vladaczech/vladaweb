@@ -313,6 +313,18 @@ svg.fig .pul{fill:var(--bg);stroke:#6a6a6a;stroke-width:2}
 .adm-ch{font-family:var(--mono);font-size:12px;min-width:56px;text-align:right;color:var(--muted)}
 .adm-ch.up{color:var(--text)}.adm-ch.up::before{content:'▲ ';color:var(--neon);font-size:9px}
 .adm-ch.down{color:var(--text)}.adm-ch.down::before{content:'▼ ';color:#ff4d6d;font-size:9px}
+.icon-btn{position:relative}.icon-btn.dot::after{content:'';position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--bad);box-shadow:0 0 0 2px var(--bg)}
+.badge-n{font-family:var(--mono);font-size:10px;letter-spacing:0;color:#fff;background:var(--bad);border-radius:99px;padding:1px 7px}
+.rep{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.rep.done{opacity:.6}
+.rep-h{display:flex;align-items:center;gap:10px}
+.rep-t{font-size:14px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.rep-k{font-style:normal;font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;border-radius:6px;border:1px solid var(--line2);color:var(--muted);vertical-align:2px;margin-left:4px}
+.rep-k.k-bug{color:var(--bad);border-color:rgba(255,77,109,.4)}.rep-k.k-idea{color:var(--neon);border-color:var(--neon-d)}
+.rep-ctx summary,.rep-old summary{font-family:var(--mono);font-size:11px;color:var(--muted);cursor:pointer}
+.rep-ctx div{display:flex;flex-direction:column;gap:3px;margin-top:6px;font-family:var(--mono);font-size:10.5px;color:var(--muted);word-break:break-all}
+.rep-ctx b{color:var(--muted2);font-weight:400;margin-right:4px}
+.rep-ph span{position:absolute;left:0;right:0;bottom:0;font-family:var(--mono);font-size:9px;background:rgba(0,0,0,.65);color:#fff;padding:2px;text-align:center}
 .themes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .th{display:flex;flex-direction:column;align-items:stretch;gap:7px;padding:8px;border-radius:14px;border:1px solid var(--line);background:var(--tb);text-align:left;transition:border-color .2s,box-shadow .2s}
 .th.on{border-color:var(--ta);box-shadow:0 0 0 1px var(--ta),0 0 18px rgba(var(--tr),.25)}
@@ -1288,10 +1300,11 @@ function render() {
    Vidí profil, tréninky a vlastní cviky – fotky, poznámky ke cvikům ani tělesnou váhu ne.
    ═══════════════════════════════════════════════════════════════ */
 let IS_ADMIN = false;
-const ADM = { at: 0, users: null, loading: false, err: '', sel: null, open: null };
+const ADM = { at: 0, users: null, reports: null, loading: false, err: '', sel: null, open: null };
 async function checkAdmin() {
   try { IS_ADMIN = !!(USER && db && (await db.collection('admins').doc(USER.uid).get()).exists); } catch { IS_ADMIN = false; }
   $('#btn-adm').classList.toggle('hidden', !IS_ADMIN);
+  if (IS_ADMIN) loadReports();
 }
 async function loadAdmin() {
   if (!IS_ADMIN || ADM.loading) return;
@@ -1308,6 +1321,7 @@ async function loadAdmin() {
         cx: cx.docs.map(x => x.data()).filter(x => !x.del),
       };
     }));
+    await loadReports();
     ADM.at = now();
   } catch (e) { ADM.err = fbErr(e); }
   ADM.loading = false;
@@ -1410,6 +1424,7 @@ function vAdmin() {
       <div class="stat"><div class="v">${v30 >= 10000 ? fmt(v30 / 1000, 1) + 't' : fmtInt(v30)}</div><div class="l">objem 30 d</div></div>
       <div class="stat"><div class="v">${fmt(perW, 1)}</div><div class="l">Ø tréninků / týden</div></div>
     </div>
+    ${admReports()}
     <h2 class="sec">Tréninky po týdnech</h2>
     <div class="card"><div class="chart" id="adm-weeks"></div><p class="note" style="margin-top:6px">Všichni uživatelé dohromady, posledních 12 týdnů. Klepni na sloupec pro detail.</p></div>
     <h2 class="sec">Uživatelé</h2>
@@ -1477,6 +1492,122 @@ function mountAdmin() {
   const el = $('#adm-weeks'); if (!el) return;
   const tot = Array(12).fill(0); ADM.users.forEach(u => admStats(u).weeks.forEach((v, i) => tot[i] += v));
   colChart(el, tot, lab, v => pl(v, 'trénink', 'tréninky', 'tréninků'));
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   HLÁŠENÍ – zatřesení telefonem (nebo tlačítko v nastavení) otevře okno pro připomínku s fotkami.
+   Uloží se do Firestore reports/{id} (čte jen správce, Přehled → Hlášení);
+   když je vyplněný FEEDBACK_KEY (Web3Forms), přijde správci i e-mail.
+   ═══════════════════════════════════════════════════════════════ */
+const FEEDBACK_KEY = '';   // access key z web3forms.com – je veřejný, adresa příjemce je uložená u nich
+const REP_KINDS = { bug: 'Chyba', idea: 'Nápad', other: 'Jiné' };
+const REP = { kind: 'bug', text: '', photos: [], ctx: true, sending: false };
+const needsMotionPerm = () => typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function';
+const shakeOn = () => !!(S && S.set.shake !== false) && typeof DeviceMotionEvent !== 'undefined' && (!needsMotionPerm() || ls.get('posilovna-motion') === '1');
+function repCtx() {
+  return {
+    obrazovka: ({ train: 'Trénink', lib: 'Cviky', hist: 'Historie', prog: 'Progres', body: 'Tělo', set: 'Nastavení', admin: 'Přehled' })[view] || view, vzhled: S && S.set.theme, verze: document.lastModified,
+    zarizeni: navigator.userAgent, displej: `${screen.width}×${screen.height} @${devicePixelRatio}x`,
+    plocha: !!(navigator.standalone || matchMedia('(display-mode: standalone)').matches), online: navigator.onLine,
+  };
+}
+function reportSheet() {
+  if (!USER) return;
+  const t = $('#rep-t'); if (t) REP.text = t.value;
+  openSheet(`<div class="kicker">Zpětná vazba</div><h3>Nahlásit problém nebo nápad</h3>
+    <div class="row" style="margin:12px 0;gap:6px">${Object.entries(REP_KINDS).map(([k, l]) => `<button class="chip${REP.kind === k ? ' on' : ''}" data-act="repkind" data-k="${k}">${l}</button>`).join('')}</div>
+    <textarea id="rep-t" rows="4" style="min-height:110px;font-family:var(--sans);font-size:16px" placeholder="${REP.kind === 'bug' ? 'Co se stalo a co jsi zrovna dělal…' : REP.kind === 'idea' ? 'Co by šlo udělat líp…' : 'Napiš cokoli…'}">${esc(REP.text)}</textarea>
+    ${REP.photos.length ? `<div class="thumbs" style="margin-top:10px">${REP.photos.map((p, i) => `<button class="ph rep-ph" data-act="repdel" data-i="${i}" aria-label="Odebrat fotku"><img src="${p.thumb}" alt=""><span>✕ odebrat</span></button>`).join('')}</div>` : ''}
+    ${REP.photos.length < 3 ? `<div class="row" style="margin-top:10px"><label class="btn wide"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Vyfotit<input type="file" accept="image/*" capture="environment" data-repphoto hidden></label><label class="btn wide">Z galerie<input type="file" accept="image/*" data-repphoto hidden></label></div>` : ''}
+    <label class="check" style="margin-top:12px"><input type="checkbox" id="rep-ctx" ${REP.ctx ? 'checked' : ''}> Přiložit technické údaje (obrazovka, zařízení, verze)</label>
+    <button class="btn p big wide" data-act="repsend" style="margin-top:14px" ${REP.sending ? 'disabled' : ''}>${REP.sending ? 'Odesílám…' : 'Odeslat'}</button>
+    <p class="note" style="margin-top:8px">Dostane to správce aplikace${FEEDBACK_KEY ? ' e-mailem' : ''}, i s tvým jménem.${shakeOn() ? ' Okno otevřeš kdykoli zatřesením telefonu.' : ''}</p>`, 'report');
+}
+async function addRepPhoto(file) {
+  try {
+    const im = await loadImage(file);
+    // Firestore dokument má limit 1 MB → max. 3 fotky po ~260 kB
+    let max = 1280, q = .75, full = toJpeg(im, max, q);
+    while (full.length > 260000 && q > .35) { q -= .08; max *= .9; full = toJpeg(im, max, q); }
+    REP.photos.push({ full, thumb: toJpeg(im, 240, .6) });
+  } catch { toast('Fotku se nepodařilo načíst.'); }
+  reportSheet();
+}
+async function sendReport() {
+  REP.text = ($('#rep-t') ? $('#rep-t').value : REP.text).trim(); REP.ctx = $('#rep-ctx') ? $('#rep-ctx').checked : REP.ctx;
+  if (!REP.text && !REP.photos.length) { toast('Napiš pár slov nebo přidej fotku.'); $('#rep-t')?.focus(); return; }
+  REP.sending = true; reportSheet();
+  const id = uid(), name = (PROFILE && PROFILE.name) || USER.displayName || '';
+  const doc = { id, uid: USER.uid, name, username: (PROFILE && PROFILE.username) || '', kind: REP.kind, text: REP.text, photos: REP.photos.length, thumbs: REP.photos.map(p => p.thumb), ctx: REP.ctx ? repCtx() : null, t: now(), done: false };
+  const batch = db.batch();
+  batch.set(db.collection('reports').doc(id), doc);
+  REP.photos.forEach((p, i) => batch.set(db.collection('reportPhotos').doc(`${id}_${i}`), { rid: id, uid: USER.uid, data: p.full }));
+  // offline Firestore zápis podrží a odešle později – na potvrzení serveru čekáme max. 10 s
+  let saved = 'err';
+  try { saved = await Promise.race([batch.commit().then(() => 'ok'), new Promise(r => setTimeout(() => r('queued'), 10000))]); }
+  catch (e) { saved = 'err'; console.warn('report', e); }
+  let mailed = false;
+  if (FEEDBACK_KEY && navigator.onLine) {
+    try {
+      const c = doc.ctx || {};
+      const body = {
+        access_key: FEEDBACK_KEY, subject: `Posilovna – ${REP_KINDS[doc.kind]} od ${name || 'uživatele'}`, from_name: 'Posilovna',
+        message: doc.text || '(bez textu)', 'Uživatel': `${name}${doc.username ? ' (@' + doc.username + ')' : ''}`, 'Typ': REP_KINDS[doc.kind],
+        'Fotky': doc.photos ? `${doc.photos} – najdeš je v aplikaci: Přehled → Hlášení` : 'žádné',
+      };
+      if (doc.ctx) Object.assign(body, { 'Obrazovka': c.obrazovka, 'Vzhled': c.vzhled, 'Na ploše': c.plocha ? 'ano' : 'ne', 'Displej': c.displej, 'Zařízení': c.zarizeni, 'Verze': c.verze });
+      const r = await fetch('https://api.web3forms.com/submit', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(body) });
+      mailed = !!(await r.json()).success;
+    } catch {}
+  }
+  REP.sending = false;
+  if (saved === 'err' && !mailed) { reportSheet(); toast('Odeslání se nepovedlo – zkus to prosím znovu.'); return; }
+  Object.assign(REP, { kind: 'bug', text: '', photos: [] });
+  closeSheet(); vib([10, 40, 10]);
+  toast(saved === 'queued' && !mailed ? 'Uloženo – odešle se, až budeš online.' : 'Díky! Hlášení odesláno.', 3200);
+}
+// Zatřesení: 3 prudké změny zrychlení během ~1 s; po otevření 3 s pauza
+let lastAcc = null, shakeHits = [], shakeAt = 0, motionAsked = false;
+addEventListener('devicemotion', e => {
+  if (!USER || !shakeOn() || sheetKind || document.hidden) { lastAcc = null; return; }
+  const a = e.accelerationIncludingGravity; if (!a || a.x == null) return;
+  if (lastAcc) {
+    const d = Math.abs(a.x - lastAcc.x) + Math.abs(a.y - lastAcc.y) + Math.abs(a.z - lastAcc.z), t = e.timeStamp;
+    if (d > 26) {
+      shakeHits = shakeHits.filter(x => t - x < 1000); shakeHits.push(t);
+      if (shakeHits.length >= 3 && t - shakeAt > 3000) { shakeAt = t; shakeHits = []; vib([15, 30, 15]); reportSheet(); }
+    }
+  }
+  lastAcc = { x: a.x, y: a.y, z: a.z };
+});
+// iOS: povolení pohybu jde vyžádat jen z klepnutí – při zapnutí v nastavení a pak při prvním klepnutí po spuštění
+async function askMotion() {
+  if (!needsMotionPerm()) return true;
+  try { const ok = (await DeviceMotionEvent.requestPermission()) === 'granted'; ls.set('posilovna-motion', ok ? '1' : '0'); return ok; } catch { return false; }
+}
+document.addEventListener('touchend', () => { if (!motionAsked && S && S.set.shake !== false && ls.get('posilovna-motion') === '1' && needsMotionPerm()) { motionAsked = true; askMotion(); } }, { passive: true });
+
+/* Hlášení v Přehledu správce */
+function admReports() {
+  const rs = ADM.reports || [], open = rs.filter(r => !r.done);
+  if (!rs.length) return '';
+  const item = r => `<div class="rep${r.done ? ' done' : ''}">
+      <div class="rep-h"><span class="adm-av">${esc(((r.name || '?')[0] || '?').toUpperCase())}</span>
+        <span class="adm-n"><b>${esc(r.name || 'Bez jména')} <i class="rep-k k-${esc(r.kind)}">${esc(REP_KINDS[r.kind] || r.kind)}</i></b><span>${esc(ago(r.t))} · ${new Date(r.t).toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' })}${r.ctx && r.ctx.obrazovka ? ' · obrazovka ' + esc(r.ctx.obrazovka) : ''}</span></span>
+        <button class="btn sm ${r.done ? 'ghost' : ''}" data-act="repdone" data-id="${esc(r.id)}">${r.done ? 'Znovu otevřít' : '✓ Vyřešeno'}</button></div>
+      ${r.text ? `<p class="rep-t">${esc(r.text)}</p>` : ''}
+      ${(r.thumbs || []).length ? `<div class="thumbs">${r.thumbs.map((ph, i) => `<button class="ph" data-act="repview" data-id="${esc(r.id)}" data-i="${i}"><img src="${ph}" alt="Fotka k hlášení"></button>`).join('')}</div>` : ''}
+      ${r.ctx ? `<details class="rep-ctx"><summary>Technické údaje</summary><div>${Object.entries(r.ctx).map(([k, v]) => `<span><b>${esc(k)}</b> ${esc(String(v))}</span>`).join('')}</div></details>` : ''}
+    </div>`;
+  return `<h2 class="sec">Hlášení${open.length ? ` <span class="badge-n">${open.length}</span>` : ''}</h2>
+    <div class="stack">${open.map(item).join('') || '<div class="empty">Všechno vyřešeno.</div>'}</div>
+    ${rs.length > open.length ? `<details class="rep-old"><summary>Vyřešená (${rs.length - open.length})</summary><div class="stack" style="margin-top:8px">${rs.filter(r => r.done).map(item).join('')}</div></details>` : ''}`;
+}
+async function loadReports() {
+  try { const q = await db.collection('reports').orderBy('t', 'desc').limit(60).get(); ADM.reports = q.docs.map(d => d.data()); }
+  catch (e) { ADM.reports = ADM.reports || []; console.warn('reports', e); }
+  $('#btn-adm').classList.toggle('dot', (ADM.reports || []).some(r => !r.done));
 }
 
 function weekStats() {
@@ -1987,6 +2118,12 @@ function vSet() {
       <div class="field" style="margin:0"><label>Krok přidávání váhy (kg)</label>
         <div class="kv" style="grid-template-columns:repeat(2,1fr)">${['barbell', 'dumbbell', 'machine', 'cable'].map(k => `<label class="field" style="margin:0"><span class="help">${EQ[k].n}</span><input inputmode="decimal" data-f="inc" data-k="${k}" value="${fmt(S.set.inc[k] ?? EQ[k].inc, 2)}"></label>`).join('')}</div></div>
     </div>
+    <h2 class="sec">Zpětná vazba</h2>
+    <div class="card stack">
+      <button class="btn wide" data-act="report">Nahlásit problém nebo nápad</button>
+      ${typeof DeviceMotionEvent !== 'undefined' ? `<label class="check" style="margin:0"><input type="checkbox" data-f="shake" ${shakeOn() ? 'checked' : ''}> Otevřít hlášení zatřesením telefonu</label>
+      <p class="note">Zatřes telefonem kdekoli v aplikaci, napiš, co se stalo, a klidně přidej fotku. ${needsMotionPerm() ? 'iPhone se při zapnutí zeptá na povolení pohybu a může se ptát i po novém spuštění aplikace.' : ''}</p>` : ''}
+    </div>
     <h2 class="sec">Vlastní cviky</h2>
     <div class="card stack">
       ${custom.map(c => `<div class="row"><span style="flex:1">${esc(c.n)} <span class="mono muted" style="font-size:11px">${c.g} · ${c.lo}–${c.hi}</span></span><button class="btn sm ghost" data-act="delcx" data-ex="${c.id}">✕</button></div>`).join('')}
@@ -2215,6 +2352,17 @@ document.addEventListener('click', async e => {
     case 'admreload': loadAdmin(); break;
     case 'admwtog': ADM.open = ADM.open === b.dataset.id ? null : b.dataset.id; render(); break;
     case 'theme': { const id = b.dataset.id; if (!THEMES[id] || S.set.theme === id) break; S.set.theme = id; S.setU = now(); dirty.set = true; commit(); render(); vib(8); toast(`Vzhled: ${THEMES[id].n}`); break; }
+    case 'report': reportSheet(); break;
+    case 'repkind': REP.text = $('#rep-t') ? $('#rep-t').value : REP.text; REP.kind = b.dataset.k; reportSheet(); break;
+    case 'repdel': REP.photos.splice(+b.dataset.i, 1); reportSheet(); break;
+    case 'repsend': sendReport(); break;
+    case 'repdone': { const r = (ADM.reports || []).find(x => x.id === b.dataset.id); if (!r) break; r.done = !r.done; render(); $('#btn-adm').classList.toggle('dot', ADM.reports.some(x => !x.done)); db.collection('reports').doc(r.id).update({ done: r.done }).catch(e => toast(fbErr(e))); break; }
+    case 'repview': {
+      const r = (ADM.reports || []).find(x => x.id === b.dataset.id), i = +b.dataset.i; if (!r) break;
+      openSheet(`<div class="kicker">${esc(r.name || '')} · ${esc(dLong(r.t))}</div><div class="viewer"><img id="pv" src="${r.thumbs[i]}" alt="Fotka k hlášení"><div class="pv-load">načítám plné rozlišení…</div></div>`, 'photo');
+      db.collection('reportPhotos').doc(`${r.id}_${i}`).get().then(d => { const im = $('#pv'); if (im && d.exists) im.src = d.data().data; $('.pv-load')?.remove(); }).catch(() => $('.pv-load')?.remove());
+      break;
+    }
     case 'copyuid': navigator.clipboard?.writeText(USER.uid).then(() => toast('ID účtu zkopírováno')).catch(() => {}); break;
     case 'histtog': ui.histOpen = ui.histOpen === b.dataset.id ? null : b.dataset.id; render(); break;
     case 'gohist': ui.histOpen = b.dataset.id; view = 'hist'; render(); break;
@@ -2264,6 +2412,11 @@ document.addEventListener('change', e => {
   const f = e.target.dataset.f; if (!f) return;
   if (f === 'wdate') { const w = openWorkout(); if (w && e.target.value) { w.d = e.target.value; touch(w); commit(); } }
   else if (f === 'progex') { ui.progEx = e.target.value; render(); }
+  else if (f === 'shake') {
+    const on = e.target.checked;
+    const done = ok => { S.set.shake = ok; S.setU = now(); dirty.set = true; commit(); render(); toast(ok ? 'Zatřesením otevřeš hlášení' : on ? 'Bez povolení pohybu zatřesení nefunguje' : 'Zatřesení vypnuto'); };
+    if (on && needsMotionPerm()) askMotion().then(done); else done(on);
+  }
   else if (['rest', 'restiso', 'goal', 'bar', 'sound'].includes(f)) {
     const v = num(e.target.value);
     if (f === 'rest') S.set.rest = Math.max(0, Math.round(v || 0));
@@ -2274,6 +2427,10 @@ document.addEventListener('change', e => {
     S.setU = now(); dirty.set = true; commit(); toast('Uloženo');
   }
   else if (f === 'inc') { const v = num(e.target.value); if (v > 0) { S.set.inc[e.target.dataset.k] = v; S.setU = now(); dirty.set = true; commit(); toast('Uloženo'); } }
+});
+document.addEventListener('change', e => {
+  if (!e.target.matches || !e.target.matches('[data-repphoto]')) return;
+  const f = e.target.files && e.target.files[0]; e.target.value = ''; if (f) addRepPhoto(f);
 });
 document.addEventListener('change', async e => {
   const kind = e.target.dataset.photo; if (!kind) return;
@@ -2367,6 +2524,15 @@ service cloud.firestore {
     }
     match /admins/{uid} {
       allow get: if request.auth != null && request.auth.uid == uid;
+    }
+    // hlášení: každý přihlášený může poslat (pod svým uid), číst a označovat je jen správce
+    match /reports/{id} {
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+      allow read, update, delete: if isAdmin();
+    }
+    match /reportPhotos/{id} {
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+      allow read, delete: if isAdmin();
     }
     match /usernames/{name} {
       allow get: if true;
