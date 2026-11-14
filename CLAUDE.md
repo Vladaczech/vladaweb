@@ -19,4 +19,6 @@ Přihlášení (jméno + heslo, obnova hesla e-mailem) a data tréninků běží
 
 Správce (přehled uživatelů, ikona vedle nastavení) = účet, který má dokument `admins/{uid}` založený ručně ve Firebase konzoli. Pravidla mu dovolí číst jen `users/{uid}`, `workouts` a `cx` ostatních – fotky, poznámky a tělesnou váhu ne.
 
+Offline režim: `projects/posilovna-sw.js` (scope `./posilovna`, jiné stránky v `projects/` neovlivní). Stránka jde přes síť s 3,5s limitem a pak z mezipaměti, takže změny v `posilovna.html` se projeví bez zásahu do SW. Při přidání/změně ikon, manifestů nebo knihoven z CDN uprav seznam v SW a zvyš `VERSION`. Manifesty a ikony (180/192/512) pro každou barevnou variantu jsou v `projects/posilovna-icons/`.
+
 Hlášení (zatřesení telefonem / Nastavení → Zpětná vazba) se ukládají do `reports/{id}` (text, náhledy) a `reportPhotos/{id}_{i}` (plné fotky); číst je smí jen správce (Přehled → Hlášení). Hlášení zůstávají jen v aplikaci, nikam se neposílají (žádný e-mail ani jiná služba).

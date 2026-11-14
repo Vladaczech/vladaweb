@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#050505">
 <link rel="apple-touch-icon" id="ico-apple" href="./posilovna-icons/posilovna-neon-180.png">
 <link rel="icon" id="ico-png" type="image/png" sizes="192x192" href="./posilovna-icons/posilovna-neon-192.png">
+<link rel="manifest" id="ico-mf" href="./posilovna-icons/posilovna-neon.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -411,6 +412,37 @@ html.tour-on,html.tour-on body{overflow:hidden}
 .don-acc b{font-family:var(--mono);font-size:17px;letter-spacing:.04em;font-weight:500;user-select:all;-webkit-user-select:all}
 .don-qr{background:#fff;border-radius:18px;padding:14px;max-width:300px;margin:0 auto;box-shadow:0 0 0 1px var(--line2),0 0 30px rgba(var(--neon-rgb),.15)}
 .don-qr img{display:block;width:100%;height:auto;image-rendering:pixelated}
+/* ── Mapa svalů ── */
+.mm .seg{margin-bottom:10px}
+.mm-figs{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-width:330px;margin:0 auto}
+.mm-figs>div{min-height:120px}
+.mm-figs .rbh polygon{transition:fill .3s;stroke:var(--bg);stroke-width:.35}
+.mm-leg{display:flex;justify-content:center;gap:12px;font-family:var(--mono);font-size:10px;color:var(--muted2);margin:8px 0 4px}
+.mm-leg span{display:flex;align-items:center;gap:5px}.mm-leg i{width:10px;height:10px;border-radius:3px;display:block}
+.mm-info{font-size:13px;color:var(--muted);text-align:center;min-height:2.6em;padding:6px 4px;line-height:1.45}.mm-info b{color:var(--text)}
+.mm-sum{font-family:var(--mono);font-size:11px;color:var(--muted);margin:6px 0 8px}.mm-sum b{color:var(--text)}
+.mm-list{display:flex;flex-direction:column;gap:2px}
+.mm-r{display:grid;grid-template-columns:minmax(0,1fr) 34% 34px 66px;align-items:center;gap:8px;padding:5px 6px;border-radius:8px;text-align:left}
+.mm-r.sel{background:var(--panel2)}
+.mm-n{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mm-bar{position:relative;height:6px;border-radius:3px;background:var(--panel2);overflow:hidden}
+.mm-bar .zone{position:absolute;top:0;bottom:0;background:rgba(var(--neon-rgb),.12)}
+.mm-bar .fill{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--neon-d)}
+.mm-r.ok .fill,.mm-r.hi .fill{background:var(--neon);box-shadow:0 0 6px rgba(var(--neon-rgb),.5)}
+.mm-v{font-family:var(--mono);font-size:11px;text-align:right}
+.mm-s{font-family:var(--mono);font-size:10px;color:var(--muted2);text-align:right;white-space:nowrap}
+.mm-r.ok .mm-s{color:var(--neon)}.mm-r.hi .mm-s{color:var(--warn)}
+/* ── Sdílení ── */
+.share-prev{margin-top:12px;border-radius:16px;overflow:hidden;border:1px solid var(--line2);background:var(--bg);min-height:200px;display:grid;place-items:center}
+.share-prev img{width:100%;display:block}
+a.btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+/* ── Plynulé přechody ── */
+header.top{view-transition-name:hdr}nav.bottom{view-transition-name:nav}
+::view-transition-old(root){animation:vt-out .16s ease-in both}
+::view-transition-new(root){animation:vt-in .3s cubic-bezier(.2,.8,.2,1) both}
+html[data-vt="back"]{--vtd:-1}
+@keyframes vt-out{to{opacity:0;transform:translateX(calc(var(--vtd,1) * -16px))}}
+@keyframes vt-in{from{opacity:0;transform:translateX(calc(var(--vtd,1) * 22px))}}
 .themes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .th{display:flex;flex-direction:column;align-items:stretch;gap:7px;padding:8px;border-radius:14px;border:1px solid var(--line);background:var(--tb);text-align:left;transition:border-color .2s,box-shadow .2s}
 .th.on{border-color:var(--ta);box-shadow:0 0 0 1px var(--ta),0 0 18px rgba(var(--tr),.25)}
@@ -863,6 +895,7 @@ function applyTheme(id) {
   const ia = document.getElementById('ico-apple'), ip = document.getElementById('ico-png');
   if (ia) ia.href = `./posilovna-icons/posilovna-${id}-180.png`;
   if (ip) ip.href = `./posilovna-icons/posilovna-${id}-192.png`;
+  const mf = document.getElementById('ico-mf'); if (mf) mf.href = `./posilovna-icons/posilovna-${id}.webmanifest`;
   ls.set('posilovna-theme', id);
 }
 applyTheme(ls.get('posilovna-theme') || 'neon');
@@ -1870,7 +1903,7 @@ function tourGo(i, dir) {
       ${nextB && !s.last ? `<button class="btn ghost" data-tour="skip">${esc(nextB)} »</button>` : ''}
       <button class="btn p" data-tour="next">${s.last ? 'Začít trénovat' : 'Další ›'}</button></div>`;
   const tv = $('#tour .tv');
-  if (s.play) requestAnimationFrame(() => { try { s.play(tv); } catch (e) { console.warn('tour', e); } });
+  if (s.play) requestAnimationFrame(() => { if (!TOUR.open || TOUR.i !== i) return; try { s.play(tv); } catch (e) { console.warn('tour', e); } });
 }
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-tour]'); if (!b) return;
@@ -1893,6 +1926,214 @@ document.addEventListener('keydown', e => {
   if (!TOUR.open) return;
   if (e.key === 'ArrowRight') tourGo(TOUR.i + 1, 'r'); else if (e.key === 'ArrowLeft') tourGo(TOUR.i - 1, 'l'); else if (e.key === 'Escape') closeTour();
 });
+
+
+/* ═══════════════════════════════════════════════════════════════
+   TÝDENNÍ MAPA SVALŮ – knihovna body-highlighter (MIT, bez závislostí), načítá se až v Progresu.
+   Série: hlavní sval = 1 série, vedlejší = ½. Pásmo 10–20 sérií na partii týdně (Pelland a kol., 2024).
+   ═══════════════════════════════════════════════════════════════ */
+const BH_URL = 'https://cdn.jsdelivr.net/npm/body-highlighter@3.0.2/dist/body-highlighter.esm.js';
+let BH = null;
+const loadBH = () => BH || (BH = import(BH_URL).catch(e => { BH = null; throw e; }));
+// naše svaly → oblasti v mapě
+const SLUGS = { chest: ['chest'], delts: ['front-deltoids', 'back-deltoids'], triceps: ['triceps'], biceps: ['biceps'], forearms: ['forearm'], abs: ['abs'], obliques: ['obliques'],
+  quads: ['quadriceps'], hamstrings: ['hamstring'], glutes: ['gluteal'], calves: ['calves', 'left-soleus', 'right-soleus'], lats: ['upper-back'], traps: ['trapezius'], lowerback: ['lower-back'], adductors: ['adductor'] };
+const REAR_DELT = new Set(['revfly', 'facepull']), SIDE_DELT = new Set(['latraise']), ABDUCT = new Set(['abduction', 'cableabd']);
+function slugsFor(ex, m) {
+  if (m === 'delts') return REAR_DELT.has(ex.id) || ex.g === 'Záda' ? ['back-deltoids'] : SIDE_DELT.has(ex.id) ? ['front-deltoids', 'back-deltoids'] : ['front-deltoids'];
+  if (m === 'glutes' && ABDUCT.has(ex.id)) return ['gluteal', 'abductors'];
+  return SLUGS[m] || [];
+}
+const MM_RANGES = { week: 'Tento týden', '7d': '7 dní', last: 'Minulý týden' };
+function mmRange(k) { const ws = startOfWeek(now()); return k === 'last' ? [ws - 7 * DAY, ws] : k === '7d' ? [now() - 7 * DAY, now() + 1] : [ws, ws + 7 * DAY]; }
+function muscleWeek(k) {
+  const [a, b] = mmRange(k), vol = Object.fromEntries(Object.keys(MUSCLE).map(m => [m, 0])), slug = {}, exs = {};
+  for (const w of doneWorkouts()) {
+    const t = new Date(w.d).getTime(); if (t < a || t >= b) continue;
+    for (const it of w.it) {
+      const n = doneSets(it).length; if (!n) continue;
+      const ex = getEx(it.ex);
+      for (const [list, f] of [[ex.m || [], 1], [ex.m2 || [], .5]]) for (const m of list) {
+        if (!(m in vol)) continue;
+        vol[m] += n * f; (exs[m] = exs[m] || {})[ex.n] = (exs[m][ex.n] || 0) + n * f;
+        for (const s of slugsFor(ex, m)) slug[s] = (slug[s] || 0) + n * f;
+      }
+    }
+  }
+  return { vol, slug, exs };
+}
+const mmLevel = v => !(v > 0) ? 0 : v < 5 ? 1 : v < 10 ? 2 : 3;
+const mmStatus = v => v >= 10 && v <= 20 ? ['ok', 'v pásmu'] : v > 20 ? ['hi', 'hodně'] : v > 0 ? ['lo', `chybí ${fmt(Math.ceil(10 - v), 0)}`] : ['no', '—'];
+function vMuscles() {
+  const k = ui.mmRange || 'week', { vol } = muscleWeek(k), keys = Object.keys(MUSCLE);
+  const okN = keys.filter(m => vol[m] >= 10 && vol[m] <= 20).length, loN = keys.filter(m => vol[m] < 10).length, hiN = keys.filter(m => vol[m] > 20).length;
+  const MX = 24, X = v => Math.min(100, v / MX * 100);
+  return `<h2 class="sec">Svaly · ${MM_RANGES[k].toLowerCase()}</h2>
+    <div class="card mm">
+      <div class="seg">${Object.entries(MM_RANGES).map(([id, l]) => `<button class="${k === id ? 'on' : ''}" data-act="mmr" data-k="${id}">${l}</button>`).join('')}</div>
+      <div class="mm-figs"><div id="mm-f" aria-label="Svaly zepředu"></div><div id="mm-b" aria-label="Svaly zezadu"></div></div>
+      <div class="mm-leg"><span><i style="background:rgba(var(--neon-rgb),.22)"></i>1–4</span><span><i style="background:rgba(var(--neon-rgb),.5)"></i>5–9</span><span><i style="background:var(--neon)"></i>10+ sérií</span></div>
+      <div class="mm-info" id="mm-info">Klepni na sval pro detail.</div>
+      <div class="mm-sum"><b>${okN}</b> v pásmu · <b>${loN}</b> pod ${hiN ? `· <b>${hiN}</b> nad` : ''}</div>
+      <div class="mm-list">${keys.map(m => { const v = vol[m], [st, lab] = mmStatus(v); return `<button class="mm-r ${st}" data-act="mmsel" data-m="${m}"><span class="mm-n">${MUSCLE[m]}</span><span class="mm-bar"><i class="zone" style="left:${X(10)}%;width:${X(20) - X(10)}%"></i><i class="fill" style="width:${X(v)}%"></i></span><span class="mm-v">${v ? fmt(v, 1) : '0'}</span><span class="mm-s">${lab}</span></button>`; }).join('')}</div>
+      <p class="note">Hlavní sval cviku = 1 série, pomocný = ½. Pás = 10–20 sérií týdně, kde svaly rostou nejlépe (Pelland a kol., 2024).</p>
+    </div>`;
+}
+function mmInfo(m) {
+  const k = ui.mmRange || 'week', { vol, exs } = muscleWeek(k), el = $('#mm-info'); if (!el || !m) return;
+  const list = Object.entries(exs[m] || {}).sort((a, b) => b[1] - a[1]);
+  el.innerHTML = `<b>${MUSCLE[m]}</b> · ${fmt(vol[m], 1)} sérií${list.length ? '<br>' + list.map(([n, v]) => `${esc(n)} <span class="muted">${fmt(v, 1)}</span>`).join(' · ') : ' – tento sval jsi v tomhle období necvičil.'}`;
+  $$('.mm-r').forEach(r => r.classList.toggle('sel', r.dataset.m === m));
+}
+async function mountMuscles() {
+  const f = $('#mm-f'), b = $('#mm-b'); if (!f || !b) return;
+  const { slug } = muscleWeek(ui.mmRange || 'week');
+  const data = Object.entries(slug).filter(([, v]) => v > 0).map(([s, v]) => ({ name: s, muscles: [s], frequency: mmLevel(v) }));
+  const back = {}; for (const [m, ss] of Object.entries(SLUGS)) for (const s of ss) back[s] = back[s] || m;
+  back['back-deltoids'] = back['front-deltoids'] = 'delts'; back.abductors = 'glutes';
+  try {
+    const lib = await loadBH();
+    if (!f.isConnected) return;
+    const opts = type => ({ type, data, bodyColor: '#1c1c1c', highlightedColors: ['rgba(var(--neon-rgb),.22)', 'rgba(var(--neon-rgb),.5)', 'var(--neon)'], svgStyle: { width: '100%', height: 'auto' }, onClick: ({ muscle }) => mmInfo(back[muscle]) });
+    f.innerHTML = ''; b.innerHTML = '';
+    lib.createBodyHighlighter({ ...opts('anterior'), container: f });
+    lib.createBodyHighlighter({ ...opts('posterior'), container: b });
+  } catch {
+    f.innerHTML = '<div class="empty" style="padding:10px">Mapa se načte, až budeš online.</div>'; b.innerHTML = '';
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SDÍLENÍ – shrnutí tréninku / rekord jako obrázek (canvas → PNG → sdílení nebo uložení)
+   ═══════════════════════════════════════════════════════════════ */
+function workoutPRs(w) {
+  const out = [];
+  for (const it of w.it) {
+    const ds = doneSets(it); if (!ds.length) continue;
+    const ex = getEx(it.ex), e = bestE1(ds); if (!(e > 0)) continue;
+    const before = sessions(ex.id).filter(h => h.d < w.d && h.wid !== w.id), pb = Math.max(0, ...before.map(h => bestE1(h.sets)));
+    if (before.length && e > pb + .01) out.push({ ex, e, pb, s: topSet(ds) });
+  }
+  return out.sort((a, b) => (b.e / b.pb) - (a.e / a.pb));
+}
+function cssVar(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+async function renderShareCard(w) {
+  const W = 1080, H = 1350, c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d'), A = cssVar('--neon') || '#39ff88', RGB = cssVar('--neon-rgb') || '57,255,136', BG = cssVar('--bg') || '#050505', P = cssVar('--panel') || '#0b0b0b';
+  try { await Promise.race([Promise.all(['600 80px "Space Grotesk"', '500 30px "JetBrains Mono"', '400 30px Inter'].map(f => document.fonts.load(f))), new Promise(r => setTimeout(r, 1500))]); } catch {}
+  const DISP = '"Space Grotesk", Inter, sans-serif', MONO = '"JetBrains Mono", Menlo, monospace', SANS = 'Inter, system-ui, sans-serif';
+  // pozadí se září
+  g.fillStyle = BG; g.fillRect(0, 0, W, H);
+  let gr = g.createRadialGradient(W * .85, -60, 0, W * .85, -60, 900); gr.addColorStop(0, `rgba(${RGB},.22)`); gr.addColorStop(1, `rgba(${RGB},0)`); g.fillStyle = gr; g.fillRect(0, 0, W, H);
+  gr = g.createRadialGradient(0, H, 0, 0, H, 700); gr.addColorStop(0, `rgba(${RGB},.08)`); gr.addColorStop(1, `rgba(${RGB},0)`); g.fillStyle = gr; g.fillRect(0, 0, W, H);
+  const txt = (s, x, y, font, color, align = 'left', glow = 0) => { g.font = font; g.fillStyle = color; g.textAlign = align; g.shadowColor = glow ? A : 'transparent'; g.shadowBlur = glow; g.fillText(s, x, y); g.shadowBlur = 0; };
+  const rr = (x, y, w2, h2, r, fill, stroke) => { g.beginPath(); g.roundRect(x, y, w2, h2, r); if (fill) { g.fillStyle = fill; g.fill(); } if (stroke) { g.strokeStyle = stroke; g.lineWidth = 2; g.stroke(); } };
+  const fit = (s, max, font) => { g.font = font; if (g.measureText(s).width <= max) return s; while (s.length > 3 && g.measureText(s + '…').width > max) s = s.slice(0, -1); return s + '…'; };
+  const M = 80;
+  // hlavička
+  txt('POSILOVNA', M, 130, `700 34px ${MONO}`, A, 'left', 18);
+  g.font = `700 34px ${MONO}`; const bw = g.measureText('POSILOVNA').width; txt('.', M + bw + 4, 130, `700 34px ${MONO}`, A);
+  txt(dLong(w.d).toUpperCase(), W - M, 130, `500 24px ${MONO}`, '#8d8d8d', 'right');
+  // postava: rekordní cvik, jinak první cvik tréninku (boční i čelní pohled)
+  const exs = w.it.filter(i => doneSets(i).length), prs = workoutPRs(w);
+  const hero = (prs[0] && prs[0].ex.a ? prs[0].ex : null) || exs.map(i => getEx(i.ex)).find(e => e.a) || null;
+  const FX = W - M - 340, FY = 190, FS = 1.55;              // rámeček postavy vpravo nahoře (~340 × 300 px)
+  if (hero) {
+    const P2 = p => [FX + (p[0] + 10) * FS, FY + (p[1] + 36) * FS];
+    g.save(); g.lineCap = 'round'; g.lineJoin = 'round';
+    g.strokeStyle = 'rgba(255,255,255,.13)'; g.lineWidth = 3;
+    for (const pr of hero.a.props || []) {
+      const [t, a1, a2, a3, a4] = pr;
+      if (t === 'line') { g.beginPath(); g.moveTo(...P2([a1, a2])); g.lineTo(...P2([a3, a4])); g.stroke(); }
+      if (t === 'bench') { for (const lx of [a1 + 8, a1 + a3 - 8]) { g.beginPath(); g.moveTo(...P2([lx, a2 + 4])); g.lineTo(...P2([lx, 150])); g.stroke(); } const [x0, y0] = P2([a1, a2]); g.fillStyle = 'rgba(255,255,255,.1)'; g.beginPath(); g.roundRect(x0, y0, a3 * FS, 7 * FS, 3 * FS); g.fill(); }
+      if (t === 'step') { const [x0, y0] = P2([a1, a2]); g.fillStyle = 'rgba(255,255,255,.08)'; g.beginPath(); g.roundRect(x0, y0, a3 * FS, (150 - a2) * FS, 2 * FS); g.fill(); }
+      if (t === 'bar') { g.beginPath(); g.moveTo(...P2([a1, a3])); g.lineTo(...P2([a2, a3])); g.stroke(); }
+    }
+    g.beginPath(); g.moveTo(...P2([0, 150])); g.lineTo(...P2([200, 150])); g.stroke();
+    const seg = (a2, b2, col, wd) => { g.strokeStyle = col; g.lineWidth = wd; g.beginPath(); g.moveTo(...P2(a2)); g.lineTo(...P2(b2)); g.stroke(); };
+    const head = (c2, r2) => { g.beginPath(); g.arc(...P2(c2), r2 * FS, 0, 7); g.fillStyle = BG; g.fill(); g.lineWidth = 9; g.stroke(); };
+    const weight = p2 => { if (!['barbell', 'dumbbell', 'kettlebell'].includes(hero.a.eq)) return; const [x2, y2] = P2(p2), r2 = (hero.a.eq === 'barbell' ? 13 : 7) * FS; g.shadowBlur = 0; g.beginPath(); g.arc(x2, y2, r2, 0, 7); g.fillStyle = BG; g.fill(); g.strokeStyle = '#d7d7d7'; g.lineWidth = 5; g.stroke(); };
+    if (hero.a.front) {
+      const o = solveFront(hero.a, .55);
+      g.shadowColor = A; g.shadowBlur = 22;
+      seg(o.H, o.S, A, 10); seg(o.R.Sx, o.L.Sx, A, 10); seg(o.R.Hx, o.L.Hx, A, 10);
+      for (const q of [o.R, o.L]) { seg(q.Sx, q.E, A, 10); seg(q.E, q.W, A, 10); seg(q.Hx, q.K, A, 10); seg(q.K, q.A, A, 10); seg(q.A, q.T, A, 10); }
+      g.strokeStyle = A; head([o.Hd[0], o.Hd[1] + 4], 9);
+      weight(o.R.W); weight(o.L.W);
+    } else {
+      const o = solve(hero.a, .55);
+      if (o.K2) { seg(o.H, o.K2, `rgba(${RGB},.4)`, 9); seg(o.K2, o.A2, `rgba(${RGB},.4)`, 9); }
+      g.shadowColor = A; g.shadowBlur = 22;
+      for (const [a2, b2] of [[o.H, o.K], [o.K, o.A], [o.A, o.T], [o.H, o.S], [o.S, add(o.S, [(o.Hd[0] - o.S[0]) * .3, (o.Hd[1] - o.S[1]) * .3])], [o.S, o.E], [o.E, o.W]]) seg(a2, b2, A, 10);
+      g.strokeStyle = A; head(o.Hd, 9);
+      weight(hero.a.eqAt === 'A' ? o.A : o.W);
+    }
+    g.restore();
+  }
+  // hlavní sdělení – text vlevo od postavy, název cviku klidně na dva řádky
+  const wrap = (str, max, font) => { g.font = font; const words = str.split(' '), lines = ['']; for (const wd of words) { const t = lines[lines.length - 1] ? lines[lines.length - 1] + ' ' + wd : wd; if (g.measureText(t).width <= max || !lines[lines.length - 1]) lines[lines.length - 1] = t; else lines.push(wd); } return lines.length > 2 ? [lines[0], fit(lines.slice(1).join(' '), max, font)] : lines; };
+  const TW = hero ? FX - M - 30 : W - 2 * M;
+  let y = 300;
+  if (prs.length) {
+    const p = prs[0], pct = (p.e / p.pb - 1) * 100, F = `600 58px ${DISP}`;
+    txt('NOVÝ REKORD', M, y, `600 26px ${MONO}`, A, 'left', 14);
+    for (const ln of wrap(p.ex.n, TW, F)) { y += 70; txt(ln, M, y, F, '#ececec'); }
+    y = Math.max(y + 150, 640);
+    txt(`${p.s.w > 0 ? fmt(p.s.w, 2) + ' kg × ' : ''}${p.s.r}${!(p.s.w > 0) && p.ex.unit ? ' ' + p.ex.unit : ''}`, M, y, `600 128px ${DISP}`, A, 'left', 40);
+    y += 64; txt(`odhad 1RM ${fmt(p.e, 1)} kg · +${fmt(pct, 1)} % oproti maximu`, M, y, `500 28px ${MONO}`, '#bdbdbd');
+  } else {
+    const F = `600 76px ${DISP}`, groups = [...new Set(exs.map(i => getEx(i.ex).g))];
+    txt('TRÉNINK HOTOVÝ', M, y, `600 26px ${MONO}`, A, 'left', 14);
+    for (const ln of wrap(groups.join(' + ') || 'Trénink', TW, F)) { y += 88; txt(ln, M, y, F, '#ececec'); }
+    y += 60; txt(`${pl(exs.length, 'cvik', 'cviky', 'cviků')}${w.rpe ? ` · RPE ${w.rpe}` : ''}`, M, y, `500 28px ${MONO}`, '#bdbdbd');
+    y = Math.max(y, 560);
+  }
+  // čísla
+  y += 60;
+  const dur = w.end ? Math.round((w.end - new Date(w.d).getTime()) / 60000) : null, sets = exs.reduce((a, i) => a + doneSets(i).length, 0), vol = exs.reduce((a, i) => a + doneSets(i).reduce((b, s) => b + s.w * s.r, 0), 0);
+  const tiles = [[dur && dur > 0 && dur < 600 ? String(dur) : '–', 'MINUT'], [String(sets), 'SÉRIÍ'], [vol >= 10000 ? fmt(vol / 1000, 1) + ' t' : fmtInt(vol), 'KG OBJEM']];
+  const tw = (W - 2 * M - 2 * 24) / 3;
+  tiles.forEach(([v, l], k) => { const x = M + k * (tw + 24); rr(x, y, tw, 140, 26, P, 'rgba(255,255,255,.08)'); txt(v, x + 30, y + 78, `600 56px ${DISP}`, '#ececec'); txt(l, x + 30, y + 116, `500 20px ${MONO}`, '#6a6a6a'); });
+  y += 140;
+  // cviky – kolik se vejde nad patičku
+  y += 76;
+  const room = Math.max(1, Math.floor((H - 160 - y) / 62)), list = exs.slice(0, exs.length > room ? room - 1 : room), prIds = new Set(prs.map(p => p.ex.id));
+  for (const it of list) {
+    const ex = getEx(it.ex), t = topSet(doneSets(it)), isPr = prIds.has(ex.id);
+    txt(fit(ex.n, 560, `500 34px ${SANS}`), M, y, `500 34px ${SANS}`, '#d9d9d9');
+    if (isPr) { g.font = `500 34px ${SANS}`; const nw = Math.min(560, g.measureText(fit(ex.n, 560, `500 34px ${SANS}`)).width); rr(M + nw + 16, y - 30, 66, 38, 9, A); txt('PR', M + nw + 49, y - 2, `700 22px ${MONO}`, cssVar('--on-neon') || '#03170a', 'center'); }
+    txt(`${doneSets(it).length}× · ${t.w > 0 ? fmt(t.w, 2) + ' × ' : ''}${t.r}${ex.unit && !(t.w > 0) ? ' ' + ex.unit : ''}`, W - M, y, `500 30px ${MONO}`, isPr ? A : '#8d8d8d', 'right');
+    y += 62;
+  }
+  if (exs.length > list.length) txt(`+ ${pl(exs.length - list.length, 'další cvik', 'další cviky', 'dalších cviků')}`, M, y, `500 26px ${MONO}`, '#5c5c5c');
+  // patička
+  g.strokeStyle = `rgba(${RGB},.35)`; g.lineWidth = 2; g.beginPath(); g.moveTo(M, H - 120); g.lineTo(W - M, H - 120); g.stroke();
+  txt('Posilovna · tréninkový deník', M, H - 70, `500 24px ${MONO}`, '#6a6a6a');
+  txt('✦', W - M, H - 70, `600 30px ${SANS}`, A, 'right', 12);
+  return new Promise(r => c.toBlob(r, 'image/png'));
+}
+let shareFile = null;
+async function shareSheet(wid) {
+  const w = S.w.find(x => x.id === wid); if (!w) return;
+  openSheet(`<div class="kicker">Sdílet</div><h3>Obrázek tréninku</h3><div class="share-prev"><div class="empty">Kreslím…</div></div>`, 'share');
+  const blob = await renderShareCard(w); if (sheetKind !== 'share') return;
+  shareFile = new File([blob], `posilovna-${w.d.slice(0, 10)}.png`, { type: 'image/png' });
+  const url = URL.createObjectURL(blob), canShare = !!(navigator.canShare && navigator.canShare({ files: [shareFile] }));
+  $('#sheet-c').innerHTML = `<div class="kicker">Sdílet</div><h3>Obrázek tréninku</h3>
+    <div class="share-prev"><img src="${url}" alt="Obrázek tréninku ke sdílení"></div>
+    <div class="row" style="margin-top:12px">${canShare ? '<button class="btn p wide big" data-act="sharego">Sdílet…</button>' : ''}<a class="btn ${canShare ? '' : 'p '}wide big" href="${url}" download="${shareFile.name}">Uložit</a></div>
+    <p class="note" style="margin-top:8px">${canShare ? 'Sdílení nabídne Instagram, WhatsApp i uložení do Fotek.' : 'Obrázek ulož, nebo ho podrž prstem a vyber Uložit.'}</p>`;
+}
+
+/* ── Plynulé přechody mezi obrazovkami (View Transitions API, kde je k dispozici) ── */
+const VIEW_ORDER = ['train', 'lib', 'hist', 'prog', 'body', 'set', 'admin'];
+function go(v, after) {
+  const run = () => { view = v; render(); scrollTo(0, 0); if (after) after(); };
+  if (!document.startViewTransition || RM.matches || v === view || document.hidden) { run(); return; }
+  document.documentElement.dataset.vt = VIEW_ORDER.indexOf(v) < VIEW_ORDER.indexOf(view) ? 'back' : 'fwd';
+  // přeskočený přechod (rychlé klepání) nevadí – obsah se vykreslí i tak
+  try { const t = document.startViewTransition(run); for (const pr of [t.ready, t.finished, t.updateCallbackDone]) pr.catch(() => {}); } catch { run(); }
+}
 
 function weekStats() {
   const ws = startOfWeek(now());
@@ -2222,7 +2463,8 @@ function histItem(w, expandable = true) {
       <span class="mono muted" style="font-size:12px">${open ? '−' : '+'}</span></button>
     ${open ? `<div class="hist-body">${exs.map(i => { const ex = getEx(i.ex); return `<div class="hist-ex"><b>${esc(ex.n)}</b><div>${doneSets(i).map(s => `${s.w > 0 ? fmt(s.w, 2) + ' kg × ' : ''}${s.r}${ex.unit ? ' ' + ex.unit : ''}${s.q != null ? ` <span class="dq" style="--dc:${diffOf(s.q).c}">${diffOf(s.q).l}</span>` : ''}`).join('<br>')}${i.note ? `<br><i class="muted">„${esc(i.note)}“</i>` : ''}</div></div>`; }).join('')}
       ${w.note ? `<p class="note" style="margin-top:8px">${esc(w.note)}</p>` : ''}
-      <div class="row" style="margin-top:12px"><button class="btn sm wide" data-act="repeat" data-id="${w.id}">↻ Zopakovat</button><button class="btn sm wide" data-act="editw" data-id="${w.id}">Upravit</button><button class="btn sm danger wide" data-act="delw" data-id="${w.id}">Smazat</button></div></div>` : ''}</div>`;
+      <div class="row" style="margin-top:12px"><button class="btn sm wide" data-act="share" data-id="${w.id}">Sdílet obrázek</button><button class="btn sm wide" data-act="repeat" data-id="${w.id}">↻ Zopakovat</button></div>
+      <div class="row" style="margin-top:8px"><button class="btn sm wide" data-act="editw" data-id="${w.id}">Upravit</button><button class="btn sm danger wide" data-act="delw" data-id="${w.id}">Smazat</button></div></div>` : ''}</div>`;
 }
 function vHist() {
   const ws = doneWorkouts();
@@ -2267,6 +2509,8 @@ function vProg() {
   // rekordy
   const prs = list.map(e => { let b = { v: 0, d: null, s: null }; sessions(e.id).forEach(h => h.sets.forEach(s => { const v = e1rm(s); if (v > b.v) b = { v, d: h.d, s }; })); return { e, ...b }; }).filter(p => p.v > 0).sort((a, b) => b.v - a.v);
   return `<div class="kicker">Progresivní přetížení</div><h1 class="title">Progres<span class="d">.</span></h1>
+    ${vMuscles()}
+    <h2 class="sec">Cvik</h2>
     <select data-f="progex" aria-label="Cvik">${list.map(e => `<option value="${e.id}" ${e.id === ex.id ? 'selected' : ''}>${esc(e.n)}</option>`).join('')}</select>
     <div class="seg" style="margin-top:10px">${metrics.map(([k, l]) => `<button class="${ui.progMetric === k ? 'on' : ''}" data-act="metric" data-m="${k}">${l}</button>`).join('')}</div>
     <div class="card" style="margin-top:10px;padding:10px 6px 4px"><div class="chart" id="chart"></div></div>
@@ -2283,6 +2527,7 @@ function vProg() {
     <h2 class="sec">Jak funguje doporučení</h2>${HOWTO}`;
 }
 function mountProg() {
+  mountMuscles();
   const el = $('#chart'); if (!el) return;
   const ex = getEx(ui.progEx);
   const H = sessions(ex.id).slice().reverse();
@@ -2519,7 +2764,7 @@ function summarySheet(wid, prs = []) {
     <div class="rpe">${Array.from({ length: 10 }, (_, k) => k + 1).map(v => `<button class="${w.rpe === v ? 'on' : ''}" style="--rc:${rpeColor(v)}" data-act="rpe" data-id="${w.id}" data-v="${v}">${v}</button>`).join('')}</div>
     <div class="rpe-l">${rpeLabel(w.rpe)}</div>
     <textarea data-f="wnote" data-id="${w.id}" rows="2" style="min-height:56px" placeholder="Poznámka k tréninku (nepovinné)">${esc(w.note || '')}</textarea>
-    <button class="btn p big wide" style="margin-top:14px" data-act="sumdone">Hotovo</button>`, 'summary');
+    <div class="row" style="margin-top:14px"><button class="btn wide big" data-act="share" data-id="${w.id}">${prs.length ? 'Sdílet rekord' : 'Sdílet'}</button><button class="btn p wide big" data-act="sumdone">Hotovo</button></div>`, 'summary');
 }
 function repeatWorkout(id) {
   if (openWorkout()) { toast('Nejdřív dokonči rozběhnutý trénink.'); return; }
@@ -2542,7 +2787,7 @@ function saveBodyWeight() {
 document.addEventListener('click', async e => {
   const b = e.target.closest('[data-act],[data-view],[data-rest]');
   if (!b) return;
-  if (b.dataset.view) { view = b.dataset.view; render(); scrollTo(0, 0); return; }
+  if (b.dataset.view) { go(b.dataset.view); return; }
   if (b.dataset.rest) { const v = b.dataset.rest; if (v === 'x') { restEnd = 0; restDone = false; $('#rest').classList.add('hidden'); } else { restEnd += (+v) * 1000; restTotal = Math.max(restTotal, (restEnd - now()) / 1000); restDone = false; $('#rest').classList.remove('done', 'hidden'); tickTimers(); } return; }
   const act = b.dataset.act, w = openWorkout();
   const card = b.closest('.exc'), setEl = b.closest('.set');
@@ -2645,6 +2890,10 @@ document.addEventListener('click', async e => {
     case 'admwtog': ADM.open = ADM.open === b.dataset.id ? null : b.dataset.id; render(); break;
     case 'theme': { const id = b.dataset.id; if (!THEMES[id] || S.set.theme === id) break; S.set.theme = id; S.setU = now(); dirty.set = true; commit(); render(); vib(8); toast(`Vzhled: ${THEMES[id].n}`); break; }
     case 'report': reportSheet(); break;
+    case 'mmr': ui.mmRange = b.dataset.k; render(); break;
+    case 'mmsel': mmInfo(b.dataset.m); break;
+    case 'share': shareSheet(b.dataset.id); break;
+    case 'sharego': if (shareFile) navigator.share({ files: [shareFile] }).catch(() => {}); break;
     case 'donqr': donateSheet(); break;
     case 'copyacc': navigator.clipboard?.writeText(DONATE.acc).then(() => toast('Číslo účtu zkopírováno')).catch(() => toast(DONATE.acc)); break;
     case 'tour': openTour(); break;
@@ -2750,7 +2999,7 @@ document.addEventListener('change', async e => {
   catch { toast('Soubor není platný export.'); }
   e.target.value = '';
 });
-$('#btn-set').addEventListener('click', () => { view = view === 'set' ? 'train' : 'set'; render(); scrollTo(0, 0); });
+$('#btn-set').addEventListener('click', () => go(view === 'set' ? 'train' : 'set'));
 $('#btn-adm').addEventListener('click', () => { if (view === 'admin' && !ADM.sel) view = 'train'; else { view = 'admin'; ADM.sel = null; if (!ADM.users || now() - ADM.at > 5 * 60e3) loadAdmin(); } render(); scrollTo(0, 0); });
 $('#sheet-bg').addEventListener('click', closeSheet);
 let sy0 = null;
@@ -2774,6 +3023,9 @@ document.addEventListener('visibilitychange', () => {
 });
 addEventListener('online', () => { if (S) { syncStatus('pend'); flush(); } });
 addEventListener('offline', () => { if (S) syncStatus('off'); });
+// Offline režim: service worker uloží aplikaci do telefonu (posilovna-sw.js, jen pro stránky Posilovny)
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost'))
+  addEventListener('load', () => navigator.serviceWorker.register('./posilovna-sw.js', { scope: './posilovna' }).catch(e => console.warn('sw', e)));
 // Bez přibližování dvěma prsty: Android to řídí viewport (user-scalable=no), iOS ho ignoruje, proto se gesto ruší tady
 for (const ev of ['gesturestart', 'gesturechange', 'gestureend']) document.addEventListener(ev, e => e.preventDefault(), { passive: false });
 document.addEventListener('touchmove', e => { if (e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, { passive: false });

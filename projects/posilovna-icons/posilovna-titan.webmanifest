@@ -1,0 +1,33 @@
+{
+ "name": "Posilovna",
+ "short_name": "Posilovna",
+ "description": "Tréninkový deník s progresivním přetížením a doporučením na příště.",
+ "lang": "cs",
+ "id": "../posilovna.html",
+ "start_url": "../posilovna.html",
+ "scope": "../posilovna",
+ "display": "standalone",
+ "orientation": "portrait",
+ "background_color": "#050607",
+ "theme_color": "#050607",
+ "icons": [
+  {
+   "src": "posilovna-titan-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "posilovna-titan-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "posilovna-titan-512m.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ]
+}
