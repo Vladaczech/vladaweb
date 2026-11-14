@@ -325,6 +325,85 @@ svg.fig .pul{fill:var(--bg);stroke:#6a6a6a;stroke-width:2}
 .rep-ctx div{display:flex;flex-direction:column;gap:3px;margin-top:6px;font-family:var(--mono);font-size:10.5px;color:var(--muted);word-break:break-all}
 .rep-ctx b{color:var(--muted2);font-weight:400;margin-right:4px}
 .rep-ph span{position:absolute;left:0;right:0;bottom:0;font-family:var(--mono);font-size:9px;background:rgba(0,0,0,.65);color:#fff;padding:2px;text-align:center}
+/* ── Průvodce ── */
+html.tour-on,html.tour-on body{overflow:hidden}
+.tour{position:fixed;inset:0;z-index:60;background:var(--bg);display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top) + 10px) 16px calc(env(safe-area-inset-bottom) + 14px);max-width:600px;margin:0 auto;box-shadow:0 0 0 100vmax var(--bg)}
+.tour-top{display:flex;align-items:center;gap:8px}
+.tour-blocks{flex:1;min-width:0;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.tour-blocks button{flex:none;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2);padding:7px 9px;border-radius:99px;border:1px solid transparent;transition:color .2s,border-color .2s,background .2s}
+.tour-blocks button.done{color:var(--muted)}
+.tour-blocks button.on{color:var(--neon);border-color:var(--neon-d);background:rgba(var(--neon-rgb),.07)}
+.tour-prog{display:flex;gap:3px;margin:10px 0 12px}
+.tour-prog i{flex:1;height:3px;border-radius:2px;background:var(--line2);position:relative;overflow:hidden}
+.tour-prog i.gap{margin-left:7px}
+.tour-prog i.done{background:var(--neon-d)}
+.tour-prog i.on::after{content:'';position:absolute;inset:0;background:var(--neon);box-shadow:0 0 8px var(--neon);transform-origin:left;animation:tprog .45s ease-out both}
+@keyframes tprog{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.tour-stage{flex:1;min-height:250px;position:relative;overflow:hidden;border-radius:20px;border:1px solid var(--line);background:radial-gradient(420px 260px at 80% 0%,rgba(var(--neon-rgb),.09),transparent 70%),var(--panel)}
+.tour-stage::after{content:'';position:absolute;left:0;right:0;bottom:0;height:34px;background:linear-gradient(transparent,var(--panel));pointer-events:none}
+.tv{position:absolute;inset:0;padding:16px;overflow:hidden;display:flex;flex-direction:column;justify-content:center;gap:10px}
+.tv.top{justify-content:flex-start}
+.tv.r{animation:tvR .4s cubic-bezier(.2,.8,.2,1)}.tv.l{animation:tvL .4s cubic-bezier(.2,.8,.2,1)}
+@keyframes tvR{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
+@keyframes tvL{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:none}}
+.tour-txt{padding:16px 2px 12px}
+.tour-txt.r,.tour-txt.l{animation:tin .45s .06s cubic-bezier(.2,.8,.2,1) both}
+.tour-txt h2{font-family:var(--display);font-size:27px;font-weight:600;letter-spacing:-.02em;line-height:1.08;margin:7px 0 8px}
+.tour-txt p{font-size:14.5px;color:var(--muted);line-height:1.5;min-height:4.5em}
+.tour-nav{display:flex;gap:8px}
+.tour-nav .btn{flex:1;min-height:48px}.tour-nav .btn[data-tour="prev"]{flex:0 0 52px;font-size:20px}.tour-nav .btn.p{flex:1.5}
+.tour-nav .btn:disabled{opacity:.3}
+.t-in{opacity:0;animation:tin .5s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:calc(var(--i,0) * 90ms)}
+@keyframes tin{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.t-hero{display:flex;justify-content:center}.t-hero svg{width:min(100%,330px);height:auto}.t-hero.sm svg{width:min(70%,220px)}
+.t-tag{text-align:center;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--neon);text-shadow:0 0 12px rgba(var(--neon-rgb),.6)}
+.t-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.t-tile{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:3px;color:var(--neon)}
+.t-tile svg{filter:drop-shadow(0 0 6px rgba(var(--neon-rgb),.6));margin-bottom:4px}
+.t-tile b{color:var(--text);font-size:14px;font-weight:600}.t-tile span{font-family:var(--mono);font-size:10px;color:var(--muted2)}
+.t-sc .goal{margin-bottom:10px}
+.t-plan{display:flex;flex-direction:column;gap:6px}
+.t-pi{display:flex;align-items:center;gap:10px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:5px 10px 5px 5px}
+.t-pi svg{width:46px;height:40px;flex:none;border-radius:8px;background:var(--bg)}.t-pi b{flex:1;font-size:13.5px;font-weight:500}.t-pi span{font-family:var(--mono);font-size:11px;color:var(--neon)}
+.t-press{transform:scale(.95);filter:brightness(1.25)}
+.t-scale{transform:scale(.9);transform-origin:top center;margin-bottom:-10%}
+.t-tap{box-shadow:0 0 0 3px rgba(var(--neon-rgb),.55)!important;transition:box-shadow .15s}
+.t-diff{display:flex;flex-direction:column;gap:7px}
+.t-dr{display:grid;grid-template-columns:6px 82px 1fr;grid-template-rows:auto auto;column-gap:12px;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:9px 12px;transition:border-color .25s,background .25s,transform .25s}
+.t-dr i{grid-row:1/3;width:6px;height:100%;border-radius:3px;background:var(--dc);box-shadow:0 0 8px var(--dc)}
+.t-dr b{font-size:14px;font-weight:600}.t-dr span{font-family:var(--mono);font-size:10.5px;color:var(--muted2)}
+.t-dr em{grid-column:3;grid-row:1/3;text-align:right;font-style:normal;font-size:12px;color:var(--muted)}
+.t-dr.hl{border-color:var(--dc);background:color-mix(in srgb,var(--dc) 10%,transparent);transform:scale(1.02)}
+.tv .t-rest{position:relative;left:auto;right:auto;bottom:auto;margin:0;z-index:auto}
+.t-mini .t-menu{display:flex;flex-direction:column;gap:4px;margin:10px 0}
+.t-mi{padding:9px 12px;border-radius:10px;border:1px solid var(--line);font-size:13.5px;transition:all .2s}
+.t-mi.hl{border-color:var(--neon-d);color:var(--neon);background:rgba(var(--neon-rgb),.06)}
+.t-lad{display:flex;flex-direction:column;gap:5px;margin-top:10px}
+.t-lr{display:grid;grid-template-columns:62px 1fr auto;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;background:var(--panel2);border:1px solid var(--line)}
+.t-lr span{font-family:var(--mono);font-size:10px;color:var(--muted2)}.t-lr b{font-family:var(--mono);font-size:12px;font-weight:500;white-space:nowrap}.t-lr em{font-style:normal;font-family:var(--mono);font-size:10.5px;color:var(--neon)}
+.t-lr.up{border-color:var(--neon);box-shadow:0 0 14px rgba(var(--neon-rgb),.25)}.t-lr.up b{color:var(--neon)}
+.t-mm svg{width:100%;max-height:150px}
+.t-cmp{aspect-ratio:auto;height:100%;max-height:100%;margin:0}
+.t-ca{animation:tca 4.5s ease-in-out infinite}
+.t-cl{animation:tcl 4.5s ease-in-out infinite}
+@keyframes tca{0%,100%{clip-path:inset(0 75% 0 0)}50%{clip-path:inset(0 25% 0 0)}}
+@keyframes tcl{0%,100%{left:25%}50%{left:75%}}
+.t-th{grid-template-columns:repeat(4,1fr)}.t-th .th{padding:6px}.t-th .th-sw{height:34px}.t-th .th-n{font-size:9.5px}
+.t-steps{display:flex;align-items:center;justify-content:center;gap:6px}
+.t-st{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 8px;border-radius:14px;border:1px solid var(--line);background:var(--panel2);width:96px;text-align:center;color:var(--muted);transition:all .25s}
+.t-st b{font-size:11.5px;font-weight:500;color:var(--text)}
+.t-st img{width:46px;height:46px;border-radius:11px}
+.t-st.hl{border-color:var(--neon);color:var(--neon);transform:translateY(-4px);box-shadow:0 8px 24px rgba(var(--neon-rgb),.18)}
+.t-ar{color:var(--muted2);font-family:var(--mono)}
+.t-phone{align-self:center;width:200px;height:300px;border-radius:30px;border:2px solid var(--line2);background:var(--bg);padding:14px 12px;display:flex;align-items:flex-end;animation:tshake 3s ease-in-out infinite}
+.t-ph-in{width:100%;background:#090909;border:1px solid var(--line2);border-radius:16px;padding:12px;font-size:12px}
+.t-ph-in b{font-family:var(--display);font-size:15px;display:block;margin-top:3px}
+.t-ph-in .chip{font-size:10px;padding:4px 9px}
+.t-ta{border:1px solid var(--line2);border-radius:9px;padding:8px;color:var(--muted);font-size:11.5px;min-height:46px}
+@keyframes tshake{0%,55%,100%{transform:none}60%{transform:rotate(-7deg)}65%{transform:rotate(7deg)}70%{transform:rotate(-6deg)}75%{transform:rotate(5deg)}80%{transform:rotate(-2deg)}85%{transform:none}}
+.t-banner{display:flex;align-items:center;gap:12px;margin-bottom:14px;border-color:var(--neon-d);background:rgba(var(--neon-rgb),.05)}
+.t-banner .grow{flex:1;min-width:0}.t-banner b{display:block;font-size:14.5px}.t-banner span{font-size:12px;color:var(--muted)}
+@media (prefers-reduced-motion: reduce){.tv,.t-in,.tour-txt,.t-ca,.t-cl,.t-phone{animation:none!important;opacity:1}}
 .themes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .th{display:flex;flex-direction:column;align-items:stretch;gap:7px;padding:8px;border-radius:14px;border:1px solid var(--line);background:var(--tb);text-align:left;transition:border-color .2s,box-shadow .2s}
 .th.on{border-color:var(--ta);box-shadow:0 0 0 1px var(--ta),0 0 18px rgba(var(--tr),.25)}
@@ -895,7 +974,11 @@ function subscribe() {
     unsubs.push(userDoc().collection(COLLS[k]).onSnapshot(q => { S[k] = S[k] || []; applyChanges(q, S[k], dirty[k]); rk(); if (loaded && !q.metadata.hasPendingWrites) safeRender(); }, onErr));
   }
 }
-async function afterLoad() { showApp(); checkAdmin(); await migrateLocal(); }
+async function afterLoad() {
+  showApp(); checkAdmin(); await migrateLocal();
+  // nový účet bez tréninků → průvodce se spustí sám (jednou, pamatuje se v profilu)
+  if (S && !S.set.tourSeen && !liveWorkouts().length) setTimeout(() => { if (!TOUR.open && USER) openTour(); }, 450);
+}
 
 /* ── Fotky: náhled (~20 kB) je v kolekci photos, plná fotka v photoData/{id} a načítá se až při otevření ── */
 const photoCache = new Map();
@@ -1594,6 +1677,208 @@ async function loadReports() {
   $('#btn-adm').classList.toggle('dot', (ADM.reports || []).some(r => !r.done));
 }
 
+
+/* ═══════════════════════════════════════════════════════════════
+   PRŮVODCE APLIKACÍ – prezentace po blocích na ukázkových datech.
+   Vizuály jsou skutečné komponenty aplikace (karta cviku, doporučení, grafy…) vykreslené nad
+   demo stavem (withDemo), takže průvodce vždy odpovídá tomu, jak aplikace opravdu vypadá.
+   Spouští se sám po registraci (S.set.tourSeen) a kdykoli z Nastavení.
+   ═══════════════════════════════════════════════════════════════ */
+let DEMO = null;
+const TOUR = { i: 0, timers: [], open: false };
+function demoState() {
+  const st = blank(); st.set = setDefaults({ ...(S ? S.set : {}), goal: 3, bar: 20 });
+  const T = now();
+  // dvojitá progrese v rozsahu cviku: spodní → horní hranice opakování, pak + váha a znovu od spodní
+  const ladder = (id, w0, inc, n) => { const { lo, hi } = getEx(id), out = []; let w = w0, r = lo; for (let k = 0; k < n; k++) { out.push([w, r]); if (++r > hi) { r = lo; w += inc; } } return out; };
+  const plan = { A: [['bench', 60, 2.5], ['row', 50, 2.5], ['latraise', 8, 1]], B: [['squat', 80, 2.5], ['rdl', 70, 2.5], ['legext', 40, 5]] };
+  const lad = {}; for (const g of 'AB') for (const [id, w0, inc] of plan[g]) lad[id] = ladder(id, w0, inc, 14);
+  // realistický rozvrh: 10 týdnů, většinou Po/St/Pá, občas vynechaný den
+  const days = [];
+  for (let wk = 9; wk >= 0; wk--) for (const d of [0, 2, 4]) { const t = startOfWeek(T) - wk * 7 * DAY + d * DAY + 17.5 * 3600e3; if (t < T - 3 * 3600e3 && (wk * 3 + d) % 7 !== 3) days.push(t); }
+  const NS = days.length;
+  for (let k = NS - 1; k >= 0; k--) {
+    const t = days[NS - 1 - k], n = Math.floor((NS - 1 - k) / 2), g = k % 2 ? 'B' : 'A';
+    const it = plan[g].map(([id]) => { const [w, r] = lad[id][n]; return { ex: id, s: [0, 1, 2].map(j => ({ w, r: Math.max(6, r - (j === 2 ? 1 : 0)), q: j === 2 ? 1 : 2, ok: true })) }; });
+    st.w.push({ id: 'demo' + k, d: localISO(t), it, rpe: 7 + (k % 3 === 0 ? 1 : 0), end: t + 62 * 60e3, u: t });
+  }
+  for (let k = 0; k < 22; k++) { const t = T - (60 - k * 2.8) * DAY; st.body.push({ id: 'db' + k, d: localISO(t).slice(0, 10), kg: +(82.6 - k * .11 + Math.sin(k * 1.7) * .35).toFixed(1), u: t }); }
+  st.notes.push({ id: 'bench', t: 'Lavice: opěrka 3, úchop o dlaň širší než ramena', u: T });
+  return st;
+}
+function withDemo(fn) {
+  const s0 = S, u0 = { cardOpen: ui.cardOpen, rate: ui.rate };
+  S = DEMO; ui.cardOpen = {}; ui.rate = null;
+  try { return fn(); } finally { S = s0; ui.cardOpen = u0.cardOpen; ui.rate = u0.rate; }
+}
+const tAt = (ms, f) => TOUR.timers.push(setTimeout(f, ms));
+const tLoop = (period, f) => { f(); TOUR.timers.push(setInterval(f, period)); };
+const tq = (el, s) => el.querySelector(s);
+const svgIco = d => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+// siluety pro ukázku „před a po“ (bez skutečných fotek)
+const silhouette = (w, sh, tone, glow) => {
+  const c = 150, P = (x, y) => `${x.toFixed(1)},${y}`;
+  const body = `M${P(c - 15, 104)} L${P(c + 15, 104)} Q${P(c + sh, 110)} ${P(c + sh, 134)} L${P(c + sh - 10, 172)} Q${P(c + w + 4, 212)} ${P(c + w, 242)} Q${P(c + w + 9, 272)} ${P(c + w + 7, 300)} L${P(c - w - 7, 300)} Q${P(c - w - 9, 272)} ${P(c - w, 242)} Q${P(c - w - 4, 212)} ${P(c - sh + 10, 172)} L${P(c - sh, 134)} Q${P(c - sh, 110)} ${P(c - 15, 104)} Z`;
+  const limb = (x1, y1, x2, y2, t) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#2b2b2b" stroke-width="${t}" stroke-linecap="round"/>`;
+  return 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400"><rect width="300" height="400" fill="${tone}"/>
+    ${limb(c - sh + 4, 134, c - sh - 10, 250, 19)}${limb(c + sh - 4, 134, c + sh + 10, 250, 19)}${limb(c - w * .5, 296, c - w * .45, 392, w * .78)}${limb(c + w * .5, 296, c + w * .45, 392, w * .78)}
+    <path d="${body}" fill="#2b2b2b"/><circle cx="${c}" cy="72" r="27" fill="#2b2b2b"/><rect x="${c - 10}" y="92" width="20" height="16" fill="#2b2b2b"/>
+    ${glow ? `<g stroke="${glow}" stroke-width="2" stroke-linecap="round" fill="none" opacity=".55"><path d="M${c - 22} 150 Q${c} 160 ${c + 22} 150"/><path d="M${c} 168 V258"/><path d="M${c - 14} 192 H${c + 14}M${c - 13} 218 H${c + 13}M${c - 12} 244 H${c + 12}"/></g>` : ''}</svg>`);
+};
+
+const TOUR_SLIDES = [
+  { b: 'Vítej', t: 'Vítej v Posilovně.', p: 'Tréninkový deník, který za tebe hlídá progresivní přetížení. Za dvě minuty ti ukážu, jak ho používat – klepni na Další, nebo přejeď prstem.',
+    v: () => `<div class="t-hero">${figSvg(getEx('squat'))}</div><div class="t-tag">70+ cviků · každý s animací</div>` },
+  { b: 'Vítej', t: 'Co všechno umí', p: 'Zapisuješ série, aplikace ti řekne, co zvednout příště, a ukáže, jak rosteš. Všechno se ukládá do tvého účtu a funguje i bez signálu.',
+    v: () => `<div class="t-grid">${[
+      ['<path d="M5 12l5 5L20 7"/>', 'Záznam sérií', 'váha, opakování, náročnost'],
+      ['<path d="M7 17L17 7"/><path d="M8 7h9v9"/>', 'Doporučení', 'co zvednout příště'],
+      ['<path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/>', 'Grafy progresu', 'odhad maxima a objem'],
+      ['<path d="M12 3l2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-.5z"/>', 'Návrh tréninku', 'podle partií a historie'],
+      ['<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4.5-6 8-6s7 2 8 6"/>', 'Tělo a fotky', 'váha, před a po'],
+      ['<path d="M4 6h16M4 12h16M4 18h10"/>', 'Historie', 'každý stroj i rekordy'],
+    ].map(([d, a, s], k) => `<div class="t-tile t-in" style="--i:${k}">${svgIco(d)}<b>${a}</b><span>${s}</span></div>`).join('')}</div>` },
+
+  { b: 'Trénink', t: 'Začni trénink', p: 'Buď začneš prázdný trénink a cviky si přidáš, nebo vybereš 1–3 partie a necháš si ho navrhnout. Váhy se doplní podle tvých minulých výkonů.',
+    v: () => `<div class="t-sc">${withDemo(goalCard)}
+      <div class="card stack"><div class="chips wrapc">${['Hrudník', 'Záda', 'Nohy', 'Ramena', 'Paže'].map(g => `<button class="chip" data-g="${g}">${g}</button>`).join('')}</div>
+      <button class="btn p wide" id="t-gen">✦ Náhodný trénink</button>
+      <div class="t-plan" id="t-plan"></div></div></div>`,
+    play: el => tLoop(6200, () => {
+      const ch = g => tq(el, `[data-g="${g}"]`), btn = tq(el, '#t-gen'), pl = tq(el, '#t-plan');
+      el.querySelectorAll('.chip').forEach(c => c.classList.remove('on')); btn.textContent = '✦ Náhodný trénink'; pl.innerHTML = '';
+      tAt(700, () => { ch('Nohy').classList.add('on'); btn.textContent = '✦ Navrhnout: Nohy'; });
+      tAt(1400, () => { ch('Záda').classList.add('on'); btn.textContent = '✦ Navrhnout: Nohy + Záda'; });
+      tAt(2200, () => btn.classList.add('t-press')); tAt(2500, () => btn.classList.remove('t-press'));
+      tAt(2600, () => { pl.innerHTML = [['squat', 4], ['rdl', 3], ['latpull', 3], ['legcurl', 3]].map(([id, n], k) => `<div class="t-pi t-in" style="--i:${k}">${figSvg(getEx(id), 'fig-mini')}<b>${esc(getEx(id).n)}</b><span>${n}×</span></div>`).join(''); });
+    }) },
+  { b: 'Trénink', t: 'Zapiš sérii', p: 'Doporučená váha je předvyplněná. Dopiš opakování a odškrtni ✓ – spustí se pauza. Pak jedním klepnutím vyber, jak těžká série byla.', top: true,
+    v: () => withDemo(() => { const w = DEMO.w.find(x => x.open); return `<div class="t-scale">${exCard(w, w.it[0], 0)}</div>`; }),
+    play: el => tLoop(7600, () => {
+      const row = el.querySelectorAll('.set')[1]; if (!row) return;
+      const [wi, ri] = row.querySelectorAll('input'), d = row.querySelector('.diff');
+      row.classList.remove('ok'); ri.value = ''; d.className = 'diff'; d.textContent = 'náročnost'; d.removeAttribute('style');
+      el.querySelector('.rate')?.remove(); el.querySelectorAll('.t-tap').forEach(x => x.classList.remove('t-tap'));
+      tAt(900, () => { ri.classList.add('t-tap'); ri.value = String(DEMO.rc.r); }); tAt(1300, () => ri.classList.remove('t-tap'));
+      tAt(1900, () => { row.querySelector('.chk').classList.add('t-tap'); row.classList.add('ok'); });
+      tAt(2700, () => { row.querySelector('.chk').classList.remove('t-tap'); d.classList.add('open'); row.insertAdjacentHTML('afterend', `<div class="rate">${DIFF.map(x => `<button style="--dc:${x.c}" data-q="${x.q}"><b>${x.l}</b><span>${x.s}</span></button>`).join('')}</div>`); });
+      tAt(3900, () => el.querySelector('.rate [data-q="2"]')?.classList.add('on', 't-tap'));
+      tAt(4500, () => { el.querySelector('.rate')?.remove(); const x = diffOf(2); d.className = 'diff on'; d.style.setProperty('--dc', x.c); d.textContent = x.l; });
+    }) },
+  { b: 'Trénink', t: 'Jak těžká byla série?', p: 'Náročnost = kolik opakování ti ještě zbývalo. Podle ní aplikace pozná, jestli přidat váhu, opakování, nebo zvolnit. Většinou cíl „Těžká“ až „Na hraně“ – do selhání chodit nemusíš.',
+    v: () => `<div class="t-diff">${DIFF.map((x, k) => `<div class="t-dr t-in" style="--i:${k};--dc:${x.c}"><i></i><b>${x.l}</b><span>${x.s}</span><em>${['progrese poběží rychleji', 'dobrý trénink', 'ideální zóna', 'ideální zóna', 'jen občas, drží váhu'][k]}</em></div>`).join('')}</div>`,
+    play: el => { let k = 0; const rows = el.querySelectorAll('.t-dr'); tLoop(1100, () => { rows.forEach(r => r.classList.remove('hl')); rows[k++ % rows.length].classList.add('hl'); }); } },
+  { b: 'Trénink', t: 'Pauza, kotouče, rozcvičení', p: 'Po odškrtnutí běží pauza a na konci pípne. U velké činky vidíš, jaké kotouče nasadit na každou stranu, a u těžkých cviků návrh rozcvičovacích sérií.',
+    v: () => { const p = platesFor(72.5, 20); return `<div class="rest t-rest"><div class="bar" id="t-rb"></div><div class="t" id="t-rt">2:00</div><div class="l">Pauza · další série<br><span style="color:var(--text)">72,5 kg × 9</span></div></div>
+      <div class="plates"><span>72,5 kg →</span>${p.out.map(x => `<i class="pl p${String(x).replace('.', '_')}">${fmt(x, 2)}</i>`).join('')}<i class="bar"></i><em>osa 20 kg</em></div>
+      <details class="warm" open><summary>Rozcvičení · 4 série</summary><div>20 kg × 10 · 30 kg × 8 · 42,5 kg × 5 · 57,5 kg × 3</div></details>`; },
+    play: el => { let s = 120; const t = tq(el, '#t-rt'), b = tq(el, '#t-rb'); tLoop(90, () => { s = s <= 0 ? 120 : s - 1; t.textContent = mmss(s); b.style.width = (s / 120 * 100) + '%'; }); } },
+  { b: 'Trénink', t: 'Obsazený stroj? Vyměň ho', p: 'Přes ⋯ u cviku ho vyměníš za podobný, posuneš nebo odebereš. V Historii vidíš minulé série na tom stroji a v Poznámkách si uložíš jeho nastavení.', top: true,
+    v: () => withDemo(() => `<div class="exc t-mini"><div class="exc-h"><span>${figSvg(getEx('bench'), 'fig-mini')}</span><div class="nm"><b>Bench press</b><span>HRUDNÍK · 5–8 opak.</span></div><span class="icon-btn on">⋯</span></div>
+      <div class="t-menu">${['Vyměnit cvik', 'Posunout výš', 'Posunout níž', 'Odebrat z tréninku'].map((x, k) => `<div class="t-mi" style="--i:${k}">${x}</div>`).join('')}</div>
+      <div class="xnote"><span>Poznámka</span>${esc(getNote('bench'))}</div>
+      <div class="cpanel">${exHistory(getEx('bench'), null, 2)}</div></div>`),
+    play: el => { let k = 0; const it = el.querySelectorAll('.t-mi'); tLoop(900, () => { it.forEach(x => x.classList.remove('hl')); it[k++ % it.length].classList.add('hl'); }); } },
+
+  { b: 'Progres', t: 'Co zvednout příště', p: 'Dvojitá progrese: nejdřív přidáváš opakování, a když zvládneš horní hranici s rezervou, přidá se váha. Po slabším dni nic nepřidává, při stagnaci navrhne lehčí týden.',
+    v: () => withDemo(() => { const ex = getEx('bench'); return `${recoBox(recommend(ex), ex)}<div class="t-lad" id="t-lad"></div>`; }),
+    play: el => tLoop(7000, () => {
+      const L = tq(el, '#t-lad'); L.innerHTML = '';
+      [['60 kg', '8 · 8 · 7', 'rozsah 8–12'], ['60 kg', '9 · 9 · 8', '+1 opak.'], ['60 kg', '10 · 10 · 9', '+1 opak.'], ['60 kg', '12 · 12 · 11', 'horní hranice ✓'], ['62,5 kg', '8 · 8 · 7', '+2,5 kg']].forEach(([w, r, n], k) =>
+        tAt(400 + k * 900, () => L.insertAdjacentHTML('beforeend', `<div class="t-lr t-in${k === 4 ? ' up' : ''}"><span>${k + 1}. trénink</span><b>${w} × ${r}</b><em>${n}</em></div>`)));
+    }) },
+  { b: 'Progres', t: 'Grafy, které motivují', p: 'V Progresu sleduješ odhad maxima, nejvyšší váhu i objem každého cviku. Prstem po grafu zobrazíš detail konkrétního tréninku.',
+    v: () => `<div class="card"><div class="kicker" style="margin-bottom:6px">Bench press · odhad 1RM</div><div class="chart" id="t-ch"></div></div><div class="t-mm">${muscleMap(getEx('bench'))}</div>`,
+    play: el => {
+      const pts = withDemo(() => sessions('bench').map(h => ({ x: new Date(h.d).getTime(), y: bestE1(h.sets) }))).reverse();
+      lineChart(tq(el, '#t-ch'), pts, 'kg');
+      const ln = el.querySelector('.ln'); if (ln && ln.getTotalLength) { const L = ln.getTotalLength(); ln.style.strokeDasharray = L; ln.style.strokeDashoffset = L; ln.getBoundingClientRect(); ln.style.transition = 'stroke-dashoffset 1.6s cubic-bezier(.4,0,.2,1)'; ln.style.strokeDashoffset = 0; }
+    } },
+  { b: 'Progres', t: 'Historie a rekordy', p: 'Kalendář ukazuje, jak pravidelně cvičíš. Když překonáš maximum, dostaneš rekord hned u série a po tréninku shrnutí s porovnáním s minule.',
+    v: () => { const cnt = {}; DEMO.w.forEach(w => { const k = w.d.slice(0, 10); cnt[k] = (cnt[k] || 0) + w.it.reduce((a, it) => a + doneSets(it).length, 0); });
+      const d0 = startOfWeek(now()) - 16 * 7 * DAY; let cells = '';
+      for (let k = 0; k < 17 * 7; k++) { const t = d0 + k * DAY, n = cnt[localISO(t).slice(0, 10)] || 0; cells += `<i class="${n ? 'l' + Math.min(4, Math.ceil(n / 3)) : ''}"></i>`; }
+      return `<div class="card"><div class="heat">${cells}</div></div><div class="pr-card t-pr" style="position:relative"><div class="burst">${'<i></i>'.repeat(12)}</div><span class="kicker">Nový rekord</span><b>Bench press · 72,5 kg × 9</b><span class="mono muted" style="font-size:11px">odhad 1RM 94,3 kg · +3,1 %</span></div>`; },
+    play: el => tLoop(3200, () => { const b = el.querySelector('.burst'); if (!b) return; const c = b.cloneNode(true); b.replaceWith(c); }) },
+
+  { b: 'Tělo', t: 'Váha bez kolísání', p: 'V záložce Tělo zapisuješ váhu. Graf a průměr za 7 dní ukážou skutečný trend, ne denní výkyvy po jídle a pití.',
+    v: () => `<div class="stats"><div class="stat"><div class="v">80,3</div><div class="l">dnes</div></div><div class="stat"><div class="v">80,5</div><div class="l">Ø 7 dní</div></div><div class="stat"><div class="v">−1,1</div><div class="l">30 dní</div></div></div><div class="card"><div class="chart" id="t-bw"></div></div>`,
+    play: el => lineChart(tq(el, '#t-bw'), DEMO.body.map(b => ({ x: new Date(b.d).getTime(), y: b.kg })), 'kg') },
+  { b: 'Tělo', t: 'Před a po', p: 'Fotky postavy vidíš jen ty. Vybereš dvě a posuvníkem porovnáš, jak se postava mění. Vyfotit si můžeš i nastavení strojů ke cvikům.',
+    v: () => `<div class="cmp t-cmp"><img src="${silhouette(38, 62, '#121212', getComputedStyle(document.documentElement).getPropertyValue('--neon').trim())}" alt=""><div class="ca t-ca"><img src="${silhouette(58, 50, '#0e0e0e')}" alt=""></div><div class="cmp-line t-cl"></div><span class="cl l">PŘED · 1. 9.</span><span class="cl r">PO · 14. 11.</span></div>` },
+
+  { b: 'Tipy', t: 'Tvoje barvy', p: 'V Nastavení → Vzhled si vybereš barvu aplikace. Uloží se do profilu a ikona na ploše dostane stejnou barvu.',
+    v: () => `<div class="t-hero sm">${figSvg(getEx('ohp'))}</div><div class="themes t-th">${Object.entries(THEMES).map(([id, t]) => `<div class="th" data-th="${id}" style="--ta:${t.a};--tr:${t.rgb};--tb:${t.bg};--tp:${t.p};--td:${t.d};--tl:${t.l2}"><span class="th-sw"><i></i><b></b><em></em></span><span class="th-n">${t.n}</span></div>`).join('')}</div>`,
+    play: el => { const ids = Object.keys(THEMES); let k = 0; tLoop(1300, () => { const id = ids[k++ % ids.length], t = THEMES[id], tv = el;
+      el.querySelectorAll('.th').forEach(x => x.classList.toggle('on', x.dataset.th === id));
+      for (const [a, b] of [['--neon', t.a], ['--neon-rgb', t.rgb], ['--neon-d', t.d], ['--neon-dd', t.dd]]) tv.style.setProperty(a, b); }); } },
+  { b: 'Tipy', t: 'Ikona na ploše', p: 'Na iPhonu v Safari: Sdílet → Přidat na plochu. Na Androidu: menu ⋮ → Přidat na plochu. Aplikace pak běží na celou obrazovku jako běžná appka.',
+    v: () => `<div class="t-steps">
+      <div class="t-st" data-s="0">${svgIco('<path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/>')}<b>Sdílet</b></div><span class="t-ar">→</span>
+      <div class="t-st" data-s="1">${svgIco('<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8v8M8 12h8"/>')}<b>Přidat na plochu</b></div><span class="t-ar">→</span>
+      <div class="t-st" data-s="2"><img src="./posilovna-icons/posilovna-${themeNow || 'neon'}-180.png" alt=""><b>Posilovna</b></div></div>`,
+    play: el => { let k = 0; const st = el.querySelectorAll('.t-st'); tLoop(1100, () => { st.forEach(x => x.classList.remove('hl')); st[k++ % st.length].classList.add('hl'); }); } },
+  { b: 'Tipy', t: 'Zatřes a napiš', p: 'Něco nefunguje, nebo máš nápad? Zatřes telefonem (nebo Nastavení → Zpětná vazba), napiš pár slov a klidně přidej fotku. Dostane to správce aplikace.',
+    v: () => `<div class="t-phone"><div class="t-ph-in"><div class="kicker">Zpětná vazba</div><b>Nahlásit problém nebo nápad</b><div class="row" style="gap:6px;margin:8px 0"><span class="chip on">Chyba</span><span class="chip">Nápad</span></div><div class="t-ta">Při dvojitém klepnutí se to přiblíží…</div><div class="btn p wide sm" style="margin-top:8px">Odeslat</div></div></div>` },
+  { b: 'Tipy', t: 'Jsi připraven.', p: 'Průvodce kdykoli znovu spustíš v Nastavení. Teď hurá na první trénink – a nezapomeň série hodnotit, čím víc dat, tím přesnější doporučení.', last: true,
+    v: () => `<div class="t-hero">${figSvg(getEx('deadlift'))}</div><div class="t-tag">Hodně štěstí ✦</div>` },
+];
+const TOUR_BLOCKS = [...new Set(TOUR_SLIDES.map(s => s.b))];
+
+function openTour(i = 0) {
+  DEMO = demoState();
+  const rc = DEMO.rc = withDemo(() => recommend(getEx('bench')));
+  DEMO.w.push({ id: 'demo-open', d: localISO(), open: true, u: now(), it: [{ ex: 'bench', s: [{ w: rc.w, r: rc.r, q: 2, ok: true }, { w: rc.w, r: null, q: null, ok: false }, { w: rc.w, r: null, q: null, ok: false }] }] });
+  closeSheet();
+  let el = $('#tour'); if (!el) { el = document.createElement('div'); el.id = 'tour'; el.className = 'tour'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', 'Průvodce aplikací'); document.body.appendChild(el); }
+  TOUR.open = true; document.documentElement.classList.add('tour-on');
+  tourGo(i, 'r');
+}
+function closeTour(seen = true) {
+  TOUR.timers.forEach(t => { clearTimeout(t); clearInterval(t); }); TOUR.timers = [];
+  $('#tour')?.remove(); TOUR.open = false; document.documentElement.classList.remove('tour-on'); DEMO = null;
+  if (seen && S && !S.set.tourSeen) { S.set.tourSeen = true; S.setU = now(); dirty.set = true; commit(); }
+  if (S) render();
+}
+function tourGo(i, dir) {
+  const N = TOUR_SLIDES.length; i = Math.max(0, Math.min(N - 1, i));
+  TOUR.timers.forEach(t => { clearTimeout(t); clearInterval(t); }); TOUR.timers = [];
+  TOUR.i = i; const s = TOUR_SLIDES[i], bi = TOUR_BLOCKS.indexOf(s.b);
+  const inB = TOUR_SLIDES.filter(x => x.b === s.b), k = inB.indexOf(s) + 1;
+  const nextB = TOUR_BLOCKS[bi + 1];
+  $('#tour').innerHTML = `<div class="tour-top"><div class="tour-blocks">${TOUR_BLOCKS.map((b, j) => `<button class="${j === bi ? 'on' : j < bi ? 'done' : ''}" data-tour="block" data-b="${j}">${b}</button>`).join('')}</div>
+      <button class="icon-btn" data-tour="close" aria-label="Zavřít průvodce"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="tour-prog">${TOUR_SLIDES.map((x, j) => `<i class="${j < i ? 'done' : j === i ? 'on' : ''}${j && x.b !== TOUR_SLIDES[j - 1].b ? ' gap' : ''}"></i>`).join('')}</div>
+    <div class="tour-stage" id="tour-stage"><div class="tv ${dir}${s.top ? ' top' : ''}" inert>${s.v()}</div></div>
+    <div class="tour-txt ${dir}"><div class="kicker">${s.b} · ${k}/${inB.length}</div><h2>${s.t}</h2><p>${s.p}</p></div>
+    <div class="tour-nav"><button class="btn" data-tour="prev" ${i ? '' : 'disabled'} aria-label="Předchozí krok">‹</button>
+      ${nextB && !s.last ? `<button class="btn ghost" data-tour="skip">${esc(nextB)} »</button>` : ''}
+      <button class="btn p" data-tour="next">${s.last ? 'Začít trénovat' : 'Další ›'}</button></div>`;
+  const tv = $('#tour .tv');
+  if (s.play) requestAnimationFrame(() => { try { s.play(tv); } catch (e) { console.warn('tour', e); } });
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-tour]'); if (!b) return;
+  const a = b.dataset.tour, i = TOUR.i, s = TOUR_SLIDES[i];
+  if (a === 'close') closeTour();
+  else if (a === 'prev') tourGo(i - 1, 'l');
+  else if (a === 'next') { if (s.last) { closeTour(); view = 'train'; render(); scrollTo(0, 0); } else tourGo(i + 1, 'r'); }
+  else if (a === 'skip') { const nb = TOUR_BLOCKS[TOUR_BLOCKS.indexOf(s.b) + 1]; tourGo(TOUR_SLIDES.findIndex(x => x.b === nb), 'r'); }
+  else if (a === 'block') { const j = TOUR_SLIDES.findIndex(x => x.b === TOUR_BLOCKS[+b.dataset.b]); tourGo(j, j < i ? 'l' : 'r'); }
+  vib(6);
+});
+// přejetí prstem po ukázce = další / předchozí krok
+let tourSw = null;
+document.addEventListener('touchstart', e => { if (TOUR.open && e.target.closest('#tour-stage, .tour-txt')) { const p = e.touches[0]; tourSw = { x: p.clientX, y: p.clientY }; } }, { passive: true });
+document.addEventListener('touchend', e => {
+  if (!tourSw || !TOUR.open) return; const p = e.changedTouches[0], dx = p.clientX - tourSw.x, dy = p.clientY - tourSw.y; tourSw = null;
+  if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.4) { if (dx < 0 && !TOUR_SLIDES[TOUR.i].last) tourGo(TOUR.i + 1, 'r'); else if (dx > 0 && TOUR.i) tourGo(TOUR.i - 1, 'l'); }
+}, { passive: true });
+document.addEventListener('keydown', e => {
+  if (!TOUR.open) return;
+  if (e.key === 'ArrowRight') tourGo(TOUR.i + 1, 'r'); else if (e.key === 'ArrowLeft') tourGo(TOUR.i - 1, 'l'); else if (e.key === 'Escape') closeTour();
+});
+
 function weekStats() {
   const ws = startOfWeek(now());
   const wk = doneWorkouts().filter(w => new Date(w.d).getTime() >= ws);
@@ -1627,6 +1912,7 @@ function vTrain() {
     return `<div class="kicker">${esc(dLong(now()))}</div>
       <h1 class="title">Jdeme<br>makat<span class="d">.</span></h1>
       ${goalCard()}
+      ${!S.set.tourSeen ? `<div class="card t-banner"><div class="grow"><b>Průvodce aplikací</b><span>Za 2 minuty uvidíš, co všechno aplikace umí.</span></div><button class="btn sm p" data-act="tour">Spustit</button><button class="btn sm ghost" data-act="tourno" aria-label="Skrýt">✕</button></div>` : ''}
       <button class="btn p big wide" data-act="start">▶ Začít prázdný trénink</button>
       <h2 class="sec">Navrhnout trénink</h2>
       <div class="card stack">
@@ -2102,8 +2388,9 @@ function vSet() {
       <div class="field" style="margin:0"><label>Krok přidávání váhy (kg)</label>
         <div class="kv" style="grid-template-columns:repeat(2,1fr)">${['barbell', 'dumbbell', 'machine', 'cable'].map(k => `<label class="field" style="margin:0"><span class="help">${EQ[k].n}</span><input inputmode="decimal" data-f="inc" data-k="${k}" value="${fmt(S.set.inc[k] ?? EQ[k].inc, 2)}"></label>`).join('')}</div></div>
     </div>
-    <h2 class="sec">Zpětná vazba</h2>
+    <h2 class="sec">Nápověda a zpětná vazba</h2>
     <div class="card stack">
+      <button class="btn p wide" data-act="tour">▶ Spustit průvodce aplikací</button>
       <button class="btn wide" data-act="report">Nahlásit problém nebo nápad</button>
       ${typeof DeviceMotionEvent !== 'undefined' ? `<label class="check" style="margin:0"><input type="checkbox" data-f="shake" ${shakeOn() ? 'checked' : ''}> Otevřít hlášení zatřesením telefonu</label>
       <p class="note">Zatřes telefonem kdekoli v aplikaci, napiš, co se stalo, a klidně přidej fotku. ${needsMotionPerm() ? 'iPhone se při zapnutí zeptá na povolení pohybu a může se ptát i po novém spuštění aplikace.' : ''}</p>` : ''}
@@ -2337,6 +2624,8 @@ document.addEventListener('click', async e => {
     case 'admwtog': ADM.open = ADM.open === b.dataset.id ? null : b.dataset.id; render(); break;
     case 'theme': { const id = b.dataset.id; if (!THEMES[id] || S.set.theme === id) break; S.set.theme = id; S.setU = now(); dirty.set = true; commit(); render(); vib(8); toast(`Vzhled: ${THEMES[id].n}`); break; }
     case 'report': reportSheet(); break;
+    case 'tour': openTour(); break;
+    case 'tourno': S.set.tourSeen = true; S.setU = now(); dirty.set = true; commit(); render(); toast('Průvodce najdeš v Nastavení'); break;
     case 'repkind': REP.text = $('#rep-t') ? $('#rep-t').value : REP.text; REP.kind = b.dataset.k; reportSheet(); break;
     case 'repdel': REP.photos.splice(+b.dataset.i, 1); reportSheet(); break;
     case 'repsend': sendReport(); break;
