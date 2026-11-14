@@ -404,6 +404,13 @@ html.tour-on,html.tour-on body{overflow:hidden}
 .t-banner{display:flex;align-items:center;gap:12px;margin-bottom:14px;border-color:var(--neon-d);background:rgba(var(--neon-rgb),.05)}
 .t-banner .grow{flex:1;min-width:0}.t-banner b{display:block;font-size:14.5px}.t-banner span{font-size:12px;color:var(--muted)}
 @media (prefers-reduced-motion: reduce){.tv,.t-in,.tour-txt,.t-ca,.t-cl,.t-phone{animation:none!important;opacity:1}}
+.don{border-color:var(--neon-d);background:radial-gradient(320px 160px at 100% 0%,rgba(var(--neon-rgb),.08),transparent 70%),var(--panel)}
+.don-t{font-size:14px;line-height:1.55;color:var(--text)}.don-t .d{color:var(--neon)}
+.don-acc{display:flex;align-items:center;gap:10px;background:var(--panel2);border:1px solid var(--line2);border-radius:12px;padding:10px 12px}
+.don-acc>div{flex:1;min-width:0;display:flex;flex-direction:column}
+.don-acc b{font-family:var(--mono);font-size:17px;letter-spacing:.04em;font-weight:500;user-select:all;-webkit-user-select:all}
+.don-qr{background:#fff;border-radius:18px;padding:14px;max-width:300px;margin:0 auto;box-shadow:0 0 0 1px var(--line2),0 0 30px rgba(var(--neon-rgb),.15)}
+.don-qr img{display:block;width:100%;height:auto;image-rendering:pixelated}
 .themes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .th{display:flex;flex-direction:column;align-items:stretch;gap:7px;padding:8px;border-radius:14px;border:1px solid var(--line);background:var(--tb);text-align:left;transition:border-color .2s,box-shadow .2s}
 .th.on{border-color:var(--ta);box-shadow:0 0 0 1px var(--ta),0 0 18px rgba(var(--tr),.25)}
@@ -1582,6 +1589,14 @@ function mountAdmin() {
    HLÁŠENÍ – zatřesení telefonem (nebo tlačítko v nastavení) otevře okno pro připomínku s fotkami.
    Uloží se do Firestore reports/{id} + reportPhotos/{id}_{i}; čte je jen správce v Přehledu → Hlášení.
    ═══════════════════════════════════════════════════════════════ */
+// Dobrovolný dar – QR platba (SPAYD) je v posilovna-icons/dar-qr.jpg, částku si dárce zvolí sám
+const DONATE = { acc: '2908777003/0800', iban: 'CZ46 0800 0000 0029 0877 7003', qr: './posilovna-icons/dar-qr.jpg' };
+function donateSheet() {
+  openSheet(`<div class="kicker">Podpořit aplikaci</div><h3>Děkuju za podporu</h3>
+    <p class="note" style="margin:6px 0 14px">Naskenuj kód v bankovní aplikaci (QR platba). Částku zvolíš sám – každý příspěvek pomáhá.</p>
+    <div class="don-qr"><img src="${DONATE.qr}" alt="QR kód pro platbu na účet ${DONATE.acc}" width="490" height="490"></div>
+    <div class="don-acc" style="margin-top:14px"><div><span class="help">Číslo účtu</span><b>${DONATE.acc}</b><span class="help" style="margin-top:2px">IBAN ${DONATE.iban}</span></div><button class="btn sm" data-act="copyacc">Kopírovat</button></div>`, 'donate');
+}
 const REP_KINDS = { bug: 'Chyba', idea: 'Nápad', other: 'Jiné' };
 const REP = { kind: 'bug', text: '', photos: [], ctx: true, sending: false };
 const needsMotionPerm = () => typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function';
@@ -2395,6 +2410,12 @@ function vSet() {
       ${typeof DeviceMotionEvent !== 'undefined' ? `<label class="check" style="margin:0"><input type="checkbox" data-f="shake" ${shakeOn() ? 'checked' : ''}> Otevřít hlášení zatřesením telefonu</label>
       <p class="note">Zatřes telefonem kdekoli v aplikaci, napiš, co se stalo, a klidně přidej fotku. ${needsMotionPerm() ? 'iPhone se při zapnutí zeptá na povolení pohybu a může se ptát i po novém spuštění aplikace.' : ''}</p>` : ''}
     </div>
+    <h2 class="sec">Podpořit aplikaci</h2>
+    <div class="card stack don">
+      <p class="don-t">Posilovna je zdarma a bez reklam. Pokud ti pomáhá a chceš podpořit její další vývoj, budu moc rád za jakýkoli dobrovolný příspěvek. Díky, že s ní trénuješ! <span class="d">✦</span></p>
+      <div class="don-acc"><div><span class="help">Číslo účtu</span><b>${DONATE.acc}</b></div><button class="btn sm" data-act="copyacc">Kopírovat</button></div>
+      <button class="btn p wide" data-act="donqr">Zobrazit QR platbu</button>
+    </div>
     <h2 class="sec">Vlastní cviky</h2>
     <div class="card stack">
       ${custom.map(c => `<div class="row"><span style="flex:1">${esc(c.n)} <span class="mono muted" style="font-size:11px">${c.g} · ${c.lo}–${c.hi}</span></span><button class="btn sm ghost" data-act="delcx" data-ex="${c.id}">✕</button></div>`).join('')}
@@ -2624,6 +2645,8 @@ document.addEventListener('click', async e => {
     case 'admwtog': ADM.open = ADM.open === b.dataset.id ? null : b.dataset.id; render(); break;
     case 'theme': { const id = b.dataset.id; if (!THEMES[id] || S.set.theme === id) break; S.set.theme = id; S.setU = now(); dirty.set = true; commit(); render(); vib(8); toast(`Vzhled: ${THEMES[id].n}`); break; }
     case 'report': reportSheet(); break;
+    case 'donqr': donateSheet(); break;
+    case 'copyacc': navigator.clipboard?.writeText(DONATE.acc).then(() => toast('Číslo účtu zkopírováno')).catch(() => toast(DONATE.acc)); break;
     case 'tour': openTour(); break;
     case 'tourno': S.set.tourSeen = true; S.setU = now(); dirty.set = true; commit(); render(); toast('Průvodce najdeš v Nastavení'); break;
     case 'repkind': REP.text = $('#rep-t') ? $('#rep-t').value : REP.text; REP.kind = b.dataset.k; reportSheet(); break;
