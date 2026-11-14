@@ -2324,6 +2324,22 @@ addEventListener('offline', () => { if (S) syncStatus('off'); });
 // Bez přibližování dvěma prsty: Android to řídí viewport (user-scalable=no), iOS ho ignoruje, proto se gesto ruší tady
 for (const ev of ['gesturestart', 'gesturechange', 'gestureend']) document.addEventListener(ev, e => e.preventDefault(), { passive: false });
 document.addEventListener('touchmove', e => { if (e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, { passive: false });
+// Pojistka proti přiblížení dvojitým klepnutím (iOS občas ignoruje touch-action, typicky u spodní lišty):
+// druhé klepnutí do 350 ms nepustíme k prohlížeči a klik vyvoláme sami – rychlé klepání tak dál funguje
+let lastTap = 0, tapStart = null;
+document.addEventListener('touchstart', e => { const p = e.touches[0]; tapStart = e.touches.length === 1 ? { x: p.clientX, y: p.clientY, t: e.timeStamp } : null; }, { passive: true });
+document.addEventListener('touchend', e => {
+  const p = e.changedTouches[0], st = tapStart; tapStart = null;
+  // jen opravdové klepnutí (bez posunu prstu), ne konec swipu při scrollování
+  const isTap = st && p && Math.hypot(p.clientX - st.x, p.clientY - st.y) < 10 && e.timeStamp - st.t < 300;
+  if (!isTap) { lastTap = 0; return; }
+  const el = e.target;
+  if (e.timeStamp - lastTap < 350 && !(el.closest && el.closest('input,textarea,select,[contenteditable],.cmp'))) {
+    e.preventDefault();
+    el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window, clientX: p.clientX, clientY: p.clientY }));
+  }
+  lastTap = e.timeStamp;
+}, { passive: false });
 
 /* ═══════════════════════════════════════════════════════════════
    PŘIHLÁŠENÍ
