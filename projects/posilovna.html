@@ -294,6 +294,30 @@ svg.fig .pul{fill:#050505;stroke:#6a6a6a;stroke-width:2}
 
 /* charts */
 .chart{position:relative;width:100%;touch-action:pan-y}
+.chart .bar{fill:var(--neon-d)}.chart .bar.now{fill:var(--neon)}.chart .hov{fill:rgba(255,255,255,.04)}
+.adm-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:-6px 0 14px;font-size:11px}
+.stats .v small.live-dot{font-family:var(--mono);font-size:10px;color:#050505;background:var(--neon);border-radius:99px;padding:1px 6px;margin-left:6px;vertical-align:middle;box-shadow:0 0 10px rgba(57,255,136,.6)}
+.adm-u,.adm-p{display:flex;align-items:center;gap:12px;width:100%;text-align:left}
+.adm-u{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.adm-u:active{border-color:var(--neon-d)}
+.adm-p{padding:9px 0;border-bottom:1px solid var(--line)}.adm-p:last-of-type{border-bottom:0}
+.adm-av{width:34px;height:34px;flex:none;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-weight:600;color:var(--neon);border:1px solid var(--neon-d);background:var(--neon-g)}
+.adm-av.live{border-color:var(--neon);box-shadow:0 0 12px rgba(57,255,136,.55)}
+.adm-n{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.adm-n b{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.adm-n>span{font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+.adm-n em{font-style:normal;color:var(--neon)}
+.spk{width:60px;height:20px;flex:none;display:block}.spk .on{fill:var(--neon-d)}.spk .now{fill:var(--neon)}.spk .off{fill:var(--line2)}
+.adm-ch{font-family:var(--mono);font-size:12px;min-width:56px;text-align:right;color:var(--muted)}
+.adm-ch.up{color:var(--text)}.adm-ch.up::before{content:'▲ ';color:var(--neon);font-size:9px}
+.adm-ch.down{color:var(--text)}.adm-ch.down::before{content:'▼ ';color:#ff4d6d;font-size:9px}
+.hb{display:flex;flex-direction:column;gap:12px}
+.hb-r{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:5px 10px}
+.hb-l{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hb-v i{font-style:normal;color:var(--muted2)}
+.hb-t{grid-column:1/-1;height:6px;background:var(--panel2);border-radius:3px;overflow:hidden}.hb-t span{display:block;height:100%;background:var(--neon-d);border-radius:4px}
+.hb-r:first-child .hb-t span{background:var(--neon)}
+.hb-v{font-family:var(--mono);font-size:11px;color:var(--muted);text-align:right}
 .chart svg{display:block;width:100%}
 .chart .ax{font-family:var(--mono);font-size:10px;fill:var(--muted2)}
 .chart .grid{stroke:#191919;stroke-width:1}
@@ -399,6 +423,7 @@ textarea{min-height:120px;font-family:var(--mono);font-size:12px}
   <header class="top">
     <div class="brand"><b>POSILOVNA</b><span class="cursor">_</span></div>
     <div class="sync" id="sync"><span class="dot" id="sync-dot"></span><span id="sync-t">—</span></div>
+    <button class="icon-btn hidden" id="btn-adm" aria-label="Přehled uživatelů"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></button>
     <button class="icon-btn" id="btn-set" aria-label="Nastavení"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
   </header>
   <main id="main"></main>
@@ -819,7 +844,7 @@ function subscribe() {
     unsubs.push(userDoc().collection(COLLS[k]).onSnapshot(q => { S[k] = S[k] || []; applyChanges(q, S[k], dirty[k]); rk(); if (loaded && !q.metadata.hasPendingWrites) safeRender(); }, onErr));
   }
 }
-async function afterLoad() { showApp(); await migrateLocal(); }
+async function afterLoad() { showApp(); checkAdmin(); await migrateLocal(); }
 
 /* ── Fotky: náhled (~20 kB) je v kolekci photos, plná fotka v photoData/{id} a načítá se až při otevření ── */
 const photoCache = new Map();
@@ -1206,11 +1231,212 @@ function weekBars(vals, labels) {
 function render() {
   $$('nav button').forEach(b => b.classList.toggle('on', b.dataset.view === view));
   $('#btn-set').classList.toggle('on', view === 'set');
+  $('#btn-adm').classList.toggle('on', view === 'admin');
+  if (view === 'admin' && !IS_ADMIN) view = 'train';
+  if (view === 'admin' && !ADM.users && !ADM.loading && !ADM.err) { loadAdmin(); return; }
   const m = $('#main');
-  m.innerHTML = ({ train: vTrain, lib: vLib, hist: vHist, prog: vProg, body: vBody, set: vSet })[view]();
+  m.innerHTML = ({ train: vTrain, lib: vLib, hist: vHist, prog: vProg, body: vBody, set: vSet, admin: vAdmin })[view]();
+  if (view === 'admin') mountAdmin();
   if (view === 'prog') mountProg();
   if (view === 'body') mountBody();
   if (view === 'train') tickTimers();
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SPRÁVCE – přehled, jak cvičí ostatní (jen čtení)
+   Přístup hlídají pravidla: správce má dokument admins/{uid} založený ve Firebase konzoli.
+   Vidí profil, tréninky a vlastní cviky – fotky, poznámky ke cvikům ani tělesnou váhu ne.
+   ═══════════════════════════════════════════════════════════════ */
+let IS_ADMIN = false;
+const ADM = { at: 0, users: null, loading: false, err: '', sel: null, open: null };
+async function checkAdmin() {
+  try { IS_ADMIN = !!(USER && db && (await db.collection('admins').doc(USER.uid).get()).exists); } catch { IS_ADMIN = false; }
+  $('#btn-adm').classList.toggle('hidden', !IS_ADMIN);
+}
+async function loadAdmin() {
+  if (!IS_ADMIN || ADM.loading) return;
+  ADM.loading = true; ADM.err = ''; if (view === 'admin') render();
+  try {
+    const us = await db.collection('users').get({ source: navigator.onLine ? 'server' : 'default' });
+    ADM.users = await Promise.all(us.docs.map(async d => {
+      const v = d.data();
+      const [w, cx] = await Promise.all([d.ref.collection('workouts').get(), d.ref.collection('cx').get()]);
+      return {
+        uid: d.id, name: v.name || v.username || 'Bez jména', username: v.username || '', created: v.created || 0,
+        goal: (v.set && v.set.goal) || 3,
+        w: w.docs.map(x => x.data()).filter(x => !x.del && Array.isArray(x.it)),
+        cx: cx.docs.map(x => x.data()).filter(x => !x.del),
+      };
+    }));
+    ADM.at = now();
+  } catch (e) { ADM.err = fbErr(e); }
+  ADM.loading = false;
+  if (view === 'admin') render();
+}
+const admEx = (u, id) => EX.find(e => e.id === id) || u.cx.find(c => c.id === id) || { id, n: 'Neznámý cvik', g: 'Core', eq: 'bw', unit: '' };
+const tOf = w => new Date(w.d).getTime();
+// počty po týdnech (nejstarší → tento týden)
+function weekCounts(ws, n, val = () => 1) {
+  const w0 = startOfWeek(now()), out = Array(n).fill(0);
+  for (const w of ws) { const k = Math.round((w0 - startOfWeek(tOf(w))) / (7 * DAY)); if (k >= 0 && k < n) out[n - 1 - k] += val(w); }
+  return out;
+}
+const wSets = w => w.it.reduce((a, it) => a + doneSets(it).length, 0);
+const wVol = w => w.it.reduce((a, it) => a + doneSets(it).reduce((b, s) => b + s.w * s.r, 0), 0);
+function admStats(u) {
+  if (u._st && u._st.at === ADM.at) return u._st;
+  const ws = u.w.filter(w => !w.open).sort((a, b) => b.d.localeCompare(a.d));
+  const t30 = now() - 30 * DAY, d30 = ws.filter(w => tOf(w) >= t30);
+  const weeks = weekCounts(ws, 12);
+  const rpes = d30.map(w => w.rpe).filter(Boolean);
+  // týdny v řadě se splněným cílem (aktuální týden se počítá, jen když už je splněný)
+  let streak = 0; for (let i = weeks.length - 2 + (weeks[11] >= u.goal ? 1 : 0); i >= 0 && weeks[i] >= u.goal; i--) streak++;
+  return u._st = {
+    at: ADM.at, ws, d30, weeks, streak,
+    last: ws[0] ? tOf(ws[0]) : 0,
+    live: u.w.some(w => w.open && now() - tOf(w) < 4 * 3600e3),
+    sets30: d30.reduce((a, w) => a + wSets(w), 0), vol30: d30.reduce((a, w) => a + wVol(w), 0),
+    perWeek: weeks.slice(-9, -1).reduce((a, b) => a + b, 0) / 8,
+    rpe: rpes.length ? rpes.reduce((a, b) => a + b, 0) / rpes.length : null,
+  };
+}
+const ago = t => { if (!t) return 'zatím nic'; const d = Math.floor((startOfDay(now()) - startOfDay(t)) / DAY); return d <= 0 ? 'dnes' : d === 1 ? 'včera' : d < 7 ? `před ${d} dny` : d < 60 ? `před ${Math.round(d / 7)} týd.` : dShort(t); };
+const fmtVol = v => v >= 10000 ? fmt(v / 1000, 1) + ' t' : fmtInt(v) + ' kg';
+const weekLabels = n => Array.from({ length: n }, (_, i) => { const t = startOfWeek(now()) - (n - 1 - i) * 7 * DAY; return i === n - 1 ? 'tento týden' : `týden od ${dShort(t)}`; });
+
+// Sloupcový graf (jedna řada, žádná legenda – název nese nadpis), tooltip na dotyk i myš
+function colChart(el, vals, labels, unitFn) {
+  const W = Math.max(280, el.clientWidth || 340), H = 150, m = { l: 28, r: 6, t: 10, b: 22 };
+  const mx = Math.max(1, ...vals), step = niceStep(mx / 3), top = Math.ceil(mx / step) * step;
+  const bw = (W - m.l - m.r) / vals.length, Y = v => H - m.b - v / top * (H - m.t - m.b);
+  let g = '';
+  for (let v = 0; v <= top + 1e-9; v += step) g += `<line class="grid" x1="${m.l}" x2="${W - m.r}" y1="${Y(v)}" y2="${Y(v)}"/><text class="ax" x="${m.l - 6}" y="${Y(v) + 3}" text-anchor="end">${fmt(v, 1)}</text>`;
+  const bars = vals.map((v, i) => {
+    if (!(v > 0)) return '';
+    const x = m.l + i * bw + 2, w = Math.max(2, bw - 4), y = Y(v), r = Math.min(4, w / 2, (H - m.b - y));
+    return `<path class="bar${i === vals.length - 1 ? ' now' : ''}" d="M${x},${H - m.b}V${y + r}a${r},${r} 0 0 1 ${r},-${r}h${w - 2 * r}a${r},${r} 0 0 1 ${r},${r}V${H - m.b}Z"/>`;
+  }).join('');
+  g += `<text class="ax" x="${m.l + 2}" y="${H - 6}">${labels[0].replace('týden od ', '')}</text><text class="ax" x="${W - m.r}" y="${H - 6}" text-anchor="end">teď</text>`;
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" height="${H}">${g}${bars}<rect class="hov" y="${m.t}" height="${H - m.t - m.b}" style="display:none"/></svg><div class="tt hidden"></div>`;
+  const svg = $('svg', el), tt = $('.tt', el), hov = $('.hov', el);
+  const show = ev => {
+    const r = svg.getBoundingClientRect(), mxp = (ev.clientX - r.left) / r.width * W;
+    const i = Math.min(vals.length - 1, Math.max(0, Math.floor((mxp - m.l) / bw)));
+    hov.setAttribute('x', m.l + i * bw); hov.setAttribute('width', bw); hov.style.display = '';
+    tt.innerHTML = `<b>${unitFn(vals[i])}</b><span>${labels[i]}</span>`; tt.classList.remove('hidden');
+    const px = (m.l + (i + .5) * bw) / W * r.width; tt.style.left = Math.min(Math.max(px, 70), r.width - 70) + 'px'; tt.style.top = (Y(vals[i]) / H * r.height) + 'px';
+  };
+  const hide = () => { tt.classList.add('hidden'); hov.style.display = 'none'; };
+  svg.addEventListener('pointermove', show); svg.addEventListener('pointerdown', show); svg.addEventListener('pointerleave', hide);
+}
+// Vodorovné pruhy: popisek, pruh, hodnota (text v barvě textu, pruh nese velikost)
+const hbars = (rows, fmtV) => { const mx = Math.max(1, ...rows.map(r => r.v)); return `<div class="hb">${rows.map(r => `<div class="hb-r"><span class="hb-l">${esc(r.l)}</span><span class="hb-v">${fmtV(r.v)}${r.s ? `<i> · ${esc(r.s)}</i>` : ''}</span><span class="hb-t"><span style="width:${Math.max(2, r.v / mx * 100).toFixed(1)}%"></span></span></div>`).join('')}</div>`; };
+// Malý průběh po týdnech v řádku uživatele
+const sparkBars = vals => { const mx = Math.max(1, ...vals), W = 60, H = 18, bw = W / vals.length; return `<svg class="spk" viewBox="0 0 ${W} ${H}" aria-hidden="true">${vals.map((v, i) => `<rect x="${(i * bw + .6).toFixed(1)}" y="${(H - Math.max(v ? 2 : 1, v / mx * H)).toFixed(1)}" width="${(bw - 1.2).toFixed(1)}" height="${Math.max(v ? 2 : 1, v / mx * H).toFixed(1)}" rx="1" class="${v ? (i === vals.length - 1 ? 'now' : 'on') : 'off'}"/>`).join('')}</svg>`; };
+const sparkLine = ys => { if (ys.length < 2) return ''; const W = 64, H = 20, a = Math.min(...ys), b = Math.max(...ys), r = b - a || 1; const p = ys.map((y, i) => `${(i / (ys.length - 1) * (W - 4) + 2).toFixed(1)},${(H - 2 - (y - a) / r * (H - 4)).toFixed(1)}`); return `<svg class="spk" viewBox="0 0 ${W} ${H}" aria-hidden="true"><polyline points="${p.join(' ')}" fill="none" stroke="var(--neon)" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${p[p.length - 1].split(',')[0]}" cy="${p[p.length - 1].split(',')[1]}" r="2.2" fill="var(--neon)"/></svg>`; };
+
+function vAdmin() {
+  if (ADM.sel) { const u = (ADM.users || []).find(x => x.uid === ADM.sel); if (u) return vAdminUser(u); ADM.sel = null; }
+  const head = `<div class="kicker">Správce</div><h1 class="title">Přehled<span class="d">.</span></h1>
+    <div class="adm-bar"><span class="mono muted">${ADM.loading ? 'Načítám…' : ADM.at ? `Aktualizováno ${new Date(ADM.at).toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' })}` : ''}</span><button class="btn sm ghost" data-act="admreload" ${ADM.loading ? 'disabled' : ''}>↻ Obnovit</button></div>`;
+  if (ADM.err) return head + `<div class="err-msg">${esc(ADM.err)}</div><p class="note">Zkontroluj, že jsou ve Firebase publikovaná nová pravidla (Nastavení → Pro správce).</p>`;
+  if (!ADM.users) return head + `<div class="empty">Načítám uživatele…</div>`;
+  const us = ADM.users.map(u => ({ u, st: admStats(u) }));
+  const all = us.flatMap(x => x.st.ws), t7 = now() - 7 * DAY;
+  const active7 = us.filter(x => x.st.last >= t7 || x.st.live).length, live = us.filter(x => x.st.live).length;
+  const w30 = us.reduce((a, x) => a + x.st.d30.length, 0), s30 = us.reduce((a, x) => a + x.st.sets30, 0), v30 = us.reduce((a, x) => a + x.st.vol30, 0);
+  const act = us.filter(x => x.st.d30.length), perW = act.length ? act.reduce((a, x) => a + x.st.d30.length, 0) / act.length / (30 / 7) : 0;
+  // oblíbené cviky a partie za 30 dní (počet sérií, u cviků i kolik lidí ho dělá)
+  const exMap = new Map(), gMap = new Map();
+  for (const { u, st } of us) for (const w of st.d30) for (const it of w.it) {
+    const n = doneSets(it).length; if (!n) continue;
+    const ex = admEx(u, it.ex), k = ex.n, o = exMap.get(k) || { v: 0, who: new Set() };
+    o.v += n; o.who.add(u.uid); exMap.set(k, o); gMap.set(ex.g, (gMap.get(ex.g) || 0) + n);
+  }
+  const topEx = [...exMap].sort((a, b) => b[1].v - a[1].v).slice(0, 8).map(([l, o]) => ({ l, v: o.v, s: pl(o.who.size, 'člověk', 'lidé', 'lidí') }));
+  const groups = [...gMap].sort((a, b) => b[1] - a[1]).map(([l, v]) => ({ l, v }));
+  const rows = us.sort((a, b) => (b.st.live - a.st.live) || (b.st.last - a.st.last)).map(({ u, st }) => `
+    <button class="adm-u" data-act="admuser" data-uid="${esc(u.uid)}">
+      <span class="adm-av${st.live ? ' live' : ''}">${esc((u.name[0] || '?').toUpperCase())}</span>
+      <span class="adm-n"><b>${esc(u.name)}${u.uid === USER.uid ? ' <i class="muted">(ty)</i>' : ''}</b><span>${st.live ? '<em>právě cvičí</em>' : esc(ago(st.last))} · ${st.d30.length}× za 30 dní</span></span>
+      ${sparkBars(st.weeks)}<span class="mono muted" style="font-size:12px">›</span>
+    </button>`).join('');
+  return head + `
+    <div class="stats">
+      <div class="stat"><div class="v">${ADM.users.length}</div><div class="l">uživatelé</div></div>
+      <div class="stat"><div class="v">${active7}${live ? `<small class="live-dot" title="právě cvičí">${live}</small>` : ''}</div><div class="l">aktivní 7 d</div></div>
+      <div class="stat"><div class="v">${w30}</div><div class="l">tréninky 30 d</div></div>
+      <div class="stat"><div class="v">${fmtInt(s30)}</div><div class="l">série 30 d</div></div>
+      <div class="stat"><div class="v">${v30 >= 10000 ? fmt(v30 / 1000, 1) + 't' : fmtInt(v30)}</div><div class="l">objem 30 d</div></div>
+      <div class="stat"><div class="v">${fmt(perW, 1)}</div><div class="l">Ø tréninků / týden</div></div>
+    </div>
+    <h2 class="sec">Tréninky po týdnech</h2>
+    <div class="card"><div class="chart" id="adm-weeks"></div><p class="note" style="margin-top:6px">Všichni uživatelé dohromady, posledních 12 týdnů. Klepni na sloupec pro detail.</p></div>
+    <h2 class="sec">Uživatelé</h2>
+    <div class="stack">${rows || '<div class="empty">Zatím nikdo.</div>'}</div>
+    <h2 class="sec">Nejčastější cviky · 30 dní</h2>
+    <div class="card">${topEx.length ? hbars(topEx, v => pl(v, 'série', 'série', 'sérií')) : '<div class="empty">Za posledních 30 dní nic.</div>'}</div>
+    <h2 class="sec">Partie · 30 dní</h2>
+    <div class="card">${groups.length ? hbars(groups, v => fmtInt(v) + ' s.') : '<div class="empty">Za posledních 30 dní nic.</div>'}<p class="note" style="margin-top:8px">Počet odcvičených sérií podle partie.</p></div>
+    <p class="note" style="margin-top:18px">Vidíš jen tréninky a vlastní cviky. Fotky, poznámky ke cvikům a tělesnou váhu pravidla správci nezpřístupní.</p>`;
+}
+function vAdminUser(u) {
+  const st = admStats(u);
+  // progres cviků: nejčastější cviky, odhad 1RM z každého tréninku (nejstarší → nejnovější)
+  const per = new Map();
+  for (const w of [...st.ws].reverse()) for (const it of w.it) {
+    const ds = doneSets(it); if (!ds.length) continue;
+    const ex = admEx(u, it.ex); if (!per.has(ex.id)) per.set(ex.id, { ex, ses: [] });
+    per.get(ex.id).ses.push({ d: w.d, sets: ds, e1: Math.max(0, ...ds.map(e1rm)), best: ds.reduce((a, s) => (s.w > a.w || (s.w === a.w && s.r > a.r)) ? s : a, ds[0]) });
+  }
+  const prog = [...per.values()].sort((a, b) => b.ses.length - a.ses.length).slice(0, 8).map(({ ex, ses }) => {
+    const l = ses[ses.length - 1], w8 = ses.filter(x => tOf(x) >= now() - 56 * DAY), f = w8[0] || ses[0];
+    const ch = f.e1 > 0 && l.e1 > 0 && ses.length > 1 ? (l.e1 / f.e1 - 1) * 100 : null;
+    const best = l.best, u2 = ex.unit === 's' ? ' s' : ex.unit === 'm' ? ' m' : '';
+    return `<div class="adm-p"><span class="adm-n"><b>${esc(ex.n)}</b><span>${pl(ses.length, 'trénink', 'tréninky', 'tréninků')} · naposledy ${best.w > 0 ? fmt(best.w, 2) + ' kg × ' : ''}${best.r}${u2}</span></span>
+      ${sparkLine(ses.slice(-10).map(x => x.e1 || x.best.r))}
+      <span class="adm-ch ${ch == null ? '' : ch >= 0.5 ? 'up' : ch <= -0.5 ? 'down' : ''}">${ch == null ? '–' : (ch > 0 ? '+' : '') + fmt(ch, 1) + ' %'}</span></div>`;
+  }).join('');
+  const recent = st.ws.slice(0, 12).map(w => {
+    const exs = w.it.filter(i => doneSets(i).length), t = new Date(w.d), open = ADM.open === w.id;
+    const groups = [...new Set(exs.map(i => admEx(u, i.ex).g))].join(' · ');
+    const dur = w.end ? Math.round((w.end - tOf(w)) / 60000) : null;
+    return `<div class="hist-it"><button data-act="admwtog" data-id="${esc(w.id)}">
+      <div class="dt"><b>${t.getDate()}</b><span>${t.toLocaleDateString('cs-CZ', { month: 'short' })}</span></div>
+      <div class="sm"><b>${esc(groups || 'Bez cviků')}</b><span>${pl(exs.length, 'cvik', 'cviky', 'cviků')} · ${pl(wSets(w), 'série', 'série', 'sérií')} · ${fmtInt(wVol(w))} kg${dur && dur > 0 && dur < 600 ? ` · ${dur} min` : ''}${w.rpe ? ` · <span style="color:${rpeColor(w.rpe)}">RPE ${w.rpe}</span>` : ''}</span></div>
+      <span class="mono muted" style="font-size:12px">${open ? '−' : '+'}</span></button>
+      ${open ? `<div class="hist-body">${exs.map(i => { const ex = admEx(u, i.ex); return `<div class="hist-ex"><b>${esc(ex.n)}</b><div>${doneSets(i).map(s => `${s.w > 0 ? fmt(s.w, 2) + ' kg × ' : ''}${s.r}${ex.unit ? ' ' + ex.unit : ''}${s.q != null && diffOf(s.q) ? ` <span class="dq" style="--dc:${diffOf(s.q).c}">${diffOf(s.q).l}</span>` : ''}`).join('<br>')}</div></div>`; }).join('')}</div>` : ''}</div>`;
+  }).join('');
+  return `<button class="btn ghost sm" data-act="admback" style="margin-bottom:10px">← Všichni uživatelé</button>
+    <div class="kicker">${st.live ? 'Právě cvičí' : 'Uživatel'}</div><h1 class="title">${esc(u.name)}<span class="d">.</span></h1>
+    <p class="mono muted" style="font-size:11px;margin:-4px 0 14px">${u.username ? '@' + esc(u.username) + ' · ' : ''}${u.created ? 'od ' + new Date(u.created).toLocaleDateString('cs-CZ') + ' · ' : ''}naposledy ${esc(ago(st.last))}</p>
+    <div class="stats">
+      <div class="stat"><div class="v">${st.ws.length}</div><div class="l">tréninky celkem</div></div>
+      <div class="stat"><div class="v">${st.d30.length}</div><div class="l">tréninky 30 d</div></div>
+      <div class="stat"><div class="v">${fmt(st.perWeek, 1)}</div><div class="l">Ø / týden (8 t.)</div></div>
+      <div class="stat"><div class="v">${fmtInt(st.sets30)}</div><div class="l">série 30 d</div></div>
+      <div class="stat"><div class="v">${st.vol30 >= 10000 ? fmt(st.vol30 / 1000, 1) + 't' : fmtInt(st.vol30)}</div><div class="l">objem 30 d</div></div>
+      <div class="stat"><div class="v">${st.rpe ? fmt(st.rpe, 1) : '–'}</div><div class="l">Ø RPE 30 d</div></div>
+    </div>
+    <p class="note" style="margin-top:8px">Týdenní cíl ${pl(u.goal, 'trénink', 'tréninky', 'tréninků')}${st.streak ? ` · splněný ${pl(st.streak, 'týden', 'týdny', 'týdnů')} v řadě` : ''}.</p>
+    <h2 class="sec">Tréninky po týdnech</h2>
+    <div class="card"><div class="chart" id="adm-uweeks"></div></div>
+    <h2 class="sec">Progres cviků</h2>
+    <div class="card">${prog || '<div class="empty">Zatím žádné série.</div>'}<p class="note" style="margin-top:8px">Křivka = odhad maxima (1RM) za posledních 10 tréninků. Procenta = změna za posledních 8 týdnů.</p></div>
+    <h2 class="sec">Poslední tréninky</h2>
+    <div class="stack">${recent || '<div class="empty">Zatím žádný trénink.</div>'}</div>`;
+}
+function mountAdmin() {
+  const lab = weekLabels(12);
+  if (!ADM.users) return;
+  if (ADM.sel) {
+    const u = ADM.users.find(x => x.uid === ADM.sel), el = $('#adm-uweeks');
+    if (u && el) colChart(el, admStats(u).weeks, lab, v => pl(v, 'trénink', 'tréninky', 'tréninků'));
+    return;
+  }
+  const el = $('#adm-weeks'); if (!el) return;
+  const tot = Array(12).fill(0); ADM.users.forEach(u => admStats(u).weeks.forEach((v, i) => tot[i] += v));
+  colChart(el, tot, lab, v => pl(v, 'trénink', 'tréninky', 'tréninků'));
 }
 
 function weekStats() {
@@ -1697,6 +1923,9 @@ function vSet() {
       ${ui.syncMsg ? `<div class="err-msg" style="margin:0">${esc(ui.syncMsg)}</div>` : ''}
       <div class="row"><button class="btn sm wide" data-act="pwreset">Změnit heslo e-mailem</button><button class="btn sm danger wide" data-act="logout">Odhlásit</button></div>
       <p class="note">Data se ukládají do tvého účtu a fungují i bez signálu – odešlou se, jakmile budeš online. Zařízení si přihlášení pamatuje.</p>
+      <p class="note">Správce aplikace vidí tvé tréninky (cviky, série, váhy) kvůli celkovému přehledu. Fotky, poznámky ke cvikům ani tělesnou váhu nevidí.</p>
+      <div class="row"><span class="mono muted" style="font-size:10.5px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">ID účtu: ${esc(USER.uid)}</span><button class="btn sm ghost" data-act="copyuid">Kopírovat</button></div>
+      ${IS_ADMIN ? '<button class="btn sm wide" data-view="admin">Přehled uživatelů (správce)</button>' : ''}
     </div>
     <h2 class="sec">Trénink</h2>
     <div class="card stack">
@@ -1934,6 +2163,11 @@ document.addEventListener('click', async e => {
     case 'libg': ui.libGroup = b.dataset.g; render(); break;
     case 'toprog': ui.progEx = b.dataset.ex; closeSheet(); view = 'prog'; render(); scrollTo(0, 0); break;
     case 'metric': ui.progMetric = b.dataset.m; render(); break;
+    case 'admuser': ADM.sel = b.dataset.uid; ADM.open = null; render(); scrollTo(0, 0); break;
+    case 'admback': ADM.sel = null; render(); scrollTo(0, 0); break;
+    case 'admreload': loadAdmin(); break;
+    case 'admwtog': ADM.open = ADM.open === b.dataset.id ? null : b.dataset.id; render(); break;
+    case 'copyuid': navigator.clipboard?.writeText(USER.uid).then(() => toast('ID účtu zkopírováno')).catch(() => {}); break;
     case 'histtog': ui.histOpen = ui.histOpen === b.dataset.id ? null : b.dataset.id; render(); break;
     case 'gohist': ui.histOpen = b.dataset.id; view = 'hist'; render(); break;
     case 'delw': { const x = S.w.find(x => x.id === b.dataset.id); if (x) { x.del = true; touch(x); commit(true); toast('Trénink smazán', 6000, () => { x.del = false; touch(x); commit(true); }); } break; }
@@ -2016,6 +2250,7 @@ document.addEventListener('change', async e => {
   e.target.value = '';
 });
 $('#btn-set').addEventListener('click', () => { view = view === 'set' ? 'train' : 'set'; render(); scrollTo(0, 0); });
+$('#btn-adm').addEventListener('click', () => { if (view === 'admin' && !ADM.sel) view = 'train'; else { view = 'admin'; ADM.sel = null; if (!ADM.users || now() - ADM.at > 5 * 60e3) loadAdmin(); } render(); scrollTo(0, 0); });
 $('#sheet-bg').addEventListener('click', closeSheet);
 let sy0 = null;
 $('#sheet').addEventListener('touchstart', e => { sy0 = $('#sheet').scrollTop <= 0 ? e.touches[0].clientY : null; }, { passive: true });
@@ -2045,8 +2280,26 @@ addEventListener('offline', () => { if (S) syncStatus('off'); });
 const RULES = `rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // správce = dokument admins/{uid}, který jde založit jen ve Firebase konzoli
+    function isAdmin() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
     match /users/{uid}/{document=**} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+    // správce čte jen profil, tréninky a vlastní cviky – fotky, poznámky ani váhu ne
+    match /users/{uid} {
+      allow read: if isAdmin();
+    }
+    match /users/{uid}/workouts/{id} {
+      allow read: if isAdmin();
+    }
+    match /users/{uid}/cx/{id} {
+      allow read: if isAdmin();
+    }
+    match /admins/{uid} {
+      allow get: if request.auth != null && request.auth.uid == uid;
     }
     match /usernames/{name} {
       allow get: if true;
@@ -2080,6 +2333,7 @@ function authHtml(msg = '', ok = '') {
       <div class="field"><label for="a-pw">Heslo</label><input id="a-pw" name="password" type="password" autocomplete="new-password" minlength="6" placeholder="aspoň 6 znaků" required></div>
       <div class="field"><label for="a-pw2">Heslo znovu</label><input id="a-pw2" type="password" autocomplete="new-password" minlength="6" required></div>
       <button class="btn p big wide" type="submit">Vytvořit účet</button>${err}
+      <p class="note" style="margin-top:10px">Správce aplikace uvidí tvé tréninky kvůli celkovému přehledu. Fotky, poznámky a tělesnou váhu ne.</p>
       <div class="auth-links"><button type="button" class="btn ghost sm" data-auth="login">← Mám účet</button></div>
     </form>`;
   if (authMode === 'reset') return `<form id="auth-form" data-mode="reset" autocomplete="on">
@@ -2169,7 +2423,7 @@ document.addEventListener('submit', async e => {
   auth.onAuthStateChanged(u => {
     unsubs.forEach(f => f()); unsubs = [];
     if (u) { USER = u; S = blank(); subscribe(); }
-    else { USER = null; PROFILE = null; S = null; closeSheet(); restEnd = 0; authMode = 'login'; showLock(); }
+    else { USER = null; PROFILE = null; S = null; IS_ADMIN = false; ADM.users = null; ADM.sel = null; $('#btn-adm').classList.add('hidden'); closeSheet(); restEnd = 0; authMode = 'login'; showLock(); }
   });
 })();
 </script>
