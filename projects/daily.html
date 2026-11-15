@@ -300,10 +300,12 @@ function save() { if (DEMO) return; if (!LS.set(K, JSON.stringify(DB))) toast('�
 function put(b, id, rec) { rec.u = Date.now(); (DB.b[b] ??= {})[id] = rec; (DB.dirty[b] ??= {})[id] = 1; save(); schedulePush(); }
 const live = b => Object.entries(DB.b[b] || {}).filter(([, r]) => !r.x).map(([id, r]) => ({ ...r, id }));
 const cfg = pre => live('cfg').filter(r => r.id.startsWith(pre));
-const dayOf = d => { const r = DB.b[d.slice(0, 7)]?.[d]; return r && !r.x ? r : null; };
+// den bez jediné hodnoty, priority a poznámky se bere jako nezapsaný (např. po přidání a vrácení zpět)
+const dayEmpty = r => !Object.values(r.v || {}).some(Boolean) && !(r.pri || []).some(p => p.t) && !r.note;
+const dayOf = d => { const r = DB.b[d.slice(0, 7)]?.[d]; return r && !r.x && !dayEmpty(r) ? r : null; };
 const blank = () => ({ v: {}, log: [] });
-function editDay(d, fn) { const r = clone(dayOf(d) || blank()); r.v ??= {}; r.log ??= []; delete r.x; fn(r); put(d.slice(0, 7), d, r); }
-const hasDays = () => Object.keys(DB.b).some(b => /^\d{4}-\d\d$/.test(b) && Object.values(DB.b[b]).some(r => !r.x));
+function editDay(d, fn) { const r = clone(dayOf(d) || blank()); r.v ??= {}; r.log ??= []; delete r.x; fn(r); const had = DB.b[d.slice(0, 7)]?.[d]; if (!dayEmpty(r)) put(d.slice(0, 7), d, r); else if (had && !had.x) put(d.slice(0, 7), d, { x: 1 }); }
+const hasDays = () => Object.keys(DB.b).some(b => /^\d{4}-\d\d$/.test(b) && Object.keys(DB.b[b]).some(dayOf));
 
 /* ─── metriky ─── */
 const DEF = [
