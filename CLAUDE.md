@@ -1,6 +1,16 @@
 # vladaweb
 
-Osobní rozcestník projektů na GitHub Pages, běží na vlastní doméně `vladacech.cz` (soubor `CNAME`; DNS je u Wedosu – záznamy A na GitHub Pages a `www` jako CNAME na `vladaczech.github.io`). Stará adresa `vladaczech.github.io/vladaweb` na doménu přesměruje. Odkazy v repu drž relativní. `index.html` je deck, `deck-data.json` jeho data, `projects/` jednotlivé stránky.
+Osobní rozcestník projektů na GitHub Pages, běží na vlastní doméně `vladacech.cz` (soubor `CNAME`; DNS je u Wedosu – záznamy A na GitHub Pages a `www` jako CNAME na `vladaczech.github.io`). Stará adresa `vladaczech.github.io/vladaweb` na doménu přesměruje. Odkazy v repu drž relativní. `index.html` je hlavní stránka (krátký popis webu + dlaždice sekcí), `aplikace.html` je deck za heslem, `deck-data.json` jeho data, `projects/` jednotlivé stránky.
+
+## Hlavní stránka a zámek sekce Aplikace
+
+Dlaždice „Aplikace“ na `index.html` se ptá na heslo; po správném zadání uloží otisk do `localStorage` (nebo `sessionStorage`, když se nemá pamatovat) pod klíčem `vw:apps` a pustí na `aplikace.html`. Ta má hned na začátku `<head>` zámek, který bez otisku vrátí na `./#aplikace` (hlavní stránka pak rovnou otevře okno s heslem).
+
+- Heslo v repu není čitelně, jen jeho otisk (PBKDF2-SHA256, sůl `vladacech.cz:aplikace:v1`, 310000 kol) – konstanta `APPS_HASH` v `index.html` a `H` v zámku v `aplikace.html`. Heslo nikdy nepiš do kódu, commitů ani sem. Při změně hesla přepiš obě konstanty:
+  `python3 -c "import hashlib,getpass;print(hashlib.pbkdf2_hmac('sha256',getpass.getpass().encode(),b'vladacech.cz:aplikace:v1',310000).hex())"`
+- Je to jen zámek proti náhodným návštěvníkům: repo je veřejné a stránky v `projects/` se dají otevřít přímým odkazem. Záměrně – Posilovnu používají i další lidé a aplikace přidané na plochu telefonu mají vlastní úložiště, takže zámek na jednotlivých projektech by je rozbil. Citlivá data chrání přihlášení (Firebase), ne tenhle zámek.
+- Další sekce = další `<a class="tile">` v `.tiles` na `index.html`.
+- Odkazy „zpět na rozcestník“ v projektech vedou na `../aplikace.html`.
 
 ## Deck se upravuje ze dvou míst
 
