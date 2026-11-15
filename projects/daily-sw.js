@@ -3,7 +3,7 @@
    • Ikony, manifest, fonty a Firebase SDK: uložená kopie, jinak síť.
    • Firestore a přihlášení jdou mimo – neodeslané změny si drží aplikace sama v localStorage.
    Při změně seznamu souborů zvyš VERSION. */
-const VERSION = 'daily-v1';
+const VERSION = 'daily-v2';
 const SHELL = ['./daily.html', './daily-icons/daily-180.png', './daily-icons/daily-192.png', './daily-icons/daily.webmanifest'];
 const CDN = [
   'https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js',

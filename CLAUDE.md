@@ -25,7 +25,7 @@ Hlášení (zatřesení telefonem / Nastavení → Zpětná vazba) se ukládají
 
 ## Daily (`projects/daily.html`)
 
-Osobní deník dne (voda, spánek, škály, návyky, priority) + auto (tankování, tachometr, výdaje, připomínky). Data jsou místně v `localStorage` (`daily:v1`); synchronizace je volitelná a používá účet z Posilovny (stejný Firebase projekt, `users/{uid}/daily/{koš}`) – stávající pravidla Firestore to pokrývají, správce tahle data nečte.
+Osobní deník dne (voda, škály, návyky, priority, poznámka; spánek ani váha tu nejsou – váha se zadává v Posilovně) + auto (tankování, tachometr, výdaje, připomínky). Data jsou místně v `localStorage` (`daily:v1`); synchronizace je volitelná a používá účet z Posilovny (stejný Firebase projekt, `users/{uid}/daily/{koš}`) – stávající pravidla Firestore to pokrývají, správce tahle data nečte.
 
 Koše: `cfg` (metriky `m:…`, auta `car:…`, připomínky `rem:…`), `car` (záznamy aut) a `RRRR-MM` (dny). Dokument má pole `r = { id: záznam }`; každý záznam nese `u` (čas změny, vyhrává novější) a smazání je `{ x: 1 }`. Výchozí metriky jsou v konstantě `DEF`, uživatelské úpravy je jen překrývají.
 

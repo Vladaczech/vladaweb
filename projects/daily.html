@@ -9,7 +9,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Daily">
-<meta name="description" content="Daily – osobní deník dne: pitný režim, spánek, návyky, auto a souvislosti mezi nimi.">
+<meta name="description" content="Daily – osobní deník dne: pitný režim, nálada, návyky, auto a souvislosti mezi nimi.">
 <link rel="apple-touch-icon" href="./daily-icons/daily-180.png">
 <link rel="icon" type="image/png" sizes="192x192" href="./daily-icons/daily-192.png">
 <link rel="manifest" href="./daily-icons/daily.webmanifest">
@@ -22,7 +22,7 @@
   --bg:#eef0ea;--card:#fbfcf9;--card2:#f1f3ed;--line:#dfe3da;--line2:#c8cfc3;
   --ink:#15201b;--ink2:#46534c;--mute:#778279;
   --acc:#1c6e52;--acc-ink:#fff;--acc-soft:rgba(28,110,82,.10);
-  --water:#2b7cd3;--sleep:#6756c9;--feel:#c27712;--body:#1c8f63;--focus:#0e8585;--car:#cc4d28;--limit:#ad4268;--bad:#c63a3a;--warn:#a96f08;
+  --water:#2b7cd3;--feel:#c27712;--body:#1c8f63;--focus:#0e8585;--car:#cc4d28;--limit:#ad4268;--bad:#c63a3a;--warn:#a96f08;
   --shadow:0 1px 2px rgba(20,32,27,.04),0 8px 24px rgba(20,32,27,.05);
   --serif:'Instrument Serif',Georgia,'Times New Roman',serif;--sans:'Geist',system-ui,-apple-system,'Segoe UI',sans-serif;--mono:'Geist Mono',ui-monospace,Menlo,monospace;
   --r:18px;--tab:62px;--ease:cubic-bezier(.2,.8,.2,1);
@@ -31,14 +31,14 @@
   --bg:#0d1210;--card:#151b18;--card2:#1b2320;--line:#232c28;--line2:#34403a;
   --ink:#e9eeea;--ink2:#b3beb7;--mute:#7f8c85;
   --acc:#62d6a4;--acc-ink:#06130d;--acc-soft:rgba(98,214,164,.12);
-  --water:#5aa8f5;--sleep:#9d8ff7;--feel:#f0aa45;--body:#55cf9c;--focus:#45c9c9;--car:#f5825c;--limit:#e87f9f;--bad:#f27474;--warn:#e9b04a;
+  --water:#5aa8f5;--feel:#f0aa45;--body:#55cf9c;--focus:#45c9c9;--car:#f5825c;--limit:#e87f9f;--bad:#f27474;--warn:#e9b04a;
   --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.22);
 }}
 :root[data-theme="dark"]{
   --bg:#0d1210;--card:#151b18;--card2:#1b2320;--line:#232c28;--line2:#34403a;
   --ink:#e9eeea;--ink2:#b3beb7;--mute:#7f8c85;
   --acc:#62d6a4;--acc-ink:#06130d;--acc-soft:rgba(98,214,164,.12);
-  --water:#5aa8f5;--sleep:#9d8ff7;--feel:#f0aa45;--body:#55cf9c;--focus:#45c9c9;--car:#f5825c;--limit:#e87f9f;--bad:#f27474;--warn:#e9b04a;
+  --water:#5aa8f5;--feel:#f0aa45;--body:#55cf9c;--focus:#45c9c9;--car:#f5825c;--limit:#e87f9f;--bad:#f27474;--warn:#e9b04a;
   --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.22);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -274,7 +274,6 @@ const MONS = ['led', 'úno', 'bře', 'dub', 'kvě', 'čvn', 'čvc', 'srp', 'zá�
 const fd = s => { const d = pd(s); return `${d.getDate()}. ${d.getMonth() + 1}.`; };
 const fdy = s => `${fd(s)} ${s.slice(0, 4)}`;
 const dni = n => { n = Math.abs(n); return n === 1 ? 'den' : n >= 2 && n <= 4 ? 'dny' : 'dní'; };
-const hm = h => { if (h == null) return '–'; let m = Math.round(h * 60); return `${Math.floor(m / 60)} h ${pad(m % 60)}`; };
 const mean = a => a.length ? a.reduce((s, x) => s + x, 0) / a.length : null;
 const std = a => { const m = mean(a); return a.length > 1 ? Math.sqrt(a.reduce((s, x) => s + (x - m) ** 2, 0) / (a.length - 1)) : 0; };
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -309,23 +308,16 @@ const hasDays = () => Object.keys(DB.b).some(b => /^\d{4}-\d\d$/.test(b) && Obje
 /* ─── metriky ─── */
 const DEF = [
   { id: 'water', n: 'Voda', t: 'sum', unit: 'ml', goal: 2500, steps: [200, 330, 500], g: 'water', on: 1 },
-  { id: 'sleep', n: 'Spánek', t: 'sleep', unit: 'h', goal: 8, g: 'sleep', on: 1 },
-  { id: 'sleepq', n: 'Kvalita spánku', t: 'scale', g: 'sleep', on: 1 },
   { id: 'mood', n: 'Nálada', t: 'scale', g: 'feel', on: 1 },
   { id: 'energy', n: 'Energie', t: 'scale', g: 'feel', on: 1 },
   { id: 'stress', n: 'Stres', t: 'scale', dir: -1, g: 'feel', on: 1 },
-  { id: 'weight', n: 'Váha', t: 'num', unit: 'kg', g: 'body', on: 1 },
-  { id: 'steps', n: 'Kroky', t: 'num', unit: 'kroků', goal: 8000, g: 'body', on: 1 },
-  { id: 'move', n: 'Pohyb', t: 'sum', unit: 'min', goal: 30, steps: [15, 30], g: 'body', on: 1 },
   { id: 'focus', n: 'Hluboká práce', t: 'sum', unit: 'min', goal: 120, steps: [25, 50], g: 'focus', on: 1 },
   { id: 'coffee', n: 'Káva', t: 'sum', unit: '×', goal: 3, dir: -1, steps: [1], g: 'limit', on: 1 },
   { id: 'alcohol', n: 'Alkohol', t: 'sum', unit: '×', goal: 0, dir: -1, steps: [1], g: 'limit', on: 0 },
-  { id: 'h_read', n: 'Čtení', t: 'check', g: 'habit', on: 1 },
+  { id: 'h_read', n: 'Čtení 15 minut', t: 'check', g: 'habit', on: 1 },
   { id: 'h_stretch', n: 'Protažení', t: 'check', g: 'habit', on: 1 },
-  { id: 'h_out', n: 'Venku na denním světle', t: 'check', g: 'habit', on: 1 },
-  { id: 'h_noscreen', n: 'Bez obrazovky před spaním', t: 'check', g: 'habit', on: 1 },
 ];
-const GRP = { water: 'water', sleep: 'sleep', feel: 'feel', body: 'body', focus: 'focus', limit: 'limit', habit: 'acc', own: 'acc' };
+const GRP = { water: 'water', feel: 'feel', focus: 'focus', limit: 'limit', habit: 'acc', own: 'acc' };
 const TYPES = { sum: 'Počítadlo (přičítám během dne)', num: 'Číslo (jedna hodnota za den)', scale: 'Škála 1–5', check: 'Návyk (ano / ne)' };
 const SCORE = { id: 'score', n: 'Skóre dne', t: 'score', unit: 'b.', g: 'habit' };
 function metrics(all) {
@@ -346,7 +338,7 @@ function score(d, r = dayOf(d)) {
   return n ? Math.round(s / n * 100) : null;
 }
 function mval(m, d) { const r = dayOf(d); if (!r) return null; if (m.id === 'score') return score(d, r); const v = r.v[m.id]; return m.t === 'check' ? (v ? 1 : 0) : m.t === 'sum' ? (v || 0) : (v ?? null); }
-function fmtV(m, v, short) { if (v == null) return '–'; if (m.t === 'sleep') return hm(v) + (short ? '' : ' min'); if (m.t === 'check') return nf(v * 100) + ' %'; if (m.t === 'scale') return nfx(v, 1); if (m.t === 'score') return nf(v); return `${nfx(v, m.id === 'weight' || v < 20 ? 1 : 0)} ${m.unit || ''}`.trim(); }
+function fmtV(m, v, short) { if (v == null) return '–'; if (m.t === 'check') return nf(v * 100) + ' %'; if (m.t === 'scale') return nfx(v, 1); if (m.t === 'score') return nf(v); return `${nfx(v, v < 20 ? 1 : 0)} ${m.unit || ''}`.trim(); }
 function streak(id, d) { let n = 0, c = dayOf(d)?.v[id] ? d : addD(d, -1); while (dayOf(c)?.v[id]) { n++; c = addD(c, -1); } return n; }
 
 /* ─── stav UI ─── */
@@ -382,13 +374,12 @@ function vToday() {
   let h = `<section class="hero"><div><div class="kick">${ago === 0 ? 'Dnes' : ago === 1 ? 'Včera' : `Před ${ago} dny`}</div><h1><span>${DOWL[dt.getDay()]}</span>${dt.getDate()}. ${MON[dt.getMonth()]}</h1></div>
     <div style="position:relative;display:grid;justify-items:center;padding-bottom:17px">${ring(score(d), 'day', 78, 3.4)}<small style="position:absolute;bottom:0;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);font-weight:600">skóre</small></div></section>
   <div class="week"><button class="nav" data-a="day" data-d="${addD(d, -7)}" aria-label="Předchozí týden">${ic('l', 18)}</button><div class="days" data-live="week">${[0, 1, 2, 3, 4, 5, 6].map(i => { const x = addD(wk, i), fut = x > T; return `<button class="wd${x === d ? ' on' : ''}${x === T ? ' tdy' : ''}" data-a="day" data-d="${x}" ${fut ? 'disabled' : ''} aria-label="${fdy(x)}">${DOW[pd(x).getDay()]}${ring(fut ? null : score(x), 'w' + x, 30, 4, pd(x).getDate())}</button>`; }).join('')}</div><button class="nav" data-a="day" data-d="${addD(d, 7) > T ? T : addD(d, 7)}" ${d === T ? 'disabled' : ''} aria-label="Další týden">${ic('r', 18)}</button></div>`;
-  if (!hasDays() && !DEMO) h += `<div class="card"><div class="lab" style="margin-bottom:8px">Vítej v Daily</div><p style="font-size:14px;color:var(--ink2)">Zapisuj den jedním klepnutím – voda, spánek, nálada, návyky. Daily z toho počítá skóre dne, trendy a souvislosti mezi nimi. Auto má vlastní záložku.</p><div class="row" style="margin-top:12px"><button class="btn sm" data-a="demo-on">Prohlédnout s ukázkovými daty</button></div></div>`;
+  if (!hasDays() && !DEMO) h += `<div class="card"><div class="lab" style="margin-bottom:8px">Vítej v Daily</div><p style="font-size:14px;color:var(--ink2)">Zapisuj den jedním klepnutím – voda, nálada, priority, návyky. Daily z toho počítá skóre dne, trendy a souvislosti mezi nimi. Auto má vlastní záložku.</p><div class="row" style="margin-top:12px"><button class="btn sm" data-a="demo-on">Prohlédnout s ukázkovými daty</button></div></div>`;
   h += remNotes();
   const by = g => M.filter(m => m.g === g);
   const w = M.find(m => m.id === 'water'); if (w) h += cWater(w, r, d);
-  if (by('sleep').length) h += cSleep(by('sleep'), r);
   const grp = (g, title) => { const ms = by(g).filter(m => m.t !== 'check'); return ms.length ? `<article class="card" style="--c:var(--${GRP[g]})"><div class="card-h"><span class="lab">${title}</span></div>${ms.map(m => mRow(m, r)).join('')}</article>` : ''; };
-  h += grp('feel', 'Jak se cítím') + grp('body', 'Tělo a pohyb');
+  h += grp('feel', 'Jak se cítím');
   h += cFocus(by('focus'), r, d) + grp('limit', 'Hlídám si') + grp('own', 'Vlastní');
   const hab = M.filter(m => m.t === 'check');
   if (hab.length) h += `<article class="card"><div class="card-h"><span class="lab" style="color:var(--acc)">Návyky</span><span class="r" data-live="habn">${hab.filter(m => r.v[m.id]).length} z ${hab.length}</span></div><div class="habits">${hab.map(m => { const on = r.v[m.id], s = streak(m.id, d); return `<button class="habit${on ? ' on' : ''}" data-a="check" data-m="${m.id}" aria-pressed="${!!on}"><i class="ck${on ? ' on' : ''}">${ic('ok', 15, 2.6)}</i><span>${esc(m.n)}</span>${s > 1 ? `<small>${s} dní v řadě</small>` : ''}</button>`; }).join('')}</div></article>`;
@@ -405,12 +396,6 @@ function cWater(m, r, d) {
     <div><div class="lab">Pitný režim</div><div class="big" style="margin-top:8px"><b class="num">${nf(v)}</b><span>${g ? `z ${nf(g)} ml` : 'ml'}</span></div><p class="hint">${hint}</p></div>
     <div class="steps">${(m.steps || []).map(s => `<button class="btn add" data-a="add" data-m="water" data-n="${s}">+${s}</button>`).join('')}<button class="btn" data-a="exact" data-m="water">Jiné</button><button class="btn ico" data-a="undo" data-m="water" aria-label="Vrátit poslední" ${v ? '' : 'disabled'}>${ic('undo', 18)}</button></div>
     ${tl.length ? `<div class="tl" aria-hidden="true">${tl.map(p => `<i style="left:${(p * 100).toFixed(1)}%"></i>`).join('')}<span style="left:0">6:00</span><span style="left:${6 / 17 * 100}%">12:00</span><span style="left:${12 / 17 * 100}%">18:00</span><span style="left:100%">23:00</span></div>` : ''}</article>`;
-}
-function cSleep(ms, r) {
-  const s = ms.find(m => m.t === 'sleep'), rest = ms.filter(m => m.t !== 'sleep'); let h = `<article class="card" style="--c:var(--sleep)"><div class="card-h"><span class="lab">Spánek</span><span class="r">noc na dnešek</span></div>`;
-  if (s) { const v = r.v.sleep; h += `<div class="mrow"><div class="mrow-t"><label class="mn" for="bed">Do postele</label><input id="bed" type="time" data-ch="bed" value="${r.bed || ''}"></div></div><div class="mrow"><div class="mrow-t"><label class="mn" for="wake">Vstávání</label><input id="wake" type="time" data-ch="wake" value="${r.wake || ''}"></div></div>
-    <div class="mrow" data-live="sleep"><div class="mrow-t"><span class="mn">Naspáno</span><span class="mv"><b>${v != null ? hm(v) + ' min' : '–'}</b>${s.goal ? ` / ${nfx(s.goal)} h` : ''}</span></div>${s.goal ? `<div class="bar" data-k="m:sleep" data-p="${v ? Math.min(1, v / s.goal) : 0}"><i></i></div>` : ''}</div>`; }
-  return h + rest.map(m => mRow(m, r)).join('') + '</article>';
 }
 function mRow(m, r) {
   const v = r.v[m.id], c = col(m);
@@ -556,14 +541,14 @@ function lineChart(items, { color = 'var(--acc)', h = 118, avg } = {}) {
 /* ═══ PŘEHLED ═══ */
 function vStats() {
   let h = `<section class="hero"><div><div class="kick">Přehled</div><h1><span>Co říkají</span>tvoje data</h1></div></section>`;
-  if (!hasDays()) return h + `<div class="card"><p style="font-size:14px;color:var(--ink2)">Až zapíšeš pár dní, najdeš tu trendy, rytmus týdne, pravidelnost spánku a souvislosti typu „po dni se třemi kávami spím hůř“.</p><div class="row" style="margin-top:14px"><button class="btn" data-a="demo-on">Prohlédnout s ukázkovými daty</button></div></div>`;
+  if (!hasDays()) return h + `<div class="card"><p style="font-size:14px;color:var(--ink2)">Až zapíšeš pár dní, najdeš tu trendy, rytmus týdne a souvislosti typu „ve dnech s dostatkem vody mám víc energie“.</p><div class="row" style="margin-top:14px"><button class="btn" data-a="demo-on">Prohlédnout s ukázkovými daty</button></div></div>`;
   const per = UI.per, T = today(), rng = (n, off = 0) => Array.from({ length: n }, (_, i) => addD(T, i - n + 1 - off));
   const days = rng(per), prev = rng(per, per), avg = (m, ds) => mean(ds.map(d => mval(m, d)).filter(v => v != null));
   const all = [SCORE, ...M], met = all.find(m => m.id === UI.met) || SCORE;
   h += `<div class="seg">${[[7, 'Týden'], [30, 'Měsíc'], [90, '3 měsíce'], [365, 'Rok']].map(([n, l]) => `<button class="${per === n ? 'on' : ''}" data-a="per" data-n="${n}">${l}</button>`).join('')}</div><div class="tiles">`;
-  for (const id of ['score', 'water', 'sleep', 'mood']) {
+  for (const id of ['score', 'water', 'mood', 'energy']) {
     const m = all.find(x => x.id === id); if (!m) continue; const a = avg(m, days), b = avg(m, prev), dl = a != null && b != null ? a - b : null, good = dl != null && dl * (m.dir || 1) >= 0;
-    h += `<div class="tile"><span class="lab" style="color:${m.id === 'score' ? 'var(--acc)' : col(m)}">${esc(m.n)}</span><div class="v num">${m.t === 'sleep' ? hm(a) : nfx(a, m.t === 'scale' ? 1 : 0)}<small>${m.t === 'sleep' ? 'min' : m.t === 'scale' ? '/ 5' : m.t === 'score' ? '/ 100' : m.unit}</small></div><div class="s">${dl == null || Math.abs(dl) < .005 ? 'ø za období' : `<span class="${good ? 'up' : 'dn'}">${dl > 0 ? '▲' : '▼'} ${m.t === 'sleep' ? Math.round(Math.abs(dl) * 60) + ' min' : nfx(Math.abs(dl), m.t === 'scale' ? 1 : 0)}</span> proti minulému období`}</div></div>`;
+    h += `<div class="tile"><span class="lab" style="color:${m.id === 'score' ? 'var(--acc)' : col(m)}">${esc(m.n)}</span><div class="v num">${nfx(a, m.t === 'scale' ? 1 : 0)}<small>${m.t === 'scale' ? '/ 5' : m.t === 'score' ? '/ 100' : m.unit}</small></div><div class="s">${dl == null || Math.abs(dl) < (m.t === 'scale' ? .05 : .5) ? 'ø za období' : `<span class="${good ? 'up' : 'dn'}">${dl > 0 ? '▲' : '▼'} ${nfx(Math.abs(dl), m.t === 'scale' ? 1 : 0)}</span> proti minulému období`}</div></div>`;
   }
   const tracked = days.filter(d => dayOf(d)).length;
   h += `</div><div class="chips">${all.map(m => `<button class="chip${m.id === met.id ? ' on' : ''}" data-a="met" data-m="${m.id}">${esc(m.n)}</button>`).join('')}</div>`;
@@ -581,13 +566,6 @@ function vStats() {
   // mapa
   const end = addD(T, 6 - ((pd(T).getDay() + 6) % 7)), cells = Array.from({ length: 126 }, (_, i) => addD(end, i - 125));
   h += `<article class="card"><div class="card-h"><span class="lab" style="color:var(--acc)">Posledních 18 týdnů</span><span class="r">skóre dne</span></div><div class="heat">${cells.map(d => { const s = d > T ? null : score(d); return `<i class="${s == null ? 'no' : ''}" style="--o:${s == null ? 0 : (.12 + .88 * s / 100).toFixed(2)}" title="${fdy(d)}${s == null ? '' : ' · ' + s}"></i>`; }).join('')}</div></article>`;
-  // spánek
-  const sl = rng(Math.max(per, 30)).map(dayOf).filter(r => r && r.bed && r.wake);
-  if (sl.length >= 5 && M.some(m => m.id === 'sleep')) {
-    const mins = (t, wrap) => { const [a, b] = t.split(':').map(Number), x = a * 60 + b; return wrap && x < 720 ? x + 1440 : x; }, clock = x => { x = Math.round(x) % 1440; return `${Math.floor(x / 60)}:${pad(x % 60)}`; };
-    const bed = sl.map(r => mins(r.bed, 1)), wake = sl.map(r => mins(r.wake)), sdv = std(bed);
-    h += `<article class="card" style="--c:var(--sleep)"><div class="card-h"><span class="lab">Spánkový režim</span><span class="r">${sl.length} nocí</span></div><div class="g3" style="text-align:center">${[['Usínání', clock(mean(bed))], ['Vstávání', clock(mean(wake))], ['Pravidelnost', '± ' + Math.round(sdv) + ' min']].map(([l, v]) => `<div><div style="font-family:var(--serif);font-size:30px;line-height:1.1">${v}</div><small style="font-size:12px;color:var(--mute)">${l}</small></div>`).join('')}</div><p class="hint" style="margin-top:12px">${sdv <= 30 ? 'Chodíš spát velmi pravidelně – přesně to tělo chce.' : sdv <= 60 ? 'Slušná pravidelnost. Pod ± 30 min bývá spánek znatelně kvalitnější.' : 'Čas usínání hodně kolísá. Stálý režim pomáhá víc než hodina spánku navíc.'}</p></article>`;
-  }
   // pití během dne
   const hrs = Array(18).fill(0); let nlog = 0;
   for (const d of rng(Math.max(per, 30))) for (const l of dayOf(d)?.log || []) if (l[1] === 'water' && l[0]) { const hh = +l[0].split(':')[0]; if (hh >= 6) { hrs[hh - 6] += l[2]; nlog++; } }
@@ -597,21 +575,20 @@ function vStats() {
   if (hab.length) h += `<article class="card"><div class="card-h"><span class="lab" style="color:var(--acc)">Návyky</span><span class="r">za ${per} dní</span></div><table><tr><th>Návyk</th><th>Splněno</th><th>Série</th><th>Rekord</th></tr>${hab.map(m => { let best = 0, cur = 0; for (const d of rng(365)) { if (dayOf(d)?.v[m.id]) { cur++; best = Math.max(best, cur); } else cur = 0; } const p = avg(m, days); return `<tr><td>${esc(m.n)}</td><td>${p == null ? '–' : nf(p * 100) + ' %'}</td><td>${streak(m.id, T)}</td><td>${best}</td></tr>`; }).join('')}</table></article>`;
   // souvislosti
   const cs = correl();
-  h += `<h2>Souvislosti</h2><article class="card">${cs.length ? cs.map(x => { const thr = x.x.t === 'check' ? '' : x.x.t === 'sleep' ? hm(x.thr) + ' min' : `${nfx(x.thr)} ${x.x.unit || ''}`.trim(); const cond = x.x.t === 'check' ? `splníš <b>${esc(x.x.n)}</b>` : `je <b>${esc(x.x.n)}</b> aspoň <b>${thr}</b>`; const dl = x.mh - x.ml, f = v => x.y.t === 'sleep' ? hm(v) : nfx(v, 1); return `<div class="ins"><p>${x.lag ? 'Noc poté, co' : 'Ve dnech, kdy'} ${cond}:</p><div class="d ${x.good ? 'up' : 'dn'}">${dl > 0 ? '+' : '−'}${x.y.t === 'sleep' ? Math.round(Math.abs(dl) * 60) + ' min' : nfx(Math.abs(dl), 1)}</div><p><b>${esc(x.y.n)} ${f(x.mh)}</b> místo ${f(x.ml)}</p><small style="grid-column:1/-1">${x.nh} a ${x.nl} dní</small></div>`; }).join('') + '<p class="hint" style="margin-top:10px;font-size:12px;color:var(--mute)">Porovnání průměrů za posledního půl roku. Souvislost ještě není příčina – ber to jako tip, co vyzkoušet.</p>' : '<p class="empty">Zatím málo dat. Souvislosti se objeví zhruba po dvou až třech týdnech zapisování (hlavně škál Nálada, Energie a Kvalita spánku).</p>'}</article>`;
+  h += `<h2>Souvislosti</h2><article class="card">${cs.length ? cs.map(x => { const thr = x.x.t === 'check' ? '' : `${nfx(x.thr)} ${x.x.unit || ''}`.trim(); const cond = x.x.t === 'check' ? `splníš <b>${esc(x.x.n)}</b>` : `je <b>${esc(x.x.n)}</b> aspoň <b>${thr}</b>`; const dl = x.mh - x.ml, f = v => nfx(v, 1); return `<div class="ins"><p>Ve dnech, kdy ${cond}:</p><div class="d ${x.good ? 'up' : 'dn'}">${dl > 0 ? '+' : '−'}${nfx(Math.abs(dl), 1)}</div><p><b>${esc(x.y.n)} ${f(x.mh)}</b> místo ${f(x.ml)}</p><small style="grid-column:1/-1">${x.nh} a ${x.nl} dní</small></div>`; }).join('') + '<p class="hint" style="margin-top:10px;font-size:12px;color:var(--mute)">Porovnání průměrů za posledního půl roku. Souvislost ještě není příčina – ber to jako tip, co vyzkoušet.</p>' : '<p class="empty">Zatím málo dat. Souvislosti se objeví zhruba po dvou až třech týdnech zapisování (hlavně škál Nálada, Energie a Stres).</p>'}</article>`;
   return h;
 }
 function correl() {
   const T = today(), rows = Array.from({ length: 181 }, (_, i) => addD(T, i - 180)), res = [];
-  const outs = M.filter(m => m.t === 'scale' || m.t === 'sleep'), drv = M.filter(m => m.t !== 'scale' && m.id !== 'weight');
+  const outs = M.filter(m => m.t === 'scale'), drv = M.filter(m => m.t !== 'scale');
   for (const y of outs) for (const x of drv) {
-    if (x.id === y.id || (y.g === 'sleep' && x.g === 'sleep')) continue;
-    const lag = y.g === 'sleep' ? 1 : 0, pairs = [];
-    for (let i = lag; i < rows.length; i++) { const a = mval(x, rows[i - lag]), b = mval(y, rows[i]); if (a != null && b != null) pairs.push([a, b]); }
+    const pairs = [];
+    for (const d of rows) { const a = mval(x, d), b = mval(y, d); if (a != null && b != null) pairs.push([a, b]); }
     if (pairs.length < 14) continue;
-    let thr = 1; if (x.t !== 'check') { const s = pairs.map(p => p[0]).sort((a, b) => a - b); thr = s[Math.floor(s.length / 2)]; if (x.t === 'sleep') thr = Math.round(thr * 4) / 4; if (thr <= s[0]) { thr = s.find(v => v > s[0]); if (thr == null) continue; } }
+    let thr = 1; if (x.t !== 'check') { const s = pairs.map(p => p[0]).sort((a, b) => a - b); thr = s[Math.floor(s.length / 2)]; if (thr <= s[0]) { thr = s.find(v => v > s[0]); if (thr == null) continue; } }
     const hi = pairs.filter(p => p[0] >= thr).map(p => p[1]), lo = pairs.filter(p => p[0] < thr).map(p => p[1]); if (hi.length < 5 || lo.length < 5) continue;
     const mh = mean(hi), ml = mean(lo), sd = std(pairs.map(p => p[1])); if (!sd) continue; const eff = (mh - ml) / sd; if (Math.abs(eff) < .4) continue;
-    res.push({ x, y, lag, thr, mh, ml, nh: hi.length, nl: lo.length, eff, good: (mh - ml) * (y.dir || 1) > 0 });
+    res.push({ x, y, thr, mh, ml, nh: hi.length, nl: lo.length, eff, good: (mh - ml) * (y.dir || 1) > 0 });
   }
   return res.sort((a, b) => Math.abs(b.eff) - Math.abs(a.eff)).slice(0, 6);
 }
@@ -630,18 +607,16 @@ function vSet() {
   <p style="text-align:center;margin-top:22px;font-size:13px"><a href="../">← Rozcestník</a></p>`;
 }
 function fMetric(m, t) {
-  const e = m || { t, on: 1, dir: 1 }, def = m && !m.custom, w = metrics(true).find(x => x.id === 'weight'), kg = e.id === 'water' ? lastVal('weight') : null;
-  const numeric = e.t === 'sum' || e.t === 'num' || e.t === 'sleep';
+  const e = m || { t, on: 1, dir: 1 }, def = m && !m.custom;
+  const numeric = e.t === 'sum' || e.t === 'num';
   sheet(m ? esc(m.n) : (t === 'check' ? 'Nový návyk' : 'Vlastní metrika'), `<form data-f="metric" data-id="${m?.id || ''}" data-t="${e.t}">
     <label>Název<input name="n" value="${esc(e.n || '')}" required ${m ? '' : 'autofocus'}></label>
     ${!m && t !== 'check' ? `<label>Typ<select name="t" data-ch="mtype">${Object.entries(TYPES).filter(([k]) => k !== 'check').map(([k, l]) => `<option value="${k}">${l}</option>`).join('')}</select></label>` : ''}
-    <div id="mnum" class="${numeric ? '' : 'hidden'}" style="display:grid;gap:12px"><div class="g2"><label>Jednotka<input name="unit" value="${esc(e.unit || '')}" ${e.t === 'sleep' ? 'disabled' : ''} placeholder="např. min, stran"></label><label>${(e.dir || 1) < 0 ? 'Denní limit' : 'Denní cíl'}<input name="goal" inputmode="decimal" value="${inp(e.goal)}" placeholder="nepovinné"></label></div>
+    <div id="mnum" class="${numeric ? '' : 'hidden'}" style="display:grid;gap:12px"><div class="g2"><label>Jednotka<input name="unit" value="${esc(e.unit || '')}" placeholder="např. min, stran"></label><label>${(e.dir || 1) < 0 ? 'Denní limit' : 'Denní cíl'}<input name="goal" inputmode="decimal" value="${inp(e.goal)}" placeholder="nepovinné"></label></div>
     ${def ? '' : `<label>Směr<select name="dir"><option value="1">Čím víc, tím líp (cíl)</option><option value="-1"${e.dir < 0 ? ' selected' : ''}>Chci držet pod limitem</option></select></label>`}
     ${e.t === 'sum' || !m ? `<label id="msteps">Tlačítka pro rychlé přidání<input name="steps" value="${esc((e.steps || [1]).join(', '))}" placeholder="např. 200, 330, 500"></label>` : ''}</div>
-    ${kg ? `<p class="calc">Orientačně 30–35 ml na kilogram: při ${nfx(kg)} kg to dělá ${nf(Math.round(kg * 30 / 100) * 100)}–${nf(Math.round(kg * 35 / 100) * 100)} ml denně.</p>` : ''}
     <p class="ferr"></p><div class="sheet-b">${m && m.custom ? `<button type="button" class="btn danger" data-a="delcfg" data-id="m:${m.id}">Smazat</button>` : ''}<button class="btn p">Uložit</button></div></form>`);
 }
-function lastVal(id) { const T = today(); for (let i = 0; i < 120; i++) { const v = dayOf(addD(T, -i))?.v[id]; if (v != null) return v; } return null; }
 
 /* ═══ FORMULÁŘE ═══ */
 const nowT = () => { if (UI.day !== today()) return ''; const n = new Date(); return `${pad(n.getHours())}:${pad(n.getMinutes())}`; };
@@ -701,7 +676,7 @@ const ACT = {
   'demo-on'() { if (DEMO) return; REAL = DB; DB = demoDB(); DEMO = true; UI.car = null; UI.day = today(); toast('Ukázková data – nic se neukládá'); render(); },
   'demo-off'() { if (!DEMO) return; DB = REAL; REAL = null; DEMO = false; UI.car = null; render(); },
   export() { download(`daily-zaloha-${today()}.json`, JSON.stringify({ app: 'daily', v: 1, b: DB.b }), 'application/json'); },
-  csv() { const ms = metrics(true), rows = [['datum', ...ms.map(m => m.n + (m.unit && m.t !== 'check' ? ` (${m.unit})` : '')), 'skóre', 'do postele', 'vstávání', 'poznámka']]; for (const b of Object.keys(DB.b).filter(b => /^\d{4}-\d\d$/.test(b)).sort()) for (const d of Object.keys(DB.b[b]).sort()) { const r = dayOf(d); if (r) rows.push([d, ...ms.map(m => r.v[m.id] ?? ''), score(d, r) ?? '', r.bed || '', r.wake || '', r.note || '']); } download(`daily-dny-${today()}.csv`, '﻿' + rows.map(r => r.map(c => `"${String(c).replace('.', typeof c === 'number' ? ',' : '.').replace(/"/g, '""')}"`).join(';')).join('\r\n'), 'text/csv'); },
+  csv() { const ms = metrics(true), rows = [['datum', ...ms.map(m => m.n + (m.unit && m.t !== 'check' ? ` (${m.unit})` : '')), 'skóre', 'poznámka']]; for (const b of Object.keys(DB.b).filter(b => /^\d{4}-\d\d$/.test(b)).sort()) for (const d of Object.keys(DB.b[b]).sort()) { const r = dayOf(d); if (r) rows.push([d, ...ms.map(m => r.v[m.id] ?? ''), score(d, r) ?? '', r.note || '']); } download(`daily-dny-${today()}.csv`, '﻿' + rows.map(r => r.map(c => `"${String(c).replace('.', typeof c === 'number' ? ',' : '.').replace(/"/g, '""')}"`).join(';')).join('\r\n'), 'text/csv'); },
   wipe() { if (DEMO) return toast('V ukázce není co mazat.'); if (!confirm('Opravdu smazat všechna data Daily' + (LS.get(KS) ? ' – i v účtu a na ostatních zařízeních' : '') + '? Nejde to vrátit.')) return; for (const b of Object.keys(DB.b)) for (const id of Object.keys(DB.b[b])) if (!DB.b[b][id].x) put(b, id, { x: 1 }); UI.car = null; render(); toast('Smazáno'); },
   'sync-on'() { syncOn(); }, 'sync-off'() { LS.del(KS); detach(); setSync('local'); render(); }, login() { loginSheet(); },
 };
@@ -714,7 +689,6 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet()
 document.addEventListener('change', e => {
   const t = e.target, ch = t.dataset.ch, d = UI.day; if (!ch) return;
   if (ch === 'num') { const v = num(t.value); editDay(d, r => { if (v == null) delete r.v[t.dataset.m]; else r.v[t.dataset.m] = v; }); t.value = inp(v); }
-  else if (ch === 'bed' || ch === 'wake') editDay(d, r => { if (t.value) r[ch] = t.value; else delete r[ch]; if (r.bed && r.wake) { const [a, b] = [r.bed, r.wake].map(x => { const [h, m] = x.split(':').map(Number); return h * 60 + m; }); r.v.sleep = Math.round(((b - a + 1440) % 1440) / 60 * 100) / 100; } else delete r.v.sleep; });
   else if (ch === 'pri') editDay(d, r => { r.pri = [0, 1, 2].map(i => ({ t: r.pri?.[i]?.t || '', d: r.pri?.[i]?.d || 0 })); r.pri[+t.dataset.i].t = t.value.trim(); if (!t.value.trim()) r.pri[+t.dataset.i].d = 0; });
   else if (ch === 'note') editDay(d, r => { r.note = t.value.trim(); });
   else if (ch === 'mtype') { const v = t.value; $('#mnum').classList.toggle('hidden', v === 'scale'); $('#msteps')?.classList.toggle('hidden', v !== 'sum'); return; }
@@ -791,20 +765,19 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) retur
 /* ═══ UKÁZKOVÁ DATA (jen v paměti) ═══ */
 function demoDB() {
   const b = { cfg: {}, car: {} }, T = today(); let seed = 11; const rnd = () => (seed = seed * 16807 % 2147483647) / 2147483647, rn = (a, c) => a + rnd() * (c - a), cl = (v, a, c) => Math.max(a, Math.min(c, v));
-  let pc = 2, pm = 20, ps = 1, kg = 79.6, u = 1;
+  let pc = 2, u = 1;
   for (let i = 150; i >= 0; i--) {
     const d = addD(T, -i), wd = pd(d).getDay(), we = wd === 0 || wd === 6; if (i > 1 && rnd() < .05) continue;
-    const noscr = rnd() < .5 ? 1 : 0, bedM = Math.round((we ? 1435 : 1390) + rn(-45, 55) - (ps ? 15 : 0)), sl = cl((we ? 8.1 : 7.0) + rn(-1, 1) - (pc > 2 ? .35 : 0), 4.5, 9.6);
-    const sq = cl(Math.round(3.3 + (sl - 7) * .5 - (pc > 2 ? .9 : 0) + (pm >= 30 ? .5 : 0) + (ps ? .5 : 0) + rn(-.8, .8)), 1, 5), coffee = Math.round(rn(1, 3.6) + (sl < 6.5 ? .7 : 0));
-    const water = Math.round(rn(1300, 2900) / 50) * 50, move = rnd() < .58 ? [20, 30, 45, 60][Math.floor(rnd() * 4)] : 0, out = rnd() < .6 ? 1 : 0;
-    const energy = cl(Math.round(2.4 + (sl - 7) * .7 + (water >= 2200 ? .7 : 0) + (move ? .4 : 0) + rn(-.7, .7)), 1, 5), mood = cl(Math.round(3 + (energy - 3) * .45 + (out ? .6 : 0) + (we ? .3 : 0) + rn(-.8, .8)), 1, 5);
-    const focus = we ? 0 : Math.round(rn(20, 170) / 25) * 25 + (sl >= 7 ? 25 : 0), stress = cl(Math.round(3.2 - (we ? 1 : 0) - (move ? .5 : 0) + rn(-1, 1)), 1, 5); kg += rn(-.22, .19);
-    const wakeM = (bedM + Math.round(sl * 60)) % 1440, tm = m => `${pad(Math.floor(m % 1440 / 60))}:${pad(m % 60)}`, log = []; let left = water, t = 400 + Math.round(rn(0, 60));
+    const coffee = Math.round(rn(1, 3.9)), water = Math.round(rn(1300, 2900) / 50) * 50, read = rnd() < .62 ? 1 : 0, stretch = rnd() < .45 ? 1 : 0;
+    const focus = we ? 0 : Math.round(rn(20, 170) / 25) * 25;
+    const energy = cl(Math.round(2.6 + (water >= 2200 ? .8 : 0) + (stretch ? .5 : 0) - (pc > 3 ? .5 : 0) + rn(-.7, .7)), 1, 5), mood = cl(Math.round(3 + (energy - 3) * .45 + (read ? .5 : 0) + (we ? .3 : 0) + rn(-.8, .8)), 1, 5);
+    const stress = cl(Math.round(3 - (we ? 1 : 0) - (stretch ? .5 : 0) + (coffee > 3 ? .8 : 0) + rn(-1, 1)), 1, 5);
+    const tm = m => `${pad(Math.floor(m % 1440 / 60))}:${pad(m % 60)}`, log = []; let left = water, t = 400 + Math.round(rn(0, 60));
     while (left > 0) { const a = Math.min(left, [200, 330, 500][Math.floor(rnd() * 3)]); log.push([tm(Math.min(t, 1380)), 'water', a]); left -= a; t += Math.round(rn(50, 190)); }
-    const r = { v: { water, sleep: Math.round(sl * 100) / 100, sleepq: sq, mood, energy, stress, coffee, steps: Math.round(rn(3500, 11500) + move * 40), weight: Math.round(kg * 10) / 10 }, log, bed: tm(bedM), wake: tm(wakeM), pri: [{ t: 'Dopsat report', d: rnd() < .75 ? 1 : 0 }, { t: 'Zavolat do servisu', d: rnd() < .6 ? 1 : 0 }, { t: 'Nákup na víkend', d: rnd() < .5 ? 1 : 0 }], u: u++ };
-    if (move) r.v.move = move; if (focus) r.v.focus = focus; if (rnd() < .62) r.v.h_read = 1; if (rnd() < .45) r.v.h_stretch = 1; if (out) r.v.h_out = 1; if (noscr) r.v.h_noscreen = 1;
-    if (i === 0) { r.v.water = 830; r.log = [['07:40', 'water', 330], ['10:15', 'water', 500]]; r.v.coffee = 1; delete r.v.move; delete r.v.focus; delete r.v.steps; delete r.v.h_read; delete r.v.h_noscreen; r.pri = [{ t: 'Dopsat report', d: 1 }, { t: 'Objednat přezutí', d: 0 }, { t: '', d: 0 }]; r.note = ''; }
-    (b[d.slice(0, 7)] ??= {})[d] = r; pc = coffee; pm = move; ps = noscr;
+    const r = { v: { water, mood, energy, stress, coffee }, log, pri: [{ t: 'Dopsat report', d: rnd() < .75 ? 1 : 0 }, { t: 'Zavolat do servisu', d: rnd() < .6 ? 1 : 0 }, { t: 'Nákup na víkend', d: rnd() < .5 ? 1 : 0 }], u: u++ };
+    if (focus) r.v.focus = focus; if (read) r.v.h_read = 1; if (stretch) r.v.h_stretch = 1;
+    if (i === 0) { r.v.water = 830; r.log = [['07:40', 'water', 330], ['10:15', 'water', 500]]; r.v.coffee = 1; delete r.v.focus; delete r.v.h_read; r.pri = [{ t: 'Dopsat report', d: 1 }, { t: 'Objednat přezutí', d: 0 }, { t: '', d: 0 }]; r.note = ''; }
+    (b[d.slice(0, 7)] ??= {})[d] = r; pc = coffee;
   }
   const car = 'car:demo'; b.cfg[car] = { n: 'Octavia 2.0 TDI', fuel: 'd', tank: 50, u: 1 };
   let odo = 81240, day = -330, k = 0;

@@ -1,7 +1,7 @@
 {
  "name": "Daily",
  "short_name": "Daily",
- "description": "Osobní deník dne: pitný režim, spánek, návyky, auto a souvislosti mezi nimi.",
+ "description": "Osobní deník dne: pitný režim, nálada, návyky, auto a souvislosti mezi nimi.",
  "lang": "cs",
  "id": "../daily.html",
  "start_url": "../daily.html",
