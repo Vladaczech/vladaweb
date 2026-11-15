@@ -1,6 +1,6 @@
 # vladaweb
 
-Osobní rozcestník projektů na GitHub Pages. `index.html` je deck, `deck-data.json` jeho data, `projects/` jednotlivé stránky.
+Osobní rozcestník projektů na GitHub Pages, běží na vlastní doméně `vladacech.cz` (soubor `CNAME`; DNS je u Wedosu – záznamy A na GitHub Pages a `www` jako CNAME na `vladaczech.github.io`). Stará adresa `vladaczech.github.io/vladaweb` na doménu přesměruje. Odkazy v repu drž relativní. `index.html` je deck, `deck-data.json` jeho data, `projects/` jednotlivé stránky.
 
 ## Deck se upravuje ze dvou míst
 
