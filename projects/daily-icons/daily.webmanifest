@@ -1,0 +1,18 @@
+{
+ "name": "Daily",
+ "short_name": "Daily",
+ "description": "Osobní deník dne: pitný režim, spánek, návyky, auto a souvislosti mezi nimi.",
+ "lang": "cs",
+ "id": "../daily.html",
+ "start_url": "../daily.html",
+ "scope": "../daily",
+ "display": "standalone",
+ "orientation": "portrait",
+ "background_color": "#0d1210",
+ "theme_color": "#0d1210",
+ "icons": [
+  { "src": "daily-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+  { "src": "daily-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+  { "src": "daily-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+ ]
+}

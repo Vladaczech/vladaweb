@@ -1,0 +1,822 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#eef0ea" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1210" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Daily">
+<meta name="description" content="Daily – osobní deník dne: pitný režim, spánek, návyky, auto a souvislosti mezi nimi.">
+<link rel="apple-touch-icon" href="./daily-icons/daily-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="./daily-icons/daily-192.png">
+<link rel="manifest" href="./daily-icons/daily.webmanifest">
+<title>Daily</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef0ea;--card:#fbfcf9;--card2:#f1f3ed;--line:#dfe3da;--line2:#c8cfc3;
+  --ink:#15201b;--ink2:#46534c;--mute:#778279;
+  --acc:#1c6e52;--acc-ink:#fff;--acc-soft:rgba(28,110,82,.10);
+  --water:#2b7cd3;--sleep:#6756c9;--feel:#c27712;--body:#1c8f63;--focus:#0e8585;--car:#cc4d28;--limit:#ad4268;--bad:#c63a3a;--warn:#a96f08;
+  --shadow:0 1px 2px rgba(20,32,27,.04),0 8px 24px rgba(20,32,27,.05);
+  --serif:'Instrument Serif',Georgia,'Times New Roman',serif;--sans:'Geist',system-ui,-apple-system,'Segoe UI',sans-serif;--mono:'Geist Mono',ui-monospace,Menlo,monospace;
+  --r:18px;--tab:62px;--ease:cubic-bezier(.2,.8,.2,1);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d1210;--card:#151b18;--card2:#1b2320;--line:#232c28;--line2:#34403a;
+  --ink:#e9eeea;--ink2:#b3beb7;--mute:#7f8c85;
+  --acc:#62d6a4;--acc-ink:#06130d;--acc-soft:rgba(98,214,164,.12);
+  --water:#5aa8f5;--sleep:#9d8ff7;--feel:#f0aa45;--body:#55cf9c;--focus:#45c9c9;--car:#f5825c;--limit:#e87f9f;--bad:#f27474;--warn:#e9b04a;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.22);
+}}
+:root[data-theme="dark"]{
+  --bg:#0d1210;--card:#151b18;--card2:#1b2320;--line:#232c28;--line2:#34403a;
+  --ink:#e9eeea;--ink2:#b3beb7;--mute:#7f8c85;
+  --acc:#62d6a4;--acc-ink:#06130d;--acc-soft:rgba(98,214,164,.12);
+  --water:#5aa8f5;--sleep:#9d8ff7;--feel:#f0aa45;--body:#55cf9c;--focus:#45c9c9;--car:#f5825c;--limit:#e87f9f;--bad:#f27474;--warn:#e9b04a;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.22);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.45;min-height:100dvh;-webkit-font-smoothing:antialiased;overscroll-behavior-y:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;touch-action:manipulation}
+button:disabled{opacity:.35;cursor:default}
+input,select,textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;outline:none;width:100%;min-width:0}
+textarea{resize:vertical;min-height:76px;line-height:1.45}
+input:focus,select:focus,textarea:focus{border-color:var(--c,var(--acc));box-shadow:0 0 0 3px var(--acc-soft)}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+select{appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--mute) 50%),linear-gradient(135deg,var(--mute) 50%,transparent 50%);background-position:calc(100% - 17px) 52%,calc(100% - 12px) 52%;background-size:5px 5px;background-repeat:no-repeat;padding-right:34px}
+a{color:var(--acc)}
+.i{flex:none;display:block}
+.hidden{display:none!important}
+.num{font-variant-numeric:tabular-nums}
+
+.app{max-width:560px;margin:0 auto;padding:0 16px calc(var(--tab) + env(safe-area-inset-bottom) + 36px)}
+header.top{display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top) + 14px) 0 4px}
+.brand{flex:1;font-family:var(--serif);font-size:24px;font-style:italic;letter-spacing:-.01em;line-height:1}
+.brand i{color:var(--acc);font-style:normal}
+.pill{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--mute);padding:6px 11px;border-radius:99px;border:1px solid var(--line);white-space:nowrap}
+.pill.demo{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 45%,transparent)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--mute);flex:none}
+.dot.ok{background:var(--body)}.dot.pend{background:var(--warn)}.dot.err{background:var(--bad)}
+
+.hero{display:flex;align-items:flex-end;gap:14px;margin:16px 0 14px}
+.hero>div:first-child{flex:1;min-width:0}
+.kick{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);font-weight:600;margin-bottom:6px}
+h1{font-family:var(--serif);font-weight:400;font-size:clamp(34px,10.5vw,46px);line-height:.98;letter-spacing:-.02em;text-wrap:balance}
+h1 span{display:block;font-style:italic;color:var(--acc)}
+h2{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);font-weight:600;margin:26px 2px 10px}
+.ring{position:relative;flex:none;display:grid;place-items:center}
+.ring svg{transform:rotate(-90deg);display:block}
+.ring circle{fill:none}
+.ring .tr{stroke:var(--line)}
+.ring .fg{stroke:var(--c,var(--acc));stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:calc(100px*(1 - var(--p,0)));opacity:min(1,calc(var(--p,0)*1000));transition:stroke-dashoffset .7s var(--ease)}
+.ring b{position:absolute;font-family:var(--serif);font-weight:400;font-size:28px;line-height:1}
+.ring small{position:absolute;bottom:-17px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);font-weight:600}
+
+.week{display:flex;align-items:center;gap:2px;margin:0 -6px 18px}
+.week .nav{width:30px;height:54px;display:grid;place-items:center;color:var(--mute);border-radius:10px}
+.week .days{flex:1;display:grid;grid-template-columns:repeat(7,1fr)}
+.wd{display:grid;justify-items:center;gap:3px;padding:6px 0;border-radius:12px;font-size:11px;color:var(--mute);font-weight:500}
+.wd.on{background:var(--card);box-shadow:var(--shadow);color:var(--ink)}
+.wd .ring b{font-family:var(--sans);font-size:12px;font-weight:600}
+.wd.tdy .ring b{color:var(--acc)}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:var(--shadow);margin-bottom:12px}
+.card-h{display:flex;align-items:baseline;gap:10px;margin-bottom:12px}
+.lab{font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--c,var(--mute));flex:1}
+.card-h .r{font-size:13px;color:var(--mute)}
+.big{font-family:var(--serif);line-height:1;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.big b{font-weight:400;font-size:46px;letter-spacing:-.02em}
+.big span{font-family:var(--sans);font-size:13px;color:var(--mute)}
+.hint{font-size:13px;color:var(--ink2);margin-top:6px;min-height:19px}
+.empty{font-size:13.5px;color:var(--mute);padding:6px 0}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:42px;padding:0 15px;border-radius:12px;border:1px solid var(--line2);font-weight:500;font-size:14px;white-space:nowrap;transition:transform .12s,background .15s}
+.btn:active:not(:disabled){transform:scale(.96)}
+.btn.add{background:color-mix(in srgb,var(--c,var(--acc)) 11%,transparent);border-color:transparent;color:var(--c,var(--acc));font-weight:600}
+.btn.p{background:var(--acc);border-color:var(--acc);color:var(--acc-ink);font-weight:600}
+.btn.sm{min-height:34px;padding:0 11px;font-size:13px;border-radius:10px}
+.btn.ico{padding:0;width:42px}.btn.sm.ico{width:34px}
+.btn.wide{width:100%}
+.btn.danger{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 40%,transparent)}
+.btn.ghost{border-color:transparent;color:var(--mute)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+.water{display:grid;grid-template-columns:auto 1fr;gap:4px 16px;align-items:center}
+.water .steps,.water .tl{grid-column:1/-1}
+.glass{width:62px;height:92px;border:2px solid var(--line2);border-top:0;border-radius:5px 5px 18px 18px;position:relative;overflow:hidden;background:var(--card2)}
+.glass i{position:absolute;left:0;right:0;bottom:0;height:calc(var(--p,0)*100%);background:var(--water);opacity:.88;transition:height .8s var(--ease)}
+.glass i::before{content:"";position:absolute;left:0;top:-7px;width:calc(100% + 32px);height:8px;background:var(--water);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 8'%3E%3Cpath d='M0 4Q8 0 16 4T32 4V8H0Z'/%3E%3C/svg%3E") repeat-x 0 0/32px 8px;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 8'%3E%3Cpath d='M0 4Q8 0 16 4T32 4V8H0Z'/%3E%3C/svg%3E") repeat-x 0 0/32px 8px;animation:wave 2.6s linear infinite}
+@keyframes wave{to{transform:translateX(-32px)}}
+.steps{display:flex;gap:8px;margin-top:12px}
+.steps .btn{flex:1;padding:0 6px}.steps .btn.ico{flex:none}
+.tl{position:relative;height:22px;margin-top:12px;border-top:1px dashed var(--line2)}
+.tl i{position:absolute;top:-4px;width:7px;height:7px;border-radius:50%;background:var(--water);transform:translateX(-50%)}
+.tl span{position:absolute;top:5px;font-size:10px;color:var(--mute);transform:translateX(-50%)}
+.tl span:first-of-type{transform:none}.tl span:last-of-type{transform:translateX(-100%)}
+
+.mrow{padding:11px 0;border-top:1px solid var(--line)}
+.mrow:first-of-type{border-top:0;padding-top:0}.mrow:last-child{padding-bottom:0}
+.mrow-t{display:flex;align-items:center;gap:8px}
+.mn{flex:1;min-width:0;font-weight:500}
+.mv{font-size:13px;color:var(--mute);font-variant-numeric:tabular-nums}
+.mv b{color:var(--ink);font-size:15px;font-weight:600}
+.mv.over b{color:var(--bad)}
+.mrow input{width:104px;text-align:right;padding:8px 10px}
+.mrow input[type=time]{width:112px;text-align:center}
+.bar{height:5px;border-radius:9px;background:var(--line);margin-top:9px;overflow:hidden}
+.bar i{display:block;height:100%;width:calc(var(--p,0)*100%);background:var(--c,var(--acc));border-radius:9px;transition:width .7s var(--ease)}
+.bar.over i{background:var(--bad)}
+.scale{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:8px}
+.scale button{height:38px;border-radius:11px;border:1px solid var(--line);font-weight:600;font-size:14px;color:var(--mute);transition:background .15s,transform .12s}
+.scale button:active{transform:scale(.94)}
+.scale button.on{background:var(--c);border-color:var(--c);color:var(--card)}
+.scale button.lo{background:color-mix(in srgb,var(--c) 16%,transparent);border-color:transparent;color:var(--c)}
+.sc-l{display:flex;justify-content:space-between;font-size:10.5px;color:var(--mute);margin-top:4px}
+.pri{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.pri input{background:transparent;border-color:transparent;border-bottom-color:var(--line);border-radius:0;padding:8px 2px}
+.pri input:focus{box-shadow:none;border-bottom-color:var(--c)}
+.pri.done input{text-decoration:line-through;color:var(--mute)}
+.ck{width:26px;height:26px;border-radius:50%;border:2px solid var(--line2);display:grid;place-items:center;flex:none;color:transparent;transition:background .15s}
+.ck.on{background:var(--c,var(--acc));border-color:var(--c,var(--acc));color:var(--card)}
+.habits{display:grid;gap:8px}
+.habit{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:13px;border:1px solid var(--line);text-align:left;transition:background .15s}
+.habit.on{background:var(--acc-soft);border-color:transparent}
+.habit span{flex:1;font-weight:500}
+.habit small{font-size:12px;color:var(--mute);font-variant-numeric:tabular-nums}
+.habit.on small{color:var(--acc);font-weight:600}
+.note{border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:12px;padding:10px 12px;margin-bottom:8px;display:flex;gap:10px;align-items:center;font-size:13.5px;background:var(--card)}
+.note.bad{border-left-color:var(--bad)}.note b{font-weight:600}.note span{flex:1}
+
+.tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:13px 14px;box-shadow:var(--shadow);min-width:0}
+.tile .lab{display:block;margin-bottom:8px;font-size:10.5px}
+.tile .v{font-family:var(--serif);font-size:32px;line-height:1;letter-spacing:-.01em}
+.tile .v small{font-family:var(--sans);font-size:12px;color:var(--mute);margin-left:4px;letter-spacing:0}
+.tile .s{font-size:12px;color:var(--mute);margin-top:6px}
+.up{color:var(--body)}.dn{color:var(--bad)}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -16px 12px;padding:0 16px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;padding:7px 13px;border-radius:99px;border:1px solid var(--line2);font-size:13px;font-weight:500;color:var(--ink2)}
+.chip.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:3px;margin-bottom:12px}
+.seg button{height:32px;border-radius:9px;font-size:13px;font-weight:500;color:var(--mute)}
+.seg button.on{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+.chart{width:100%;height:auto;display:block;overflow:visible}
+.chart text{font-family:var(--sans);font-size:9px;fill:var(--mute)}
+.chart .goal{stroke:var(--ink2);stroke-width:1;stroke-dasharray:3 3;opacity:.5}
+.chart .nd{fill:var(--line2)}
+.chart .ln{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.tip{font-size:12.5px;color:var(--ink2);min-height:19px;margin-top:8px;font-variant-numeric:tabular-nums}
+.heat{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);grid-template-rows:repeat(7,auto);gap:3px}
+.heat i{aspect-ratio:1;border-radius:4px;background:color-mix(in srgb,var(--acc) calc(var(--o,0)*100%),var(--card2))}
+.heat i.no{background:transparent;border:1px dashed var(--line)}
+.ins{display:grid;grid-template-columns:1fr auto;gap:2px 12px;padding:12px 0;border-top:1px solid var(--line)}
+.ins:first-of-type{border-top:0;padding-top:0}
+.ins p{font-size:13px;color:var(--ink2)}.ins p b{color:var(--ink);font-weight:600}
+.ins .d{grid-row:1/3;grid-column:2;align-self:center;font-family:var(--serif);font-size:28px}
+.ins small{font-size:11.5px;color:var(--mute)}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+td,th{padding:8px 0 8px 12px;border-top:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums}
+th{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);font-weight:600;border-top:0;padding-top:0}
+td:first-child,th:first-child{text-align:left;padding-left:0}
+
+.odo{display:flex;gap:4px;align-items:center;margin:4px 0 2px}
+.odo b{font-family:var(--mono);font-weight:500;font-size:clamp(26px,8.4vw,36px);line-height:1;padding:9px 0;width:1.1em;text-align:center;border-radius:8px;background:var(--ink);color:var(--bg)}
+.odo b.z{opacity:.28}
+.odo span{font-size:13px;color:var(--mute);margin-left:6px}
+.acts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.acts .btn{flex-direction:column;gap:5px;min-height:70px;font-size:13px;background:var(--card);border-color:var(--line);box-shadow:var(--shadow)}
+.acts .btn svg{color:var(--car)}
+.li{display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--line);width:100%;text-align:left}
+.li:first-of-type{border-top:0;padding-top:0}.li:last-child{padding-bottom:0}
+.li .ib{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:color-mix(in srgb,var(--c,var(--car)) 12%,transparent);color:var(--c,var(--car));flex:none}
+.li .t{flex:1;min-width:0}
+.li .t b{display:block;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.li .t small{font-size:12.5px;color:var(--mute)}
+.li .x{font-size:13px;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink2);white-space:nowrap}
+.li .x.w{color:var(--warn);font-weight:600}.li .x.b{color:var(--bad);font-weight:600}
+.sw{width:44px;height:26px;border-radius:99px;background:var(--line2);position:relative;flex:none;transition:background .2s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s var(--ease);box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.sw.on{background:var(--acc)}.sw.on::after{transform:translateX(18px)}
+
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+.tabs div{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);height:var(--tab)}
+.tabs button{display:grid;place-items:center;align-content:center;gap:3px;font-size:10.5px;font-weight:500;color:var(--mute)}
+.tabs button.on{color:var(--acc)}
+.shade{position:fixed;inset:0;z-index:40;background:rgba(10,16,13,.45);display:flex;align-items:flex-end;justify-content:center;animation:fade .2s}
+.sheet{background:var(--card);width:100%;max-width:560px;max-height:90dvh;overflow:auto;border-radius:22px 22px 0 0;padding:18px 16px calc(env(safe-area-inset-bottom) + 18px);animation:up .28s var(--ease)}
+.sheet-h{display:flex;align-items:center;margin-bottom:14px}
+.sheet-h b{flex:1;font-family:var(--serif);font-weight:400;font-size:26px}
+.sheet form{display:grid;gap:12px}
+.sheet label{display:grid;gap:5px;font-size:12px;color:var(--mute);font-weight:500;min-width:0}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.sheet label.tog{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--ink)}
+.tog input{width:20px;height:20px;accent-color:var(--acc);flex:none}
+.calc{font-size:13px;color:var(--ink2);min-height:19px}.calc.w{color:var(--warn)}
+.ferr{font-size:13px;color:var(--bad);min-height:0}
+.sheet-b{display:flex;gap:8px;margin-top:4px}.sheet-b .p{flex:1}
+.toast{position:fixed;left:50%;bottom:calc(var(--tab) + env(safe-area-inset-bottom) + 14px);transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:99px;font-size:13.5px;z-index:60;animation:up .25s var(--ease);max-width:calc(100vw - 32px)}
+@keyframes fade{from{opacity:0}}
+@keyframes up{from{transform:translateY(24px);opacity:0}}
+.toast{animation-name:fade}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">Daily<i>.</i></div>
+    <button class="pill demo hidden" id="demo" data-a="demo-off">Ukázka · ukončit</button>
+    <button class="pill" id="sync" data-a="tab" data-tab="set"><span class="dot"></span><span>V zařízení</span></button>
+  </header>
+  <main id="view"></main>
+</div>
+<nav class="tabs" aria-label="Sekce"><div id="tabs"></div></nav>
+<div id="modal"></div>
+
+<script>
+'use strict';
+/* ═══ Daily – osobní deník dne ═══════════════════════════════════════════
+   Data: místně v localStorage (klíč daily:v1), volitelně synchronizace přes Firebase
+   účet z Posilovny → users/{uid}/daily/{koš}, pole r = { id: záznam }.
+   Koše: „cfg“ (metriky m:…, auta car:…, připomínky rem:…), „car“ (tankování, tachometr,
+   výdaje) a „RRRR-MM“ (dny). Každý záznam má u = čas změny; při slučování vyhrává novější,
+   smazání je záznam { x:1 }.
+   ═════════════════════════════════════════════════════════════════════ */
+const FIREBASE_CONFIG = {
+  apiKey: 'AIzaSyAsd042qIzIAXKIXHO3VY6JXIuvdyKLRtU', authDomain: 'posilovna-59716.firebaseapp.com', projectId: 'posilovna-59716',
+  storageBucket: 'posilovna-59716.firebasestorage.app', messagingSenderId: '1097378144969', appId: '1:1097378144969:web:5d38f8e38157910f18a318',
+};
+const K = 'daily:v1', KS = 'daily:sync', KU = 'daily:uid', KT = 'daily:theme';
+const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const LS = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); return true; } catch { return false; } }, del(k) { try { localStorage.removeItem(k); } catch {} } };
+const pad = n => String(n).padStart(2, '0');
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const pd = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const addD = (s, n) => { const d = pd(s); d.setDate(d.getDate() + n); return ymd(d); };
+const today = () => ymd(new Date());
+const diffD = (a, b) => Math.round((pd(b) - pd(a)) / 864e5);
+const nf = (n, dec = 0) => n == null || !isFinite(n) ? '–' : n.toLocaleString('cs-CZ', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+const nfx = (n, dec = 1) => n == null || !isFinite(n) ? '–' : n.toLocaleString('cs-CZ', { maximumFractionDigits: dec });
+const num = s => { const n = parseFloat(String(s ?? '').replace(/\s/g, '').replace(',', '.')); return isFinite(n) ? n : null; };
+const inp = v => v == null || v === '' ? '' : String(Math.round(v * 100) / 100).replace('.', ',');
+const DOW = ['ne', 'po', 'út', 'st', 'čt', 'pá', 'so'], DOWL = ['Neděle', 'Pondělí', 'Úterý', 'Středa', 'Čtvrtek', 'Pátek', 'Sobota'];
+const MON = ['ledna', 'února', 'března', 'dubna', 'května', 'června', 'července', 'srpna', 'září', 'října', 'listopadu', 'prosince'];
+const MONS = ['led', 'úno', 'bře', 'dub', 'kvě', 'čvn', 'čvc', 'srp', 'zář', 'říj', 'lis', 'pro'];
+const fd = s => { const d = pd(s); return `${d.getDate()}. ${d.getMonth() + 1}.`; };
+const fdy = s => `${fd(s)} ${s.slice(0, 4)}`;
+const dni = n => { n = Math.abs(n); return n === 1 ? 'den' : n >= 2 && n <= 4 ? 'dny' : 'dní'; };
+const hm = h => { if (h == null) return '–'; let m = Math.round(h * 60); return `${Math.floor(m / 60)} h ${pad(m % 60)}`; };
+const mean = a => a.length ? a.reduce((s, x) => s + x, 0) / a.length : null;
+const std = a => { const m = mean(a); return a.length > 1 ? Math.sqrt(a.reduce((s, x) => s + (x - m) ** 2, 0) / (a.length - 1)) : 0; };
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const clone = o => JSON.parse(JSON.stringify(o));
+
+const ICON = {
+  today: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.4 1.4M17.6 17.6 19 19M5 19l1.4-1.4M17.6 6.4 19 5"/>',
+  car: '<path d="M3 13l2-5.5A2 2 0 0 1 6.9 6h10.2a2 2 0 0 1 1.9 1.5L21 13v5h-3v-2H6v2H3z"/><path d="M7 13.5h.01M17 13.5h.01"/>',
+  stats: '<path d="M5 20V11M12 20V4M19 20v-7"/>',
+  set: '<path d="M4 7h9M19 7h1M4 17h1M11 17h9"/><circle cx="16" cy="7" r="2.5"/><circle cx="8" cy="17" r="2.5"/>',
+  fuel: '<path d="M4 20V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v15M3 20h12M7 7h4v4H7zM14 10h1.5a1.5 1.5 0 0 1 1.5 1.5V16a1.5 1.5 0 0 0 3 0V8l-2.5-2.5"/>',
+  odo: '<path d="M4 17a8 8 0 1 1 16 0"/><path d="m12 17 4-6"/>',
+  cost: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2zM9.5 8h5M9.5 12h5"/>',
+  bell: '<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 21h4"/>',
+  undo: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>',
+  l: '<path d="m15 5-7 7 7 7"/>', r: '<path d="m9 5 7 7-7 7"/>', ok: '<path d="m5 12.5 4.5 4.5L19 7.5"/>', x: '<path d="M6 6l12 12M18 6 6 18"/>', plus: '<path d="M12 5v14M5 12h14"/>',
+};
+const ic = (n, s = 20, w = 1.8) => `<svg class="i" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[n]}</svg>`;
+
+/* ─── úložiště ─── */
+let DB = (() => { try { const d = JSON.parse(LS.get(K) || 'null'); if (d && d.b) return { b: d.b, dirty: d.dirty || {} }; } catch {} return { b: {}, dirty: {} }; })();
+let DEMO = false, REAL = null;
+function save() { if (DEMO) return; if (!LS.set(K, JSON.stringify(DB))) toast('Úložiště prohlížeče je plné – data se neuložila.'); }
+function put(b, id, rec) { rec.u = Date.now(); (DB.b[b] ??= {})[id] = rec; (DB.dirty[b] ??= {})[id] = 1; save(); schedulePush(); }
+const live = b => Object.entries(DB.b[b] || {}).filter(([, r]) => !r.x).map(([id, r]) => ({ ...r, id }));
+const cfg = pre => live('cfg').filter(r => r.id.startsWith(pre));
+const dayOf = d => { const r = DB.b[d.slice(0, 7)]?.[d]; return r && !r.x ? r : null; };
+const blank = () => ({ v: {}, log: [] });
+function editDay(d, fn) { const r = clone(dayOf(d) || blank()); r.v ??= {}; r.log ??= []; delete r.x; fn(r); put(d.slice(0, 7), d, r); }
+const hasDays = () => Object.keys(DB.b).some(b => /^\d{4}-\d\d$/.test(b) && Object.values(DB.b[b]).some(r => !r.x));
+
+/* ─── metriky ─── */
+const DEF = [
+  { id: 'water', n: 'Voda', t: 'sum', unit: 'ml', goal: 2500, steps: [200, 330, 500], g: 'water', on: 1 },
+  { id: 'sleep', n: 'Spánek', t: 'sleep', unit: 'h', goal: 8, g: 'sleep', on: 1 },
+  { id: 'sleepq', n: 'Kvalita spánku', t: 'scale', g: 'sleep', on: 1 },
+  { id: 'mood', n: 'Nálada', t: 'scale', g: 'feel', on: 1 },
+  { id: 'energy', n: 'Energie', t: 'scale', g: 'feel', on: 1 },
+  { id: 'stress', n: 'Stres', t: 'scale', dir: -1, g: 'feel', on: 1 },
+  { id: 'weight', n: 'Váha', t: 'num', unit: 'kg', g: 'body', on: 1 },
+  { id: 'steps', n: 'Kroky', t: 'num', unit: 'kroků', goal: 8000, g: 'body', on: 1 },
+  { id: 'move', n: 'Pohyb', t: 'sum', unit: 'min', goal: 30, steps: [15, 30], g: 'body', on: 1 },
+  { id: 'focus', n: 'Hluboká práce', t: 'sum', unit: 'min', goal: 120, steps: [25, 50], g: 'focus', on: 1 },
+  { id: 'coffee', n: 'Káva', t: 'sum', unit: '×', goal: 3, dir: -1, steps: [1], g: 'limit', on: 1 },
+  { id: 'alcohol', n: 'Alkohol', t: 'sum', unit: '×', goal: 0, dir: -1, steps: [1], g: 'limit', on: 0 },
+  { id: 'h_read', n: 'Čtení', t: 'check', g: 'habit', on: 1 },
+  { id: 'h_stretch', n: 'Protažení', t: 'check', g: 'habit', on: 1 },
+  { id: 'h_out', n: 'Venku na denním světle', t: 'check', g: 'habit', on: 1 },
+  { id: 'h_noscreen', n: 'Bez obrazovky před spaním', t: 'check', g: 'habit', on: 1 },
+];
+const GRP = { water: 'water', sleep: 'sleep', feel: 'feel', body: 'body', focus: 'focus', limit: 'limit', habit: 'acc', own: 'acc' };
+const TYPES = { sum: 'Počítadlo (přičítám během dne)', num: 'Číslo (jedna hodnota za den)', scale: 'Škála 1–5', check: 'Návyk (ano / ne)' };
+const SCORE = { id: 'score', n: 'Skóre dne', t: 'score', unit: 'b.', g: 'habit' };
+function metrics(all) {
+  const c = DB.b.cfg || {}, ov = id => { const r = c['m:' + id]; return r && !r.x ? r : {}; };
+  const out = DEF.map(m => ({ ...m, ...ov(m.id), id: m.id, t: m.t, g: m.g }));
+  for (const k of Object.keys(c).sort()) if (k.startsWith('m:c') && !c[k].x) { const m = c[k]; out.push({ ...m, id: k.slice(2), custom: 1, g: m.t === 'check' ? 'habit' : m.t === 'scale' ? 'feel' : (m.dir < 0 ? 'limit' : 'own') }); }
+  for (const m of out) delete m.u;
+  return all ? out : out.filter(m => m.on);
+}
+let M = metrics();
+const col = m => `var(--${GRP[m.g] || 'acc'})`;
+const hasGoal = m => m.goal != null && m.goal !== '' && ((m.dir || 1) < 0 || m.goal > 0);
+function fulfil(m, v) { if ((m.dir || 1) < 0) { v = v || 0; return v <= m.goal ? 1 : Math.max(0, 1 - (v - m.goal) / Math.max(m.goal, 1)); } return Math.min(1, (v || 0) / m.goal); }
+function score(d, r = dayOf(d)) {
+  if (!r) return null; let s = 0, n = 0;
+  for (const m of M) { if (m.t === 'check') { n++; s += r.v[m.id] ? 1 : 0; } else if (m.t !== 'scale' && hasGoal(m)) { n++; s += fulfil(m, r.v[m.id]); } }
+  const pr = (r.pri || []).filter(p => p.t); if (pr.length) { n++; s += pr.filter(p => p.d).length / pr.length; }
+  return n ? Math.round(s / n * 100) : null;
+}
+function mval(m, d) { const r = dayOf(d); if (!r) return null; if (m.id === 'score') return score(d, r); const v = r.v[m.id]; return m.t === 'check' ? (v ? 1 : 0) : m.t === 'sum' ? (v || 0) : (v ?? null); }
+function fmtV(m, v, short) { if (v == null) return '–'; if (m.t === 'sleep') return hm(v) + (short ? '' : ' min'); if (m.t === 'check') return nf(v * 100) + ' %'; if (m.t === 'scale') return nfx(v, 1); if (m.t === 'score') return nf(v); return `${nfx(v, m.id === 'weight' || v < 20 ? 1 : 0)} ${m.unit || ''}`.trim(); }
+function streak(id, d) { let n = 0, c = dayOf(d)?.v[id] ? d : addD(d, -1); while (dayOf(c)?.v[id]) { n++; c = addD(c, -1); } return n; }
+
+/* ─── stav UI ─── */
+const TABS = [['today', 'Dnes'], ['car', 'Auto'], ['stats', 'Přehled'], ['set', 'Nastavení']];
+const UI = { tab: TABS.some(t => '#' + t[0] === location.hash) ? location.hash.slice(1) : 'today', day: today(), car: null, per: 30, met: 'score', allRec: false };
+let lastToday = today();
+const PREV = new Map();
+function animate() { $$('[data-p]').forEach(el => { const k = el.dataset.k, to = +el.dataset.p, from = PREV.has(k) ? PREV.get(k) : 0; el.style.setProperty('--p', from); PREV.set(k, to); setTimeout(() => el.style.setProperty('--p', to), 30); }); }
+function render() {
+  M = metrics();
+  $('#view').innerHTML = VIEWS[UI.tab]();
+  $('#tabs').innerHTML = TABS.map(([k, n]) => `<button data-a="tab" data-tab="${k}" class="${UI.tab === k ? 'on' : ''}">${ic(k, 22)}${n}</button>`).join('');
+  $('#demo').classList.toggle('hidden', !DEMO);
+  animate();
+}
+/* po změně v poli se nepřekresluje celé – jen části označené data-live, ať pole neztratí fokus */
+function soft() {
+  M = metrics(); const t = document.createElement('div'); t.innerHTML = VIEWS[UI.tab]();
+  $$('[data-live]', t).forEach(n => { const o = $(`#view [data-live="${n.dataset.live}"]`); if (o && o.innerHTML !== n.innerHTML) o.innerHTML = n.innerHTML; });
+  animate();
+}
+const typing = () => { const a = document.activeElement; return a && /INPUT|TEXTAREA|SELECT/.test(a.tagName) && a.closest('#view'); };
+let toastT;
+function toast(msg) { $('.toast')?.remove(); const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.append(t); clearTimeout(toastT); toastT = setTimeout(() => t.remove(), 2600); }
+function sheet(title, html) { $('#modal').innerHTML = `<div class="shade" data-a="close"><div class="sheet" role="dialog" aria-label="${esc(title)}"><div class="sheet-h"><b>${esc(title)}</b><button class="btn ico ghost" data-a="close" aria-label="Zavřít">${ic('x')}</button></div>${html}</div></div>`; const f = $('#modal [autofocus]'); if (f) setTimeout(() => f.focus(), 60); }
+const closeSheet = () => { $('#modal').innerHTML = ''; };
+const ring = (p, key, size, sw, label) => `<div class="ring" data-live="ring:${key}"><div data-k="ring:${key}" data-p="${p == null ? 0 : p / 100}" style="display:grid"><svg width="${size}" height="${size}" viewBox="0 0 40 40"><circle class="tr" cx="20" cy="20" r="17" stroke-width="${sw}"/><circle class="fg" cx="20" cy="20" r="17" stroke-width="${sw}" pathLength="100"/></svg></div><b>${label ?? (p == null ? '–' : p)}</b></div>`;
+
+/* ═══ DNES ═══ */
+function vToday() {
+  const d = UI.day, T = today(), r = dayOf(d) || blank(), dt = pd(d), ago = diffD(d, T);
+  const wk = addD(d, -((dt.getDay() + 6) % 7));
+  let h = `<section class="hero"><div><div class="kick">${ago === 0 ? 'Dnes' : ago === 1 ? 'Včera' : `Před ${ago} dny`}</div><h1><span>${DOWL[dt.getDay()]}</span>${dt.getDate()}. ${MON[dt.getMonth()]}</h1></div>
+    <div style="position:relative;display:grid;justify-items:center;padding-bottom:17px">${ring(score(d), 'day', 78, 3.4)}<small style="position:absolute;bottom:0;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);font-weight:600">skóre</small></div></section>
+  <div class="week"><button class="nav" data-a="day" data-d="${addD(d, -7)}" aria-label="Předchozí týden">${ic('l', 18)}</button><div class="days" data-live="week">${[0, 1, 2, 3, 4, 5, 6].map(i => { const x = addD(wk, i), fut = x > T; return `<button class="wd${x === d ? ' on' : ''}${x === T ? ' tdy' : ''}" data-a="day" data-d="${x}" ${fut ? 'disabled' : ''} aria-label="${fdy(x)}">${DOW[pd(x).getDay()]}${ring(fut ? null : score(x), 'w' + x, 30, 4, pd(x).getDate())}</button>`; }).join('')}</div><button class="nav" data-a="day" data-d="${addD(d, 7) > T ? T : addD(d, 7)}" ${d === T ? 'disabled' : ''} aria-label="Další týden">${ic('r', 18)}</button></div>`;
+  if (!hasDays() && !DEMO) h += `<div class="card"><div class="lab" style="margin-bottom:8px">Vítej v Daily</div><p style="font-size:14px;color:var(--ink2)">Zapisuj den jedním klepnutím – voda, spánek, nálada, návyky. Daily z toho počítá skóre dne, trendy a souvislosti mezi nimi. Auto má vlastní záložku.</p><div class="row" style="margin-top:12px"><button class="btn sm" data-a="demo-on">Prohlédnout s ukázkovými daty</button></div></div>`;
+  h += remNotes();
+  const by = g => M.filter(m => m.g === g);
+  const w = M.find(m => m.id === 'water'); if (w) h += cWater(w, r, d);
+  if (by('sleep').length) h += cSleep(by('sleep'), r);
+  const grp = (g, title) => { const ms = by(g).filter(m => m.t !== 'check'); return ms.length ? `<article class="card" style="--c:var(--${GRP[g]})"><div class="card-h"><span class="lab">${title}</span></div>${ms.map(m => mRow(m, r)).join('')}</article>` : ''; };
+  h += grp('feel', 'Jak se cítím') + grp('body', 'Tělo a pohyb');
+  h += cFocus(by('focus'), r, d) + grp('limit', 'Hlídám si') + grp('own', 'Vlastní');
+  const hab = M.filter(m => m.t === 'check');
+  if (hab.length) h += `<article class="card"><div class="card-h"><span class="lab" style="color:var(--acc)">Návyky</span><span class="r" data-live="habn">${hab.filter(m => r.v[m.id]).length} z ${hab.length}</span></div><div class="habits">${hab.map(m => { const on = r.v[m.id], s = streak(m.id, d); return `<button class="habit${on ? ' on' : ''}" data-a="check" data-m="${m.id}" aria-pressed="${!!on}"><i class="ck${on ? ' on' : ''}">${ic('ok', 15, 2.6)}</i><span>${esc(m.n)}</span>${s > 1 ? `<small>${s} dní v řadě</small>` : ''}</button>`; }).join('')}</div></article>`;
+  h += `<article class="card"><div class="card-h"><span class="lab">Poznámka dne</span></div><textarea data-ch="note" placeholder="Co se povedlo? Za co jsem vděčný? Co příště jinak?">${esc(r.note || '')}</textarea></article>`;
+  return h;
+}
+function cWater(m, r, d) {
+  const v = r.v.water || 0, g = m.goal || 0, isT = d === today(); let hint = '';
+  if (g && v >= g) hint = 'Cíl splněn. Tělo děkuje.';
+  else if (g && isT) { const n = new Date(), left = g - v, hrs = 21 - (n.getHours() + n.getMinutes() / 60); hint = hrs >= 1 ? `Zbývá ${nf(left)} ml – asi ${nf(Math.ceil(left / hrs / 50) * 50)} ml každou hodinu do 21:00.` : `Do cíle zbývá ${nf(left)} ml.`; }
+  else if (g) hint = `Do cíle chybělo ${nf(g - v)} ml.`;
+  const tl = r.log.filter(l => l[1] === 'water' && l[0]).map(l => { const [a, b] = l[0].split(':').map(Number); return Math.max(0, Math.min(1, (a + b / 60 - 6) / 17)); });
+  return `<article class="card water" style="--c:var(--water)"><div class="glass" data-k="water" data-p="${g ? Math.min(1, v / g) : 0}"><i></i></div>
+    <div><div class="lab">Pitný režim</div><div class="big" style="margin-top:8px"><b class="num">${nf(v)}</b><span>${g ? `z ${nf(g)} ml` : 'ml'}</span></div><p class="hint">${hint}</p></div>
+    <div class="steps">${(m.steps || []).map(s => `<button class="btn add" data-a="add" data-m="water" data-n="${s}">+${s}</button>`).join('')}<button class="btn" data-a="exact" data-m="water">Jiné</button><button class="btn ico" data-a="undo" data-m="water" aria-label="Vrátit poslední" ${v ? '' : 'disabled'}>${ic('undo', 18)}</button></div>
+    ${tl.length ? `<div class="tl" aria-hidden="true">${tl.map(p => `<i style="left:${(p * 100).toFixed(1)}%"></i>`).join('')}<span style="left:0">6:00</span><span style="left:${6 / 17 * 100}%">12:00</span><span style="left:${12 / 17 * 100}%">18:00</span><span style="left:100%">23:00</span></div>` : ''}</article>`;
+}
+function cSleep(ms, r) {
+  const s = ms.find(m => m.t === 'sleep'), rest = ms.filter(m => m.t !== 'sleep'); let h = `<article class="card" style="--c:var(--sleep)"><div class="card-h"><span class="lab">Spánek</span><span class="r">noc na dnešek</span></div>`;
+  if (s) { const v = r.v.sleep; h += `<div class="mrow"><div class="mrow-t"><label class="mn" for="bed">Do postele</label><input id="bed" type="time" data-ch="bed" value="${r.bed || ''}"></div></div><div class="mrow"><div class="mrow-t"><label class="mn" for="wake">Vstávání</label><input id="wake" type="time" data-ch="wake" value="${r.wake || ''}"></div></div>
+    <div class="mrow" data-live="sleep"><div class="mrow-t"><span class="mn">Naspáno</span><span class="mv"><b>${v != null ? hm(v) + ' min' : '–'}</b>${s.goal ? ` / ${nfx(s.goal)} h` : ''}</span></div>${s.goal ? `<div class="bar" data-k="m:sleep" data-p="${v ? Math.min(1, v / s.goal) : 0}"><i></i></div>` : ''}</div>`; }
+  return h + rest.map(m => mRow(m, r)).join('') + '</article>';
+}
+function mRow(m, r) {
+  const v = r.v[m.id], c = col(m);
+  if (m.t === 'scale') return `<div class="mrow" style="--c:${c}"><div class="mrow-t"><span class="mn">${esc(m.n)}</span></div><div class="scale" role="group" aria-label="${esc(m.n)}">${[1, 2, 3, 4, 5].map(i => `<button class="${v === i ? 'on' : v > i ? 'lo' : ''}" data-a="scale" data-m="${m.id}" data-n="${i}" aria-pressed="${v === i}">${i}</button>`).join('')}</div></div>`;
+  if (m.t === 'num') return `<div class="mrow" style="--c:${c}"><div class="mrow-t"><label class="mn" for="n-${m.id}">${esc(m.n)}${m.unit ? ` <span class="mv">${esc(m.unit)}${hasGoal(m) ? ` · cíl ${nf(m.goal)}` : ''}</span>` : ''}</label><input id="n-${m.id}" inputmode="decimal" data-ch="num" data-m="${m.id}" value="${inp(v)}" placeholder="–"></div>${hasGoal(m) ? `<div data-live="bar:${m.id}"><div class="bar" data-k="m:${m.id}" data-p="${fulfil(m, v)}"><i></i></div></div>` : ''}</div>`;
+  const lim = (m.dir || 1) < 0, over = lim && (v || 0) > m.goal;
+  return `<div class="mrow" style="--c:${c}"><div class="mrow-t"><span class="mn">${esc(m.n)}</span><button class="mv${over ? ' over' : ''}" data-a="exact" data-m="${m.id}" aria-label="Zadat přesně"><b>${nfx(v || 0)}</b>${m.goal != null && m.goal !== '' ? ` ${lim ? 'z max.' : '/'} ${nfx(m.goal)}` : ''} ${esc(m.unit || '')}</button>${(m.steps || [1]).map(s => `<button class="btn sm add" data-a="add" data-m="${m.id}" data-n="${s}">+${s}</button>`).join('')}<button class="btn sm ico ghost" data-a="undo" data-m="${m.id}" aria-label="Vrátit poslední" ${v ? '' : 'disabled'}>${ic('undo', 16)}</button></div>${hasGoal(m) && m.goal > 0 ? `<div class="bar${over ? ' over' : ''}" data-k="m:${m.id}" data-p="${Math.min(1, (v || 0) / m.goal)}"><i></i></div>` : ''}</div>`;
+}
+function cFocus(ms, r, d) {
+  const pri = [0, 1, 2].map(i => r.pri?.[i] || { t: '', d: 0 });
+  const y = dayOf(addD(d, -1)), carry = !pri.some(p => p.t) && y ? (y.pri || []).filter(p => p.t && !p.d) : [];
+  return `<article class="card" style="--c:var(--focus)"><div class="card-h"><span class="lab">Tři priority dne</span><span class="r" data-live="prin">${pri.filter(p => p.t && p.d).length} z ${pri.filter(p => p.t).length || 3}</span></div>
+    ${pri.map((p, i) => `<div class="pri${p.d ? ' done' : ''}"><button class="ck${p.d ? ' on' : ''}" data-a="pri" data-i="${i}" aria-label="Hotovo" aria-pressed="${!!p.d}">${ic('ok', 15, 2.6)}</button><input data-ch="pri" data-i="${i}" value="${esc(p.t)}" placeholder="${['To nejdůležitější', 'Druhá věc', 'Třetí věc'][i]}" aria-label="Priorita ${i + 1}"></div>`).join('')}
+    ${carry.length ? `<button class="btn sm" data-a="carry">Převzít ${carry.length} nedokončen${carry.length === 1 ? 'ou' : 'é'} ze včera</button>` : ''}
+    ${ms.length ? `<div style="margin-top:14px">${ms.map(m => mRow(m, r)).join('')}</div>` : ''}</article>`;
+}
+function remNotes() {
+  let h = '';
+  for (const c of cfg('car:')) { const st = carStats(c); for (const r of cfg('rem:').filter(r => r.car === c.id)) { const s = remStatus(r, st); if (s.lvl) h += `<button class="note${s.lvl > 1 ? ' bad' : ''}" data-a="tab" data-tab="car" style="width:100%;text-align:left">${ic('bell', 18)}<span><b>${esc(r.n)}</b> · ${esc(c.n)}</span><span style="flex:none;color:var(--mute)">${s.txt}</span></button>`; } }
+  return h;
+}
+
+/* ═══ AUTO ═══ */
+const FUELS = { b: ['Benzín', 'l', 2.31], d: ['Nafta', 'l', 2.64], lpg: ['LPG', 'l', 1.64], ev: ['Elektřina', 'kWh', 0] };
+const CATS = ['Servis', 'Pneumatiky', 'Pojištění', 'Dálniční známka', 'STK', 'Mytí', 'Parkování', 'Ostatní'];
+const curCar = () => { const cs = cfg('car:'); return cs.find(c => c.id === UI.car) || cs[0] || null; };
+function carStats(car) {
+  const recs = live('car').filter(r => r.car === car.id).sort((a, b) => a.d < b.d ? -1 : a.d > b.d ? 1 : (a.odo || 0) - (b.odo || 0));
+  const pts = recs.filter(r => r.odo > 0), fuels = recs.filter(r => r.t === 'f' && r.odo > 0 && r.l > 0).sort((a, b) => a.odo - b.odo);
+  const segs = [], segOf = {}; let last = null, l = 0, p = 0, pok = true;
+  for (const f of fuels) {
+    if (f.miss) last = null;
+    if (last) { l += f.l; if (f.p) p += f.p; else pok = false; if (f.full) { const dist = f.odo - last.odo; if (dist > 0) { const s = { d: f.d, dist, l, p: pok ? p : null, cons: l / dist * 100 }; segs.push(s); segOf[f.id] = s; } last = f; l = 0; p = 0; pok = true; } }
+    else if (f.full) { last = f; l = 0; p = 0; pok = true; }
+  }
+  const sum = (a, k) => a.reduce((s, x) => s + (x[k] || 0), 0);
+  const sd = sum(segs, 'dist'), avg = sd ? sum(segs, 'l') / sd * 100 : null;
+  const fp = recs.filter(r => r.t === 'f' && r.p > 0 && r.l > 0), ppl = fp.length ? sum(fp, 'p') / sum(fp, 'l') : null;
+  const fuelCost = sum(recs.filter(r => r.t === 'f'), 'p'), other = sum(recs.filter(r => r.t === 'c'), 'p');
+  const odos = pts.map(r => r.odo), lastOdo = odos.length ? Math.max(...odos) : null, km = odos.length ? lastOdo - Math.min(...odos) : 0;
+  const span = pts.length ? diffD(pts[0].d, pts.at(-1).d) : 0, kmDay = span >= 7 && km > 0 ? km / span : null;
+  const sp = segs.filter(s => s.p != null), fuelKm = sp.length ? sum(sp, 'p') / sum(sp, 'dist') : avg && ppl ? avg / 100 * ppl : null;
+  const lastD = pts.length ? pts.at(-1).d : null, estOdo = lastOdo != null && kmDay ? Math.round(lastOdo + kmDay * Math.max(0, diffD(lastD, today()))) : lastOdo;
+  const mon = {}, mo = k => mon[k] ??= { fuel: 0, other: 0, km: 0 };
+  for (const r of recs) if (r.p > 0) mo(r.d.slice(0, 7))[r.t === 'f' ? 'fuel' : 'other'] += r.p;
+  for (let i = 1; i < pts.length; i++) { const a = pts[i - 1], b = pts[i], dk = b.odo - a.odo, nd = diffD(a.d, b.d); if (dk <= 0) continue; if (nd <= 0) { mo(b.d.slice(0, 7)).km += dk; continue; } for (let j = 1; j <= nd; j++) mo(addD(a.d, j).slice(0, 7)).km += dk / nd; }
+  return { recs, segs, segOf, avg, lastC: segs.at(-1)?.cons ?? null, best: segs.length ? Math.min(...segs.map(s => s.cons)) : null, ppl, fuelCost, other, lastOdo, lastD, estOdo, km, kmDay, fuelKm, totalKm: fuelKm != null && km > 0 ? fuelKm + other / km : null, mon, fuels };
+}
+function remStatus(r, st) {
+  const out = []; let lvl = 0;
+  if (r.d) { const n = diffD(today(), r.d); out.push(n < 0 ? `${-n} ${dni(n)} po termínu` : n === 0 ? 'dnes' : `za ${n} ${dni(n)}`); lvl = Math.max(lvl, n < 0 ? 2 : n <= 30 ? 1 : 0); }
+  if (r.km) { const left = r.km - (st.estOdo || 0); let s = left < 0 ? `${nf(-left)} km přes` : `za ${nf(left)} km`; if (left > 0 && st.kmDay) s += ` (~${fd(addD(today(), Math.round(left / st.kmDay)))})`; out.push(s); lvl = Math.max(lvl, left < 0 ? 2 : left <= 1000 ? 1 : 0); }
+  return { txt: out.join(' · '), lvl };
+}
+function vCar() {
+  const cars = cfg('car:'), car = curCar();
+  if (!car) return `<section class="hero"><div><div class="kick">Auto</div><h1><span>Kniha jízd</span>bez papíru</h1></div></section><div class="card"><p style="font-size:14px;color:var(--ink2)">Zapisuj tankování, stav tachometru a výdaje. Daily spočítá spotřebu, cenu za kilometr, měsíční náklady, dojezd i roční nájezd a pohlídá STK nebo výměnu oleje.</p><div class="row" style="margin-top:14px"><button class="btn p" data-a="f-car">${ic('plus', 18)}Přidat auto</button>${DEMO ? '' : '<button class="btn" data-a="demo-on">Ukázková data</button>'}</div></div>`;
+  const st = carStats(car), F = FUELS[car.fuel] || FUELS.b, u = F[1];
+  const digits = String(st.estOdo ?? 0).padStart(6, '0').split(''), lead = digits.findIndex(x => x !== '0');
+  const d1 = (a, b) => a == null || b == null ? '' : a <= b ? 'up' : 'dn';
+  let h = `<section class="hero"><div><div class="kick">Auto</div><h1><span>${esc(car.n)}</span></h1></div><button class="btn sm" data-a="f-car" data-id="${car.id}">Upravit</button></section>`;
+  h += `<div class="chips">${cars.map(c => `<button class="chip${c.id === car.id ? ' on' : ''}" data-a="car" data-id="${c.id}">${esc(c.n)}</button>`).join('')}<button class="chip" data-a="f-car">+ auto</button></div>`;
+  h += `<article class="card" style="--c:var(--car)"><div class="card-h"><span class="lab">Tachometr</span><span class="r">${st.lastD ? (st.estOdo !== st.lastOdo ? `odhad · zapsáno ${nf(st.lastOdo)} km ${fd(st.lastD)}` : `zapsáno ${fd(st.lastD)}`) : 'zatím bez záznamu'}</span></div>
+    <div class="odo" aria-label="${nf(st.estOdo || 0)} km">${digits.map((x, i) => `<b class="${lead < 0 || i < lead ? 'z' : ''}">${x}</b>`).join('')}<span>km</span></div>
+    <p class="hint">${st.kmDay ? `Průměrně ${nfx(st.kmDay, 0)} km denně · asi ${nf(Math.round(st.kmDay * 365 / 100) * 100)} km za rok.` : 'Po druhém záznamu s odstupem aspoň týdne dopočítám denní a roční nájezd.'}</p></article>
+  <div class="acts" style="--c:var(--car)"><button class="btn" data-a="f-fuel">${ic('fuel', 22)}Tankování</button><button class="btn" data-a="f-odo">${ic('odo', 22)}Tachometr</button><button class="btn" data-a="f-cost">${ic('cost', 22)}Výdaj</button></div>`;
+  const tile = (lab, v, unit, sub = '') => `<div class="tile"><span class="lab" style="color:var(--car)">${lab}</span><div class="v num">${v}<small>${unit}</small></div><div class="s">${sub}</div></div>`;
+  h += `<div class="tiles">
+    ${tile('Průměrná spotřeba', nf(st.avg, 1), `${u}/100 km`, st.best != null ? `nejlepší ${nf(st.best, 1)}` : 'potřeba 2× plná nádrž')}
+    ${tile('Poslední', nf(st.lastC, 1), `${u}/100 km`, st.lastC != null && st.avg != null && st.segs.length > 1 ? `<span class="${d1(st.lastC, st.avg)}">${st.lastC <= st.avg ? '▼' : '▲'} ${nf(Math.abs(st.lastC - st.avg), 1)}</span> proti průměru` : '')}
+    ${tile('Cena za km', nf(st.totalKm ?? st.fuelKm, 2), 'Kč', st.fuelKm != null ? `jen palivo ${nf(st.fuelKm, 2)} Kč` : '')}
+    ${tile('Cena paliva', nf(st.ppl, 2), `Kč/${u}`, st.fuelCost ? `celkem ${nf(st.fuelCost)} Kč` : '')}
+    ${tile('Dojezd na nádrž', car.tank && st.avg ? nf(Math.round(car.tank * 100 / st.avg / 10) * 10) : '–', 'km', car.tank ? `nádrž ${nfx(car.tank)} ${u}` : 'doplň objem nádrže')}
+    ${F[2] && st.avg ? tile('Emise CO₂', nf(st.avg * F[2] * 10), 'g/km', st.km ? `${nf(st.km * st.avg / 100 * F[2] / 1000, 2)} t celkem` : '') : tile('Všechny náklady', nf(st.fuelCost + st.other), 'Kč', `z toho ostatní ${nf(st.other)} Kč`)}
+  </div>`;
+  if (st.segs.length > 1) { const it = st.segs.slice(-14).map(s => ({ v: s.cons, tip: `${fdy(s.d)} — ${nf(s.cons, 2)} ${u}/100 km · ${nf(s.dist)} km` })); h += `<article class="card" style="--c:var(--car)"><div class="card-h"><span class="lab">Spotřeba po tankováních</span><span class="r">${u}/100 km</span></div>${lineChart(it, { color: 'var(--car)', avg: st.avg })}<p class="tip">Klepni na bod pro detail.</p></article>`; }
+  const mk = Object.keys(st.mon).sort().slice(-12);
+  if (mk.length) {
+    const lab = k => MONS[+k.slice(5) - 1], tot = mk.map(k => st.mon[k].fuel + st.mon[k].other);
+    h += `<article class="card" style="--c:var(--car)"><div class="card-h"><span class="lab">Náklady po měsících</span><span class="r">ø ${nf(mean(tot))} Kč</span></div>${barChart(mk.map(k => ({ v: st.mon[k].fuel + st.mon[k].other, v2: st.mon[k].other, l: lab(k), tip: `${lab(k)} ${k.slice(0, 4)} — ${nf(st.mon[k].fuel + st.mon[k].other)} Kč (palivo ${nf(st.mon[k].fuel)}, ostatní ${nf(st.mon[k].other)})` })), { color: 'var(--car)' })}<p class="tip">Tlumená horní část sloupce = výdaje mimo palivo.</p></article>`;
+    if (mk.some(k => st.mon[k].km > 0)) h += `<article class="card" style="--c:var(--car)"><div class="card-h"><span class="lab">Nájezd po měsících</span><span class="r">celkem ${nf(st.km)} km</span></div>${barChart(mk.map(k => ({ v: Math.round(st.mon[k].km), l: lab(k), tip: `${lab(k)} ${k.slice(0, 4)} — ${nf(st.mon[k].km)} km` })), { color: 'var(--ink2)' })}<p class="tip"></p></article>`;
+  }
+  const rems = cfg('rem:').filter(r => r.car === car.id).map(r => ({ r, s: remStatus(r, st) })).sort((a, b) => b.s.lvl - a.s.lvl);
+  h += `<h2>Připomínky</h2><article class="card" style="--c:var(--car)">${rems.map(({ r, s }) => `<button class="li" data-a="f-rem" data-id="${r.id}"><span class="ib">${ic('bell', 18)}</span><span class="t"><b>${esc(r.n)}</b><small>${[r.d && fdy(r.d), r.km && nf(r.km) + ' km'].filter(Boolean).join(' · ')}</small></span><span class="x ${s.lvl > 1 ? 'b' : s.lvl ? 'w' : ''}">${s.txt}</span></button>`).join('') || '<p class="empty">STK, olej, dálniční známka, pojistka – podle data i kilometrů.</p>'}<button class="btn sm" data-a="f-rem" style="margin-top:12px">${ic('plus', 16)}Připomínka</button></article>`;
+  const list = [...st.recs].reverse(), show = UI.allRec ? list : list.slice(0, 8);
+  h += `<h2>Historie</h2><article class="card" style="--c:var(--car)">${show.map(r => {
+    const s = st.segOf[r.id];
+    const [icn, t, x] = r.t === 'f' ? ['fuel', `${nf(r.l, 2)} ${u}${r.p ? ` · ${nf(r.p)} Kč` : ''}`, s ? `${nf(s.cons, 1)} ${u}/100` : (r.full ? '' : 'částečné')] : r.t === 'o' ? ['odo', 'Stav tachometru', ''] : ['cost', `${esc(r.cat || 'Výdaj')} · ${nf(r.p)} Kč`, ''];
+    return `<button class="li" data-a="f-edit" data-id="${r.id}"><span class="ib">${ic(icn, 18)}</span><span class="t"><b>${t}</b><small>${fdy(r.d)}${r.odo ? ` · ${nf(r.odo)} km` : ''}${r.n ? ` · ${esc(r.n)}` : ''}</small></span><span class="x">${x}</span></button>`;
+  }).join('') || '<p class="empty">Zatím nic. Začni tankováním do plna – od druhého plného tankování uvidíš spotřebu.</p>'}${list.length > 8 && !UI.allRec ? `<button class="btn sm" data-a="allrec" style="margin-top:12px">Zobrazit všech ${list.length}</button>` : ''}</article>`;
+  return h;
+}
+let FE = [];
+function fFuel(rec) {
+  const car = curCar(), st = carStats(car), u = (FUELS[car.fuel] || FUELS.b)[1], e = rec || { d: today(), full: 1 }; FE = ['l', 'p'];
+  sheet(rec ? 'Upravit tankování' : 'Tankování', `<form data-f="fuel" data-id="${rec?.id || ''}">
+    <div class="g2"><label>Datum<input type="date" name="d" value="${e.d}" max="${today()}" required></label><label>Tachometr (km)<input name="odo" inputmode="numeric" value="${inp(e.odo)}" placeholder="${st.lastOdo ? 'naposledy ' + nf(st.lastOdo) : ''}" ${rec ? '' : 'autofocus'}></label></div>
+    <div class="g3"><label>${u === 'l' ? 'Litry' : 'kWh'}<input name="l" inputmode="decimal" value="${inp(e.l)}"></label><label>Celkem Kč<input name="p" inputmode="decimal" value="${inp(e.p || '')}"></label><label>Kč / ${u}<input name="ppl" inputmode="decimal" value="${e.l && e.p ? inp(e.p / e.l) : ''}"></label></div>
+    <label class="tog"><input type="checkbox" name="full" ${e.full ? 'checked' : ''}>Plná nádrž <span style="color:var(--mute);font-size:12.5px">– nutné pro výpočet spotřeby</span></label>
+    <label class="tog"><input type="checkbox" name="miss" ${e.miss ? 'checked' : ''}>Předchozí tankování jsem nezapsal</label>
+    <label>Poznámka<input name="n" value="${esc(e.n || '')}" placeholder="např. čerpací stanice"></label>
+    <p class="calc" id="fcalc"></p><p class="ferr"></p>
+    <div class="sheet-b">${rec ? `<button type="button" class="btn danger" data-a="delrec" data-id="${rec.id}">Smazat</button>` : ''}<button class="btn p">Uložit</button></div></form>`);
+  fuelPreview($('#modal form'));
+}
+function fuelPreview(fm) {
+  const car = curCar(), st = carStats(car), u = (FUELS[car.fuel] || FUELS.b)[1], odo = num(fm.odo.value), l = num(fm.l.value), el = $('#fcalc'); el.className = 'calc';
+  const prev = st.fuels.filter(f => f.id !== fm.dataset.id && f.odo < (odo || 0)).at(-1);
+  if (!odo) { el.textContent = 'Zadej dva údaje z trojice množství / cena / cena za jednotku – třetí dopočítám.'; return; }
+  if (!fm.dataset.id && st.lastOdo && odo < st.lastOdo && fm.d.value >= st.lastD) { el.className = 'calc w'; el.textContent = `Pozor: tachometr je nižší než poslední zápis (${nf(st.lastOdo)} km).`; return; }
+  if (!prev) { el.textContent = 'První tankování – spotřebu uvidíš od dalšího plného.'; return; }
+  const dist = odo - prev.odo; el.textContent = `Od minulého tankování +${nf(dist)} km` + (l && fm.full.checked && prev.full && !fm.miss.checked ? ` · spotřeba ≈ ${nf(l / dist * 100, 1)} ${u}/100 km` : '');
+}
+function fOdo(rec) { const st = carStats(curCar()), e = rec || { d: today() }; sheet(rec ? 'Upravit stav' : 'Stav tachometru', `<form data-f="odo" data-id="${rec?.id || ''}"><div class="g2"><label>Datum<input type="date" name="d" value="${e.d}" max="${today()}" required></label><label>Tachometr (km)<input name="odo" inputmode="numeric" value="${inp(e.odo)}" placeholder="${st.lastOdo ? 'naposledy ' + nf(st.lastOdo) : ''}" autofocus></label></div><label>Poznámka<input name="n" value="${esc(e.n || '')}" placeholder="např. začátek měsíce, dovolená"></label><p class="ferr"></p><div class="sheet-b">${rec ? `<button type="button" class="btn danger" data-a="delrec" data-id="${rec.id}">Smazat</button>` : ''}<button class="btn p">Uložit</button></div></form>`); }
+function fCost(rec) { const e = rec || { d: today(), cat: CATS[0] }; sheet(rec ? 'Upravit výdaj' : 'Výdaj za auto', `<form data-f="cost" data-id="${rec?.id || ''}"><div class="g2"><label>Datum<input type="date" name="d" value="${e.d}" required></label><label>Částka (Kč)<input name="p" inputmode="decimal" value="${inp(e.p)}" autofocus></label></div><div class="g2"><label>Kategorie<select name="cat">${CATS.map(c => `<option${c === e.cat ? ' selected' : ''}>${c}</option>`).join('')}</select></label><label>Tachometr (nepovinné)<input name="odo" inputmode="numeric" value="${inp(e.odo)}"></label></div><label>Poznámka<input name="n" value="${esc(e.n || '')}"></label><p class="ferr"></p><div class="sheet-b">${rec ? `<button type="button" class="btn danger" data-a="delrec" data-id="${rec.id}">Smazat</button>` : ''}<button class="btn p">Uložit</button></div></form>`); }
+function fCar(c) { const e = c || { fuel: 'b' }; sheet(c ? 'Upravit auto' : 'Nové auto', `<form data-f="car" data-id="${c?.id || ''}"><label>Název<input name="n" value="${esc(e.n || '')}" placeholder="např. Octavia" required autofocus></label><div class="g2"><label>Palivo<select name="fuel">${Object.entries(FUELS).map(([k, f]) => `<option value="${k}"${k === e.fuel ? ' selected' : ''}>${f[0]}</option>`).join('')}</select></label><label>Nádrž / baterie<input name="tank" inputmode="decimal" value="${inp(e.tank)}" placeholder="l nebo kWh"></label></div><p class="ferr"></p><div class="sheet-b">${c ? `<button type="button" class="btn danger" data-a="delcar" data-id="${c.id}">Smazat</button>` : ''}<button class="btn p">Uložit</button></div></form>`); }
+function fRem(r) { const e = r || {}; sheet(r ? 'Upravit připomínku' : 'Připomínka', `<form data-f="rem" data-id="${r?.id || ''}"><label>Co pohlídat<input name="n" list="remn" value="${esc(e.n || '')}" placeholder="např. STK" required autofocus><datalist id="remn"><option>STK</option><option>Výměna oleje</option><option>Dálniční známka</option><option>Povinné ručení</option><option>Přezutí pneumatik</option><option>Servisní prohlídka</option></datalist></label><div class="g2"><label>Termín<input type="date" name="d" value="${e.d || ''}"></label><label>Nebo při stavu (km)<input name="km" inputmode="numeric" value="${inp(e.km)}"></label></div><p class="ferr"></p><div class="sheet-b">${r ? `<button type="button" class="btn danger" data-a="delcfg" data-id="${r.id}">Hotovo / smazat</button>` : ''}<button class="btn p">Uložit</button></div></form>`); }
+
+/* ═══ GRAFY ═══ */
+function barChart(items, { goal, color = 'var(--acc)', h = 118 } = {}) {
+  const W = 320, n = items.length, max = Math.max(goal || 0, ...items.map(i => i.v || 0)) || 1, top = 8, ph = h - 24, bw = W / n, gap = n > 45 ? .8 : n > 14 ? 2 : 7;
+  let s = `<svg class="chart" viewBox="0 0 ${W} ${h}" role="img">`;
+  items.forEach((it, i) => {
+    const bh = it.v ? Math.max(2, ph * it.v / max) : 0, x = i * bw + gap / 2, w = bw - gap, rx = Math.min(3, w / 2);
+    s += `<g data-tip="${esc(it.tip || '')}"><rect x="${i * bw}" y="0" width="${bw}" height="${h}" fill="transparent"/>${it.v != null ? `<rect x="${x.toFixed(2)}" y="${(top + ph - bh).toFixed(2)}" width="${w.toFixed(2)}" height="${bh.toFixed(2)}" rx="${rx}" fill="${color}" opacity="${goal && it.v < goal ? .5 : 1}"/>` : `<rect class="nd" x="${(x + w / 2 - 1).toFixed(2)}" y="${top + ph - 2}" width="2" height="2" rx="1"/>`}${it.v2 && it.v ? `<rect x="${x.toFixed(2)}" y="${(top + ph - bh).toFixed(2)}" width="${w.toFixed(2)}" height="${(bh * it.v2 / it.v).toFixed(2)}" rx="${rx}" fill="var(--card)" opacity=".55"/>` : ''}</g>`;
+    if (it.l) s += `<text x="${(i * bw + bw / 2).toFixed(1)}" y="${h - 4}" text-anchor="middle">${it.l}</text>`;
+  });
+  if (goal) { const y = top + ph - ph * goal / max; s += `<line class="goal" x1="0" x2="${W}" y1="${y}" y2="${y}"/>`; }
+  return s + '</svg>';
+}
+function lineChart(items, { color = 'var(--acc)', h = 118, avg } = {}) {
+  const pts = items.map((it, i) => [i, it.v, it.tip]).filter(p => p[1] != null); if (pts.length < 2) return '<p class="empty">Zatím málo hodnot na graf.</p>';
+  const W = 320, vs = pts.map(p => p[1]), lo = Math.min(...vs), hi = Math.max(...vs), span = (hi - lo) || 1, n = Math.max(1, items.length - 1);
+  const X = i => 30 + (W - 38) * i / n, Y = v => 10 + (h - 34) * (1 - (v - lo) / span);
+  let s = `<svg class="chart" viewBox="0 0 ${W} ${h}" role="img"><text x="0" y="13">${nfx(hi)}</text><text x="0" y="${h - 21}">${nfx(lo)}</text>`;
+  if (avg != null && avg >= lo && avg <= hi) s += `<line class="goal" x1="30" x2="${W}" y1="${Y(avg)}" y2="${Y(avg)}"/>`;
+  s += `<path class="ln" stroke="${color}" d="${pts.map((p, i) => `${i ? 'L' : 'M'}${X(p[0]).toFixed(1)} ${Y(p[1]).toFixed(1)}`).join('')}"/>`;
+  for (const p of pts) s += `<g data-tip="${esc(p[2] || '')}"><circle cx="${X(p[0]).toFixed(1)}" cy="${Y(p[1]).toFixed(1)}" r="11" fill="transparent"/><circle cx="${X(p[0]).toFixed(1)}" cy="${Y(p[1]).toFixed(1)}" r="${pts.length > 40 ? 1.6 : 3}" fill="var(--card)" stroke="${color}" stroke-width="2"/></g>`;
+  items.forEach((it, i) => { if (it.l) s += `<text x="${X(i).toFixed(1)}" y="${h - 4}" text-anchor="middle">${it.l}</text>`; });
+  return s + '</svg>';
+}
+
+/* ═══ PŘEHLED ═══ */
+function vStats() {
+  let h = `<section class="hero"><div><div class="kick">Přehled</div><h1><span>Co říkají</span>tvoje data</h1></div></section>`;
+  if (!hasDays()) return h + `<div class="card"><p style="font-size:14px;color:var(--ink2)">Až zapíšeš pár dní, najdeš tu trendy, rytmus týdne, pravidelnost spánku a souvislosti typu „po dni se třemi kávami spím hůř“.</p><div class="row" style="margin-top:14px"><button class="btn" data-a="demo-on">Prohlédnout s ukázkovými daty</button></div></div>`;
+  const per = UI.per, T = today(), rng = (n, off = 0) => Array.from({ length: n }, (_, i) => addD(T, i - n + 1 - off));
+  const days = rng(per), prev = rng(per, per), avg = (m, ds) => mean(ds.map(d => mval(m, d)).filter(v => v != null));
+  const all = [SCORE, ...M], met = all.find(m => m.id === UI.met) || SCORE;
+  h += `<div class="seg">${[[7, 'Týden'], [30, 'Měsíc'], [90, '3 měsíce'], [365, 'Rok']].map(([n, l]) => `<button class="${per === n ? 'on' : ''}" data-a="per" data-n="${n}">${l}</button>`).join('')}</div><div class="tiles">`;
+  for (const id of ['score', 'water', 'sleep', 'mood']) {
+    const m = all.find(x => x.id === id); if (!m) continue; const a = avg(m, days), b = avg(m, prev), dl = a != null && b != null ? a - b : null, good = dl != null && dl * (m.dir || 1) >= 0;
+    h += `<div class="tile"><span class="lab" style="color:${m.id === 'score' ? 'var(--acc)' : col(m)}">${esc(m.n)}</span><div class="v num">${m.t === 'sleep' ? hm(a) : nfx(a, m.t === 'scale' ? 1 : 0)}<small>${m.t === 'sleep' ? 'min' : m.t === 'scale' ? '/ 5' : m.t === 'score' ? '/ 100' : m.unit}</small></div><div class="s">${dl == null || Math.abs(dl) < .005 ? 'ø za období' : `<span class="${good ? 'up' : 'dn'}">${dl > 0 ? '▲' : '▼'} ${m.t === 'sleep' ? Math.round(Math.abs(dl) * 60) + ' min' : nfx(Math.abs(dl), m.t === 'scale' ? 1 : 0)}</span> proti minulému období`}</div></div>`;
+  }
+  const tracked = days.filter(d => dayOf(d)).length;
+  h += `</div><div class="chips">${all.map(m => `<button class="chip${m.id === met.id ? ' on' : ''}" data-a="met" data-m="${m.id}">${esc(m.n)}</button>`).join('')}</div>`;
+  // hlavní graf
+  const c = met.id === 'score' ? 'var(--acc)' : col(met); let items;
+  if (per === 365) items = Array.from({ length: 52 }, (_, w) => { const ds = rng(7, (51 - w) * 7), v = avg(met, ds), mo = pd(ds[0]).getMonth(), newM = pd(ds[6]).getMonth() !== pd(addD(ds[0], -1)).getMonth() && pd(ds[6]).getDate() <= 7; return { v, l: newM ? MONS[pd(ds[6]).getMonth()] : '', tip: `týden od ${fdy(ds[0])} — ø ${fmtV(met, v)}` }; });
+  else items = days.map((d, i) => { const v = mval(met, d), dt = pd(d); return { v, l: per === 7 ? DOW[dt.getDay()] : per === 30 ? (i % 5 === 4 ? dt.getDate() + '.' : '') : (dt.getDate() === 1 ? MONS[dt.getMonth()] : ''), tip: `${DOW[dt.getDay()]} ${fdy(d)} — ${v == null ? 'nezapsáno' : fmtV(met, v)}` }; });
+  const vals = days.map(d => [d, mval(met, d)]).filter(x => x[1] != null), a = mean(vals.map(x => x[1])), best = vals.reduce((b, x) => !b || x[1] * (met.dir || 1) > b[1] * (met.dir || 1) ? x : b, null);
+  const hit = hasGoal(met) && vals.length ? vals.filter(x => fulfil(met, x[1]) >= 1).length / vals.length : null;
+  h += `<article class="card" style="--c:${c}"><div class="card-h"><span class="lab">${esc(met.n)}</span><span class="r">${tracked} z ${per} dní zapsáno</span></div>${met.t === 'num' && !hasGoal(met) ? lineChart(items, { color: c, avg: a }) : barChart(items, { color: c, goal: met.t === 'score' || met.t === 'check' || per === 365 && met.t === 'sum' && !hasGoal(met) ? 0 : hasGoal(met) && (met.dir || 1) > 0 ? met.goal : 0 })}
+    <p class="tip">${vals.length ? `Průměr ${fmtV(met, a)}${best && met.t !== 'check' ? ` · ${(met.dir || 1) < 0 ? 'nejméně' : 'nejvíc'} ${fmtV(met, best[1])} (${fd(best[0])})` : ''}${hit != null ? ` · cíl splněn v ${nf(hit * 100)} % dní` : ''}` : 'Za tohle období nic zapsáno.'}</p></article>`;
+  // rytmus týdne
+  const wdDays = rng(Math.max(per, 56)), wd = [1, 2, 3, 4, 5, 6, 0].map(k => ({ k, v: avg(met, wdDays.filter(d => pd(d).getDay() === k)) }));
+  if (!(met.t === 'num' && !hasGoal(met)) && wd.filter(x => x.v != null).length >= 5) { const bw = wd.filter(x => x.v != null).reduce((b, x) => x.v * (met.dir || 1) > b.v * (met.dir || 1) ? x : b); h += `<article class="card" style="--c:${c}"><div class="card-h"><span class="lab">Rytmus týdne</span><span class="r">${esc(met.n)}</span></div>${barChart(wd.map(x => ({ v: x.v, l: DOW[x.k], tip: `${DOWL[x.k]} — ø ${fmtV(met, x.v)}` })), { color: c, h: 96 })}<p class="tip">Nejlépe ti vychází <b>${DOWL[bw.k].toLowerCase()}</b> (ø ${fmtV(met, bw.v)}).</p></article>`; }
+  // mapa
+  const end = addD(T, 6 - ((pd(T).getDay() + 6) % 7)), cells = Array.from({ length: 126 }, (_, i) => addD(end, i - 125));
+  h += `<article class="card"><div class="card-h"><span class="lab" style="color:var(--acc)">Posledních 18 týdnů</span><span class="r">skóre dne</span></div><div class="heat">${cells.map(d => { const s = d > T ? null : score(d); return `<i class="${s == null ? 'no' : ''}" style="--o:${s == null ? 0 : (.12 + .88 * s / 100).toFixed(2)}" title="${fdy(d)}${s == null ? '' : ' · ' + s}"></i>`; }).join('')}</div></article>`;
+  // spánek
+  const sl = rng(Math.max(per, 30)).map(dayOf).filter(r => r && r.bed && r.wake);
+  if (sl.length >= 5 && M.some(m => m.id === 'sleep')) {
+    const mins = (t, wrap) => { const [a, b] = t.split(':').map(Number), x = a * 60 + b; return wrap && x < 720 ? x + 1440 : x; }, clock = x => { x = Math.round(x) % 1440; return `${Math.floor(x / 60)}:${pad(x % 60)}`; };
+    const bed = sl.map(r => mins(r.bed, 1)), wake = sl.map(r => mins(r.wake)), sdv = std(bed);
+    h += `<article class="card" style="--c:var(--sleep)"><div class="card-h"><span class="lab">Spánkový režim</span><span class="r">${sl.length} nocí</span></div><div class="g3" style="text-align:center">${[['Usínání', clock(mean(bed))], ['Vstávání', clock(mean(wake))], ['Pravidelnost', '± ' + Math.round(sdv) + ' min']].map(([l, v]) => `<div><div style="font-family:var(--serif);font-size:30px;line-height:1.1">${v}</div><small style="font-size:12px;color:var(--mute)">${l}</small></div>`).join('')}</div><p class="hint" style="margin-top:12px">${sdv <= 30 ? 'Chodíš spát velmi pravidelně – přesně to tělo chce.' : sdv <= 60 ? 'Slušná pravidelnost. Pod ± 30 min bývá spánek znatelně kvalitnější.' : 'Čas usínání hodně kolísá. Stálý režim pomáhá víc než hodina spánku navíc.'}</p></article>`;
+  }
+  // pití během dne
+  const hrs = Array(18).fill(0); let nlog = 0;
+  for (const d of rng(Math.max(per, 30))) for (const l of dayOf(d)?.log || []) if (l[1] === 'water' && l[0]) { const hh = +l[0].split(':')[0]; if (hh >= 6) { hrs[hh - 6] += l[2]; nlog++; } }
+  if (nlog >= 10) { const tot = hrs.reduce((s, x) => s + x, 0), am = hrs.slice(0, 6).reduce((s, x) => s + x, 0) / tot; h += `<article class="card" style="--c:var(--water)"><div class="card-h"><span class="lab">Kdy piju</span><span class="r">podíl za den</span></div>${barChart(hrs.map((v, i) => ({ v: v / tot * 100, l: i % 3 === 0 ? (i + 6) + '' : '', tip: `${i + 6}:00–${i + 7}:00 — ${nf(v / tot * 100)} % denního příjmu` })), { color: 'var(--water)', h: 96 })}<p class="tip">${am < .25 ? `Dopoledne vypiješ jen ${nf(am * 100)} % – zkus sklenici hned po probuzení.` : `Dopoledne vypiješ ${nf(am * 100)} % denního příjmu.`}</p></article>`; }
+  // návyky
+  const hab = M.filter(m => m.t === 'check');
+  if (hab.length) h += `<article class="card"><div class="card-h"><span class="lab" style="color:var(--acc)">Návyky</span><span class="r">za ${per} dní</span></div><table><tr><th>Návyk</th><th>Splněno</th><th>Série</th><th>Rekord</th></tr>${hab.map(m => { let best = 0, cur = 0; for (const d of rng(365)) { if (dayOf(d)?.v[m.id]) { cur++; best = Math.max(best, cur); } else cur = 0; } const p = avg(m, days); return `<tr><td>${esc(m.n)}</td><td>${p == null ? '–' : nf(p * 100) + ' %'}</td><td>${streak(m.id, T)}</td><td>${best}</td></tr>`; }).join('')}</table></article>`;
+  // souvislosti
+  const cs = correl();
+  h += `<h2>Souvislosti</h2><article class="card">${cs.length ? cs.map(x => { const thr = x.x.t === 'check' ? '' : x.x.t === 'sleep' ? hm(x.thr) + ' min' : `${nfx(x.thr)} ${x.x.unit || ''}`.trim(); const cond = x.x.t === 'check' ? `splníš <b>${esc(x.x.n)}</b>` : `je <b>${esc(x.x.n)}</b> aspoň <b>${thr}</b>`; const dl = x.mh - x.ml, f = v => x.y.t === 'sleep' ? hm(v) : nfx(v, 1); return `<div class="ins"><p>${x.lag ? 'Noc poté, co' : 'Ve dnech, kdy'} ${cond}:</p><div class="d ${x.good ? 'up' : 'dn'}">${dl > 0 ? '+' : '−'}${x.y.t === 'sleep' ? Math.round(Math.abs(dl) * 60) + ' min' : nfx(Math.abs(dl), 1)}</div><p><b>${esc(x.y.n)} ${f(x.mh)}</b> místo ${f(x.ml)}</p><small style="grid-column:1/-1">${x.nh} a ${x.nl} dní</small></div>`; }).join('') + '<p class="hint" style="margin-top:10px;font-size:12px;color:var(--mute)">Porovnání průměrů za posledního půl roku. Souvislost ještě není příčina – ber to jako tip, co vyzkoušet.</p>' : '<p class="empty">Zatím málo dat. Souvislosti se objeví zhruba po dvou až třech týdnech zapisování (hlavně škál Nálada, Energie a Kvalita spánku).</p>'}</article>`;
+  return h;
+}
+function correl() {
+  const T = today(), rows = Array.from({ length: 181 }, (_, i) => addD(T, i - 180)), res = [];
+  const outs = M.filter(m => m.t === 'scale' || m.t === 'sleep'), drv = M.filter(m => m.t !== 'scale' && m.id !== 'weight');
+  for (const y of outs) for (const x of drv) {
+    if (x.id === y.id || (y.g === 'sleep' && x.g === 'sleep')) continue;
+    const lag = y.g === 'sleep' ? 1 : 0, pairs = [];
+    for (let i = lag; i < rows.length; i++) { const a = mval(x, rows[i - lag]), b = mval(y, rows[i]); if (a != null && b != null) pairs.push([a, b]); }
+    if (pairs.length < 14) continue;
+    let thr = 1; if (x.t !== 'check') { const s = pairs.map(p => p[0]).sort((a, b) => a - b); thr = s[Math.floor(s.length / 2)]; if (x.t === 'sleep') thr = Math.round(thr * 4) / 4; if (thr <= s[0]) { thr = s.find(v => v > s[0]); if (thr == null) continue; } }
+    const hi = pairs.filter(p => p[0] >= thr).map(p => p[1]), lo = pairs.filter(p => p[0] < thr).map(p => p[1]); if (hi.length < 5 || lo.length < 5) continue;
+    const mh = mean(hi), ml = mean(lo), sd = std(pairs.map(p => p[1])); if (!sd) continue; const eff = (mh - ml) / sd; if (Math.abs(eff) < .4) continue;
+    res.push({ x, y, lag, thr, mh, ml, nh: hi.length, nl: lo.length, eff, good: (mh - ml) * (y.dir || 1) > 0 });
+  }
+  return res.sort((a, b) => Math.abs(b.eff) - Math.abs(a.eff)).slice(0, 6);
+}
+
+/* ═══ NASTAVENÍ ═══ */
+let SYNC = { st: 'local', msg: '' };
+function vSet() {
+  const all = metrics(true), th = LS.get(KT) || 'auto', on = !!LS.get(KS);
+  const li = m => `<div class="li"><button class="t" data-a="f-metric" data-id="${m.id}" style="text-align:left"><b>${esc(m.n)}</b><small>${m.t === 'check' ? 'návyk' : m.t === 'scale' ? 'škála 1–5' : hasGoal(m) ? `${(m.dir || 1) < 0 ? 'limit' : 'cíl'} ${nfx(m.goal)} ${esc(m.unit || '')}` : esc(m.unit || 'bez cíle')}</small></button><button class="sw${m.on ? ' on' : ''}" data-a="m-on" data-id="${m.id}" role="switch" aria-checked="${!!m.on}" aria-label="Sledovat ${esc(m.n)}"></button></div>`;
+  return `<section class="hero"><div><div class="kick">Nastavení</div><h1><span>Co sleduju</span>a kam se to ukládá</h1></div></section>
+  <h2 style="margin-top:8px">Metriky a cíle</h2><article class="card">${all.filter(m => m.t !== 'check').map(li).join('')}<button class="btn sm" data-a="f-metric" data-t="sum" style="margin-top:12px">${ic('plus', 16)}Vlastní metrika</button></article>
+  <h2>Návyky</h2><article class="card">${all.filter(m => m.t === 'check').map(li).join('')}<button class="btn sm" data-a="f-metric" data-t="check" style="margin-top:12px">${ic('plus', 16)}Nový návyk</button></article>
+  <h2>Synchronizace</h2><article class="card"><p style="font-size:14px;color:var(--ink2)">${on ? (USER ? `Přihlášen jako <b>${esc(USER.email || '')}</b>. Data se zálohují do tvého účtu a jsou stejná ve všech zařízeních.` : esc(SYNC.msg || 'Připojuji se k účtu…')) : 'Data jsou teď jen v tomto prohlížeči. Po přihlášení účtem z Posilovny se zálohují a synchronizují mezi telefonem a počítačem.'}</p><div class="row" style="margin-top:12px">${on ? `<button class="btn sm" data-a="sync-off">Vypnout synchronizaci</button>${USER ? '' : '<button class="btn sm p" data-a="login">Přihlásit</button>'}` : '<button class="btn p" data-a="sync-on">Zapnout synchronizaci</button>'}</div></article>
+  <h2>Vzhled</h2><div class="seg">${[['auto', 'Podle systému'], ['light', 'Světlý'], ['dark', 'Tmavý']].map(([k, l]) => `<button class="${th === k ? 'on' : ''}" data-a="theme" data-t="${k}">${l}</button>`).join('')}</div>
+  <h2>Data</h2><article class="card"><div class="row"><button class="btn sm" data-a="export">Záloha (JSON)</button><button class="btn sm" data-a="csv">Dny do tabulky (CSV)</button><label class="btn sm" style="cursor:pointer">Obnovit ze zálohy<input type="file" accept="application/json,.json" data-ch="import" class="hidden"></label></div><div class="row" style="margin-top:10px"><button class="btn sm" data-a="${DEMO ? 'demo-off' : 'demo-on'}">${DEMO ? 'Ukončit ukázku' : 'Ukázková data'}</button><button class="btn sm danger" data-a="wipe">Smazat všechna data</button></div></article>
+  <p style="text-align:center;margin-top:22px;font-size:13px"><a href="../">← Rozcestník</a></p>`;
+}
+function fMetric(m, t) {
+  const e = m || { t, on: 1, dir: 1 }, def = m && !m.custom, w = metrics(true).find(x => x.id === 'weight'), kg = e.id === 'water' ? lastVal('weight') : null;
+  const numeric = e.t === 'sum' || e.t === 'num' || e.t === 'sleep';
+  sheet(m ? esc(m.n) : (t === 'check' ? 'Nový návyk' : 'Vlastní metrika'), `<form data-f="metric" data-id="${m?.id || ''}" data-t="${e.t}">
+    <label>Název<input name="n" value="${esc(e.n || '')}" required ${m ? '' : 'autofocus'}></label>
+    ${!m && t !== 'check' ? `<label>Typ<select name="t" data-ch="mtype">${Object.entries(TYPES).filter(([k]) => k !== 'check').map(([k, l]) => `<option value="${k}">${l}</option>`).join('')}</select></label>` : ''}
+    <div id="mnum" class="${numeric ? '' : 'hidden'}" style="display:grid;gap:12px"><div class="g2"><label>Jednotka<input name="unit" value="${esc(e.unit || '')}" ${e.t === 'sleep' ? 'disabled' : ''} placeholder="např. min, stran"></label><label>${(e.dir || 1) < 0 ? 'Denní limit' : 'Denní cíl'}<input name="goal" inputmode="decimal" value="${inp(e.goal)}" placeholder="nepovinné"></label></div>
+    ${def ? '' : `<label>Směr<select name="dir"><option value="1">Čím víc, tím líp (cíl)</option><option value="-1"${e.dir < 0 ? ' selected' : ''}>Chci držet pod limitem</option></select></label>`}
+    ${e.t === 'sum' || !m ? `<label id="msteps">Tlačítka pro rychlé přidání<input name="steps" value="${esc((e.steps || [1]).join(', '))}" placeholder="např. 200, 330, 500"></label>` : ''}</div>
+    ${kg ? `<p class="calc">Orientačně 30–35 ml na kilogram: při ${nfx(kg)} kg to dělá ${nf(Math.round(kg * 30 / 100) * 100)}–${nf(Math.round(kg * 35 / 100) * 100)} ml denně.</p>` : ''}
+    <p class="ferr"></p><div class="sheet-b">${m && m.custom ? `<button type="button" class="btn danger" data-a="delcfg" data-id="m:${m.id}">Smazat</button>` : ''}<button class="btn p">Uložit</button></div></form>`);
+}
+function lastVal(id) { const T = today(); for (let i = 0; i < 120; i++) { const v = dayOf(addD(T, -i))?.v[id]; if (v != null) return v; } return null; }
+
+/* ═══ FORMULÁŘE ═══ */
+const nowT = () => { if (UI.day !== today()) return ''; const n = new Date(); return `${pad(n.getHours())}:${pad(n.getMinutes())}`; };
+const FORMS = {
+  exact(f, id) { const v = num(f.v); if (v == null || v < 0) return 'Zadej číslo.'; const t = nowT(); editDay(UI.day, r => { r.v[id] = v; r.log = r.log.filter(l => l[1] !== id); if (v) r.log.push([t, id, v]); }); },
+  fuel(f, id) { const odo = num(f.odo), l = num(f.l), p = num(f.p); if (!f.d) return 'Vyber datum.'; if (!odo || odo <= 0) return 'Zadej stav tachometru.'; if (!l || l <= 0) return 'Zadej množství paliva.'; put('car', id || uid(), { t: 'f', car: curCar().id, d: f.d, odo: Math.round(odo), l, p: p || 0, full: f.full ? 1 : 0, miss: f.miss ? 1 : 0, n: f.n.trim() }); },
+  odo(f, id) { const odo = num(f.odo); if (!f.d) return 'Vyber datum.'; if (!odo || odo <= 0) return 'Zadej stav tachometru.'; put('car', id || uid(), { t: 'o', car: curCar().id, d: f.d, odo: Math.round(odo), n: f.n.trim() }); },
+  cost(f, id) { const p = num(f.p); if (!f.d) return 'Vyber datum.'; if (!p || p <= 0) return 'Zadej částku.'; put('car', id || uid(), { t: 'c', car: curCar().id, d: f.d, p, cat: f.cat, odo: Math.round(num(f.odo) || 0), n: f.n.trim() }); },
+  car(f, id) { if (!f.n.trim()) return 'Zadej název.'; id ||= 'car:' + uid(); put('cfg', id, { n: f.n.trim(), fuel: f.fuel, tank: num(f.tank) || 0 }); UI.car = id; },
+  rem(f, id) { const km = num(f.km); if (!f.n.trim()) return 'Zadej název.'; if (!f.d && !km) return 'Zadej termín nebo stav tachometru.'; put('cfg', id || 'rem:' + uid(), { car: curCar().id, n: f.n.trim(), d: f.d || '', km: km ? Math.round(km) : 0 }); },
+  metric(f, id, fm) {
+    if (!f.n.trim()) return 'Zadej název.'; const cur = id ? metrics(true).find(m => m.id === id) : null, t = cur ? cur.t : (f.t || fm.dataset.t), goal = num(f.goal);
+    const rec = { n: f.n.trim(), on: cur ? cur.on : 1 };
+    if (t !== 'check' && t !== 'scale') { rec.goal = goal == null ? '' : goal; if (f.unit != null) rec.unit = f.unit.trim(); if (f.dir) rec.dir = +f.dir; if (t === 'sum') { const st = String(f.steps || '').split(/[;,\s]+/).map(num).filter(x => x > 0).slice(0, 3); rec.steps = st.length ? st : [1]; } }
+    if (!cur || cur.custom) rec.t = t;
+    put('cfg', 'm:' + (id || 'c' + uid()), rec);
+  },
+  login(f, id, fm) {
+    const er = $('.ferr', fm), bt = $('button.p', fm); bt.disabled = true; er.textContent = '';
+    (async () => {
+      try {
+        await loadFb(); let email = f.login.trim();
+        if (!email.includes('@')) { const d = await firebase.firestore().collection('usernames').doc(email.toLowerCase()).get(); if (!d.exists) throw new Error('Uživatel s tímto jménem neexistuje.'); email = d.data().email; }
+        const cred = await firebase.auth().signInWithEmailAndPassword(email, f.pw); USER = cred.user; LS.set(KS, '1'); bindAuth(); attach(); closeSheet(); toast('Synchronizace zapnuta'); render();
+      } catch (e) { er.textContent = fbErr(e); bt.disabled = false; }
+    })(); return false;
+  },
+};
+document.addEventListener('submit', e => { const fm = e.target.closest('form[data-f]'); if (!fm) return; e.preventDefault(); const err = FORMS[fm.dataset.f](Object.fromEntries(new FormData(fm)), fm.dataset.id, fm); if (err) { $('.ferr', fm).textContent = err; return; } if (err !== false) { closeSheet(); render(); } });
+
+/* ═══ AKCE ═══ */
+const ACT = {
+  tab(b) { UI.tab = b.dataset.tab; history.replaceState(null, '', '#' + UI.tab); window.scrollTo(0, 0); render(); },
+  day(b) { UI.day = b.dataset.d; render(); },
+  close(b, e) { if (e.target === b) closeSheet(); },
+  add(b) { const id = b.dataset.m, a = +b.dataset.n, t = nowT(); editDay(UI.day, r => { r.v[id] = Math.round(((r.v[id] || 0) + a) * 100) / 100; r.log.push([t, id, a]); }); render(); },
+  undo(b) { const id = b.dataset.m; editDay(UI.day, r => { const i = r.log.map(l => l[1]).lastIndexOf(id); if (i >= 0) { r.v[id] = Math.max(0, Math.round(((r.v[id] || 0) - r.log[i][2]) * 100) / 100); r.log.splice(i, 1); } else r.v[id] = 0; if (!r.v[id]) delete r.v[id]; }); render(); },
+  exact(b) { const m = M.find(x => x.id === b.dataset.m), v = dayOf(UI.day)?.v[m.id]; sheet(m.n, `<form data-f="exact" data-id="${m.id}"><label>Celkem za den${m.unit ? ` (${esc(m.unit)})` : ''}<input name="v" inputmode="decimal" value="${inp(v)}" autofocus></label><p class="ferr"></p><div class="sheet-b"><button class="btn p">Uložit</button></div></form>`); },
+  scale(b) { const id = b.dataset.m, n = +b.dataset.n; editDay(UI.day, r => { if (r.v[id] === n) delete r.v[id]; else r.v[id] = n; }); render(); },
+  check(b) { const id = b.dataset.m; editDay(UI.day, r => { if (r.v[id]) delete r.v[id]; else r.v[id] = 1; }); render(); },
+  pri(b) { const i = +b.dataset.i; if (!dayOf(UI.day)?.pri?.[i]?.t) return; editDay(UI.day, r => { r.pri[i].d = r.pri[i].d ? 0 : 1; }); render(); },
+  carry() { const y = dayOf(addD(UI.day, -1)); editDay(UI.day, r => { const c = (y.pri || []).filter(p => p.t && !p.d); r.pri = [0, 1, 2].map(i => ({ t: c[i]?.t || '', d: 0 })); }); render(); },
+  car(b) { UI.car = b.dataset.id; UI.allRec = false; render(); },
+  allrec() { UI.allRec = true; render(); },
+  'f-fuel'() { fFuel(); }, 'f-odo'() { fOdo(); }, 'f-cost'() { fCost(); },
+  'f-car'(b) { fCar(b.dataset.id ? cfg('car:').find(c => c.id === b.dataset.id) : null); },
+  'f-rem'(b) { fRem(b.dataset.id ? cfg('rem:').find(r => r.id === b.dataset.id) : null); },
+  'f-edit'(b) { const r = live('car').find(x => x.id === b.dataset.id); if (r) ({ f: fFuel, o: fOdo, c: fCost })[r.t](r); },
+  'f-metric'(b) { fMetric(b.dataset.id ? metrics(true).find(m => m.id === b.dataset.id) : null, b.dataset.t); },
+  delrec(b) { put('car', b.dataset.id, { x: 1 }); closeSheet(); render(); },
+  delcfg(b) { put('cfg', b.dataset.id, { x: 1 }); closeSheet(); render(); },
+  delcar(b) { const n = live('car').filter(r => r.car === b.dataset.id).length; if (!confirm(`Smazat auto${n ? ` i s ${n} záznamy` : ''}? Nejde to vrátit.`)) return; for (const r of live('car')) if (r.car === b.dataset.id) put('car', r.id, { x: 1 }); for (const r of cfg('rem:')) if (r.car === b.dataset.id) put('cfg', r.id, { x: 1 }); put('cfg', b.dataset.id, { x: 1 }); UI.car = null; closeSheet(); render(); },
+  'm-on'(b) { const m = metrics(true).find(x => x.id === b.dataset.id), c = DB.b.cfg?.['m:' + m.id]; put('cfg', 'm:' + m.id, { ...(c && !c.x ? c : {}), on: m.on ? 0 : 1 }); render(); },
+  per(b) { UI.per = +b.dataset.n; render(); },
+  met(b) { UI.met = b.dataset.m; render(); },
+  theme(b) { const t = b.dataset.t; t === 'auto' ? LS.del(KT) : LS.set(KT, t); applyTheme(); render(); },
+  'demo-on'() { if (DEMO) return; REAL = DB; DB = demoDB(); DEMO = true; UI.car = null; UI.day = today(); toast('Ukázková data – nic se neukládá'); render(); },
+  'demo-off'() { if (!DEMO) return; DB = REAL; REAL = null; DEMO = false; UI.car = null; render(); },
+  export() { download(`daily-zaloha-${today()}.json`, JSON.stringify({ app: 'daily', v: 1, b: DB.b }), 'application/json'); },
+  csv() { const ms = metrics(true), rows = [['datum', ...ms.map(m => m.n + (m.unit && m.t !== 'check' ? ` (${m.unit})` : '')), 'skóre', 'do postele', 'vstávání', 'poznámka']]; for (const b of Object.keys(DB.b).filter(b => /^\d{4}-\d\d$/.test(b)).sort()) for (const d of Object.keys(DB.b[b]).sort()) { const r = dayOf(d); if (r) rows.push([d, ...ms.map(m => r.v[m.id] ?? ''), score(d, r) ?? '', r.bed || '', r.wake || '', r.note || '']); } download(`daily-dny-${today()}.csv`, '﻿' + rows.map(r => r.map(c => `"${String(c).replace('.', typeof c === 'number' ? ',' : '.').replace(/"/g, '""')}"`).join(';')).join('\r\n'), 'text/csv'); },
+  wipe() { if (DEMO) return toast('V ukázce není co mazat.'); if (!confirm('Opravdu smazat všechna data Daily' + (LS.get(KS) ? ' – i v účtu a na ostatních zařízeních' : '') + '? Nejde to vrátit.')) return; for (const b of Object.keys(DB.b)) for (const id of Object.keys(DB.b[b])) if (!DB.b[b][id].x) put(b, id, { x: 1 }); UI.car = null; render(); toast('Smazáno'); },
+  'sync-on'() { syncOn(); }, 'sync-off'() { LS.del(KS); detach(); setSync('local'); render(); }, login() { loginSheet(); },
+};
+function download(name, text, type) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }
+document.addEventListener('click', e => {
+  const tp = e.target.closest('[data-tip]'); if (tp) { const t = tp.closest('.card')?.querySelector('.tip'); if (t && tp.dataset.tip) t.textContent = tp.dataset.tip; }
+  const b = e.target.closest('[data-a]'); if (b && ACT[b.dataset.a]) ACT[b.dataset.a](b, e);
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
+document.addEventListener('change', e => {
+  const t = e.target, ch = t.dataset.ch, d = UI.day; if (!ch) return;
+  if (ch === 'num') { const v = num(t.value); editDay(d, r => { if (v == null) delete r.v[t.dataset.m]; else r.v[t.dataset.m] = v; }); t.value = inp(v); }
+  else if (ch === 'bed' || ch === 'wake') editDay(d, r => { if (t.value) r[ch] = t.value; else delete r[ch]; if (r.bed && r.wake) { const [a, b] = [r.bed, r.wake].map(x => { const [h, m] = x.split(':').map(Number); return h * 60 + m; }); r.v.sleep = Math.round(((b - a + 1440) % 1440) / 60 * 100) / 100; } else delete r.v.sleep; });
+  else if (ch === 'pri') editDay(d, r => { r.pri = [0, 1, 2].map(i => ({ t: r.pri?.[i]?.t || '', d: r.pri?.[i]?.d || 0 })); r.pri[+t.dataset.i].t = t.value.trim(); if (!t.value.trim()) r.pri[+t.dataset.i].d = 0; });
+  else if (ch === 'note') editDay(d, r => { r.note = t.value.trim(); });
+  else if (ch === 'mtype') { const v = t.value; $('#mnum').classList.toggle('hidden', v === 'scale'); $('#msteps')?.classList.toggle('hidden', v !== 'sum'); return; }
+  else if (ch === 'import') { const f = t.files[0]; if (f) f.text().then(importData).catch(() => toast('Soubor se nepodařilo načíst.')); return; }
+  soft();
+});
+document.addEventListener('input', e => {
+  const fm = e.target.closest('form[data-f="fuel"]'); if (!fm) return; const n = e.target.name;
+  if (['l', 'p', 'ppl'].includes(n)) { FE = FE.filter(x => x !== n); FE.push(n); const [a, b] = FE.slice(-2), th = ['l', 'p', 'ppl'].find(x => x !== a && x !== b), L = num(fm.l.value), P = num(fm.p.value), U = num(fm.ppl.value); const v = th === 'p' ? (L && U ? L * U : null) : th === 'ppl' ? (L && P ? P / L : null) : (P && U ? P / U : null); if (v != null) fm[th].value = inp(v); }
+  fuelPreview(fm);
+});
+function importData(text) {
+  if (DEMO) return toast('Nejdřív ukonči ukázku.'); let d; try { d = JSON.parse(text); } catch { return toast('To není záloha Daily.'); }
+  if (!d || d.app !== 'daily' || !d.b) return toast('To není záloha Daily.'); let n = 0;
+  for (const b of Object.keys(d.b)) for (const id of Object.keys(d.b[b] || {})) { const r = d.b[b][id], loc = DB.b[b]?.[id]; if (r && typeof r === 'object' && (!loc || (r.u || 0) > (loc.u || 0))) { (DB.b[b] ??= {})[id] = r; (DB.dirty[b] ??= {})[id] = 1; n++; } }
+  save(); schedulePush(); render(); toast(n ? `Obnoveno ${n} záznamů` : 'Záloha neobsahuje nic novějšího');
+}
+function applyTheme() { const t = LS.get(KT); if (t) document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme; }
+
+/* ═══ SYNCHRONIZACE (Firebase, účet z Posilovny) ═══ */
+let USER = null, unsub = null, authReady = null, pushT = null, pushing = false;
+const FB_V = '10.12.2';
+async function loadFb() {
+  if (!window.firebase?.firestore) for (const m of ['app', 'auth', 'firestore']) await new Promise((ok, no) => { const s = document.createElement('script'); s.src = `https://www.gstatic.com/firebasejs/${FB_V}/firebase-${m}-compat.js`; s.onload = ok; s.onerror = () => { s.remove(); no(new Error('Nejsi online – zkus to znovu se signálem.')); }; document.head.append(s); });
+  if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+}
+function fbErr(e) {
+  const c = (e && e.code) || '';
+  return ({ 'auth/invalid-credential': 'Špatné jméno nebo heslo.', 'auth/wrong-password': 'Špatné jméno nebo heslo.', 'auth/invalid-login-credentials': 'Špatné jméno nebo heslo.', 'auth/user-not-found': 'Účet s tímto e-mailem neexistuje.', 'auth/too-many-requests': 'Moc pokusů – chvíli počkej.', 'auth/network-request-failed': 'Nejsi online.', 'auth/invalid-email': 'Neplatný e-mail.', 'auth/unauthorized-domain': 'Tahle doména není ve Firebase povolená.', 'permission-denied': 'Databáze odmítla přístup.', 'unavailable': 'Nejsi online – uloží se, až bude signál.' })[c] || (e && e.message) || 'Něco se pokazilo.';
+}
+function setSync(st, msg = '') { SYNC = { st, msg }; const el = $('#sync'); el.firstElementChild.className = 'dot ' + (st === 'local' ? '' : st); el.lastElementChild.textContent = { local: 'V zařízení', ok: 'Synchronizováno', pend: 'Ukládám…', err: 'Nesynchronizováno' }[st]; el.title = msg; }
+function bindAuth() { return authReady ||= new Promise(res => firebase.auth().onAuthStateChanged(u => { USER = u; detach(); if (u && LS.get(KS)) attach(); else if (LS.get(KS)) setSync('err', 'Přihlášení vypršelo – přihlas se znovu.'); res(); if (UI.tab === 'set' && !typing()) render(); })); }
+const daily = () => firebase.firestore().collection('users').doc(USER.uid).collection('daily');
+function detach() { if (unsub) { unsub(); unsub = null; } }
+function attach() {
+  if (unsub || !USER || DEMO) return;
+  const prev = LS.get(KU);
+  if (prev && prev !== USER.uid && Object.keys(DB.b).length && !confirm('V tomto zařízení jsou data jiného účtu. Sloučit je s účtem ' + (USER.email || '') + '?')) { LS.del(KS); setSync('local'); return; }
+  LS.set(KU, USER.uid); setSync('pend');
+  unsub = daily().onSnapshot({ includeMetadataChanges: true }, q => {
+    let ch = false;
+    q.docChanges().forEach(c => { if (c.type === 'removed') return; const b = c.doc.id, rs = c.doc.data().r || {}; for (const id in rs) { const loc = DB.b[b]?.[id]; if (!loc || (rs[id].u || 0) > (loc.u || 0)) { (DB.b[b] ??= {})[id] = rs[id]; if (DB.dirty[b]) delete DB.dirty[b][id]; ch = true; } } });
+    if (ch) { save(); typing() ? soft() : render(); }
+    if (!pushing && !isDirty()) setSync(q.metadata.fromCache ? 'pend' : 'ok', q.metadata.fromCache ? 'Čekám na připojení.' : '');
+    push();
+  }, e => { setSync('err', fbErr(e)); unsub = null; });
+}
+const isDirty = () => Object.values(DB.dirty).some(o => Object.keys(o).length);
+function schedulePush() { if (DEMO || !unsub) return; clearTimeout(pushT); pushT = setTimeout(push, 1200); }
+async function push() {
+  if (DEMO || !USER || !unsub || pushing || !isDirty()) return;
+  pushing = true; setSync('pend', 'Odesílám změny.');
+  try {
+    for (const b of Object.keys(DB.dirty)) {
+      const ids = Object.keys(DB.dirty[b]).filter(id => DB.b[b]?.[id]); if (!ids.length) { delete DB.dirty[b]; continue; }
+      const data = { r: {} }, sent = ids.map(id => [id, DB.b[b][id].u]);
+      for (const id of ids) data.r[id] = clone(DB.b[b][id]);
+      await daily().doc(b).set(data, { mergeFields: ids.map(id => new firebase.firestore.FieldPath('r', id)) });
+      for (const [id, u] of sent) if (DB.b[b]?.[id]?.u === u) delete DB.dirty[b][id];
+    }
+    save(); setSync('ok');
+  } catch (e) { setSync('err', fbErr(e)); }
+  pushing = false; if (isDirty() && SYNC.st !== 'err') schedulePush();
+}
+async function syncOn() {
+  if (DEMO) return toast('Nejdřív ukonči ukázku.');
+  try { toast('Připojuji…'); await loadFb(); await bindAuth(); if (firebase.auth().currentUser) { USER = firebase.auth().currentUser; LS.set(KS, '1'); attach(); toast('Synchronizace zapnuta'); render(); } else loginSheet(); } catch (e) { toast(fbErr(e)); }
+}
+function loginSheet() { sheet('Přihlášení', `<form data-f="login" autocomplete="on"><p style="font-size:13.5px;color:var(--ink2)">Stejný účet jako v <a href="./posilovna.html">Posilovně</a> – tam si ho taky založíš nebo obnovíš heslo.</p><label>Jméno nebo e-mail<input name="login" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" required autofocus></label><label>Heslo<input name="pw" type="password" autocomplete="current-password" required></label><p class="ferr"></p><div class="sheet-b"><button class="btn p">Přihlásit a synchronizovat</button></div></form>`); }
+function bootSync() { if (LS.get(KS) && !authReady) { setSync('pend', 'Připojuji se…'); loadFb().then(bindAuth).catch(e => setSync('err', fbErr(e))); } }
+addEventListener('online', () => { bootSync(); if (USER && !unsub && LS.get(KS)) attach(); push(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) return; const T = today(); if (T !== lastToday) { if (UI.day === lastToday) UI.day = T; lastToday = T; } if (!typing() && !$('#modal').innerHTML) render(); push(); });
+
+/* ═══ UKÁZKOVÁ DATA (jen v paměti) ═══ */
+function demoDB() {
+  const b = { cfg: {}, car: {} }, T = today(); let seed = 11; const rnd = () => (seed = seed * 16807 % 2147483647) / 2147483647, rn = (a, c) => a + rnd() * (c - a), cl = (v, a, c) => Math.max(a, Math.min(c, v));
+  let pc = 2, pm = 20, ps = 1, kg = 79.6, u = 1;
+  for (let i = 150; i >= 0; i--) {
+    const d = addD(T, -i), wd = pd(d).getDay(), we = wd === 0 || wd === 6; if (i > 1 && rnd() < .05) continue;
+    const noscr = rnd() < .5 ? 1 : 0, bedM = Math.round((we ? 1435 : 1390) + rn(-45, 55) - (ps ? 15 : 0)), sl = cl((we ? 8.1 : 7.0) + rn(-1, 1) - (pc > 2 ? .35 : 0), 4.5, 9.6);
+    const sq = cl(Math.round(3.3 + (sl - 7) * .5 - (pc > 2 ? .9 : 0) + (pm >= 30 ? .5 : 0) + (ps ? .5 : 0) + rn(-.8, .8)), 1, 5), coffee = Math.round(rn(1, 3.6) + (sl < 6.5 ? .7 : 0));
+    const water = Math.round(rn(1300, 2900) / 50) * 50, move = rnd() < .58 ? [20, 30, 45, 60][Math.floor(rnd() * 4)] : 0, out = rnd() < .6 ? 1 : 0;
+    const energy = cl(Math.round(2.4 + (sl - 7) * .7 + (water >= 2200 ? .7 : 0) + (move ? .4 : 0) + rn(-.7, .7)), 1, 5), mood = cl(Math.round(3 + (energy - 3) * .45 + (out ? .6 : 0) + (we ? .3 : 0) + rn(-.8, .8)), 1, 5);
+    const focus = we ? 0 : Math.round(rn(20, 170) / 25) * 25 + (sl >= 7 ? 25 : 0), stress = cl(Math.round(3.2 - (we ? 1 : 0) - (move ? .5 : 0) + rn(-1, 1)), 1, 5); kg += rn(-.22, .19);
+    const wakeM = (bedM + Math.round(sl * 60)) % 1440, tm = m => `${pad(Math.floor(m % 1440 / 60))}:${pad(m % 60)}`, log = []; let left = water, t = 400 + Math.round(rn(0, 60));
+    while (left > 0) { const a = Math.min(left, [200, 330, 500][Math.floor(rnd() * 3)]); log.push([tm(Math.min(t, 1380)), 'water', a]); left -= a; t += Math.round(rn(50, 190)); }
+    const r = { v: { water, sleep: Math.round(sl * 100) / 100, sleepq: sq, mood, energy, stress, coffee, steps: Math.round(rn(3500, 11500) + move * 40), weight: Math.round(kg * 10) / 10 }, log, bed: tm(bedM), wake: tm(wakeM), pri: [{ t: 'Dopsat report', d: rnd() < .75 ? 1 : 0 }, { t: 'Zavolat do servisu', d: rnd() < .6 ? 1 : 0 }, { t: 'Nákup na víkend', d: rnd() < .5 ? 1 : 0 }], u: u++ };
+    if (move) r.v.move = move; if (focus) r.v.focus = focus; if (rnd() < .62) r.v.h_read = 1; if (rnd() < .45) r.v.h_stretch = 1; if (out) r.v.h_out = 1; if (noscr) r.v.h_noscreen = 1;
+    if (i === 0) { r.v.water = 830; r.log = [['07:40', 'water', 330], ['10:15', 'water', 500]]; r.v.coffee = 1; delete r.v.move; delete r.v.focus; delete r.v.steps; delete r.v.h_read; delete r.v.h_noscreen; r.pri = [{ t: 'Dopsat report', d: 1 }, { t: 'Objednat přezutí', d: 0 }, { t: '', d: 0 }]; r.note = ''; }
+    (b[d.slice(0, 7)] ??= {})[d] = r; pc = coffee; pm = move; ps = noscr;
+  }
+  const car = 'car:demo'; b.cfg[car] = { n: 'Octavia 2.0 TDI', fuel: 'd', tank: 50, u: 1 };
+  let odo = 81240, day = -330, k = 0;
+  while (day < -3) { const mo = pd(addD(T, day)).getMonth(), winter = mo < 2 || mo > 9, dist = Math.round(rn(520, 760)), cons = rn(5.1, 5.9) + (winter ? .55 : 0); odo += dist; const l = Math.round(dist * cons) / 100, ppl = rn(33.9, 37.9); b.car['f' + k] = { t: 'f', car, d: addD(T, day), odo, l, p: Math.round(l * ppl), full: k === 6 ? 0 : 1, miss: 0, n: ['', 'MOL', 'Orlen', 'Shell'][k % 4], u: 1 }; k++; day += Math.round(rn(11, 19)); }
+  [[-300, 'Dálniční známka', 2440], [-212, 'Servis', 6890], [-160, 'Pojištění', 7350], [-41, 'Pneumatiky', 1200], [-9, 'Mytí', 249]].forEach(([dd, cat, p], i) => { b.car['c' + i] = { t: 'c', car, d: addD(T, dd), p, cat, odo: 0, n: '', u: 1 }; });
+  b.cfg['rem:1'] = { car, n: 'STK', d: addD(T, 23), km: 0, u: 1 }; b.cfg['rem:2'] = { car, n: 'Výměna oleje', d: '', km: Math.ceil(odo / 1000) * 1000 + 2000, u: 1 }; b.cfg['rem:3'] = { car, n: 'Dálniční známka', d: addD(T, 65), km: 0, u: 1 };
+  return { b, dirty: {} };
+}
+
+const VIEWS = { today: vToday, car: vCar, stats: vStats, set: vSet };
+applyTheme(); render(); bootSync();
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('./daily-sw.js', { scope: './daily' }).catch(() => {});
+</script>
+</body>
+</html>
