@@ -55,6 +55,8 @@ Import (pořadí podle přesnosti):
 2. **Z fotky** (`readPhoto`, Tesseract.js z CDN, čte se v prohlížeči) – obraz se rozdělí na vrstvu akordů (barevné písmo) a textu; text čte český model, vyříznuté akordy anglický (křížky, lomítka); akord se vloží před znak, nad kterým začíná. Bez barevného odlišení se hledají řádky složené jen z akordů.
 3. Ručně – akordy v hranatých závorkách (`[Ami]`), nebo na řádku nad textem; obojí zvládá `parseSong`.
 
+Když import (kterýkoli z prvních dvou i tlačítko do záložek) najde zmínku o kapodastru – „Capo 2“, „kapodastr na 3. pražci“, „Kapo: III“, i mimo blok písně v liště stránky – `capoOf` vrátí pražec a do poznámky písně se doplní řádek „Kapodastr: N. pražec“ (`withCapo`; poznámka, která kapodastr už zmiňuje, se nemění).
+
 Odkazy „Najít na webu“ (akordy.kytary.cz, pisnicky-akordy.cz, kytaristka.cz) jsou až pod písní; weby nemají veřejné API ani CORS.
 
 **Posun podle poslechu** (ikona mikrofonu u písně, objekt `FOL`): mikrofon → spektrum (Web Audio `AnalyserNode`, vše v zařízení, nic se neodesílá) → síla dvanácti tónů (`chromaOf`) → porovnání s akordem, který je na řadě, a třemi dalšími (`folTick`); když zní další, posune se ukazatel a text. Posun tóniny (kapodastr) a ladění se odhadují samy. `followPlan` staví posloupnost akordů z textu: sloky bez akordů přebírají akordy z předchozí sloky stejného druhu, samotné „R:“ znamená celý refrén, řádky bez akordů jdou naučeným tempem, v tichu se čeká. Klepnutí na řádek ukazatel přesune. `folProcess(db, sr, rms, dt)` jde volat i bez mikrofonu s umělým spektrem (`followStart(id, true)`) – tak se to testuje.

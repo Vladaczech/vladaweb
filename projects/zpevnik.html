@@ -698,6 +698,16 @@ function songHtml(txt, n) {
     return `<div class="ln cl">${h}</div>`;
   }).join('');
 }
+/* zmínka o kapodastru v importovaném textu („Capo 2“, „kapodastr na 3. pražci“, „Kapo: III“) → číslo pražce, jinak 0 */
+function capoOf(t) {
+  t = String(t || '');
+  const ROM = { I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6, VII: 7, VIII: 8, IX: 9, X: 10, XI: 11, XII: 12 };
+  const a = /(?:kapodastr[a-zěé]*|kapem|kapo|capo)[^\n\d]{0,24}?(\d{1,2})(?!\d)(?!\s*[,;|\/]\s*\d)/i.exec(t), n = a ? +a[1] : 0; if (n >= 1 && n <= 12) return n;
+  const b = /(?:[Kk]apodastr[a-zěé]*|[Kk]apo|[Cc]apo|KAPO\w*|CAPO)[^\nIVX\d]{0,12}?\b([IVX]{1,4})\b/.exec(t); return b && ROM[b[1]] || 0;
+}
+const capoNote = n => `Kapodastr: ${n}. pražec`;
+/* poznámka písně doplněná o kapodastr (když ho ještě nezmiňuje) */
+const withCapo = (note, n) => !n || /kapo|capo/i.test(note || '') ? null : (note ? note.replace(/\s+$/, '') + '\n' : '') + capoNote(n);
 const cleanTxt = t => String(t || '').replace(/\r/g, '').replace(/\t/g, '    ').replace(/[ \u00a0]+$/gm, '').replace(/\n{3,}/g, '\n\n').replace(/^\n+|\n+$/g, '');
 
 /* ═══ SMĚROVÁNÍ ═══ */
@@ -816,7 +826,7 @@ function editSheet(id, pre = {}) {
   sheet(s ? (s.txt ? 'Upravit píseň' : 'Doplnit text') : 'Nová píseň', `<form data-f="song" data-id="${esc(id || '')}">
     <div class="two"><label class="f">Název<input name="t" value="${esc(v.t)}" required autocomplete="off"${v.t ? '' : ' autofocus'}></label><label class="f">Autor<input name="a" value="${esc(v.a)}" list="dl-art" autocomplete="off"></label></div>
     <div class="acts"><button type="button" class="btn sm" data-act="paste">${ic('clip', 16)} Vložit zkopírované</button><label class="btn sm">${ic('cam', 16)} Z fotky<input type="file" id="photo" accept="image/*" multiple hidden></label><span style="flex:1"></span><button type="button" class="btn sm ghost" data-act="preview" id="pv-btn">Náhled</button></div>
-    <p class="prog" id="prog" hidden><span></span><i></i></p><p class="ferr"></p>
+    <p class="prog" id="prog" hidden><span></span><i></i></p><p class="ferr"></p><input type="hidden" name="capo"><p class="hint" id="capo-info" hidden></p>
     <textarea class="code" name="txt" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="   Ami        C&#10;Text písně s akordy nad slovy&#10;&#10;nebo s [Ami]akordy v [C]závorkách">${esc(v.txt)}</textarea><div class="song pv" id="pv" hidden></div>
     <div><p class="hint" style="margin-bottom:10px">Nejpřesnější je píseň na webu označit, zkopírovat a vložit sem – akordy se převezmou na znak přesně. Fotku ořízni jen na píseň. Ručně se akordy píšou do hranatých závorek: [Ami]text.</p><div class="sheet-b"><button class="btn p">Uložit</button></div></div>
   </form>`, true);
@@ -895,7 +905,8 @@ const FORMS = {
     let id = fm.dataset.id;
     if (!id) { const k = songs().find(s => norm(s.t) === norm(t) && norm(s.a) === norm(a)); if (k && k.txt) return 'Tuhle píseň už ve zpěvníku máš.'; id = k ? k.id : 'u:' + uid(); }
     const s = song(id), bs = BASE.get(id) || {};
-    upd(id, { t: bs.t === t ? null : t, a: bs.a === a ? null : a, txt: bs.txt === txt ? null : txt }); $('#modal').innerHTML = '';
+    const patch = { t: bs.t === t ? null : t, a: bs.a === a ? null : a, txt: bs.txt === txt ? null : txt }, cn = withCapo(s?.n, +f.capo); if (cn) patch.n = cn;
+    upd(id, patch); $('#modal').innerHTML = '';
     if (route().v === 's' && route().id === id) render(); else location.hash = href('s', id);
     toast(s?.txt || !txt ? 'Uloženo' : 'Píseň je ve zpěvníku'); return false;
   },
@@ -945,6 +956,7 @@ function pageMeta(doc, pageTitle) {
 }
 function htmlToSong(html, pageTitle) {
   const doc = new DOMParser().parseFromString(html, 'text/html'), BL = 'div,p,li,pre,td,section,article,blockquote';
+  $$('script,style,noscript,template', doc).forEach(e => e.remove()); const capo = capoOf(doc.body.textContent);
   let ch = $$(CHSEL, doc.body).filter(e => { const t = chordText(e); return t.length <= 14 && isChord(t); });
   const all = new Set(ch); ch = ch.filter(e => { for (let p = e.parentElement; p; p = p.parentElement) if (all.has(p)) return false; return true; });
   const set = new Set(ch);
@@ -952,7 +964,7 @@ function htmlToSong(html, pageTitle) {
   const real = ch.filter(e => { const b = e.closest(BL) || doc.body; let n = b.textContent.replace(/\s+/g, '').length; for (const c of $$(CHSEL, b)) if (set.has(c)) n -= chordText(c).length; return n > 3; });
   if (real.length < 3) {   // web bez označených akordů: akordy na řádcích nad textem v <pre>
     let best = null, bn = 2; for (const p of $$('pre', doc.body)) { const n = p.textContent.split('\n').filter(isChordLine).length; if (n > bn) { bn = n; best = p; } }
-    return best ? { txt: cleanTxt(best.textContent), ...pageMeta(doc, pageTitle), exact: 1 } : null;
+    return best ? { txt: cleanTxt(best.textContent), ...pageMeta(doc, pageTitle), capo, exact: 1 } : null;
   }
   let root = real[0].parentElement || doc.body; while (root !== doc.body && !real.every(e => root.contains(e))) root = root.parentElement || doc.body;
   for (;;) { const c = [...root.children].find(c => !set.has(c) && real.filter(e => c.contains(e)).length >= real.length * .8); if (!c) break; root = c; }
@@ -975,7 +987,7 @@ function htmlToSong(html, pageTitle) {
   for (let i = 0; i < out.length; i++) if (/^(R\d*|Ref|\d{1,2}|\*)[.:]?$/i.test(out[i].trim())) { let j = i + 1; while (j < out.length && !out[j].trim()) j++; if (j < out.length) { const lb = out[i].trim(); out[j] = (/[.:]$/.test(lb) ? lb : lb + (/^\d/.test(lb) ? '.' : ':')) + ' ' + out[j]; out.splice(i, j - i); i--; } }
   const txt = cleanTxt(out.join('\n')); BR.lastIndex = 0;
   if ((txt.match(BR) || []).length < 3 && !txt.split('\n').some(isChordLine)) return null;
-  return { txt, ...pageMeta(doc, pageTitle), exact: 1 };
+  return { txt, ...pageMeta(doc, pageTitle), capo, exact: 1 };
 }
 /* prostý text zkopírovaný z celé stránky: nechat jen úsek kolem řádků s akordy */
 function trimPlain(t) {
@@ -990,15 +1002,16 @@ async function readClip() {
   if (navigator.clipboard?.read) try {
     const items = await navigator.clipboard.read();
     for (const it of items) if (it.types.includes('text/html')) { const r = htmlToSong(await (await it.getType('text/html')).text()); if (r) return r; }
-    for (const it of items) if (it.types.includes('text/plain')) return { txt: trimPlain(await (await it.getType('text/plain')).text()) };
+    for (const it of items) if (it.types.includes('text/plain')) { const t = await (await it.getType('text/plain')).text(); return { txt: trimPlain(t), capo: capoOf(t) }; }
   } catch {}
-  return { txt: trimPlain(await navigator.clipboard.readText()) };
+  const t = await navigator.clipboard.readText(); return { txt: trimPlain(t), capo: capoOf(t) };
 }
 /* vloží importovaný text do editoru a rovnou ukáže náhled s akordy nad slovy */
 function putText(r, note) {
   const fm = $('#modal form[data-f=song]'); if (!fm) return;
   const ta = fm.txt; ta.value = ta.value.trim() ? ta.value.replace(/\s+$/, '') + '\n\n' + r.txt : r.txt;
   if (r.title && !fm.t.value.trim()) { fm.t.value = r.title; if (r.artist && !fm.a.value.trim()) fm.a.value = r.artist; }
+  if (r.capo && !fm.capo.value) { fm.capo.value = r.capo; const ci = $('#capo-info'); ci.textContent = capoNote(r.capo) + ' – uloží se do poznámky.'; ci.hidden = false; }
   showPreview(true); toast(note || (r.exact ? 'Akordy převzaty přesně ze stránky' : 'Vloženo – zkontroluj náhled'));
 }
 function showPreview(on) { const ta = $('#modal textarea.code'), pv = $('#pv'), bt = $('#pv-btn'); if (!ta || !pv) return; if (on) pv.innerHTML = songHtml(ta.value, 0) || '<p class="empty">Zatím žádný text.</p>'; ta.hidden = on; pv.hidden = !on; bt.textContent = on ? 'Upravit text' : 'Náhled'; }
@@ -1012,7 +1025,7 @@ const bmHref = () => 'javascript:' + encodeURIComponent(`(function(){var U=${JSO
 const ALIAS = { brontosauri: 'nedvedi', 'frantisek-nedved': 'nedvedi', 'wabi-ryvola': 'hoboes', 'miki-ryvola': 'hoboes', 'bratri-ryvolove': 'hoboes', zelenaci: 'greenhorns', 'jarek-nohavica': 'jaromir-nohavica' };
 function importPage(d) {
   let r = htmlToSong(d.html, d.title);
-  if (!r && typeof d.text === 'string') { const t = trimPlain(d.text); if (t.split('\n').filter(l => isChordLine(l) || hasBr(l)).length >= 3) r = { txt: t, ...pageMeta(new DOMParser().parseFromString('', 'text/html'), d.title) }; }
+  if (!r && typeof d.text === 'string') { const t = trimPlain(d.text); if (t.split('\n').filter(l => isChordLine(l) || hasBr(l)).length >= 3) r = { txt: t, capo: capoOf(d.text), ...pageMeta(new DOMParser().parseFromString('', 'text/html'), d.title) }; }
   if (!r || !r.txt.trim()) return { ok: 0, msg: 'Na stránce jsem nenašel píseň s akordy.' };
   const title = r.title || 'Bez názvu', src = /^https?:\/\//.test(d.url || '') ? String(d.url).slice(0, 300) : null;
   let art = slug(r.artist); art = ALIAS[art] || art; const aw = art.split('-').filter(w => w.length > 3);
@@ -1021,7 +1034,8 @@ function importPage(d) {
   const s = songs().find(c => slug(c.t) === slug(title) && fit(c));
   if (s && s.txt) return { ok: 0, id: s.id, msg: 'Tuhle píseň už ve zpěvníku máš – nepřepsal jsem ji.' };
   const id = s ? s.id : 'u:' + uid();
-  upd(id, s ? { txt: r.txt, src } : { t: title, a: r.artist || 'Neznámý autor', txt: r.txt, src });
+  const patch = s ? { txt: r.txt, src } : { t: title, a: r.artist || 'Neznámý autor', txt: r.txt, src }, cn = withCapo(s?.n, r.capo || capoOf(d.text)); if (cn) patch.n = cn;
+  upd(id, patch);
   return { ok: 1, id, msg: 'Uloženo do zpěvníku: ' + title };
 }
 const IMP = new Map();   // tlačítko posílá zprávu opakovaně, dokud nedostane odpověď → každou zpracovat jen jednou
@@ -1137,7 +1151,9 @@ async function readLyrics(w, cv, s) {
   return rows;
 }
 /* akordy + řádky textu → text písně s akordy v závorkách */
+let ocrCapo = 0;
 function weave(rows, chords) {
+  ocrCapo ||= capoOf(rows.map(r => r.t).join('\n'));
   rows = rows.filter(r => /[\p{L}\d]{2}/u.test(r.t) || r.t.length > 3);
   const RH = med(rows.map(r => r.y1 - r.y0)) || med(chords.map(c => c.y1 - c.y0)) || 20, mid = r => (r.y0 + r.y1) / 2;
   const items = rows.map(r => ({ ...r, ch: [], top: r.y0 })), orph = [];
@@ -1188,7 +1204,7 @@ async function readPhoto(w, wc, file) {
 async function importPhotos(files) {
   const ta = $('#modal textarea.code'), pr = $('#prog'); if (!ta) return;
   const say = (t, p) => { if (!pr.isConnected) return; pr.hidden = false; pr.firstElementChild.textContent = t; pr.lastElementChild.style.setProperty('--p', p); };
-  let w, wc, k = 0;
+  let w, wc, k = 0; ocrCapo = 0;
   try {
     say('Načítám čtečku textu…', .05); await loadScript(TESS);
     // dva modely: čeština na text, angličtina na akordy (křížky a lomítka čte spolehlivěji)
@@ -1196,7 +1212,7 @@ async function importPhotos(files) {
     const parts = []; for (const f of files) { parts.push(await readPhoto(w, wc || w, f)); k++; }
     const txt = cleanTxt(parts.filter(Boolean).join('\n\n'));
     if (!ta.isConnected) return;
-    if (!txt.trim()) toast('Na fotce jsem nenašel žádný text.'); else { BR.lastIndex = 0; const n = (txt.match(BR) || []).length; putText({ txt }, n ? `Přečteno, akordů: ${n} – zkontroluj náhled` : 'Text přečten, akordy jsem na fotce nenašel'); }
+    if (!txt.trim()) toast('Na fotce jsem nenašel žádný text.'); else { BR.lastIndex = 0; const n = (txt.match(BR) || []).length; putText({ txt, capo: ocrCapo || capoOf(txt) }, n ? `Přečteno, akordů: ${n} – zkontroluj náhled` : 'Text přečten, akordy jsem na fotce nenašel'); }
   } catch (e) { toast(e && e.message === 'offline' ? 'Čtení z fotky potřebuje připojení.' : 'Fotku se nepodařilo přečíst.'); console.error(e); }
   finally { try { await w?.terminate(); await wc?.terminate(); } catch {} if (pr.isConnected) pr.hidden = true; }
 }
