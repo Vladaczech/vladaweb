@@ -468,6 +468,17 @@ html[data-vt="back"]{--vtd:-1}
 .gen-tog{margin-top:10px;justify-content:center;position:relative}.gen-tog .chev{position:absolute;right:16px;color:var(--muted)}
 .gen-tog.on{border-color:var(--neon-d);color:var(--neon)}
 .gen-box{margin-top:10px;animation:tin .3s cubic-bezier(.2,.8,.2,1)}
+/* ── Potvrzovací okno ── */
+.dlg-bg{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:grid;place-items:center;padding:24px;opacity:0;pointer-events:none;transition:opacity .2s}
+.dlg-bg.on{opacity:1;pointer-events:auto}
+.dlg{width:100%;max-width:360px;background:#0d0d0d;border:1px solid rgba(255,77,109,.35);border-radius:22px;padding:22px 18px 16px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.7),0 0 40px rgba(255,77,109,.08);transform:scale(.94);transition:transform .22s cubic-bezier(.2,.8,.2,1)}
+.dlg-bg.on .dlg{transform:none}
+.dlg-ico{width:54px;height:54px;margin:0 auto 12px;border-radius:50%;display:grid;place-items:center;color:var(--bad);background:rgba(255,77,109,.1);border:1px solid rgba(255,77,109,.35)}
+.dlg h3{font-family:var(--display);font-size:22px;font-weight:600;letter-spacing:-.01em}
+.dlg p{font-size:14px;color:var(--muted);line-height:1.5;margin:8px 0 18px}.dlg p b{color:var(--text)}
+.dlg-btns{display:flex;flex-direction:column;gap:8px}
+.btn.danger-f{background:var(--bad);border-color:var(--bad);color:#fff;font-weight:700}
+.btn.danger-f:disabled{background:rgba(255,77,109,.18);border-color:rgba(255,77,109,.35);color:rgba(255,255,255,.6)}
 .themes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .th{display:flex;flex-direction:column;align-items:stretch;gap:7px;padding:8px;border-radius:14px;border:1px solid var(--line);background:var(--tb);text-align:left;transition:border-color .2s,box-shadow .2s}
 .th.on{border-color:var(--ta);box-shadow:0 0 0 1px var(--ta),0 0 18px rgba(var(--tr),.25)}
@@ -1056,7 +1067,8 @@ function applyChanges(q, arr, pend) {
   q.docChanges().forEach(ch => {
     const x = ch.doc.data(), i = arr.findIndex(o => o.id === ch.doc.id);
     if (ch.type === 'removed') { if (i >= 0) arr.splice(i, 1); return; }
-    if (i < 0) arr.push(x); else if (!pend.has(x.id) && (x.u || 0) >= (arr[i].u || 0)) arr[i] = x;
+    if (i < 0) arr.push(x);
+    else if (!pend.has(x.id) && (x.u || 0) >= (arr[i].u || 0)) { const o = arr[i]; for (const k of Object.keys(o)) if (!(k in x)) delete o[k]; Object.assign(o, x); }
   });
 }
 function subscribe() {
@@ -2304,6 +2316,49 @@ function cdAutoSave(it) {
   it.acc = 0; it.t0 = null;
 }
 
+
+/* ── Potvrzovací okno uprostřed obrazovky (zahození / smazání tréninku ve dvou krocích) ── */
+const DLG = { t: null };
+function openDlg(html) {
+  let el = $('#dlg');
+  if (!el) { el = document.createElement('div'); el.id = 'dlg'; el.className = 'dlg-bg'; document.body.appendChild(el); el.addEventListener('click', e => { if (e.target === el) closeDlg(); }); }
+  clearInterval(DLG.t);
+  el.innerHTML = `<div class="dlg" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t">${html}</div>`;
+  requestAnimationFrame(() => el.classList.add('on'));
+  setTimeout(() => el.querySelector('[data-act="dlgx"]')?.focus(), 50);
+}
+function closeDlg() { clearInterval(DLG.t); const el = $('#dlg'); if (el) el.classList.remove('on'); }
+// tlačítko posledního kroku se odemkne až po odpočtu – nejde ho omylem „proklepnout“
+function dlgCountdown(sec = 3) {
+  const btn = $('#dlg [data-countdown]'); if (!btn) return;
+  const lab = btn.dataset.countdown; let n = sec; btn.disabled = true; btn.textContent = `${lab} (${n})`;
+  DLG.t = setInterval(() => { n--; if (n > 0) btn.textContent = `${lab} (${n})`; else { clearInterval(DLG.t); btn.disabled = false; btn.textContent = lab; } }, 1000);
+}
+const dlgIco = `<div class="dlg-ico" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/></svg></div>`;
+function discardDlg(step) {
+  const w = openWorkout(); if (!w) return;
+  const exs = w.it.filter(i => doneSets(i).length), sets = exs.reduce((a, i) => a + doneSets(i).length, 0), edited = !!w.orig;
+  if (step === 1) openDlg(`${dlgIco}<h3 id="dlg-t">${edited ? 'Zahodit úpravy?' : 'Zahodit trénink?'}</h3>
+    <p>${edited ? `Upravuješ dokončený trénink z <b>${esc(dLong(w.d))}</b>. Můžeš zahodit jen úpravy – trénink se vrátí do původního stavu – nebo smazat celý trénink.`
+                : sets ? `Odškrtnuté série (<b>${pl(sets, 'série', 'série', 'sérií')}</b> v ${pl(exs.length, 'cviku', 'cvicích', 'cvicích')}) se nezapíšou do historie.` : 'Zatím nemáš odškrtnutou žádnou sérii.'}</p>
+    <div class="dlg-btns">${edited ? '<button class="btn p wide big" data-act="discrev">Zahodit jen úpravy</button><button class="btn danger wide" data-act="disc2">Smazat celý trénink…</button>' : '<button class="btn danger wide big" data-act="disc2">Zahodit trénink…</button>'}
+      <button class="btn ghost wide" data-act="dlgx">Zpět k tréninku</button></div>`);
+  else { openDlg(`${dlgIco}<h3 id="dlg-t">Opravdu ${edited ? 'smazat celý trénink' : 'zahodit'}?</h3>
+    <p>Poslední krok. ${edited ? 'Trénink zmizí z historie i z grafů.' : sets ? `Zahodí se ${pl(sets, 'odškrtnutá série', 'odškrtnuté série', 'odškrtnutých sérií')}.` : 'Trénink se zahodí.'}</p>
+    <div class="dlg-btns"><button class="btn danger-f wide big" data-act="discgo" data-countdown="${edited ? 'Smazat trénink' : 'Ano, zahodit'}">…</button>
+      <button class="btn wide" data-act="dlgx">Ne, nechat</button></div>`); dlgCountdown(3); }
+}
+function delDlg(id, step) {
+  const w = S.w.find(o => o.id === id); if (!w) return;
+  const exs = w.it.filter(i => doneSets(i).length), sets = exs.reduce((a, i) => a + doneSets(i).length, 0), nm = wName(w);
+  if (step === 1) openDlg(`${dlgIco}<h3 id="dlg-t">Smazat trénink?</h3>
+    <p><b>${esc(nm || 'Trénink')}</b> z ${esc(dLong(w.d))} – ${pl(exs.length, 'cvik', 'cviky', 'cviků')}, ${pl(sets, 'série', 'série', 'sérií')}. Zmizí z historie, grafů i doporučení.</p>
+    <div class="dlg-btns"><button class="btn danger wide big" data-act="delw2" data-id="${esc(id)}">Smazat…</button><button class="btn ghost wide" data-act="dlgx">Zrušit</button></div>`);
+  else { openDlg(`${dlgIco}<h3 id="dlg-t">Opravdu smazat?</h3><p>Poslední krok – trénink z ${esc(dLong(w.d))} se smaže.</p>
+    <div class="dlg-btns"><button class="btn danger-f wide big" data-act="delwgo" data-id="${esc(id)}" data-countdown="Smazat trénink">…</button><button class="btn wide" data-act="dlgx">Ne, nechat</button></div>`); dlgCountdown(3); }
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#dlg.on')) closeDlg(); });
+
 function weekStats() {
   const ws = startOfWeek(now());
   const wk = doneWorkouts().filter(w => new Date(w.d).getTime() >= ws);
@@ -2912,7 +2967,7 @@ function finishWorkout() {
   w.it.forEach(i => { if (isCardio(getEx(i.ex))) cdAutoSave(i); delete i.t0; delete i.acc; delete i.sp; i.s = doneSets(i); });
   w.it = w.it.filter(i => i.s.length);
   if (!w.it.length) { if (!confirm('Žádná série není odškrtnutá. Zahodit trénink?')) { return; } w.del = true; touch(w); commit(true); return; }
-  w.open = false; w.end = Math.max(now(), new Date(w.d).getTime()); touch(w);
+  w.open = false; w.end = Math.max(now(), new Date(w.d).getTime()); delete w.orig; touch(w);
   const prs = w.it.filter(i => prev[i.ex] > 0 && bestE1(i.s) > prev[i.ex]).map(i => ({ n: getEx(i.ex).n, e: bestE1(i.s), p: prev[i.ex] }));
   restEnd = 0; ui.rate = null; $('#rest').classList.add('hidden');
   if (wakeLock) { wakeLock.release().catch(() => {}); wakeLock = null; }
@@ -3042,9 +3097,29 @@ document.addEventListener('click', async e => {
       break;
     }
     case 'finish': finishWorkout(); break;
-    case 'discard': {
-      w.del = true; touch(w); restEnd = 0; ui.rate = null; $('#rest').classList.add('hidden'); commit(true);
-      toast('Trénink zahozen', 6000, () => { w.del = false; touch(w); commit(true); });
+    case 'discard': discardDlg(1); break;
+    case 'dlgx': closeDlg(); break;
+    case 'disc2': discardDlg(2); break;
+    case 'discgo': {
+      if (b.disabled) break;
+      const x = openWorkout(); closeDlg(); if (!x) break;
+      const id = x.id; x.del = true; delete x.orig; touch(x); restEnd = 0; ui.rate = null; $('#rest').classList.add('hidden'); commit(true); vib([20, 40, 20]);
+      toast('Trénink zahozen', 6000, () => { const y = S.w.find(o => o.id === id); if (y) { y.del = false; touch(y); commit(true); } });
+      break;
+    }
+    case 'discrev': {
+      const x = openWorkout(); closeDlg(); if (!x || !x.orig) break;
+      Object.assign(x, { it: x.orig.it, end: x.orig.end, rpe: x.orig.rpe, note: x.orig.note, open: false }); delete x.orig;
+      if (!x.end) delete x.end; if (!x.rpe) delete x.rpe; if (!x.note) delete x.note;
+      touch(x); restEnd = 0; ui.rate = null; $('#rest').classList.add('hidden'); commit(true); toast('Úpravy zahozeny – trénink je jako předtím');
+      break;
+    }
+    case 'delw2': delDlg(b.dataset.id, 2); break;
+    case 'delwgo': {
+      if (b.disabled) break;
+      const id = b.dataset.id, x = S.w.find(o => o.id === id); closeDlg(); if (!x) break;
+      x.del = true; touch(x); commit(true); vib([20, 40, 20]);
+      toast('Trénink smazán', 6000, () => { const y = S.w.find(o => o.id === id); if (y) { y.del = false; touch(y); commit(true); } });
       break;
     }
     case 'rpe': { const x = S.w.find(o => o.id === b.dataset.id); if (x) { x.rpe = +b.dataset.v; touch(x); commit(); vib(8); $$('.rpe button').forEach(o => o.classList.toggle('on', +o.dataset.v === x.rpe)); $('.rpe-l').innerHTML = rpeLabel(x.rpe); } break; }
@@ -3097,10 +3172,12 @@ document.addEventListener('click', async e => {
     case 'copyuid': navigator.clipboard?.writeText(USER.uid).then(() => toast('ID účtu zkopírováno')).catch(() => {}); break;
     case 'histtog': ui.histOpen = ui.histOpen === b.dataset.id ? null : b.dataset.id; render(); break;
     case 'gohist': ui.histOpen = b.dataset.id; view = 'hist'; render(); break;
-    case 'delw': { const x = S.w.find(x => x.id === b.dataset.id); if (x) { x.del = true; touch(x); commit(true); toast('Trénink smazán', 6000, () => { x.del = false; touch(x); commit(true); }); } break; }
+    case 'delw': delDlg(b.dataset.id, 1); break;
     case 'editw': {
       if (w) { toast('Nejdřív dokonči rozběhnutý trénink.'); return; }
-      const x = S.w.find(x => x.id === b.dataset.id); x.open = true; x.it.forEach(i => i.s.forEach(s => s.ok = true)); touch(x); view = 'train'; commit(true); scrollTo(0, 0); break;
+      const x = S.w.find(x => x.id === b.dataset.id);
+      x.orig = clean({ it: x.it, end: x.end ?? null, rpe: x.rpe ?? null, note: x.note ?? null });
+      x.open = true; x.it.forEach(i => i.s.forEach(s => s.ok = true)); touch(x); view = 'train'; commit(true); scrollTo(0, 0); break;
     }
     case 'addcx': {
       const n = $('#c-name').value.trim(); if (!n) { toast('Zadej název.'); return; }
