@@ -2359,6 +2359,36 @@ function delDlg(id, step) {
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#dlg.on')) closeDlg(); });
 
+
+/* ── Odebrání vyplněné série / úseku: potvrzovací okno ── */
+const rmIco = `<div class="dlg-ico" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14"/></svg></div>`;
+function rmSetDlg(i) {
+  const w = openWorkout(); if (!w || !w.it[i]) return;
+  const it = w.it[i], ex = getEx(it.ex), n = it.s.length, x = it.s[n - 1], d = diffOf(x.q);
+  const what = `${x.w > 0 ? fmt(x.w, 2) + ' kg × ' : ''}${x.r ?? '–'} ${unitOf(ex)}`;
+  openDlg(`${rmIco}<h3 id="dlg-t">Odebrat ${n}. sérii?</h3>
+    <p><b>${esc(ex.n)}</b><br>${what}${x.ok ? ' · odškrtnutá' : ''}${d ? ` · <span style="color:${d.c}">${d.l}</span>` : ''}</p>
+    <div class="dlg-btns"><button class="btn danger-f wide big" data-act="rmsetgo" data-i="${i}">Odebrat sérii</button><button class="btn wide" data-act="dlgx">Nechat</button></div>`);
+}
+function rmSetGo(w, i) {
+  const it = w.it[i]; if (!it || !it.s.length) return;
+  const gone = it.s.pop(), id = w.id;
+  if (ui.rate && ui.rate.i === i && ui.rate.j >= it.s.length) ui.rate = null;
+  touch(w); commit(); renderCard(i);
+  if (gone.ok || gone.q != null) toast('Série odebrána', 5000, () => { const y = S.w.find(o => o.id === id); if (y && y.it[i]) { y.it[i].s.push(gone); touch(y); commit(); renderCard(i); } });
+}
+function cdDelDlg(i, j) {
+  const w = openWorkout(); if (!w || !w.it[i]) return;
+  const it = w.it[i], ex = getEx(it.ex), x = it.s[j];
+  openDlg(`${rmIco}<h3 id="dlg-t">Smazat ${j + 1}. úsek?</h3><p><b>${esc(ex.n)}</b><br>${cdTxt(x, ex)}</p>
+    <div class="dlg-btns"><button class="btn danger-f wide big" data-act="cddelgo" data-i="${i}" data-j="${j}">Smazat úsek</button><button class="btn wide" data-act="dlgx">Nechat</button></div>`);
+}
+function cdDelGo(w, i, j) {
+  const it = w.it[i]; if (!it || !it.s[j]) return;
+  const gone = it.s.splice(j, 1)[0], id = w.id; touch(w); commit(); renderCard(i);
+  if (gone && gone.r) toast('Úsek smazán', 5000, () => { const y = S.w.find(o => o.id === id); if (y && y.it[i]) { y.it[i].s.splice(j, 0, gone); touch(y); commit(); renderCard(i); } });
+}
+
 function weekStats() {
   const ws = startOfWeek(now());
   const wk = doneWorkouts().filter(w => new Date(w.d).getTime() >= ws);
@@ -3061,12 +3091,23 @@ document.addEventListener('click', async e => {
       break;
     }
     case 'addset': { const l = it.s[it.s.length - 1]; it.s.push(l ? { w: l.w, r: l.r, q: null, ok: false } : { w: null, r: null, q: null, ok: false }); touch(w); commit(); renderCard(+card.dataset.i); break; }
-    case 'rmset': { if (!it.s.length) return; const i = +card.dataset.i, gone = it.s.pop(); if (ui.rate && ui.rate.i === i && ui.rate.j >= it.s.length) ui.rate = null; touch(w); commit(); renderCard(i); if (gone.ok) toast('Série odebrána', 4000, () => { it.s.push(gone); touch(w); commit(); renderCard(i); }); break; }
+    case 'rmset': {
+      if (!it.s.length) return;
+      const i = +card.dataset.i, last = it.s[it.s.length - 1];
+      if (last.ok || last.q != null) { rmSetDlg(i); break; }      // odškrtnutá / ohodnocená série → nejdřív potvrdit
+      rmSetGo(w, i); break;
+    }
+    case 'rmsetgo': { closeDlg(); if (w) rmSetGo(w, +b.dataset.i); break; }
     case 'cdgo': { audioUnlock(); if (it.t0) { it.acc = (it.acc || 0) + now() - it.t0; it.t0 = null; } else { it.t0 = now(); keepAwake(); } touch(w); commit(); vib(10); renderCard(+card.dataset.i); break; }
     case 'cdsave': { cdAutoSave(it); touch(w); commit(); vib([12, 40, 12]); renderCard(+card.dataset.i); toast(`Úsek uložen: <b>${mmss(it.s[it.s.length - 1].r)}</b>`); break; }
     case 'cdadd': { it.s.push({ w: 0, r: null, v: null, i: null, q: null, ok: false }); touch(w); commit(); const ci = +card.dataset.i; renderCard(ci); const ins = $$(`.exc[data-i="${ci}"] [data-f=cdt]`); ins[ins.length - 1]?.focus(); break; }
     case 'cdsp': { it.sp = true; touch(w); commit(); renderCard(+card.dataset.i); break; }
-    case 'cddel': { const ci = +card.dataset.i, j = +b.closest('[data-j]').dataset.j, gone = it.s.splice(j, 1)[0]; touch(w); commit(); renderCard(ci); if (gone && gone.r) toast('Úsek smazán', 4000, () => { it.s.splice(j, 0, gone); touch(w); commit(); renderCard(ci); }); break; }
+    case 'cddel': {
+      const ci = +card.dataset.i, j = +b.closest('[data-j]').dataset.j, x = it.s[j];
+      if (x && x.r > 0) { cdDelDlg(ci, j); break; }
+      cdDelGo(w, ci, j); break;
+    }
+    case 'cddelgo': { closeDlg(); if (w) cdDelGo(w, +b.dataset.i, +b.dataset.j); break; }
     case 'xw': { it.xw = !it.xw; touch(w); commit(); renderCard(+card.dataset.i); break; }
     case 'rate': { const i = +card.dataset.i, j = +setEl.dataset.j; ui.rate = ui.rate && ui.rate.i === i && ui.rate.j === j ? null : { i, j }; renderCard(i); break; }
     case 'q': {
