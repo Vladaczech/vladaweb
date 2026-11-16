@@ -565,7 +565,7 @@ function songs() {
   for (const b in DB.b) if (isSB(b)) for (const id in DB.b[b]) {
     const r = DB.b[b][id]; if (!r || r.x) { m.delete(id); continue; }
     const base = m.get(id) || { id };
-    m.set(id, { ...base, t: r.t || base.t || 'Bez názvu', a: r.a || base.a || 'Neznámý autor', txt: r.txt || base.txt || '', n: r.n || '', tr: r.tr || 0, f: Array.isArray(r.f) ? r.f : [] });
+    m.set(id, { ...base, t: r.t || base.t || 'Bez názvu', a: r.a || base.a || 'Neznámý autor', txt: r.txt || base.txt || '', src: r.src || '', n: r.n || '', tr: r.tr || 0, f: Array.isArray(r.f) ? r.f : [] });
   }
   return _songs = [...m.values()].sort((x, y) => cmp(x.t, y.t) || cmp(x.a, y.a));
 }
@@ -733,9 +733,10 @@ function vSong(id) {
   const head = hdr(artHref(s.a), `<button class="ib${fl.length ? ' on' : ''}" data-act="songFolders" ${i} aria-label="Složky">${ic('folder')}</button><button class="ib${s.n ? ' on' : ''}" data-act="note" ${i} aria-label="Poznámka">${ic('note')}</button><button class="ib" data-act="edit" ${i} aria-label="Upravit text">${ic('edit')}</button><button class="ib" data-act="more" ${i} aria-label="Další">${ic('more')}</button>`)
     + `<div class="song-h"><h1>${esc(s.t)}</h1><p class="sub"><a href="${artHref(s.a)}">${esc(s.a)}</a></p>${fl.length ? `<div class="chips">${fl.map(f => `<a href="${href('f', f.id)}">${esc(f.n)}</a>`).join('')}</div>` : ''}</div>`
     + (s.n ? `<button class="notec" data-act="note" ${i}>${esc(s.n)}</button>` : '');
-  const web = `<details class="web"${s.txt ? '' : ' open'}><summary>${ic('search', 16)} Najít tuhle píseň na webu</summary>${linksHtml(s)}</details>`;
+  const web = `<details class="web"${s.txt ? '' : ' open'}><summary>${ic('search', 16)} Najít tuhle píseň na webu</summary>${linksHtml(s)}${/^https?:\/\//.test(s.src || '') ? `<p class="hint" style="padding:10px 2px">Uloženo z <a href="${esc(s.src)}" target="_blank" rel="noopener">${esc(s.src.replace(/^https?:\/\/(www\.)?/, '').split('/')[0])}</a></p>` : ''}</details>`;
   if (!s.txt) return head + `<div class="nosong"><p>K téhle písni ještě nemáš text. Na webu ji označ a zkopíruj (klidně celou stránku) – akordy se převezmou přesně nad správná slova.</p>
-    <div class="acts"><button class="btn p" data-act="pasteSong" ${i}>${ic('clip', 18)} Vložit zkopírovanou píseň</button><button class="btn" data-act="edit" data-photo="1" ${i}>${ic('cam', 18)} Z fotky</button><button class="btn ghost" data-act="edit" ${i}>Napsat ručně</button></div></div>${web}`;
+    <div class="acts"><button class="btn p" data-act="pasteSong" ${i}>${ic('clip', 18)} Vložit zkopírovanou píseň</button><button class="btn" data-act="edit" data-photo="1" ${i}>${ic('cam', 18)} Z fotky</button><button class="btn ghost" data-act="edit" ${i}>Napsat ručně</button></div>
+    <p class="hint" style="margin-top:14px">Na počítači to jde i bez kopírování: <button data-act="bm" style="color:var(--acc);text-decoration:underline">uložení jedním klepnutím</button>.</p></div>${web}`;
   const tv = s.tr > 0 ? '+' + s.tr : s.tr < 0 ? '−' + -s.tr : '0';
   return head + `<div class="song" id="song" style="--fs:${UI.fs}px">${songHtml(s.txt, s.tr)}</div>${web}
   <div class="bar"><div class="grp" role="group" aria-label="Transpozice"><button data-act="tr" data-d="-1" ${i} aria-label="O půltón níž">−</button><button class="val${s.tr ? ' set' : ''}" data-act="tr" data-d="0" ${i} title="Zpět na původní tóninu">tónina<b>${tv}</b></button><button data-act="tr" data-d="1" ${i} aria-label="O půltón výš">+</button></div>
@@ -777,6 +778,7 @@ function settingsSheet() {
   sheet('Nastavení', `<h2 style="margin-top:0">Synchronizace</h2>
     <p class="kv">${on ? `Zapnuto${USER?.email ? ' – ' + esc(USER.email) : ''}. ${esc({ ok: 'Vše je uložené.', pend: 'Ukládám…', err: SYNC.msg || 'Nedaří se spojit.', local: '' }[SYNC.st] || '')}` : 'Písně jsou zatím jen v tomhle zařízení. Po přihlášení účtem z Posilovny je uvidíš v telefonu i v počítači.'}</p>
     <div class="acts">${on ? `<button class="btn sm" data-act="syncOff">Vypnout</button>` : `<button class="btn sm p" data-act="syncOn">Zapnout synchronizaci</button>`}</div>
+    <h2>Import z webu</h2><p class="kv">Tlačítko do záložek uloží píseň z otevřené stránky jedním klepnutím.</p><div class="acts"><button class="btn sm" data-act="bm">Nastavit tlačítko</button></div>
     <h2>Vzhled</h2><div class="seg">${tb('', 'Podle systému')}${tb('light', 'Světlý')}${tb('dark', 'Tmavý')}</div>
     <h2>Záloha</h2><p class="kv">${withTxt} ${pisni(withTxt)} s textem · složek: ${folders().length}</p>
     <div class="acts"><button class="btn sm" data-act="export">Stáhnout zálohu</button><label class="btn sm">Obnovit ze zálohy<input type="file" id="restore" accept="application/json,.json" hidden></label>${hid ? `<button class="btn sm" data-act="unhide">Vrátit skryté písně (${hid})</button>` : ''}</div>
@@ -811,12 +813,17 @@ const ACT = {
   theme(b) { b.dataset.t ? LS.set(KT, b.dataset.t) : LS.del(KT); applyTheme(); settingsSheet(); },
   async paste() { try { const r = await readClip(); if (!r.txt.trim()) return toast('Schránka je prázdná'); putText(r); } catch { showPreview(false); $('#modal textarea.code')?.focus(); toast('Prohlížeč nepustil schránku – vlož do pole (Ctrl+V nebo podržením).'); } },
   preview() { showPreview($('#pv').hidden); },
+  bm() { sheet('Uložení jedním klepnutím', `<p class="kv">Přetáhni tohle tlačítko myší na lištu záložek v prohlížeči:</p>
+    <p style="text-align:center;margin:20px 0"><a class="btn p" id="bm" href="${esc(bmHref())}" title="Přetáhni na lištu záložek">+ Do zpěvníku</a></p>
+    <p class="kv">Pak na webu otevři stránku s písní a klepni na něj. Píseň se i s akordy, názvem a autorem uloží do zpěvníku – píseň z katalogu se rovnou doplní – a můžeš otevřít další.</p>
+    <p class="hint">Lištu záložek zobrazíš přes Ctrl+Shift+B (na Macu ⌘⇧B). Poprvé prohlížeč požádá o povolení vyskakovacího okna pro daný web. Je to pro počítač; v telefonu použij „Vložit zkopírovanou píseň“. Písně se ukládají jen k tobě – do zařízení a tvého účtu.</p>`); },
   async pasteSong(b) { let r = null; try { r = await readClip(); } catch {} editSheet(b.dataset.id); if (r && r.txt.trim()) putText(r); else { $('#modal textarea.code')?.focus(); toast('Schránku se nepodařilo přečíst – vlož do pole (Ctrl+V nebo podržením).'); } },
   syncOn, syncOff() { try { firebase.auth().signOut(); } catch {} LS.del(KS); detach(); USER = null; setSync('local'); settingsSheet(); toast('Synchronizace vypnuta – písně zůstávají v zařízení'); },
   export() { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ app: 'zpevnik', v: 1, b: DB.b })], { type: 'application/json' })); a.download = `zpevnik-zaloha-${new Date().toISOString().slice(0, 10)}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); },
 };
 document.addEventListener('click', e => {
   if (e.target.classList?.contains('shade')) return void closeSheet();
+  if (e.target.closest?.('#bm')) { e.preventDefault(); return toast('Tlačítko přetáhni myší na lištu záložek.'); }
   const b = e.target.closest('[data-act]'); if (b && ACT[b.dataset.act]) ACT[b.dataset.act](b, e);
 });
 document.addEventListener('input', e => { if (e.target.id === 'q') { Q = e.target.value; const l = $('#list'); l.innerHTML = listHtml(l.dataset.tab); } });
@@ -874,14 +881,24 @@ function applyTheme() { const t = LS.get(KT); if (t) document.documentElement.da
    proto akordy splynou se slovy; z HTML ve schránce se ale dají převzít přesně na znak. */
 const CHSEL = '[class*="chord" i],[class*="akord" i],el';
 const chordText = e => { let t = e.textContent.replace(/\s+/g, ''); const b = e.querySelector('[class*="chb" i],[class*="bass" i]'), bt = b ? b.textContent.replace(/\s+/g, '') : ''; if (bt && !t.includes('/') && t.endsWith(bt) && t.length > bt.length) t = t.slice(0, -bt.length) + '/' + bt; return t; };
-function htmlToSong(html) {
+/* název a autor ze stránky: nadpis h1 a titulek ve tvaru „Autor - Název | web“ */
+function pageMeta(doc, pageTitle) {
+  const cl = t => (t || '').replace(/\s+/g, ' ').replace(/\s*[-–|~]?\s*(správné\s+)?(akordy( a text)?|text( písně)?( a akordy)?)\s*$/i, '').trim();
+  let title = '', artist = '';
+  for (const src of [cl(doc.querySelector('h1')?.textContent), cl((pageTitle || '').split(/\s[|~]\s/)[0])]) { if (!src || src.length > 90) continue; const sp = src.split(/\s+[-–]\s+/); if (sp.length >= 2) { artist ||= sp[0]; title ||= sp.slice(1).join(' - '); } else title ||= src; }
+  return { title: title.replace(/\s*\(v\d+\)\s*$/i, '').replace(/\s+-\s+jednoduchá verze$/i, ''), artist };
+}
+function htmlToSong(html, pageTitle) {
   const doc = new DOMParser().parseFromString(html, 'text/html'), BL = 'div,p,li,pre,td,section,article,blockquote';
   let ch = $$(CHSEL, doc.body).filter(e => { const t = chordText(e); return t.length <= 14 && isChord(t); });
   const all = new Set(ch); ch = ch.filter(e => { for (let p = e.parentElement; p; p = p.parentElement) if (all.has(p)) return false; return true; });
   const set = new Set(ch);
   // akord „v písni“ = v bloku, kde je kromě akordů i text (tabulka hmatů apod. se tím vyřadí)
   const real = ch.filter(e => { const b = e.closest(BL) || doc.body; let n = b.textContent.replace(/\s+/g, '').length; for (const c of $$(CHSEL, b)) if (set.has(c)) n -= chordText(c).length; return n > 3; });
-  if (real.length < 3) return null;
+  if (real.length < 3) {   // web bez označených akordů: akordy na řádcích nad textem v <pre>
+    let best = null, bn = 2; for (const p of $$('pre', doc.body)) { const n = p.textContent.split('\n').filter(isChordLine).length; if (n > bn) { bn = n; best = p; } }
+    return best ? { txt: cleanTxt(best.textContent), ...pageMeta(doc, pageTitle), exact: 1 } : null;
+  }
   let root = real[0].parentElement || doc.body; while (root !== doc.body && !real.every(e => root.contains(e))) root = root.parentElement || doc.body;
   for (;;) { const c = [...root.children].find(c => !set.has(c) && real.filter(e => c.contains(e)).length >= real.length * .8); if (!c) break; root = c; }
   const lines = []; let cur = '', blk = root, pendR = false;
@@ -903,10 +920,7 @@ function htmlToSong(html) {
   for (let i = 0; i < out.length; i++) if (/^(R\d*|Ref|\d{1,2}|\*)[.:]?$/i.test(out[i].trim())) { let j = i + 1; while (j < out.length && !out[j].trim()) j++; if (j < out.length) { const lb = out[i].trim(); out[j] = (/[.:]$/.test(lb) ? lb : lb + (/^\d/.test(lb) ? '.' : ':')) + ' ' + out[j]; out.splice(i, j - i); i--; } }
   const txt = cleanTxt(out.join('\n')); BR.lastIndex = 0;
   if ((txt.match(BR) || []).length < 3 && !txt.split('\n').some(isChordLine)) return null;
-  // nadpis stránky → název (a autor, když je ve tvaru „Autor - Název akordy“)
-  let h1 = (doc.querySelector('h1')?.textContent || '').replace(/\s+/g, ' ').replace(/\s*[-–|]?\s*(akordy( a text)?|text( písně)?( a akordy)?)\s*$/i, '').trim(), artist = '';
-  if (h1.length > 70) h1 = ''; const sp = h1.split(/\s+[-–]\s+/); if (sp.length === 2) [artist, h1] = sp;
-  return { txt, title: h1, artist, exact: 1 };
+  return { txt, ...pageMeta(doc, pageTitle), exact: 1 };
 }
 /* prostý text zkopírovaný z celé stránky: nechat jen úsek kolem řádků s akordy */
 function trimPlain(t) {
@@ -934,6 +948,33 @@ function putText(r, note) {
 }
 function showPreview(on) { const ta = $('#modal textarea.code'), pv = $('#pv'), bt = $('#pv-btn'); if (!ta || !pv) return; if (on) pv.innerHTML = songHtml(ta.value, 0) || '<p class="empty">Zatím žádný text.</p>'; ta.hidden = on; pv.hidden = !on; bt.textContent = on ? 'Upravit text' : 'Náhled'; }
 document.addEventListener('paste', e => { const ta = e.target.closest?.('textarea.code'); if (!ta) return; const h = e.clipboardData?.getData('text/html'), r = h && htmlToSong(h); if (!r) return; e.preventDefault(); putText(r); });
+
+/* ═══ TLAČÍTKO DO ZÁLOŽEK ═══
+   Záložka s kouskem skriptu: na stránce s písní otevře zpěvník v novém okně a pošle mu kód stránky
+   (postMessage). Zpěvník píseň převede (htmlToSong), uloží a odpoví; při úspěchu se okno zase zavře.
+   Všechno se děje v prohlížeči uživatele – nic se nestahuje na pozadí ani neukládá do repa. */
+const bmHref = () => 'javascript:' + encodeURIComponent(`(function(){var U=${JSON.stringify(location.origin + location.pathname)},O=${JSON.stringify(location.origin)},w=window.open(U+'#import','zpevnik');if(!w){alert('Povol pro tuhle stránku vyskakovací okna a klepni znovu.');return}var d={zpevnik:1,id:Date.now()+'-'+Math.random(),html:document.documentElement.outerHTML,text:document.body.innerText,title:document.title,url:location.href},n=0,t=setInterval(function(){if(++n>50||w.closed){clearInterval(t);return}try{w.postMessage(d,O)}catch(e){}},350);addEventListener('message',function f(e){if(e.origin!==O||!e.data||e.data.zpevnikDone!==d.id)return;clearInterval(t);removeEventListener('message',f);if(e.data.ok)w.close();var b=document.createElement('div');b.textContent=e.data.msg;b.style.cssText='position:fixed;z-index:2147483647;left:50%;top:20px;transform:translateX(-50%);background:'+(e.data.ok?'#1f1e1d':'#b53333')+';color:#fff;padding:12px 20px;border-radius:99px;font:600 15px system-ui,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.3)';document.body.appendChild(b);setTimeout(function(){b.remove()},3500)})})()`);
+const ALIAS = { brontosauri: 'nedvedi', 'frantisek-nedved': 'nedvedi', 'wabi-ryvola': 'hoboes', 'miki-ryvola': 'hoboes', 'bratri-ryvolove': 'hoboes', zelenaci: 'greenhorns', 'jarek-nohavica': 'jaromir-nohavica' };
+function importPage(d) {
+  let r = htmlToSong(d.html, d.title);
+  if (!r && typeof d.text === 'string') { const t = trimPlain(d.text); if (t.split('\n').filter(l => isChordLine(l) || hasBr(l)).length >= 3) r = { txt: t, ...pageMeta(new DOMParser().parseFromString('', 'text/html'), d.title) }; }
+  if (!r || !r.txt.trim()) return { ok: 0, msg: 'Na stránce jsem nenašel píseň s akordy.' };
+  const title = r.title || 'Bez názvu', src = /^https?:\/\//.test(d.url || '') ? String(d.url).slice(0, 300) : null;
+  let art = slug(r.artist); art = ALIAS[art] || art; const aw = art.split('-').filter(w => w.length > 3);
+  // píseň z katalogu se doplní jen při shodě názvu i autora (stejné názvy mají i různé písně)
+  const fit = c => { const a = slug(c.a); return NOART.has(norm(c.a)) || !art || a === art || a.split('-').some(w => w.length > 3 && aw.some(v => v.startsWith(w) || w.startsWith(v))); };
+  const s = songs().find(c => slug(c.t) === slug(title) && fit(c));
+  if (s && s.txt) return { ok: 0, id: s.id, msg: 'Tuhle píseň už ve zpěvníku máš – nepřepsal jsem ji.' };
+  const id = s ? s.id : 'u:' + uid();
+  upd(id, s ? { txt: r.txt, src } : { t: title, a: r.artist || 'Neznámý autor', txt: r.txt, src });
+  return { ok: 1, id, msg: 'Uloženo do zpěvníku: ' + title };
+}
+const IMP = new Map();   // tlačítko posílá zprávu opakovaně, dokud nedostane odpověď → každou zpracovat jen jednou
+addEventListener('message', e => {
+  const d = e.data; if (!d || d.zpevnik !== 1 || typeof d.id !== 'string' || typeof d.html !== 'string' || d.html.length > 6e6 || !e.source || e.source !== window.opener) return;
+  if (!IMP.has(d.id)) { let res; try { res = importPage(d); } catch (err) { console.error(err); res = { ok: 0, msg: 'Píseň se nepodařilo převést.' }; } IMP.set(d.id, res); if (res.id) location.hash = href('s', res.id); render(); toast(res.msg); }
+  const res = IMP.get(d.id); try { e.source.postMessage({ zpevnikDone: d.id, ok: res.ok, msg: res.msg }, e.origin); } catch {}
+});
 
 /* ═══ IMPORT Z FOTKY (čtení přímo v prohlížeči, Tesseract.js) ═══
    Akordy bývají jinou barvou a těsně nad textem, takže běžné čtení po řádcích je míchá se slovy.
@@ -1159,6 +1200,7 @@ addEventListener('online', () => { bootSync(); if (USER && !unsub && LS.get(KS))
 document.addEventListener('visibilitychange', () => { if (document.hidden) return; const r = route(), s = r.v === 's' && song(r.id); wake(!!(s && s.txt)); push(); });
 
 applyTheme(); render(); bootSync();
+if (location.hash === '#import' && window.opener) toast('Čekám na píseň ze stránky…');
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('./zpevnik-sw.js', { scope: './zpevnik' }).catch(() => {});
 </script>
 </body>

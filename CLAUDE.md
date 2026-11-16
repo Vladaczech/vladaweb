@@ -51,6 +51,7 @@ Písně jsou dvojího druhu:
 
 Import (pořadí podle přesnosti):
 1. **Zkopírovaná stránka** (`htmlToSong`) – ze schránky se čte HTML, ne prostý text. Weby vkládají akordy jako prvky nulové šířky nad řádek (akordy.kytary.cz `.scs-chord`, kytaristka.cz `span.chord`), takže v prostém textu splývají se slovy; z HTML se převezmou přesně. Funguje i na celou zkopírovanou stránku (vybere se blok s akordy).
+   Totéž dělá **tlačítko do záložek** (`bmHref`, Nastavení → Import z webu): na stránce s písní otevře zpěvník v novém okně (`#import`), pošle mu kód stránky přes `postMessage` a `importPage` píseň uloží – píseň z katalogu doplní jen při shodě názvu i autora, existující text nepřepisuje. Zprávy se berou jen od okna, které zpěvník otevřelo. Skript v záložce je záměrně hloupý (jen pošle stránku), veškerý převod je v aplikaci, takže se při úpravách nemusí přeinstalovávat.
 2. **Z fotky** (`readPhoto`, Tesseract.js z CDN, čte se v prohlížeči) – obraz se rozdělí na vrstvu akordů (barevné písmo) a textu; text čte český model, vyříznuté akordy anglický (křížky, lomítka); akord se vloží před znak, nad kterým začíná. Bez barevného odlišení se hledají řádky složené jen z akordů.
 3. Ručně – akordy v hranatých závorkách (`[Ami]`), nebo na řádku nad textem; obojí zvládá `parseSong`.
 
