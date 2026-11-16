@@ -118,6 +118,8 @@ nav button.on svg{filter:drop-shadow(0 0 6px rgba(var(--neon-rgb),.8))}
 .last{font-family:var(--mono);font-size:11px;color:var(--muted2);margin-top:8px}
 .sets{margin-top:10px;display:grid;gap:6px}
 .set-h,.set{display:grid;grid-template-columns:20px minmax(54px,1fr) minmax(46px,.8fr) auto 42px;gap:6px;align-items:center}
+.sets.nokg .set-h,.sets.nokg .set{grid-template-columns:20px minmax(80px,1fr) auto 42px}
+.kgb{margin-left:auto;flex:0 0 auto!important;font-size:11px;color:var(--muted)}
 .set-h{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted2)}
 .set .n{font-family:var(--mono);font-size:12px;color:var(--muted2);text-align:center}
 .set input{padding:9px 6px;text-align:center;font-family:var(--mono);font-size:16px;border-radius:9px}
@@ -261,6 +263,8 @@ label.btn{cursor:pointer}
 /* figures */
 svg.fig .floor{stroke:#1e1e1e;stroke-width:2}
 svg.fig .prop{stroke:#3a3a3a;stroke-width:4;stroke-linecap:round;fill:none}
+svg.fig .arr{stroke:var(--neon);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;fill:none;opacity:.5;animation:arrp 1.4s ease-in-out infinite}
+@keyframes arrp{0%,100%{opacity:.25}50%{opacity:.75}}
 svg.fig .propf{fill:#1a1a1a;stroke:#3a3a3a;stroke-width:2}
 svg.fig .b{stroke:var(--neon);stroke-width:6;stroke-linecap:round;fill:none}
 svg.fig .far .b{stroke:var(--neon-d)}
@@ -443,6 +447,24 @@ header.top{view-transition-name:hdr}nav.bottom{view-transition-name:nav}
 html[data-vt="back"]{--vtd:-1}
 @keyframes vt-out{to{opacity:0;transform:translateX(calc(var(--vtd,1) * -16px))}}
 @keyframes vt-in{from{opacity:0;transform:translateX(calc(var(--vtd,1) * 22px))}}
+/* ── Kardio na čas ── */
+.cd-last{margin-top:10px;font-family:var(--mono);font-size:12px;color:var(--text)}.cd-last span{color:var(--muted2);margin-right:6px}.cd-last i{font-style:normal;color:var(--muted)}
+.cd-clock{margin-top:12px;display:flex;flex-direction:column;align-items:center;gap:12px;padding:16px 12px;border-radius:14px;border:1px solid var(--line2);background:var(--panel2)}
+.cd-clock.run{border-color:var(--neon-d);background:rgba(var(--neon-rgb),.05)}
+.cd-t{font-family:var(--display);font-size:54px;font-weight:600;letter-spacing:-.03em;line-height:1;color:var(--text)}
+.cd-clock.run .cd-t{color:var(--neon);text-shadow:0 0 22px rgba(var(--neon-rgb),.55)}
+.cd-btns{display:flex;gap:8px;width:100%}.cd-btns .btn{flex:1}
+.cd-segs{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.cd-seg{display:flex;align-items:center;gap:6px}.cd-seg .n{width:18px;font-family:var(--mono);font-size:12px;color:var(--muted2);text-align:center}
+.cd-seg.ok .n{color:var(--neon)}
+.cd-f{flex:1;min-width:0;position:relative}.cd-f input{padding:14px 6px 4px;text-align:center;font-family:var(--mono);font-size:16px;border-radius:9px}
+.cd-f span{position:absolute;left:0;right:0;top:3px;text-align:center;font-family:var(--mono);font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted2);pointer-events:none}
+.cd-x{width:34px;height:34px;flex:none;font-size:12px}
+.cd-sum{margin-top:10px;font-family:var(--mono);font-size:12px;color:var(--muted)}.cd-sum b{color:var(--neon);font-weight:500}
+/* ── Návrh tréninku ── */
+.gen-tog{margin-top:10px;justify-content:center;position:relative}.gen-tog .chev{position:absolute;right:16px;color:var(--muted)}
+.gen-tog.on{border-color:var(--neon-d);color:var(--neon)}
+.gen-box{margin-top:10px;animation:tin .3s cubic-bezier(.2,.8,.2,1)}
 .themes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .th{display:flex;flex-direction:column;align-items:stretch;gap:7px;padding:8px;border-radius:14px;border:1px solid var(--line);background:var(--tb);text-align:left;transition:border-color .2s,box-shadow .2s}
 .th.on{border-color:var(--ta);box-shadow:0 0 0 1px var(--ta),0 0 18px rgba(var(--tr),.25)}
@@ -631,9 +653,9 @@ const EX = [
     tips: ['Mírný předklon = víc prsa, vzpřímeně = víc triceps.', 'Dolů, dokud rameno není zhruba v úrovni lokte.', 'Ramena drž dole od uší.'],
     a: { props: [['line', 80, 84, 125, 84], ['line', 122, 84, 122, 150]], A: { H: [98, 78], t: 178, hand: [100, 84], th: 30, sh: -80 }, B: { H: [94, 102], t: 168 } } },
 
-  { id: 'pullup', n: 'Shyby', g: 'Záda', eq: 'bw', lo: 5, hi: 10, m: ['lats'], m2: ['biceps', 'forearms', 'traps'],
+  { id: 'pullup', n: 'Shyby', al: 'přítahy na hrazdě hrazda', g: 'Záda', eq: 'bw', lo: 5, hi: 10, m: ['lats'], m2: ['biceps', 'forearms', 'traps'],
     tips: ['Začni z plného visu, lopatky nejdřív stáhni dolů.', 'Táhni lokty k bokům, bradou nad hrazdu.', 'Bez švihu – dolů pomalu a pod kontrolou.'],
-    a: { props: [['bar', 60, 140, -26]], A: { H: [100, 76], t: 180, hand: [100, -24], th: 15, sh: -40, ft: 40 }, B: { H: [100, 40], t: 176 } } },
+    a: { front: true, eo: 1, props: [['line', 30, -14, 170, -14], ['line', 36, -14, 36, 150], ['line', 164, -14, 164, 150]], A: { H: [100, 90], t: 180, hand: [133, -14], th: 3, sh: 1 }, B: { H: [100, 46] } } },
   { id: 'deadlift', n: 'Mrtvý tah', g: 'Záda', eq: 'barbell', lo: 3, hi: 6, m: ['hamstrings', 'glutes', 'lowerback'], m2: ['quads', 'traps', 'forearms', 'lats'],
     tips: ['Činka nad středem chodidla, drž ji těsně u nohou.', 'Neutrální záda – hrudník nahoru, zpevněný trup.', 'Tlač nohama do země, kyčle a ramena stoupají spolu.'],
     a: { eq: 'barbell', A: { H: [76, 96], t: 112, hand: [102, 137], foot: [95, 146] }, B: { H: [92, 70], t: 178, hand: [97, 78] } } },
@@ -665,7 +687,7 @@ const EX = [
   { id: 'legcurl', n: 'Zakopávání', g: 'Nohy', eq: 'machine', lo: 10, hi: 15, m: ['hamstrings'], m2: ['calves'],
     tips: ['Boky drž přitisknuté k lavici.', 'Paty táhni co nejblíž k hýždím.', 'Spouštěj pomalu, 2–3 sekundy.'],
     a: { eq: 'roller', eqAt: 'A', props: [['bench', 30, 106, 130]], A: { H: [95, 100], t: 90, hand: [166, 112], th: -90, sh: -90, ft: 0 }, B: { sh: -165, ft: -75 } } },
-  { id: 'calf', n: 'Výpony na lýtka', g: 'Nohy', eq: 'dumbbell', lo: 10, hi: 15, m: ['calves'], m2: [],
+  { id: 'calf', n: 'Výpony na lýtka', g: 'Nohy', eq: 'dumbbell', dbn: 1, lo: 10, hi: 15, m: ['calves'], m2: [],
     tips: ['Dole pořádně protáhni, paty pod úroveň schodu.', 'Nahoře vteřinu podrž.', 'Kolena propnutá, bez houpání.'],
     a: { eq: 'dumbbell', props: [['step', 92, 146, 40]], A: { H: [95, 70], t: 180, hand: [97, 78], foot: [95, 142], ft: 70 }, B: { H: [95, 60], hand: [97, 68], foot: [95, 132], ft: 20 } } },
   { id: 'hipthrust', n: 'Hip thrust', g: 'Nohy', eq: 'barbell', lo: 8, hi: 12, m: ['glutes'], m2: ['hamstrings', 'quads'],
@@ -682,7 +704,7 @@ const EX = [
     tips: ['Kladka ve výšce obličeje, lano nadhmatem.', 'Táhni k očím a rozevři lano do stran.', 'Lokty vysoko, na konci vytoč ruce ven.'],
     a: { eq: 'handle', cable: [198, 14], ab: -1, A: { H: [92, 70], t: 181, hand: [146, 18], foot: [95, 146] }, B: { t: 184, hand: [110, 6] } } },
 
-  { id: 'curl', n: 'Bicepsový zdvih', g: 'Paže', eq: 'dumbbell', inc: 1, lo: 8, hi: 12, m: ['biceps'], m2: ['forearms'],
+  { id: 'curl', n: 'Bicepsový zdvih s jednoručkami', al: 'bicepsovy zdvih biceps', g: 'Paže', eq: 'dumbbell', inc: 1, lo: 8, hi: 12, m: ['biceps'], m2: ['forearms'],
     tips: ['Lokty u těla, nehýbou se.', 'Nahoře zatni, dolů pomalu do propnutí.', 'Bez švihu trupem.'],
     a: { eq: 'dumbbell', A: { ...STAND, ua: 3, fa: 3 }, B: { ua: -8, fa: 160 } } },
   { id: 'hammer', n: 'Kladivové zdvihy', g: 'Paže', eq: 'dumbbell', inc: 1, lo: 8, hi: 12, m: ['biceps', 'forearms'], m2: [],
@@ -702,10 +724,10 @@ const EX = [
     tips: ['Bedra zůstávají na zemi.', 'Zvedni jen lopatky, vydechni nahoře.', 'Netahej se rukama za hlavu.'],
     a: { A: { H: [100, 143], t: -90, hand: 'head', foot: [140, 146], ft: 80 }, B: { t: -122 } } },
   /* ── Doplněno podle vybavení REGYM (stroje GYMGUN, silová, glute a Hyrox zóna) ── */
-  { id: 'dbbench', n: 'Bench s jednoručkami', g: 'Hrudník', eq: 'dumbbell', lo: 6, hi: 10, m: ['chest'], m2: ['triceps', 'delts'],
+  { id: 'dbbench', n: 'Tlaky s jednoručkami na vodorovné lavici', al: 'bench s jednoručkami rovná lavice', g: 'Hrudník', eq: 'dumbbell', lo: 6, hi: 10, m: ['chest'], m2: ['triceps', 'delts'],
     tips: ['Jednoručky spouštěj do hlubšího protažení než s velkou činkou.', 'Lokty asi 45° od těla, předloktí kolmo k zemi.', 'Nahoře jednoručky nesrážej, drž napětí.'],
     a: { eq: 'dumbbell', props: [['bench', 40, 112, 100]], A: { H: [118, 106], t: -90, hand: [72, 52], foot: [150, 146] }, B: { hand: [80, 90] } } },
-  { id: 'chestpress', n: 'Tlaky na stroji – rovné', g: 'Hrudník', eq: 'machine', lo: 8, hi: 12, m: ['chest'], m2: ['triceps', 'delts'],
+  { id: 'chestpress', n: 'Tlaky na stroji – rovné', al: 'tlaky na stroji vsedě vodorovné', g: 'Hrudník', eq: 'machine', lo: 8, hi: 12, m: ['chest'], m2: ['triceps', 'delts'],
     tips: ['Sedačku nastav tak, aby madla byla ve výšce středu hrudníku.', 'Lopatky drž u opěrky, netlač rameny dopředu.', 'Vpředu lokty úplně nezamykej.'],
     a: { eq: 'handle', props: [['bench', 50, 112, 40], ['line', 54, 112, 48, 50]], A: { H: [70, 106], t: 178, hand: [90, 60], foot: [110, 146] }, B: { hand: [124, 60] } } },
   { id: 'pecdeck', n: 'Peck deck – rozpažky', g: 'Hrudník', eq: 'machine', lo: 10, hi: 15, m: ['chest'], m2: ['delts'],
@@ -721,7 +743,7 @@ const EX = [
   { id: 'tbar', n: 'T-bar přítahy', g: 'Záda', eq: 'barbell', lo: 6, hi: 10, m: ['lats', 'traps'], m2: ['biceps', 'lowerback'],
     tips: ['Hrudník nahoru, záda rovná, předklon asi 45°.', 'Táhni lokty dozadu k bokům.', 'Nahoře stáhni lopatky, dolů pomalu.'],
     a: { eq: 'barbell', A: { H: [78, 80], t: 135, hand: [112, 106], foot: [96, 146] }, B: { hand: [100, 86] } } },
-  { id: 'dbrow', n: 'Přítah jednoručky v opoře', g: 'Záda', eq: 'dumbbell', lo: 8, hi: 12, m: ['lats'], m2: ['biceps', 'traps', 'delts'],
+  { id: 'dbrow', n: 'Přítah jednoručky v opoře', g: 'Záda', eq: 'dumbbell', dbn: 1, lo: 8, hi: 12, m: ['lats'], m2: ['biceps', 'traps', 'delts'],
     tips: ['Koleno a ruku opři o lavici, záda rovnoběžně se zemí.', 'Táhni jednoručku k boku, ne k rameni.', 'Trup netoč, pohyb jde jen z paže a lopatky.'],
     a: { eq: 'dumbbell', props: [['bench', 20, 104, 60]], A: { H: [72, 90], t: 95, hand: [118, 140], foot: [96, 146], foot2: [36, 100], ft2: -90 }, B: { hand: [104, 100] } } },
   { id: 'hyperext', n: 'Hyperextenze', g: 'Záda', eq: 'bw', lo: 10, hi: 15, m: ['lowerback', 'glutes'], m2: ['hamstrings'],
@@ -737,9 +759,9 @@ const EX = [
   { id: 'goblet', n: 'Goblet dřep s kettlebellem', g: 'Nohy', eq: 'kettlebell', lo: 8, hi: 12, m: ['quads', 'glutes'], m2: ['abs', 'hamstrings'],
     tips: ['Kettlebell drž u hrudníku, lokty dolů.', 'Lokty jdou mezi kolena, trup zůstává vzpřímený.', 'Paty na zemi, dolů co nejhlouběji.'],
     a: { eq: 'kettlebell', A: { H: [95, 70], t: 180, hand: 'chest', foot: [95, 146] }, B: { H: [76, 110], t: 155 } } },
-  { id: 'abduction', n: 'Abdukce na stroji', g: 'Nohy', eq: 'machine', lo: 12, hi: 20, m: ['glutes'], m2: [],
+  { id: 'abduction', n: 'Abdukce na stroji', al: 'dedukce deddukce unožování roznožování vsedě vnější stehna', g: 'Nohy', eq: 'machine', lo: 12, hi: 20, m: ['glutes'], m2: [],
     tips: ['Opři se dozadu a drž se madel.', 'Kolena tlač ven, ve vnějším bodě podrž.', 'Zpátky pomalu, závaží nepouštěj.'],
-    a: { front: true, thl: 14, props: [['bench', 70, 104, 60]], A: { H: [100, 100], t: 180, ua: 14, fa: 2, th: 18, sh: 2 }, B: { th: 70, sh: 22 } } },
+    a: { front: true, thl: 20, eq: 'kpad', eqAt: 'K', eqOff: 7, props: [['bench', 66, 104, 68], ['line', 70, 104, 70, 40], ['line', 130, 104, 130, 40], ['arr', 132, 86, 152, 86], ['arr', 68, 86, 48, 86]], A: { H: [100, 100], t: 180, ua: 12, fa: 2, th: 14, sh: 2 }, B: { th: 72, sh: 26 } } },
   { id: 'kickback', n: 'Zanožování na kladce', g: 'Nohy', eq: 'cable', lo: 10, hi: 15, m: ['glutes'], m2: ['hamstrings'],
     tips: ['Mírný předklon, drž se rámu.', 'Nohu veď dozadu a nahoru, bez prohnutí v bedrech.', 'Nahoře zatni hýždě.'],
     a: { cable: [10, 142], cableAt: 'A', props: [['line', 142, 36, 142, 150]], A: { H: [90, 74], t: 140, hand: [140, 80], foot: [94, 142], foot2: [100, 146], ft: 80 }, B: { foot: [30, 100], ft: 10 } } },
@@ -793,10 +815,10 @@ const EX = [
   { id: 'beltsquat', n: 'Belt squat (dřep s opaskem)', g: 'Nohy', eq: 'machine', lo: 8, hi: 12, m: ['quads', 'glutes'], m2: ['hamstrings', 'adductors'],
     tips: ['Opasek na bocích, řetěz krátký tak, aby nahoře bylo napětí.', 'Drž se madla jen pro rovnováhu, trup vzpřímeně.', 'Záda nejsou zatížená – můžeš jít hluboko a s vyšším objemem.'],
     a: { cable: [95, 152], cableAt: 'H', props: [['step', 58, 140, 76], ['line', 124, 140, 124, 36], ['line', 112, 36, 130, 36]], A: { H: [95, 62], t: 180, hand: [120, 38], foot: [95, 138] }, B: { H: [86, 100], t: 174 } } },
-  { id: 'adduction', n: 'Addukce na stroji', g: 'Nohy', eq: 'machine', lo: 12, hi: 20, m: ['adductors'], m2: ['glutes'],
+  { id: 'adduction', n: 'Addukce na stroji', al: 'přitahování stehen snožování vnitřní stehna', g: 'Nohy', eq: 'machine', lo: 12, hi: 20, m: ['adductors'], m2: ['glutes'],
     tips: ['Stejný stroj jako abdukce – jen přehodíš opěrky dovnitř kolen.', 'Stehna stahuj k sobě a uprostřed vteřinu podrž.', 'Ven jen do příjemného protažení, pomalu.'],
-    a: { front: true, thl: 14, props: [['bench', 70, 104, 60]], A: { H: [100, 100], t: 180, ua: 14, fa: 2, th: 70, sh: 22 }, B: { th: 14, sh: 2 } } },
-  { id: 'seatedcalf', n: 'Výpony vsedě', g: 'Nohy', eq: 'machine', lo: 12, hi: 20, m: ['calves'], m2: [],
+    a: { front: true, thl: 20, eq: 'kpad', eqAt: 'K', eqOff: -7, props: [['bench', 66, 104, 68], ['line', 70, 104, 70, 40], ['line', 130, 104, 130, 40], ['arr', 146, 86, 126, 86], ['arr', 54, 86, 74, 86]], A: { H: [100, 100], t: 180, ua: 12, fa: 2, th: 72, sh: 26 }, B: { th: 10, sh: 2 } } },
+  { id: 'seatedcalf', n: 'Výpony vsedě', al: 'výpony v sedě lýtka', g: 'Nohy', eq: 'machine', lo: 12, hi: 20, m: ['calves'], m2: [],
     tips: ['Opěrka těsně na kolenou, špičky na hraně plošiny.', 'Dole pořádně protáhni, nahoře vteřinu podrž.', 'Vsedě pracuje hlavně hlubší sval lýtka (šikmý) – doplněk ke stojným výponům.'],
     a: { eq: 'pad', eqAt: 'K', props: [['bench', 30, 110, 44], ['step', 92, 144, 24]], A: { H: [60, 104], t: 178, hand: [100, 92], th: 90, sh: 2, ft: 80 }, B: { H: [60, 97], th: 88, ft: 15, hand: [100, 85] } } },
   /* ── Hýždě a nohy – stroje glute zóny a cviky s oporou ve studiích ── */
@@ -821,7 +843,7 @@ const EX = [
   { id: 'sumodl', n: 'Sumo mrtvý tah', g: 'Nohy', eq: 'barbell', lo: 3, hi: 6, m: ['glutes', 'quads', 'adductors'], m2: ['hamstrings', 'lowerback', 'traps', 'forearms'],
     tips: ['Široký postoj, špičky ven, úchop uvnitř kolen.', 'Trup vzpřímenější než u klasiky – tlač kolena ven a „rozevírej“ podlahu.', 'Činka těsně u holení, nahoře propni kyčle a zatni hýždě.'],
     a: { eq: 'barbell', A: { H: [82, 102], t: 130, hand: [100, 137], foot: [95, 146] }, B: { H: [92, 70], t: 178, hand: [97, 82] } } },
-  { id: 'slrdl', n: 'Rumunský mrtvý tah na jedné noze', g: 'Nohy', eq: 'dumbbell', lo: 8, hi: 12, m: ['hamstrings', 'glutes'], m2: ['lowerback', 'adductors'],
+  { id: 'slrdl', n: 'Rumunský mrtvý tah na jedné noze', g: 'Nohy', eq: 'dumbbell', dbn: 1, lo: 8, hi: 12, m: ['hamstrings', 'glutes'], m2: ['lowerback', 'adductors'],
     tips: ['Stojná noha mírně pokrčená, volná noha jde dozadu v linii s trupem.', 'Pánev drž rovně – nevytáčej kyčel volné nohy ke stropu.', 'Jednoručku drž v protější ruce, dolů jen s rovnými zády.'],
     a: { eq: 'dumbbell', A: { H: [95, 70], t: 180, hand: [97, 82], foot: [95, 146], foot2: [90, 146], ft2: 70 }, B: { H: [90, 73], t: 98, hand: [126, 122], foot2: [20, 74], ft2: 0 } } },
   { id: 'nordic', n: 'Nordic hamstring curl', g: 'Nohy', eq: 'bw', lo: 3, hi: 8, m: ['hamstrings'], m2: ['glutes', 'calves'],
@@ -842,6 +864,30 @@ const EX = [
   { id: 'hyper45', n: 'Hyperextenze 45° na hýždě', g: 'Nohy', eq: 'bw', lo: 12, hi: 20, m: ['glutes'], m2: ['hamstrings', 'lowerback'],
     tips: ['Opěrku posuň níž (pod kyčle), špičky vytoč ven.', 'Horní záda drž mírně kulatá a bradu u hrudníku – práci tak převezmou hýždě místo beder.', 'Nahoře zatni hýždě, kyčle tlač do opěrky. Zátěž: kotouč nebo jednoručka na hrudníku.'],
     a: { props: [['line', 50, 148, 104, 98], ['line', 92, 90, 110, 72], ['line', 44, 144, 58, 132]], A: { H: [100, 80], t: 24, hand: 'chest', foot: [52, 140], ft: 140 }, B: { t: 136 } } },
+
+  /* ── Kardio na čas (stopky, rychlost nepovinná) ── */
+  { id: 'treadmill', n: 'Chůze / běh na pásu', al: 'běžecký pás treadmill chůze běh kardio', g: 'Kondice', eq: 'cardio', unit: 't', lo: 600, hi: 1800, cd: { v: 'km/h', inc: true }, m: ['quads', 'calves'], m2: ['glutes', 'hamstrings'],
+    tips: ['Spusť stopky a jdi. Rychlost a sklon můžeš doplnit potom – jsou nepovinné.', 'Rychlá chůze do kopce (sklon 8–12 %) zapojí hýždě a šetří klouby víc než běh.', 'Madel se nedrž, ruce nech volně pracovat.'],
+    a: { props: [['step', 30, 140, 128], ['line', 152, 140, 146, 66], ['line', 146, 66, 128, 66]], A: { H: [92, 72], t: 178, hand: [112, 98], foot: [112, 140], foot2: [74, 140], ft: 80, ft2: 55 }, B: { hand: [76, 100], foot: [74, 140], foot2: [112, 140], ft: 55, ft2: 80 } } },
+  { id: 'stairs', n: 'Chůze do schodů', al: 'schody schodiště stairmaster stepper', g: 'Kondice', eq: 'cardio', unit: 't', lo: 300, hi: 1200, cd: { v: 'úroveň' }, m: ['quads', 'glutes'], m2: ['calves', 'hamstrings'],
+    tips: ['Došlapuj celým chodidlem a odtlač se patou – víc zapojíš hýždě.', 'Do madel se neopírej, jen se jich lehce drž kvůli rovnováze.', 'Rychlost (úroveň stroje nebo kroky za minutu) je nepovinná.'],
+    a: { props: [['step', 60, 132, 42], ['step', 102, 114, 42], ['step', 144, 96, 40], ['line', 118, 80, 168, 52]], A: { H: [100, 66], t: 176, hand: [128, 76], foot: [120, 114], foot2: [84, 132], ft: 80, ft2: 60 }, B: { H: [104, 60], foot: [84, 132], foot2: [120, 114], ft: 60, ft2: 80 } } },
+  /* ── Další stroje a varianty ── */
+  { id: 'standcurl', n: 'Zakopávání vestoje na stroji', al: 'zakopávání ve stoje jednonož', g: 'Nohy', eq: 'machine', lo: 10, hi: 15, m: ['hamstrings'], m2: ['calves'],
+    tips: ['Stehno opři o polstr, koleno v ose otáčení stroje.', 'Patu táhni k hýždi, nahoře vteřinu podrž.', 'Dolů pomalu do plného propnutí – pánev nevytáčej.'],
+    a: { eq: 'roller', eqAt: 'A', props: [['line', 114, 62, 114, 104], ['line', 134, 40, 134, 150], ['line', 122, 66, 134, 66]], A: { H: [92, 72], t: 174, hand: [128, 66], th: 6, sh: 4, ft: 70, foot2: [96, 146], ft2: 70 }, B: { th: 12, sh: -118, ft: -40 } } },
+  { id: 'machbench', n: 'Tlaky na stroji vleže (vodorovná lavice)', al: 'bench na stroji tlaky vleže rovná lavice', g: 'Hrudník', eq: 'machine', lo: 8, hi: 12, m: ['chest'], m2: ['triceps', 'delts'],
+    tips: ['Lehni si tak, aby madla byla nad spodní částí hrudníku.', 'Lopatky stáhni k sobě a dolů, chodidla pevně na zemi.', 'Stroj vede dráhu – můžeš bezpečně jet blíž k selhání.'],
+    a: { eq: 'handle', props: [['bench', 40, 112, 100], ['line', 62, 150, 62, 24], ['line', 62, 24, 100, 24]], A: { H: [118, 106], t: -90, hand: [72, 52], foot: [150, 146] }, B: { hand: [84, 92] } } },
+  { id: 'dbshoulder', n: 'Tlaky na ramena s jednoručkami', al: 'tlaky nad hlavu s jednoručkami vsedě', g: 'Ramena', eq: 'dumbbell', lo: 8, hi: 12, m: ['delts'], m2: ['triceps', 'traps'],
+    tips: ['Opěrka svisle nebo lehce skloněná, záda celou dobu opřená.', 'Jednoručky dole zhruba v úrovni uší, lokty lehce před tělem.', 'Nahoru je jen přibliž k sobě, nesrážej je.'],
+    a: { eq: 'dumbbell', props: [['bench', 50, 112, 40], ['line', 54, 112, 48, 50]], A: { H: [70, 106], t: 178, hand: [84, 56], foot: [110, 146] }, B: { hand: [78, 8] } } },
+  { id: 'bbcurl', n: 'Bicepsový zdvih s osou', al: 'bicepsovy zdvih s velkou činkou volná osa ez osa biceps', g: 'Paže', eq: 'barbell', bar: false, lo: 8, hi: 12, m: ['biceps'], m2: ['forearms'],
+    tips: ['Úchop na šíři ramen (rovná osa) nebo na lomené části (EZ osa).', 'Lokty u těla, trupem nehoupej.', 'Dolů pomalu až do propnutí.'],
+    a: { eq: 'barbell', A: { ...STAND, ua: 3, fa: 3 }, B: { ua: -8, fa: 160 } } },
+  { id: 'cablecurl', n: 'Bicepsový zdvih na kladce', al: 'biceps kladka', g: 'Paže', eq: 'cable', lo: 10, hi: 15, m: ['biceps'], m2: ['forearms'],
+    tips: ['Spodní kladka, rovná tyč nebo lano, krok od stroje.', 'Kladka drží napětí i dole – nepouštěj ho.', 'Lokty u boků, nahoře zatni.'],
+    a: { eq: 'handle', cable: [116, 150], A: { ...STAND, ua: 3, fa: 3 }, B: { ua: -8, fa: 160 } } },
 ];
 EX.forEach(e => { if (e.a) e.a.B = { ...e.a.A, ...e.a.B }; });
 
@@ -902,11 +948,18 @@ applyTheme(ls.get('posilovna-theme') || 'neon');
 function blank() { return { v: 1, w: [], cx: [], notes: [], photos: [], body: [], set: setDefaults(), setU: 0 }; }
 const getNote = id => ((S.notes || []).find(n => n.id === id) || {}).t || '';
 function setNote(id, t) { S.notes = S.notes || []; let n = S.notes.find(x => x.id === id); if (!n) { n = { id }; S.notes.push(n); } n.t = t; n.u = now(); dirty.notes.add(id); commit(); }
+const norm = x => String(x || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+const exMatch = (e, q) => !q || norm(`${e.n} ${e.al || ''} ${e.g}`).includes(norm(q).trim());
 function allEx() { return [...EX, ...(S ? S.cx.filter(c => !c.del) : [])]; }
 function getEx(id) { return allEx().find(e => e.id === id) || (S && S.cx.find(c => c.id === id)) || { id, n: 'Neznámý cvik', g: 'Core', eq: 'bw', lo: 8, hi: 12, m: [], m2: [] }; }
-function incOf(ex) { return ex.inc ?? (S.set.inc && S.set.inc[ex.eq]) ?? EQ[ex.eq]?.inc ?? 2.5; }
-function unitOf(ex) { return ex.unit === 's' ? 's' : ex.unit === 'm' ? 'm' : 'opak.'; }
-const unitHead = ex => ({ s: 'sek.', m: 'metry' })[ex.unit] || 'opak.';
+// Jednoručky: u cviků se dvěma jednoručkami se píše součet obou → krok je dvojnásobný
+const dbN = ex => ex.eq === 'dumbbell' ? (ex.dbn || 2) : 0;
+function incOf(ex) { const b = ex.inc ?? (S.set.inc && S.set.inc[ex.eq]) ?? EQ[ex.eq]?.inc ?? 2.5; return dbN(ex) === 2 ? b * 2 : b; }
+const eqLabel = ex => dbN(ex) === 1 ? 'Jednoručka · váha 1 ks' : dbN(ex) === 2 ? 'Jednoručky · součet obou' : (EQ[ex.eq]?.n || '');
+const isCardio = ex => ex.unit === 't';
+const rangeTxt = ex => isCardio(ex) ? `${Math.round(ex.lo / 60)}–${Math.round(ex.hi / 60)} min` : `${ex.lo}–${ex.hi}`;
+function unitOf(ex) { return ex.unit === 's' ? 's' : ex.unit === 'm' ? 'm' : ex.unit === 't' ? 'min' : 'opak.'; }
+const unitHead = ex => ({ s: 'sek.', m: 'metry', t: 'čas' })[ex.unit] || 'opak.';
 const isBW = ex => ex.eq === 'bw' || ex.eq === 'cardio';
 function liveWorkouts() { return S.w.filter(w => !w.del); }
 function openWorkout() { return liveWorkouts().filter(w => w.open).sort((a, b) => b.d.localeCompare(a.d))[0] || null; }
@@ -1125,6 +1178,11 @@ function roundTo(v, inc, mode = 'round') { return Math[mode](v / inc - 1e-9 * (m
    – selhání není nutné: hypertrofie roste blíž k selhání, síla skoro nezávisle (Refalo 2023, Robinson 2024)
    – slabší den = nepřidávat; stagnace = lehčí týden se sníženou zátěží, ne pauza (Bell 2023, Coleman 2024) */
 function recommend(ex, excludeId) {
+  if (isCardio(ex)) {
+    const h = sessions(ex.id, excludeId)[0], tot = h ? h.sets.reduce((a, x) => a + x.r, 0) : 0;
+    return h ? { kind: 'hold', w: 0, r: 0, n: 0, head: `Minule ${mmss(tot)}`, txt: 'Pro zlepšení vydrž o 1–2 minuty déle, nebo přidej trochu rychlosti či sklonu – vždy jen jedno.' }
+             : { kind: 'new', w: 0, r: 0, n: 0, head: rangeTxt(ex), txt: 'Spusť stopky a jdi. Rychlost můžeš doplnit potom – je nepovinná.' };
+  }
   const H = sessions(ex.id, excludeId);
   const inc = incOf(ex), lo = ex.lo, hi = ex.hi, u = unitOf(ex), timed = ex.unit === 's';
   const heavy = lo <= 6;
@@ -1241,8 +1299,10 @@ function solveFront(an, p) {
   const side = sg => {
     const Sx = add(S, [13 * sg, 2]), Hx = add(H, [7 * sg, 0]);
     // fly: paže ve výšce ramen, k = průmět do strany (1 = upaženo, záporné = ruce před hrudníkem)
-    const E = an.fly ? add(Sx, [sg * LEN.ua * P.k, 3]) : add(Sx, V(P.ua * sg, LEN.ua));
-    const W = an.fly ? add(E, [sg * LEN.fa * P.k, 3]) : add(E, V(P.fa * sg, LEN.fa));
+    let E, W;
+    // hand = cíl ruky (např. hrazda) → loket dopočítá IK, eo = loket ven
+    if (Array.isArray(P.hand)) [E, W] = ik(Sx, [100 + sg * (P.hand[0] - 100), P.hand[1]], LEN.ua, LEN.fa, sg * (an.eo ?? 1));
+    else { E = an.fly ? add(Sx, [sg * LEN.ua * P.k, 3]) : add(Sx, V(P.ua * sg, LEN.ua)); W = an.fly ? add(E, [sg * LEN.fa * P.k, 3]) : add(E, V(P.fa * sg, LEN.fa)); }
     // one: pohybuje se jen pravá noha, levá zůstává ve výchozí pozici
     const L0 = an.one && sg < 0 ? an.A : P;
     const K = add(Hx, V(L0.th * sg, an.thl ?? LEN.th)), A = add(K, V(L0.sh * sg, LEN.sh)), T = add(A, [6 * sg, 3]);
@@ -1257,6 +1317,7 @@ function eqShape(t) {
   if (t === 'handle') return '<line class="eq" x1="-8" y1="0" x2="8" y2="0"/>';
   if (t === 'roller') return '<circle class="eq" r="6"/>';
   if (t === 'spad') return '<rect class="eq" x="-8" y="-6" width="16" height="6" rx="3"/>';
+  if (t === 'kpad') return '<rect class="eq" x="-3.5" y="-10" width="7" height="20" rx="3.5"/>';
   if (t === 'pad') return '<rect class="eq" x="-15" y="-13" width="30" height="7" rx="3"/>';
   if (t === 'kettlebell') return '<path class="eq" d="M-4,2 Q0,-6 4,2" style="fill:none;stroke-width:2.5"/><circle class="eq" cy="8" r="7"/>';
   if (t === 'wheel') return '<circle class="eq" r="8"/><circle class="eqh" r="2.5"/>';
@@ -1268,6 +1329,7 @@ function propSvg(pr) {
   if (t === 'line') return `<line class="prop" x1="${a[0]}" y1="${a[1]}" x2="${a[2]}" y2="${a[3]}"/>`;
   if (t === 'bench') { const [x, y, w] = a; return `<line class="prop" x1="${x + 8}" y1="${y + 4}" x2="${x + 8}" y2="150"/><line class="prop" x1="${x + w - 8}" y1="${y + 4}" x2="${x + w - 8}" y2="150"/><rect class="propf" x="${x}" y="${y}" width="${w}" height="7" rx="3"/>`; }
   if (t === 'bar') { const [x1, x2, y] = a; return `<line class="prop" x1="${x1}" y1="${y}" x2="${x2}" y2="${y}"/><line class="prop" x1="${x1}" y1="${y}" x2="${x1}" y2="150" style="stroke-width:3;opacity:.6"/><line class="prop" x1="${x2}" y1="${y}" x2="${x2}" y2="150" style="stroke-width:3;opacity:.6"/>`; }
+  if (t === 'arr') { const [x1, y1, x2, y2] = a, an = Math.atan2(y2 - y1, x2 - x1), h = 6, P = d => `${(x2 - h * Math.cos(an + d)).toFixed(1)} ${(y2 - h * Math.sin(an + d)).toFixed(1)}`; return `<path class="arr" d="M${x1} ${y1}L${x2} ${y2}M${P(-.55)}L${x2} ${y2}L${P(.55)}"/>`; }
   if (t === 'step') { const [x, y, w] = a; return `<rect class="propf" x="${x}" y="${y}" width="${w}" height="${150 - y}" rx="2"/>`; }
   return '';
 }
@@ -1300,7 +1362,7 @@ function drawFig(svg, ex, p) {
       const q = o[s];
       setL(g['ua' + s], q.Sx, q.E); setL(g['fa' + s], q.E, q.W); setL(g['th' + s], q.Hx, q.K); setL(g['sh' + s], q.K, q.A); setL(g['ft' + s], q.A, q.T);
       if (g['cab' + s]) setL(g['cab' + s], [s === 'R' ? an.cables[0] : 200 - an.cables[0], an.cables[1]], q.W);
-      if (g['eq' + s]) g['eq' + s].setAttribute('transform', `translate(${q.W[0].toFixed(1)} ${q.W[1].toFixed(1)})`);
+      if (g['eq' + s]) { const at = an.eqAt === 'K' ? add(q.K, [(s === 'R' ? 1 : -1) * (an.eqOff || 0), 0]) : q.W; g['eq' + s].setAttribute('transform', `translate(${at[0].toFixed(1)} ${at[1].toFixed(1)})`); }
     }
     if (g.cab) setL(g.cab, an.cable, an.cableAt === 'A' ? o.R.A : o.R.W);
     return;
@@ -1583,7 +1645,7 @@ function vAdminUser(u) {
       <div class="dt"><b>${t.getDate()}</b><span>${t.toLocaleDateString('cs-CZ', { month: 'short' })}</span></div>
       <div class="sm"><b>${esc(groups || 'Bez cviků')}</b><span>${pl(exs.length, 'cvik', 'cviky', 'cviků')} · ${pl(wSets(w), 'série', 'série', 'sérií')} · ${fmtInt(wVol(w))} kg${dur && dur > 0 && dur < 600 ? ` · ${dur} min` : ''}${w.rpe ? ` · <span style="color:${rpeColor(w.rpe)}">RPE ${w.rpe}</span>` : ''}</span></div>
       <span class="mono muted" style="font-size:12px">${open ? '−' : '+'}</span></button>
-      ${open ? `<div class="hist-body">${exs.map(i => { const ex = admEx(u, i.ex); return `<div class="hist-ex"><b>${esc(ex.n)}</b><div>${doneSets(i).map(s => `${s.w > 0 ? fmt(s.w, 2) + ' kg × ' : ''}${s.r}${ex.unit ? ' ' + ex.unit : ''}${s.q != null && diffOf(s.q) ? ` <span class="dq" style="--dc:${diffOf(s.q).c}">${diffOf(s.q).l}</span>` : ''}`).join('<br>')}</div></div>`; }).join('')}</div>` : ''}</div>`;
+      ${open ? `<div class="hist-body">${exs.map(i => { const ex = admEx(u, i.ex); return `<div class="hist-ex"><b>${esc(ex.n)}</b><div>${doneSets(i).map(s => isCardio(ex) ? cdTxt(s, ex) : `${s.w > 0 ? fmt(s.w, 2) + ' kg × ' : ''}${s.r}${ex.unit ? ' ' + ex.unit : ''}${s.q != null && diffOf(s.q) ? ` <span class="dq" style="--dc:${diffOf(s.q).c}">${diffOf(s.q).l}</span>` : ''}`).join('<br>')}</div></div>`; }).join('')}</div>` : ''}</div>`;
   }).join('');
   return `<button class="btn ghost sm" data-act="admback" style="margin-bottom:10px">← Všichni uživatelé</button>
     <div class="kicker">${st.live ? 'Právě cvičí' : 'Uživatel'}</div><h1 class="title">${esc(u.name)}<span class="d">.</span></h1>
@@ -2102,7 +2164,7 @@ async function renderShareCard(w) {
     const ex = getEx(it.ex), t = topSet(doneSets(it)), isPr = prIds.has(ex.id);
     txt(fit(ex.n, 560, `500 34px ${SANS}`), M, y, `500 34px ${SANS}`, '#d9d9d9');
     if (isPr) { g.font = `500 34px ${SANS}`; const nw = Math.min(560, g.measureText(fit(ex.n, 560, `500 34px ${SANS}`)).width); rr(M + nw + 16, y - 30, 66, 38, 9, A); txt('PR', M + nw + 49, y - 2, `700 22px ${MONO}`, cssVar('--on-neon') || '#03170a', 'center'); }
-    txt(`${doneSets(it).length}× · ${t.w > 0 ? fmt(t.w, 2) + ' × ' : ''}${t.r}${ex.unit && !(t.w > 0) ? ' ' + ex.unit : ''}`, W - M, y, `500 30px ${MONO}`, isPr ? A : '#8d8d8d', 'right');
+    txt(isCardio(ex) ? cdTxt({ ...t, r: doneSets(it).reduce((a, x) => a + x.r, 0) }, ex) : `${doneSets(it).length}× · ${t.w > 0 ? fmt(t.w, 2) + ' × ' : ''}${t.r}${ex.unit && !(t.w > 0) ? ' ' + ex.unit : ''}`, W - M, y, `500 30px ${MONO}`, isPr ? A : '#8d8d8d', 'right');
     y += 62;
   }
   if (exs.length > list.length) txt(`+ ${pl(exs.length - list.length, 'další cvik', 'další cviky', 'dalších cviků')}`, M, y, `500 26px ${MONO}`, '#5c5c5c');
@@ -2133,6 +2195,47 @@ function go(v, after) {
   document.documentElement.dataset.vt = VIEW_ORDER.indexOf(v) < VIEW_ORDER.indexOf(view) ? 'back' : 'fwd';
   // přeskočený přechod (rychlé klepání) nevadí – obsah se vykreslí i tak
   try { const t = document.startViewTransition(run); for (const pr of [t.ready, t.finished, t.updateCallbackDone]) pr.catch(() => {}); } catch { run(); }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   KARDIO NA ČAS (pás, schody): stopky → úseky. Úsek = série { r: sekundy, v: rychlost, i: sklon }.
+   Běžící stopky jsou uložené v cviku (t0 = start, acc = naměřeno před pauzou), takže přežijí i zavření aplikace.
+   ═══════════════════════════════════════════════════════════════ */
+const cdElapsed = it => (it.acc || 0) + (it.t0 ? now() - it.t0 : 0);
+const cdTxt = (s, ex) => { const C = ex.cd || {}; return `${mmss(s.r || 0)}${s.v > 0 ? ` · ${fmt(s.v, 1)} ${C.v || ''}` : ''}${s.i > 0 ? ` · sklon ${fmt(s.i, 1)} %` : ''}`; };
+const cdKm = (sets, ex) => (ex.cd && ex.cd.v === 'km/h') ? sets.reduce((a, s) => a + (s.v > 0 && s.r > 0 ? s.v * s.r / 3600 : 0), 0) : 0;
+function parseDur(v) {
+  v = String(v || '').trim().replace(',', '.'); if (!v) return null;
+  if (v.includes(':')) { const [m, sec] = v.split(':'); const r = (+m || 0) * 60 + (+sec || 0); return r > 0 ? Math.round(r) : null; }
+  const m = num(v); return m > 0 ? Math.round(m * 60) : null;        // samotné číslo = minuty
+}
+function cardioCard(w, it, i) {
+  const ex = getEx(it.ex), C = ex.cd || {}, run = !!it.t0, el = cdElapsed(it);
+  const last = sessions(ex.id, w.id)[0], done = it.s.filter(s => s.ok && s.r > 0);
+  const tot = done.reduce((a, s) => a + s.r, 0), km = cdKm(done, ex), showV = it.sp || it.s.some(s => s.v != null || s.i != null);
+  return `<div class="exc cd" data-i="${i}">
+    <div class="exc-h"><button data-act="detail" data-ex="${ex.id}" aria-label="Ukázka cviku">${figSvg(ex, 'fig-mini')}</button>
+      <div class="nm"><b>${esc(ex.n)}</b><span>${ex.g.toUpperCase()} · ${rangeTxt(ex)} · STOPKY</span></div>
+      <button class="icon-btn" data-act="cardmenu" aria-label="Možnosti cviku">⋯</button></div>
+    ${last ? `<div class="cd-last"><span>Minule</span> ${last.sets.map(s => cdTxt(s, ex)).join(' + ')}${cdKm(last.sets, ex) > 0 ? ` <i>≈ ${fmt(cdKm(last.sets, ex), 2)} km</i>` : ''}</div>` : ''}
+    <div class="cd-clock${run ? ' run' : ''}">
+      <div class="cd-t" data-cdi="${i}">${mmss(el / 1000)}</div>
+      <div class="cd-btns"><button class="btn ${run ? '' : 'p '}big" data-act="cdgo">${run ? '❚❚ Pauza' : el > 0 ? '▶ Pokračovat' : '▶ Start'}</button>${el >= 1000 ? '<button class="btn big" data-act="cdsave">■ Uložit úsek</button>' : ''}</div>
+    </div>
+    ${it.s.length ? `<div class="cd-segs">${it.s.map((x, j) => `<div class="cd-seg${x.ok ? ' ok' : ''}" data-j="${j}"><span class="n">${j + 1}</span>
+        <label class="cd-f"><input inputmode="decimal" data-f="cdt" value="${x.r ? mmss(x.r) : ''}" placeholder="min" aria-label="Čas úseku ${j + 1}"><span>čas</span></label>
+        ${showV ? `<label class="cd-f"><input inputmode="decimal" data-f="cdv" value="${x.v != null ? String(x.v).replace('.', ',') : ''}" placeholder="–" aria-label="Rychlost úseku ${j + 1}"><span>${C.v || 'rychlost'}</span></label>` : ''}
+        ${showV && C.inc ? `<label class="cd-f"><input inputmode="decimal" data-f="cdi" value="${x.i != null ? String(x.i).replace('.', ',') : ''}" placeholder="–" aria-label="Sklon úseku ${j + 1}"><span>sklon %</span></label>` : ''}
+        <button class="icon-btn cd-x" data-act="cddel" aria-label="Smazat úsek ${j + 1}">✕</button></div>`).join('')}</div>` : ''}
+    <div class="set-actions"><button class="btn sm ghost" data-act="cdadd">＋ Zadat čas ručně</button>${!showV ? `<button class="btn sm ghost kgb" data-act="cdsp" title="Nepovinné">＋ ${C.v === 'km/h' ? 'rychlost a sklon' : 'rychlost'}</button>` : ''}</div>
+    ${tot ? `<div class="cd-sum">Celkem <b>${mmss(tot)}</b>${km > 0 ? ` · ≈ ${fmt(km, 2)} km` : ''}</div>` : `<p class="note" style="margin-top:8px">Spusť stopky a cvič. Po uložení úseku můžeš doplnit ${C.v === 'km/h' ? 'rychlost a sklon' : 'rychlost'} – je to nepovinné. Čas jde zadat i ručně (např. 25 nebo 24:30).</p>`}
+  </div>`;
+}
+function cdAutoSave(it) {
+  const el = cdElapsed(it);
+  if (el >= 1000) it.s.push({ w: 0, r: Math.round(el / 1000), v: null, i: null, q: null, ok: true });
+  it.acc = 0; it.t0 = null;
 }
 
 function weekStats() {
@@ -2170,13 +2273,13 @@ function vTrain() {
       ${goalCard()}
       ${!S.set.tourSeen ? `<div class="card t-banner"><div class="grow"><b>Průvodce aplikací</b><span>Za 2 minuty uvidíš, co všechno aplikace umí.</span></div><button class="btn sm p" data-act="tour">Spustit</button><button class="btn sm ghost" data-act="tourno" aria-label="Skrýt">✕</button></div>` : ''}
       <button class="btn p big wide" data-act="start">▶ Začít prázdný trénink</button>
-      <h2 class="sec">Navrhnout trénink</h2>
-      <div class="card stack">
+      <button class="btn wide big gen-tog${ui.genOpen ? ' on' : ''}" data-act="gentog" aria-expanded="${!!ui.genOpen}">✦ Navrhnout trénink<span class="chev" aria-hidden="true">${ui.genOpen ? '▴' : '▾'}</span></button>
+      ${ui.genOpen ? `<div class="card stack gen-box">
         <div class="chips wrapc">${GROUPS.map(g => `<button class="chip ${ui.genGroups.includes(g) ? 'on' : ''}" data-act="gg" data-g="${g}">${g}</button>`).join('')}</div>
         <div class="seg">${[45, 60, 75, 90].map(d => `<button class="${ui.genDur === d ? 'on' : ''}" data-act="gdur" data-d="${d}">${d} min</button>`).join('')}</div>
         <button class="btn p wide" data-act="gen">✦ ${ui.genGroups.length ? 'Navrhnout: ' + esc(ui.genGroups.join(' + ')) : 'Náhodný trénink'}</button>
         <p class="note">Vyber 1–3 partie, nebo nech prázdné a návrh vybere partie, které máš nejdéle neodcvičené. Váhy a opakování se doplní podle tvých minulých výkonů.</p>
-      </div>
+      </div>` : ''}
       <h2 class="sec">Tento týden</h2>
       <div class="stats"><div class="stat"><div class="v">${st.n}</div><div class="l">tréninky</div></div><div class="stat"><div class="v">${st.sets}</div><div class="l">série</div></div><div class="stat"><div class="v">${st.vol >= 10000 ? fmt(st.vol / 1000, 1) + 't' : fmtInt(st.vol)}</div><div class="l">objem kg</div></div></div>
       <h2 class="sec">Kdy naposledy</h2>
@@ -2192,7 +2295,7 @@ function vTrain() {
     <div class="row"><button class="btn p wide big" data-act="finish">✓ Dokončit trénink</button></div>
     <div class="row" style="margin-top:8px"><button class="btn ghost wide sm" data-act="discard">Zahodit trénink</button></div>`;
 }
-const setTxt = (s, ex) => `${s.w > 0 ? fmt(s.w, 2) + '×' : ''}${s.r}${ex.unit && !(s.w > 0) ? ' ' + ex.unit : ''}${s.q === 0 ? '<span class="f-mark">S</span>' : s.q != null ? `<i class="qd" style="--dc:${diffOf(s.q).c}" title="${diffOf(s.q).l}"></i>` : ''}`;
+const setTxt = (s, ex) => isCardio(ex) ? cdTxt(s, ex) : `${s.w > 0 ? fmt(s.w, 2) + '×' : ''}${s.r}${ex.unit && !(s.w > 0) ? ' ' + ex.unit : ''}${s.q === 0 ? '<span class="f-mark">S</span>' : s.q != null ? `<i class="qd" style="--dc:${diffOf(s.q).c}" title="${diffOf(s.q).l}"></i>` : ''}`;
 const topSet = sets => sets.reduce((a, s) => s.w > a.w || (s.w === a.w && s.r > a.r) ? s : a, sets[0]);
 function recoBox(rc, ex, kicker) {
   const timed = ex.unit === 's';
@@ -2204,7 +2307,7 @@ function recoBox(rc, ex, kicker) {
     const what = rc.kind === 'up' || rc.kind === 'down' ? `${dw > 0 ? '+' : '−'}${fmt(Math.abs(dw), 2)} kg` : dr > 0 ? `+${dr} ${unitOf(ex)} v nejslabší sérii` : 'stejná váha i opakování';
     chg = `<div class="chg"><span>Minule</span> ${t.w > 0 ? fmt(t.w, 2) + ' kg × ' : ''}${minR}–${Math.max(...rc.last.sets.filter(s => s.w === t.w).map(s => s.r))} <span>→ Teď</span> <b>${what}</b></div>`;
   }
-  return `<div class="reco ${rc.kind === 'down' ? 'down' : rc.kind === 'new' ? 'new' : ''}"><div class="rt"><span class="k">${lab}</span><b>${esc(rc.head)}</b><span class="mono muted" style="font-size:11px">${rc.n} série</span></div>${chg}<p>${esc(rc.txt)}</p></div>`;
+  return `<div class="reco ${rc.kind === 'down' ? 'down' : rc.kind === 'new' ? 'new' : ''}"><div class="rt"><span class="k">${lab}</span><b>${esc(rc.head)}</b>${rc.n ? `<span class="mono muted" style="font-size:11px">${rc.n} série</span>` : ''}</div>${chg}<p>${esc(rc.txt)}</p></div>`;
 }
 function exHistory(ex, excludeId, limit = 8) {
   const H = sessions(ex.id, excludeId);
@@ -2220,6 +2323,7 @@ function exHistory(ex, excludeId, limit = 8) {
   }).join('')}${H.length > limit ? `<div class="note" style="padding:8px 0 0">…a ${H.length - limit} starších – celé v detailu cviku.</div>` : ''}</div>`;
 }
 function exCard(w, it, i) {
+  if (isCardio(getEx(it.ex))) return cardioCard(w, it, i);
   const ex = getEx(it.ex), rc = recommend(ex, w.id);
   const u = unitOf(ex);
   const nH = sessions(ex.id, w.id).length, open = ui.cardOpen[it.ex], pin = getNote(ex.id), exPh = livePhotos('ex', ex.id);
@@ -2227,13 +2331,15 @@ function exCard(w, it, i) {
   const prevBest = Math.max(0, ...sessions(ex.id, w.id).map(h => bestE1(h.sets)));
   let run = prevBest;
   const rateJ = ui.rate && ui.rate.i === i ? ui.rate.j : -1;
+  // vlastní váha: jen opakování, zátěž (vesta, kotouč) se přidá tlačítkem „+ kg“
+  const noKg = ex.eq === 'bw' && !it.xw && !it.s.some(x => x.w > 0);
   const rows = it.s.map((s, j) => {
     let pr = false;
     if (s.ok && s.r > 0 && s.w > 0) { const e = e1rm(s); if (prevBest > 0 && e > run + 0.01) pr = true; run = Math.max(run, e); }
     const d = diffOf(s.q);
     return `<div class="set ${s.ok ? 'ok' : ''}${pr ? ' is-pr' : ''}" data-i="${i}" data-j="${j}">
       <span class="n">${pr ? '<b class="prb">PR</b>' : j + 1}</span>
-      <input inputmode="decimal" data-f="w" value="${s.w ?? ''}" placeholder="${ex.eq === 'cardio' ? '–' : ex.eq === 'bw' ? '+kg' : 'kg'}" aria-label="Váha série ${j + 1}">
+      ${noKg ? '' : `<input inputmode="decimal" data-f="w" value="${s.w || (ex.eq === 'bw' ? '' : s.w ?? '')}" placeholder="${ex.eq === 'cardio' ? '–' : ex.eq === 'bw' ? '+kg' : 'kg'}" aria-label="Váha série ${j + 1}">`}
       <input inputmode="numeric" data-f="r" value="${s.r ?? ''}" placeholder="${u === 'opak.' ? 'op.' : u}" aria-label="Opakování série ${j + 1}">
       <button class="diff ${d ? 'on' : ''}${rateJ === j ? ' open' : ''}" data-act="rate" ${d ? `style="--dc:${d.c}"` : ''} aria-label="Náročnost série ${j + 1}">${d ? d.l : 'náročnost'}</button>
       <button class="chk" data-act="ok" aria-label="Série hotová"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></button>
@@ -2246,7 +2352,7 @@ function exCard(w, it, i) {
   const wu = !it.s.some(x => x.ok) ? warmup(ex, tw) : null;
   return `<div class="exc" data-i="${i}">
     <div class="exc-h"><button data-act="detail" data-ex="${ex.id}" aria-label="Ukázka cviku">${figSvg(ex, 'fig-mini')}</button>
-      <div class="nm"><b>${esc(ex.n)}</b><span>${ex.g.toUpperCase()} · ${ex.lo}–${ex.hi} ${u} · ${EQ[ex.eq]?.n || ''}</span></div>
+      <div class="nm"><b>${esc(ex.n)}</b><span>${ex.g.toUpperCase()} · ${ex.lo}–${ex.hi} ${u} · ${eqLabel(ex)}</span></div>
       <button class="icon-btn" data-act="cardmenu" aria-label="Možnosti cviku">⋯</button></div>
     ${recoBox(rc, ex)}
     ${pin ? `<div class="xnote"><span>Poznámka</span>${esc(pin)}</div>` : ''}
@@ -2258,9 +2364,9 @@ function exCard(w, it, i) {
       ${photoStrip(exPh, ex.id)}</div>` : ''}
     ${exPh.length && open !== 'note' ? `<div class="thumbs mini">${exPh.slice(0, 4).map(p => `<button class="ph" data-act="photo" data-id="${p.id}"><img src="${p.thumb}" alt="Fotka ke cviku"></button>`).join('')}</div>` : ''}
     ${wu && wu.length ? `<details class="warm"><summary>Rozcvičení · ${pl(wu.length, 'série', 'série', 'sérií')}</summary><div>${wu.map(([x, r]) => `${fmt(x, 2)} kg × ${r}`).join(' · ')}</div><p>Rozcvičovací série neodškrtávej – do objemu se nepočítají.</p></details>` : ''}
-    <div class="sets"><div class="set-h"><span>#</span><span>${ex.eq === 'bw' ? '+kg' : 'kg'}</span><span>${unitHead(ex)}</span><span>náročnost</span><span></span></div>${rows}</div>
+    <div class="sets${noKg ? ' nokg' : ''}"><div class="set-h"><span>#</span>${noKg ? '' : `<span>${ex.eq === 'bw' ? '+kg' : 'kg'}</span>`}<span>${unitHead(ex)}</span><span>náročnost</span><span></span></div>${rows}</div>
     ${pls ? `<div class="plates" title="Kotouče na každou stranu osy"><span>${fmt(tw, 2)} kg →</span>${pls.out.length ? pls.out.map(x => `<i class="pl p${String(x).replace('.', '_')}">${fmt(x, 2)}</i>`).join('') : '<em>jen osa</em>'}<i class="bar"></i><em>osa ${fmt(S.set.bar, 1)} kg${pls.rest > 0.01 ? ' · přesně nejde' : ''}</em></div>` : ''}
-    <div class="set-actions"><button class="btn sm" data-act="addset">＋ Série</button><button class="btn sm ghost" data-act="rmset">− Série</button></div>
+    <div class="set-actions"><button class="btn sm" data-act="addset">＋ Série</button><button class="btn sm ghost" data-act="rmset">− Série</button>${ex.eq === 'bw' && !it.s.some(x => x.w > 0) ? `<button class="btn sm ghost kgb" data-act="xw" title="${noKg ? 'Přidat zátěž – vesta, kotouč, opasek' : 'Skrýt zátěž'}">${noKg ? '＋ kg' : '− kg'}</button>` : ''}</div>
     ${i === 0 && !it.s.some(x => x.q != null) ? '<div class="legend-rir">Po odškrtnutí série vyber, jak byla těžká – podle toho se plánuje další přetížení.</div>' : ''}
   </div>`;
 }
@@ -2306,6 +2412,7 @@ function swapSheet(i) {
     <div class="pick-list">${list.map(e => { const rc = recommend(e, w.id); return `<button class="pick" data-act="doswap" data-i="${i}" data-ex="${e.id}">${figSvg(e, 'static')}<div><b>${esc(e.n)}</b><span>${e.m.map(m => MUSCLE[m]).join(', ')}${rc.kind !== 'new' ? ' · ' + esc(rc.head) : ''}</span></div></button>`; }).join('') || '<div class="empty">Žádná náhrada v této partii.</div>'}</div>`);
 }
 function newSetsFor(ex, w, n) {
+  if (isCardio(ex)) return [];
   const rc = recommend(ex, w.id);
   const sw = rc.w ?? (isBW(ex) ? 0 : null);
   return Array.from({ length: n || rc.n }, () => ({ w: sw, r: rc.r, q: null, ok: false }));
@@ -2314,7 +2421,7 @@ function newSetsFor(ex, w, n) {
 /* ── Generátor tréninku ──
    Vícekloubové cviky první (pořadí ovlivňuje výkon), izolace potom, core a kondice na konec.
    Větší partie dostanou víc cviků. Preferuje cviky, které jsi dlouho nedělal, a různé hlavní svaly. */
-const ISO = new Set(['adduction', 'seatedcalf', 'pecdeck', 'crossover', 'latraise', 'revfly', 'facepull', 'curl', 'hammer', 'pushdown', 'preacher', 'skull', 'ohtri', 'legext', 'legcurl', 'calf', 'abduction', 'kickback', 'shrug', 'hyperext', 'seatedcurl', 'glutekickm', 'sissy', 'nordic', 'pullthrough', 'cableabd', 'standcalf', 'hyper45']);
+const ISO = new Set(['adduction', 'seatedcalf', 'pecdeck', 'crossover', 'latraise', 'revfly', 'facepull', 'curl', 'hammer', 'pushdown', 'preacher', 'skull', 'ohtri', 'legext', 'legcurl', 'calf', 'abduction', 'kickback', 'shrug', 'hyperext', 'seatedcurl', 'glutekickm', 'sissy', 'nordic', 'pullthrough', 'cableabd', 'standcalf', 'hyper45', 'standcurl', 'cablecurl', 'bbcurl']);
 const BIG = { 'Hrudník': 2, 'Záda': 2, 'Nohy': 2.5, 'Ramena': 1.2, 'Paže': 1.2, 'Core': 0.8, 'Kondice': 0.8 };
 const isIso = ex => ISO.has(ex.id) || ex.g === 'Core' || ex.g === 'Kondice';
 function lastDone(exId) { const h = sessions(exId)[0]; return h ? new Date(h.d).getTime() : 0; }
@@ -2373,14 +2480,14 @@ function weekSetsByGroup() {
 function planSheet() {
   const P = ui.plan; if (!P) return;
   const wk = weekSetsByGroup(), add = {};
-  P.items.forEach(it => { const g = getEx(it.ex).g; add[g] = (add[g] || 0) + it.n; });
-  const totalSets = P.items.reduce((a, b) => a + b.n, 0);
+  P.items.forEach(it => { const g = getEx(it.ex).g; add[g] = (add[g] || 0) + (isCardio(getEx(it.ex)) ? 0 : it.n); });
+  const totalSets = P.items.reduce((a, b) => a + (isCardio(getEx(b.ex)) ? 0 : b.n), 0);
   openSheet(`<div class="kicker">${P.random ? 'Náhodný návrh' : 'Návrh tréninku'} · ~${P.dur} min · ${pl(totalSets, 'série', 'série', 'sérií')}</div>
     <h3>${esc(P.groups.join(' + '))}</h3>
     ${P.note ? `<p class="note" style="margin-top:6px;color:var(--warn)">${esc(P.note)}</p>` : ''}
     <div class="pick-list">${P.items.map((it, i) => { const e = getEx(it.ex), rc = recommend(e); return `<div class="pick" style="cursor:default">
         <button data-act="detail" data-ex="${e.id}" aria-label="Ukázka">${figSvg(e, 'static')}</button>
-        <div style="flex:1;min-width:0"><b>${esc(e.n)}</b><span>${it.n} × ${rc.kind === 'new' ? esc(rc.head) : esc(rc.head)}</span></div>
+        <div style="flex:1;min-width:0"><b>${esc(e.n)}</b><span>${isCardio(e) ? 'stopky · ' + esc(rc.head) : `${it.n} × ${esc(rc.head)}`}</span></div>
         <button class="icon-btn" data-act="planswap" data-i="${i}" aria-label="Vyměnit cvik">↻</button>
         <button class="icon-btn" data-act="planrm" data-i="${i}" aria-label="Odebrat">✕</button></div>`; }).join('')}</div>
     <p class="note" style="margin-top:10px">Série tento týden po tréninku: ${Object.entries(add).map(([g, n]) => `<b>${g}</b> ${wk[g]} → ${wk[g] + n}`).join(' · ')} <span class="muted">(doporučeno 10–20 týdně)</span></p>
@@ -2400,11 +2507,11 @@ function startPlan() {
 /* ── Knihovna cviků ── */
 function vLib() {
   const q = ui.libQ.toLowerCase();
-  const list = allEx().filter(e => (ui.libGroup === 'Vše' || e.g === ui.libGroup) && (!q || e.n.toLowerCase().includes(q)));
+  const list = allEx().filter(e => (ui.libGroup === 'Vše' || e.g === ui.libGroup) && exMatch(e, q));
   return `<div class="kicker">${allEx().length} cviků</div><h1 class="title">Cviky<span class="d">.</span></h1>
     <div class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input data-f="libq" placeholder="Hledat cvik…" value="${esc(ui.libQ)}"></div>
     <div class="chips" style="margin-bottom:14px">${['Vše', ...GROUPS].map(g => `<button class="chip ${ui.libGroup === g ? 'on' : ''}" data-act="libg" data-g="${g}">${g}</button>`).join('')}</div>
-    <div class="lib">${list.map(e => `<button class="lib-it" data-act="detail" data-ex="${e.id}">${figSvg(e)}<b>${esc(e.n)}</b><span>${e.g.toUpperCase()} · ${e.lo}–${e.hi}</span></button>`).join('') || '<div class="empty">Nic nenalezeno.</div>'}</div>`;
+    <div class="lib">${list.map(e => `<button class="lib-it" data-act="detail" data-ex="${e.id}">${figSvg(e)}<b>${esc(e.n)}</b><span>${e.g.toUpperCase()} · ${rangeTxt(e)}</span></button>`).join('') || '<div class="empty">Nic nenalezeno.</div>'}</div>`;
 }
 function detailSheet(id) {
   const ex = getEx(id), w = openWorkout();
@@ -2412,13 +2519,14 @@ function detailSheet(id) {
   const rc = recommend(ex, w && w.id);
   const best = H.reduce((b, h) => { for (const s of h.sets) { const v = isBW(ex) && s.w === 0 ? s.r : e1rm(s); if (v > b.v) b = { v, d: h.d }; } return b; }, { v: 0, d: null });
   const inW = w && w.it.some(i => i.ex === ex.id);
-  openSheet(`<div class="kicker">${ex.g} · ${EQ[ex.eq]?.n || ''}</div><h3>${esc(ex.n)}</h3>
+  openSheet(`<div class="kicker">${ex.g} · ${eqLabel(ex)}</div><h3>${esc(ex.n)}</h3>
     <div class="big-fig">${figSvg(ex)}</div>
     <div class="mmap">${muscleMap(ex)}</div>
     <div class="mtags">${ex.m.map(m => `<span class="mtag p">${MUSCLE[m]}</span>`).join('')}${(ex.m2 || []).map(m => `<span class="mtag">${MUSCLE[m]}</span>`).join('')}</div>
     ${ex.tips ? `<h2 class="sec">Technika</h2><ul class="tips">${ex.tips.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}
     <h2 class="sec">Tvoje data</h2>
-    <div class="kv"><div class="stat"><div class="v">${ex.lo}–${ex.hi}</div><div class="l">rozsah ${unitOf(ex)}</div></div>
+    ${dbN(ex) ? `<p class="note" style="margin-bottom:10px">${dbN(ex) === 2 ? 'Cvičíš se dvěma jednoručkami → zapisuj <b>součet obou</b> (2 × 12 kg = 24 kg).' : 'Cvičíš s jednou jednoručkou → zapisuj <b>váhu jedné</b>.'}</p>` : ''}
+    <div class="kv"><div class="stat"><div class="v">${isCardio(ex) ? rangeTxt(ex).replace(' min', '') : ex.lo + '–' + ex.hi}</div><div class="l">rozsah ${unitOf(ex)}</div></div>
       <div class="stat"><div class="v">${best.v ? fmt(best.v, 1) : '–'}</div><div class="l">${isBW(ex) ? 'rekord' : 'odhad 1RM'}</div></div>
       <div class="stat"><div class="v">${H.length}</div><div class="l">tréninků</div></div></div>
     ${recoBox(rc, ex)}
@@ -2440,7 +2548,7 @@ function pickSheet() {
   const w = openWorkout(); if (!w) return;
   const q = ui.pickQ.toLowerCase();
   const used = new Set(w.it.map(i => i.ex));
-  const list = allEx().filter(e => !used.has(e.id) && (ui.pickGroup === 'Vše' || e.g === ui.pickGroup) && (!q || e.n.toLowerCase().includes(q)));
+  const list = allEx().filter(e => !used.has(e.id) && (ui.pickGroup === 'Vše' || e.g === ui.pickGroup) && exMatch(e, q));
   const html = `<h3>Přidat cvik</h3>
     <div class="search" style="margin-top:12px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input data-f="pickq" placeholder="Hledat…" value="${esc(ui.pickQ)}"></div>
     <div class="chips">${['Vše', ...GROUPS].map(g => `<button class="chip ${ui.pickGroup === g ? 'on' : ''}" data-act="pickg" data-g="${g}">${g}</button>`).join('')}</div>
@@ -2461,7 +2569,7 @@ function histItem(w, expandable = true) {
       <div class="dt"><b>${t.getDate()}</b><span>${t.toLocaleDateString('cs-CZ', { month: 'short' })}</span></div>
       <div class="sm"><b>${esc(groups || 'Bez cviků')}</b><span>${pl(exs.length, 'cvik', 'cviky', 'cviků')} · ${pl(sets, 'série', 'série', 'sérií')} · ${fmtInt(vol)} kg${dur && dur > 0 && dur < 600 ? ` · ${dur} min` : ''}${w.rpe ? ` · <span style="color:${rpeColor(w.rpe)}">RPE ${w.rpe}</span>` : ''}</span></div>
       <span class="mono muted" style="font-size:12px">${open ? '−' : '+'}</span></button>
-    ${open ? `<div class="hist-body">${exs.map(i => { const ex = getEx(i.ex); return `<div class="hist-ex"><b>${esc(ex.n)}</b><div>${doneSets(i).map(s => `${s.w > 0 ? fmt(s.w, 2) + ' kg × ' : ''}${s.r}${ex.unit ? ' ' + ex.unit : ''}${s.q != null ? ` <span class="dq" style="--dc:${diffOf(s.q).c}">${diffOf(s.q).l}</span>` : ''}`).join('<br>')}${i.note ? `<br><i class="muted">„${esc(i.note)}“</i>` : ''}</div></div>`; }).join('')}
+    ${open ? `<div class="hist-body">${exs.map(i => { const ex = getEx(i.ex); return `<div class="hist-ex"><b>${esc(ex.n)}</b><div>${doneSets(i).map(s => isCardio(ex) ? cdTxt(s, ex) : `${s.w > 0 ? fmt(s.w, 2) + ' kg × ' : ''}${s.r}${ex.unit ? ' ' + ex.unit : ''}${s.q != null ? ` <span class="dq" style="--dc:${diffOf(s.q).c}">${diffOf(s.q).l}</span>` : ''}`).join('<br>')}${i.note ? `<br><i class="muted">„${esc(i.note)}“</i>` : ''}</div></div>`; }).join('')}
       ${w.note ? `<p class="note" style="margin-top:8px">${esc(w.note)}</p>` : ''}
       <div class="row" style="margin-top:12px"><button class="btn sm wide" data-act="share" data-id="${w.id}">Sdílet obrázek</button><button class="btn sm wide" data-act="repeat" data-id="${w.id}">↻ Zopakovat</button></div>
       <div class="row" style="margin-top:8px"><button class="btn sm wide" data-act="editw" data-id="${w.id}">Upravit</button><button class="btn sm danger wide" data-act="delw" data-id="${w.id}">Smazat</button></div></div>` : ''}</div>`;
@@ -2497,7 +2605,7 @@ function vProg() {
   if (!list.length) return `<h1 class="title">Progres<span class="d">.</span></h1><div class="empty">Až dokončíš první trénink, uvidíš tu grafy progresivního přetížení.</div><h2 class="sec">Jak funguje doporučení</h2>${HOWTO}`;
   if (!ui.progEx || !list.find(e => e.id === ui.progEx)) ui.progEx = list[0].id;
   const ex = getEx(ui.progEx), bw = isBW(ex) && sessions(ex.id).every(h => h.sets.every(s => !s.w));
-  const metrics = bw ? [['reps', ex.unit === 's' ? 'Max výdrž' : ex.unit === 'm' ? 'Max metrů' : 'Max opak.'], ['tot', 'Celkem']] : [['e1', 'Odhad 1RM'], ['top', 'Top váha'], ['vol', 'Objem']];
+  const metrics = bw ? [['reps', ex.unit === 't' ? 'Nejdelší úsek' : ex.unit === 's' ? 'Max výdrž' : ex.unit === 'm' ? 'Max metrů' : 'Max opak.'], ['tot', 'Celkem']] : [['e1', 'Odhad 1RM'], ['top', 'Top váha'], ['vol', 'Objem']];
   if (!metrics.find(m => m[0] === ui.progMetric)) ui.progMetric = metrics[0][0];
   const rc = recommend(ex);
   const H = sessions(ex.id).slice(0, 12);
@@ -2541,6 +2649,7 @@ function mountProg() {
     if (m === 'reps') return { x, y: Math.max(...h.sets.map(s => s.r)), f };
     return { x, y: h.sets.reduce((a, s) => a + s.r, 0), f, tip: h.sets.length + ' sérií' };
   }).filter(p => p.y > 0);
+  if (isCardio(ex)) pts.forEach(p => { p.y = +(p.y / 60).toFixed(1); });
   lineChart(el, pts, m === 'reps' || m === 'tot' ? unitOf(ex) : 'kg');
 }
 
@@ -2551,6 +2660,7 @@ const HOWTO = `<div class="card how">
   <p><b>Náročnost série.</b> Po každé sérii vybereš, jak byla těžká: Lehká (4+ opakování v rezervě), Střední (3), Těžká (2), Na hraně (1), Selhání. Z toho se počítá odhad 1RM a plánuje přetížení – lehké série posunou váhu rychleji, série na hraně a v selhání ji drží. Odhad rezervy je u zkušenějších přesnější a nejlepší je těsně u selhání (Zourdos a kol., 2016).</p>
   <p><b>Selhání není nutné.</b> Pro růst svalů pomáhá končit blízko selhání, samotné selhání přidá jen málo; síla na blízkosti k selhání skoro nezávisí (Refalo a kol., 2023; Robinson a kol., 2024). Proto cíl RIR 1–2 u těžkých cviků.</p>
   <p><b>Stagnace.</b> Tři tréninky bez zlepšení a se selháním = lehčí týden (~90 % váhy, o sérii méně), ne pauza – úplná týdenní pauza v jedné studii mírně snížila nárůst síly (Coleman a kol., 2024; Bell a kol., 2023).</p>
+  <p><b>Váha u jednoruček.</b> S jednou jednoručkou (přítah v opoře, výpony) zapisuj její váhu. Se dvěma (tlaky, bicepsový zdvih, upažování) zapisuj součet obou – 2 × 12 kg = 24 kg. Pod názvem cviku vždy vidíš, co se zapisuje.</p>
   <p><b>Objem.</b> Víc sérií týdně = víc růstu, s klesajícím přínosem (Pelland a kol., 2024). Orientačně 10–20 sérií na partii týdně.</p>
   <p class="note"><a href="https://peerj.com/articles/14142" target="_blank" rel="noopener">Plotkin 2022</a> · <a href="https://pubmed.ncbi.nlm.nih.gov/19204579/" target="_blank" rel="noopener">ACSM 2009</a> · <a href="https://openrepository.aut.ac.nz/items/78679612-6ff4-4d00-95d1-7920d072a760" target="_blank" rel="noopener">Refalo 2023</a> · <a href="https://doi.org/10.1007/s40279-024-02069-2" target="_blank" rel="noopener">Robinson 2024</a> · <a href="https://pubmed.ncbi.nlm.nih.gov/38274324/" target="_blank" rel="noopener">Coleman 2024</a> · <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10511399/" target="_blank" rel="noopener">Bell 2023</a> · <a href="https://sportrxiv.org/index.php/server/preprint/view/460" target="_blank" rel="noopener">Pelland 2024</a></p>
 </div>`;
@@ -2646,7 +2756,7 @@ function vSet() {
       <label class="check" style="margin:0"><input type="checkbox" data-f="sound" ${S.set.sound !== false ? 'checked' : ''}> Zvuk na konci pauzy</label>
       <p class="note">Delší pauza u vícekloubových cviků (2–3 min) vede k většímu objemu i růstu svalů než krátká (Schoenfeld a kol., 2016).</p>
       <div class="field" style="margin:0"><label>Krok přidávání váhy (kg)</label>
-        <div class="kv" style="grid-template-columns:repeat(2,1fr)">${['barbell', 'dumbbell', 'machine', 'cable'].map(k => `<label class="field" style="margin:0"><span class="help">${EQ[k].n}</span><input inputmode="decimal" data-f="inc" data-k="${k}" value="${fmt(S.set.inc[k] ?? EQ[k].inc, 2)}"></label>`).join('')}</div></div>
+        <div class="kv" style="grid-template-columns:repeat(2,1fr)">${['barbell', 'dumbbell', 'machine', 'cable'].map(k => `<label class="field" style="margin:0"><span class="help">${EQ[k].n}${k === 'dumbbell' ? ' (krok 1 ks)' : ''}</span><input inputmode="decimal" data-f="inc" data-k="${k}" value="${fmt(S.set.inc[k] ?? EQ[k].inc, 2)}"></label>`).join('')}</div></div>
     </div>
     <h2 class="sec">Nápověda a zpětná vazba</h2>
     <div class="card stack">
@@ -2708,6 +2818,7 @@ function tickTimers() {
   if (!S) return;
   const w = openWorkout(), el = $('#wo-timer');
   if (w && el) { const st = new Date(w.d).getTime(); el.textContent = mmss(Math.max(0, (now() - st) / 1000)); }
+  if (w) $$('.cd-t[data-cdi]').forEach(c => { const it = w.it[+c.dataset.cdi]; if (it && it.t0) c.textContent = mmss(cdElapsed(it) / 1000); });
   if (restEnd) {
     const left = Math.max(0, (restEnd - now()) / 1000);
     $('#rest-t').textContent = mmss(Math.ceil(left));
@@ -2732,7 +2843,7 @@ function finishWorkout() {
   const w = openWorkout(); if (!w) return;
   const prev = {};
   w.it.forEach(i => { prev[i.ex] = Math.max(0, ...sessions(i.ex, w.id).map(h => bestE1(h.sets))); });
-  w.it.forEach(i => { i.s = doneSets(i); });
+  w.it.forEach(i => { if (isCardio(getEx(i.ex))) cdAutoSave(i); delete i.t0; delete i.acc; delete i.sp; i.s = doneSets(i); });
   w.it = w.it.filter(i => i.s.length);
   if (!w.it.length) { if (!confirm('Žádná série není odškrtnutá. Zahodit trénink?')) { return; } w.del = true; touch(w); commit(true); return; }
   w.open = false; w.end = Math.max(now(), new Date(w.d).getTime()); touch(w);
@@ -2830,6 +2941,12 @@ document.addEventListener('click', async e => {
     }
     case 'addset': { const l = it.s[it.s.length - 1]; it.s.push(l ? { w: l.w, r: l.r, q: null, ok: false } : { w: null, r: null, q: null, ok: false }); touch(w); commit(); renderCard(+card.dataset.i); break; }
     case 'rmset': { if (!it.s.length) return; const i = +card.dataset.i, gone = it.s.pop(); if (ui.rate && ui.rate.i === i && ui.rate.j >= it.s.length) ui.rate = null; touch(w); commit(); renderCard(i); if (gone.ok) toast('Série odebrána', 4000, () => { it.s.push(gone); touch(w); commit(); renderCard(i); }); break; }
+    case 'cdgo': { audioUnlock(); if (it.t0) { it.acc = (it.acc || 0) + now() - it.t0; it.t0 = null; } else { it.t0 = now(); keepAwake(); } touch(w); commit(); vib(10); renderCard(+card.dataset.i); break; }
+    case 'cdsave': { cdAutoSave(it); touch(w); commit(); vib([12, 40, 12]); renderCard(+card.dataset.i); toast(`Úsek uložen: <b>${mmss(it.s[it.s.length - 1].r)}</b>`); break; }
+    case 'cdadd': { it.s.push({ w: 0, r: null, v: null, i: null, q: null, ok: false }); touch(w); commit(); const ci = +card.dataset.i; renderCard(ci); const ins = $$(`.exc[data-i="${ci}"] [data-f=cdt]`); ins[ins.length - 1]?.focus(); break; }
+    case 'cdsp': { it.sp = true; touch(w); commit(); renderCard(+card.dataset.i); break; }
+    case 'cddel': { const ci = +card.dataset.i, j = +b.closest('[data-j]').dataset.j, gone = it.s.splice(j, 1)[0]; touch(w); commit(); renderCard(ci); if (gone && gone.r) toast('Úsek smazán', 4000, () => { it.s.splice(j, 0, gone); touch(w); commit(); renderCard(ci); }); break; }
+    case 'xw': { it.xw = !it.xw; touch(w); commit(); renderCard(+card.dataset.i); break; }
     case 'rate': { const i = +card.dataset.i, j = +setEl.dataset.j; ui.rate = ui.rate && ui.rate.i === i && ui.rate.j === j ? null : { i, j }; renderCard(i); break; }
     case 'q': {
       const i = +card.dataset.i, j = +b.closest('[data-j]').dataset.j, s = it.s[j];
@@ -2839,7 +2956,7 @@ document.addEventListener('click', async e => {
     case 'ok': {
       audioUnlock();
       const i = +card.dataset.i, j = +setEl.dataset.j, s = it.s[j], ex = getEx(it.ex);
-      s.w = num($('[data-f=w]', setEl).value); s.r = num($('[data-f=r]', setEl).value);
+      const wIn = $('[data-f=w]', setEl); s.w = wIn ? num(wIn.value) : (s.w || 0); s.r = num($('[data-f=r]', setEl).value);
       if (!s.ok && !(s.r > 0)) { toast('Zadej počet opakování.'); $('[data-f=r]', setEl).focus(); return; }
       if (s.w == null) s.w = 0;
       s.ok = !s.ok; touch(w); commit();
@@ -2852,7 +2969,7 @@ document.addEventListener('click', async e => {
         if (prev > 0 && e > Math.max(prev, inW) + 0.01) { toast(`🔥 Rekord! Odhad 1RM <b>${fmt(e, 1)} kg</b> <span class="muted">(dosud ${fmt(Math.max(prev, inW), 1)})</span>`, 3800); vib([30, 50, 30]); }
         ui.rate = s.q == null ? { i, j } : null;
         const nx = it.s.find(x => !x.ok), nextEx = w.it[i + 1];
-        const label = nx ? `Další: ${nx.w > 0 ? fmt(nx.w, 2) + ' kg × ' : ''}${nx.r ?? ''}` : nextEx ? `Další: ${getEx(nextEx.ex).n}` : 'Poslední série ✓';
+        const label = nx ? `Další: ${nx.w > 0 ? fmt(nx.w, 2) + ' kg × ' + (nx.r ?? '') : (nx.r ?? '') + ' ' + unitOf(ex)}` : nextEx ? `Další: ${getEx(nextEx.ex).n}` : 'Poslední série ✓';
         const sec = restFor(ex); if (sec > 0) startRest(sec, label);
       } else if (ui.rate && ui.rate.i === i && ui.rate.j === j) ui.rate = null;
       renderCard(i);
@@ -2890,6 +3007,7 @@ document.addEventListener('click', async e => {
     case 'admwtog': ADM.open = ADM.open === b.dataset.id ? null : b.dataset.id; render(); break;
     case 'theme': { const id = b.dataset.id; if (!THEMES[id] || S.set.theme === id) break; S.set.theme = id; S.setU = now(); dirty.set = true; commit(); render(); vib(8); toast(`Vzhled: ${THEMES[id].n}`); break; }
     case 'report': reportSheet(); break;
+    case 'gentog': ui.genOpen = !ui.genOpen; render(); if (ui.genOpen) $('.gen-box')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); break;
     case 'mmr': ui.mmRange = b.dataset.k; render(); break;
     case 'mmsel': mmInfo(b.dataset.m); break;
     case 'share': shareSheet(b.dataset.id); break;
@@ -2945,6 +3063,12 @@ document.addEventListener('input', e => {
     s[f] = num(e.target.value);
     if (s.ok && !(s.r > 0)) { s.ok = false; setEl.classList.remove('ok'); }
     touch(w); commit();
+  } else if (f === 'cdt' || f === 'cdv' || f === 'cdi') {
+    const seg = e.target.closest('.cd-seg'), card = e.target.closest('.exc'); if (!w || !seg) return;
+    const x = w.it[+card.dataset.i].s[+seg.dataset.j];
+    if (f === 'cdt') { x.r = parseDur(e.target.value); x.ok = x.r > 0; seg.classList.toggle('ok', x.ok); }
+    else x[f === 'cdv' ? 'v' : 'i'] = num(e.target.value);
+    touch(w); commit();
   } else if (f === 'exnote') { setNote(e.target.dataset.ex, e.target.value); }
   else if (f === 'itnote') { const card = e.target.closest('.exc'); if (!w || !card) return; w.it[+card.dataset.i].note = e.target.value; touch(w); commit(); }
   else if (f === 'wnote') { const x = S.w.find(o => o.id === e.target.dataset.id); if (x) { x.note = e.target.value; touch(x); commit(); } }
@@ -2957,6 +3081,7 @@ document.addEventListener('change', e => {
   const f = e.target.dataset.f; if (!f) return;
   if (f === 'wdate') { const w = openWorkout(); if (w && e.target.value) { w.d = e.target.value; touch(w); commit(); } }
   else if (f === 'progex') { ui.progEx = e.target.value; render(); }
+  else if (f === 'cdt') { const card = e.target.closest('.exc'); if (card) renderCard(+card.dataset.i); }
   else if (f === 'shake') {
     const on = e.target.checked;
     const done = ok => { S.set.shake = ok; S.setU = now(); dirty.set = true; commit(); render(); toast(ok ? 'Zatřesením otevřeš hlášení' : on ? 'Bez povolení pohybu zatřesení nefunguje' : 'Zatřesení vypnuto'); };
