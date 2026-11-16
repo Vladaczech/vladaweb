@@ -482,7 +482,10 @@ html[data-vt="back"]{--vtd:-1}
 /* ── Editor obrázku ── */
 .sh-stage{margin-top:12px;border-radius:16px;overflow:hidden;border:1px solid var(--line2);background:#000}
 #sh-cv{display:block;width:100%;height:auto;touch-action:none;cursor:grab}
-.sh-layers .chip.off{opacity:.45;text-decoration:line-through}
+.sh-lab{margin-top:14px;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}.sh-lab span{text-transform:none;letter-spacing:0;color:var(--muted2)}
+.sh-layers{margin-top:8px}
+.sh-layers .chip.ed{box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px var(--text)}
+.sh-layers .chip.sh-ph{border-style:dashed}
 .sh-ed{margin-top:10px;gap:10px}
 .sh-ed-h{display:flex;align-items:center;justify-content:space-between;gap:10px}.sh-ed-h b{font-family:var(--display);font-size:16px}
 .sh-rg{display:grid;grid-template-columns:96px 1fr;align-items:center;gap:10px;font-family:var(--mono);font-size:11px;color:var(--muted)}
@@ -2216,7 +2219,7 @@ const SH_LAYERS = [['title', 'Nápis'], ['name', 'Název'], ['list', 'Cviky'], [
 const SH_COLORS = ['A', '#ffffff', '#111111', '#39ff88', '#38c6ff', '#ffd23a', '#ff7b2e', '#ff4fa7', '#b98cff'];
 function shDefaults(w) {
   const pr = workoutPRs(w).length > 0, X = 80 / SH_W, Y = v => v / SH_H;
-  return { dark: .75, sel: 'title', L: {
+  return { dark: .75, sel: 'title', ph: { s: 1, ox: 0, oy: 0, rot: 0 }, L: {
     head: { on: true, x: X, y: Y(66), s: 1, a: 1, c: 'A' },
     list: { on: false, x: X, y: Y(150), s: 1, a: 1, c: '#ffffff' },
     title: { on: true, x: X, y: Y(pr ? 752 : 800), s: 1, a: 1, c: 'A' },
@@ -2244,7 +2247,12 @@ function shDraw(g, w, edit) {
   const txt = (s, x, y, font, color, align = 'left', glow = 0) => { g.font = font; g.fillStyle = color; g.textAlign = align; g.shadowColor = glow ? color : 'transparent'; g.shadowBlur = glow; g.fillText(s, x, y); g.shadowBlur = 0; };
   // pozadí: fotka (cover) nebo tmavé pozadí s barvou vzhledu
   g.save(); g.globalAlpha = 1; g.shadowBlur = 0;
-  if (SHR.photo) { const img = SHR.photo, iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height, sc = Math.max(W / iw, H / ih); g.drawImage(img, (W - iw * sc) / 2, (H - ih * sc) / 2, iw * sc, ih * sc); }
+  if (SHR.photo) {
+    const img = SHR.photo, iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height, ph = E.ph, rot = ((ph.rot % 360) + 360) % 360, side = rot % 180 !== 0;
+    const sc = Math.max(W / (side ? ih : iw), H / (side ? iw : ih)) * ph.s;
+    g.fillStyle = '#000'; g.fillRect(0, 0, W, H);
+    g.translate(W / 2 + ph.ox, H / 2 + ph.oy); g.rotate(rot * Math.PI / 180); g.drawImage(img, -iw * sc / 2, -ih * sc / 2, iw * sc, ih * sc); g.setTransform(1, 0, 0, 1, 0, 0);
+  }
   else { g.fillStyle = BG; g.fillRect(0, 0, W, H); const gr = g.createRadialGradient(W * .8, H * .1, 0, W * .8, H * .1, 1000); gr.addColorStop(0, `rgba(${RGB},.25)`); gr.addColorStop(1, `rgba(${RGB},0)`); g.fillStyle = gr; g.fillRect(0, 0, W, H); }
   const dk = E.dark;
   if (SHR.photo && dk > 0) {
@@ -2332,16 +2340,20 @@ function shBindCanvas() {
   const cv = $('#sh-cv'); if (!cv) return;
   const P = new Map(); let drag = null, pinch = null;
   const pt = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * SH_W, (e.clientY - r.top) / r.height * SH_H]; };
-  const hit = ([x, y]) => { const order = ['stats', 'pr', 'name', 'title', 'list', 'head']; const sel = SHR.ed.sel, b0 = SHR.bb[sel]; if (b0 && x >= b0.x - 20 && x <= b0.x + b0.w + 20 && y >= b0.y - 20 && y <= b0.y + b0.h + 20) return sel; return order.find(k => { const b = SHR.bb[k]; return b && x >= b.x - 14 && x <= b.x + b.w + 14 && y >= b.y - 14 && y <= b.y + b.h + 14; }); };
+  const hit = ([x, y]) => { const order = ['stats', 'pr', 'name', 'title', 'list', 'head']; const sel = SHR.ed.sel, b0 = SHR.bb[sel]; if (b0 && x >= b0.x - 20 && x <= b0.x + b0.w + 20 && y >= b0.y - 20 && y <= b0.y + b0.h + 20) return sel; return order.find(k => { const b = SHR.bb[k]; return b && x >= b.x - 14 && x <= b.x + b.w + 14 && y >= b.y - 14 && y <= b.y + b.h + 14; }) || (SHR.photo ? 'photo' : null); };
   cv.addEventListener('pointerdown', e => {
     try { cv.setPointerCapture(e.pointerId); } catch {}
     P.set(e.pointerId, pt(e));
-    if (P.size === 1) { const k = hit(pt(e)); if (k) { if (k !== SHR.ed.sel) { SHR.ed.sel = k; shEdPanel(); } const L = SHR.ed.L[k]; drag = { k, p: pt(e), x: L.x, y: L.y }; shRedraw(); } }
-    else if (P.size === 2) { const [a, b] = [...P.values()]; const L = SHR.ed.L[SHR.ed.sel]; pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]), s: L.s }; drag = null; }
+    if (P.size === 1) {
+      const k = hit(pt(e)); if (!k) return;
+      if (k !== SHR.ed.sel) { SHR.ed.sel = k; shEdPanel(); }
+      drag = k === 'photo' ? { k, p: pt(e), x: SHR.ed.ph.ox, y: SHR.ed.ph.oy } : { k, p: pt(e), x: SHR.ed.L[k].x, y: SHR.ed.L[k].y }; shRedraw();
+    } else if (P.size === 2) { const [a, b] = [...P.values()], o = SHR.ed.sel === 'photo' ? SHR.ed.ph : SHR.ed.L[SHR.ed.sel]; if (o) pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]), s: o.s, o, ph: SHR.ed.sel === 'photo' }; drag = null; }
   });
   cv.addEventListener('pointermove', e => {
     if (!P.has(e.pointerId)) return; P.set(e.pointerId, pt(e));
-    if (pinch && P.size === 2) { const [a, b] = [...P.values()], L = SHR.ed.L[SHR.ed.sel]; L.s = Math.min(3, Math.max(.3, pinch.s * Math.hypot(a[0] - b[0], a[1] - b[1]) / pinch.d)); const r = $('[data-f=shs]'); if (r) r.value = L.s; shRedraw(); return; }
+    if (pinch && P.size === 2) { const [a, b] = [...P.values()]; pinch.o.s = Math.min(pinch.ph ? 5 : 3, Math.max(pinch.ph ? .4 : .3, pinch.s * Math.hypot(a[0] - b[0], a[1] - b[1]) / pinch.d)); const r = $(pinch.ph ? '[data-f=shps]' : '[data-f=shs]'); if (r) r.value = pinch.o.s; shRedraw(); return; }
+    if (drag && drag.k === 'photo') { const p = pt(e); SHR.ed.ph.ox = drag.x + p[0] - drag.p[0]; SHR.ed.ph.oy = drag.y + p[1] - drag.p[1]; shRedraw(); return; }
     if (drag) { const p = pt(e), L = SHR.ed.L[drag.k], b = SHR.bb[drag.k] || { w: 100, h: 50 }; L.x = Math.min(1 - 40 / SH_W, Math.max(-(b.w - 40) / SH_W, drag.x + (p[0] - drag.p[0]) / SH_W)); L.y = Math.min(1 - 40 / SH_H, Math.max(-(b.h - 40) / SH_H, drag.y + (p[1] - drag.p[1]) / SH_H)); shRedraw(); }
   });
   const up = e => { P.delete(e.pointerId); if (P.size < 2) pinch = null; if (!P.size) drag = null; };
@@ -2349,9 +2361,20 @@ function shBindCanvas() {
 }
 function shEdPanel() {
   const box = $('#sh-ed'), w = S.w.find(x => x.id === SHR.wid); if (!box || !w) return;
-  const E = SHR.ed, k = E.sel, L = E.L[k], lab = (SH_LAYERS.find(x => x[0] === k) || [, ''])[1];
-  $$('.sh-layers .chip').forEach(c => { c.classList.toggle('on', c.dataset.k === k); c.classList.toggle('off', !E.L[c.dataset.k].on); });
-  box.innerHTML = `<div class="sh-ed-h"><b>${lab}</b>${k === 'pr' && !workoutPRs(w).length ? '<span class="muted" style="font-size:12px">v tomhle tréninku nepadl rekord</span>' : `<label class="check" style="margin:0"><input type="checkbox" data-f="shon" ${L.on ? 'checked' : ''}> Zobrazit</label>`}</div>
+  const E = SHR.ed, k = E.sel;
+  $$('.sh-layers [data-act=shtog]').forEach(c => { const L = E.L[c.dataset.k]; c.classList.toggle('on', !!L.on); c.classList.toggle('ed', c.dataset.k === k); c.setAttribute('aria-pressed', !!L.on); });
+  $('[data-act=shsel][data-k=photo]')?.classList.toggle('ed', k === 'photo');
+  if (k === 'photo' && SHR.photo) {
+    box.innerHTML = `<div class="sh-ed-h"><b>Fotka</b><span class="muted" style="font-size:12px">táhni pozadí, dvěma prsty přibliž</span></div>
+      <label class="sh-rg"><span>Přiblížení</span><input type="range" data-f="shps" min="0.4" max="5" step="0.05" value="${E.ph.s}"></label>
+      <label class="sh-rg"><span>Ztmavení</span><input type="range" data-f="shdark" min="0" max="1" step="0.05" value="${E.dark}"></label>
+      <div class="row"><button class="btn sm wide" data-act="shrot">↻ Otočit</button><button class="btn sm ghost wide" data-act="shphreset">Vyplnit znovu</button></div>`;
+    return;
+  }
+  const L = E.L[k];
+  if (!L) { box.innerHTML = '<p class="note" style="margin:0">Klepni nahoře na prvek, který chceš na obrázku mít. Klepnutím znovu ho odebereš.</p>'; return; }
+  const lab = (SH_LAYERS.find(x => x[0] === k) || [, ''])[1];
+  box.innerHTML = `<div class="sh-ed-h"><b>${lab}</b><span class="muted" style="font-size:12px">${L.on ? 'táhni ho prstem po obrázku' : 'skryté – zapni ho nahoře'}</span></div>
     ${k === 'title' ? `<div class="chips wrapc">${shareTitles(w).map(t => `<button class="chip ${SHR.title === t ? 'on' : ''}" data-act="shtitle" data-t="${esc(t)}">${esc(t)}</button>`).join('')}<button class="chip ${SHR.title === '…' ? 'on' : ''}" data-act="shtitle" data-t="…">Vlastní…</button></div>
       ${SHR.title === '…' ? `<input data-f="shtext" maxlength="22" placeholder="Tvůj text, např. LEG DAY" value="${esc(SHR.custom)}">` : ''}` : ''}
     ${k === 'list' ? '<p class="note" style="margin:0">Cviky se sériemi, opakováními a vahami. Víc než 8 cviků se zkrátí.</p>' : ''}
@@ -2368,11 +2391,11 @@ function shareUI() {
   openSheet(`<div class="kicker">Sdílet</div><h3>Obrázek tréninku</h3>
     <div class="seg" style="margin-top:12px"><button class="${!ed ? 'on' : ''}" data-act="shmode" data-m="card">Karta</button><button class="${ed ? 'on' : ''}" data-act="shmode" data-m="photo">Vlastní · s fotkou</button></div>
     ${ed ? `<div class="sh-stage"><canvas id="sh-cv" width="${SH_W}" height="${SH_H}" aria-label="Náhled obrázku – prvky jde posouvat prstem"></canvas></div>
-      <p class="note" style="margin:6px 0 0;text-align:center">Prvky posouvej prstem, dvěma prsty je zvětšíš.</p>
+      <p class="note" style="margin:6px 0 0;text-align:center">Prvky i fotku posouvej prstem, dvěma prsty je zvětšíš.</p>
       <div class="row" style="margin-top:10px"><label class="btn sm wide">${SHR.photo ? 'Jiná fotka' : '＋ Fotka z galerie'}<input type="file" accept="image/*" data-shphoto hidden></label>${SHR.photo ? '<button class="btn sm ghost wide" data-act="shnophoto">Bez fotky</button>' : ''}</div>
-      <div class="chips wrapc sh-layers" style="margin-top:12px">${SH_LAYERS.map(([k, l]) => `<button class="chip" data-act="shsel" data-k="${k}">${l}</button>`).join('')}</div>
+      <div class="sh-lab">Na obrázku <span>· klepnutím přidáš / odebereš</span></div>
+      <div class="chips wrapc sh-layers">${SH_LAYERS.map(([k, l]) => `<button class="chip" data-act="shtog" data-k="${k}" aria-pressed="false">${l}</button>`).join('')}${SHR.photo ? '<button class="chip sh-ph" data-act="shsel" data-k="photo">Upravit fotku</button>' : ''}</div>
       <div class="card stack sh-ed" id="sh-ed"></div>
-      ${SHR.photo ? `<label class="sh-rg" style="margin-top:10px"><span>Ztmavení fotky</span><input type="range" data-f="shdark" min="0" max="1" step="0.05" value="${SHR.ed.dark}"></label>` : ''}
       <img id="share-img" alt="" hidden>`
     : `<div class="share-prev busy"><img id="share-img" alt="Obrázek tréninku ke sdílení"${shareUrl ? ` src="${shareUrl}"` : ''}><div class="empty">Kreslím…</div></div>`}
     <div class="row" style="margin-top:12px">${canShare ? '<button class="btn p wide big" data-act="sharego">Sdílet…</button>' : ''}<a class="btn ${canShare ? '' : 'p '}wide big" id="share-dl" href="${shareUrl || '#'}" download>Uložit</a></div>
@@ -3313,7 +3336,18 @@ document.addEventListener('click', async e => {
     case 'sharego': if (shareFile) navigator.share({ files: [shareFile] }).catch(() => {}); break;
     case 'shmode': SHR.mode = b.dataset.m; shareUI(); break;
     case 'shtitle': SHR.title = b.dataset.t; shEdPanel(); shRedraw(); if (SHR.title === '…') $('[data-f=shtext]')?.focus(); break;
-    case 'shsel': if (SHR.ed) { SHR.ed.sel = b.dataset.k; const L = SHR.ed.L[b.dataset.k]; if (!L.on && !(b.dataset.k === 'pr' && !workoutPRs(S.w.find(x => x.id === SHR.wid)).length)) L.on = true; shEdPanel(); shRedraw(); } break;
+    case 'shsel': if (SHR.ed) { SHR.ed.sel = b.dataset.k; shEdPanel(); shRedraw(); } break;
+    case 'shtog': {
+      if (!SHR.ed) break;
+      const k = b.dataset.k, L = SHR.ed.L[k], E = SHR.ed;
+      if (!L.on && k === 'pr' && !workoutPRs(S.w.find(x => x.id === SHR.wid)).length) { toast('V tomhle tréninku nepadl rekord.'); break; }
+      L.on = !L.on;
+      if (L.on) E.sel = k;
+      else if (E.sel === k) E.sel = SH_LAYERS.map(x => x[0]).find(x => E.L[x].on) || (SHR.photo ? 'photo' : null);
+      vib(6); shEdPanel(); shRedraw(); break;
+    }
+    case 'shrot': if (SHR.ed) { SHR.ed.ph.rot = (SHR.ed.ph.rot + 90) % 360; shRedraw(); } break;
+    case 'shphreset': if (SHR.ed) { Object.assign(SHR.ed.ph, { s: 1, ox: 0, oy: 0 }); shEdPanel(); shRedraw(); } break;
     case 'shcol': if (SHR.ed) { SHR.ed.L[SHR.ed.sel].c = b.dataset.c; shEdPanel(); shRedraw(); } break;
     case 'shcenter': if (SHR.ed) { const k = SHR.ed.sel, bb = SHR.bb[k], L = SHR.ed.L[k]; if (bb) L.x = (SH_W - bb.w) / 2 / SH_W; shRedraw(); } break;
     case 'shreset': if (SHR.ed) { const k = SHR.ed.sel, d = shDefaults(S.w.find(x => x.id === SHR.wid)).L[k]; Object.assign(SHR.ed.L[k], { x: d.x, y: d.y, s: 1, a: 1, c: d.c }); shEdPanel(); shRedraw(); } break;
@@ -3381,7 +3415,7 @@ document.addEventListener('input', e => {
   } else if (f === 'shs' || f === 'sha') { if (SHR.ed) { SHR.ed.L[SHR.ed.sel][f === 'shs' ? 's' : 'a'] = +e.target.value; shRedraw(); }
   } else if (f === 'shdark') { if (SHR.ed) { SHR.ed.dark = +e.target.value; shRedraw(); }
   } else if (f === 'shcc') { if (SHR.ed) { SHR.ed.L[SHR.ed.sel].c = e.target.value; $$('.sh-cols .sw').forEach(x => x.classList.remove('on')); shRedraw(); }
-  } else if (f === 'shon') { if (SHR.ed) { SHR.ed.L[SHR.ed.sel].on = e.target.checked; shEdPanel(); shRedraw(); }
+  } else if (f === 'shps') { if (SHR.ed) { SHR.ed.ph.s = +e.target.value; shRedraw(); }
   } else if (f === 'exnote') { setNote(e.target.dataset.ex, e.target.value); }
   else if (f === 'itnote') { const card = e.target.closest('.exc'); if (!w || !card) return; w.it[+card.dataset.i].note = e.target.value; touch(w); commit(); }
   else if (f === 'wnote') { const x = S.w.find(o => o.id === e.target.dataset.id); if (x) { x.note = e.target.value; touch(x); commit(); } }
@@ -3414,7 +3448,7 @@ document.addEventListener('change', e => {
 document.addEventListener('change', async e => {
   if (!e.target.matches || !e.target.matches('[data-shphoto]')) return;
   const f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f) return;
-  try { SHR.photo = await loadImage(f); SHR.mode = 'photo'; if (SHR.ed) SHR.ed.dark = .75; shareUI(); } catch { toast('Fotku se nepodařilo načíst.'); }
+  try { SHR.photo = await loadImage(f); SHR.mode = 'photo'; if (SHR.ed) { SHR.ed.dark = .75; SHR.ed.ph = { s: 1, ox: 0, oy: 0, rot: 0 }; } shareUI(); } catch { toast('Fotku se nepodařilo načíst.'); }
 });
 document.addEventListener('change', e => {
   if (!e.target.matches || !e.target.matches('[data-repphoto]')) return;
