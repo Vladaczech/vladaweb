@@ -57,6 +57,8 @@ Import (pořadí podle přesnosti):
 
 Odkazy „Najít na webu“ (akordy.kytary.cz, pisnicky-akordy.cz, kytaristka.cz) jsou až pod písní; weby nemají veřejné API ani CORS.
 
+**Posun podle poslechu** (ikona mikrofonu u písně, objekt `FOL`): mikrofon → spektrum (Web Audio `AnalyserNode`, vše v zařízení, nic se neodesílá) → síla dvanácti tónů (`chromaOf`) → porovnání s akordem, který je na řadě, a třemi dalšími (`folTick`); když zní další, posune se ukazatel a text. Posun tóniny (kapodastr) a ladění se odhadují samy. `followPlan` staví posloupnost akordů z textu: sloky bez akordů přebírají akordy z předchozí sloky stejného druhu, samotné „R:“ znamená celý refrén, řádky bez akordů jdou naučeným tempem, v tichu se čeká. Klepnutí na řádek ukazatel přesune. `folProcess(db, sr, rms, dt)` jde volat i bez mikrofonu s umělým spektrem (`followStart(id, true)`) – tak se to testuje.
+
 Data jsou v `localStorage` (`zpevnik:v1`), synchronizace je volitelná přes účet z Posilovny (`users/{uid}/zpevnik/{koš}`, stejný vzor jako Daily – pole `r`, `u` = čas změny, smazání `{ x: 1 }`). Koše: `cfg` (složky `f:…`) a `s0`–`sf` (písně podle otisku id). Vestavěné písně (`BASE` = `CAT` + `LIB`) mají id `k:autor--nazev`, vlastní `u:…`; záznam uživatele vestavěnou píseň překrývá a `{ x: 1 }` u ní znamená „skrytá“.
 
 Offline režim: `projects/zpevnik-sw.js` (scope `./zpevnik`), ikony a manifest v `projects/zpevnik-icons/`. Při změně seznamu souborů nebo knihoven zvyš `VERSION`.

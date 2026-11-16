@@ -115,6 +115,13 @@ h1{font-family:var(--serif);font-weight:400;font-size:clamp(30px,8.5vw,40px);lin
 .grp .val{min-width:58px;font-size:13px;color:var(--mute);font-weight:500;line-height:1.1;font-variant-numeric:tabular-nums}
 .grp .val b{display:block;font-size:15px;color:var(--ink);font-weight:600}
 .grp .val.set b{color:var(--acc)}
+.grp button.fon{background:var(--acc2);color:#fff}
+.fol{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 72px);z-index:5;background:var(--card);border:1px solid var(--line2);border-radius:99px;padding:6px 13px;font-size:12.5px;color:var(--ink2);display:flex;align-items:center;gap:8px;white-space:nowrap;box-shadow:0 4px 14px rgba(20,20,19,.1)}
+.fol i{width:8px;height:8px;border-radius:50%;background:#d9a441}
+.fol.play i{background:#5a9a6a}
+.ln.cur{position:relative}
+.ln.cur::before{content:"";position:absolute;left:-11px;top:.2em;bottom:.12em;width:3px;border-radius:2px;background:var(--acc2)}
+.sg b.now{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px}
 .nosong{border:1px dashed var(--line2);border-radius:16px;padding:22px 18px;margin-top:8px}
 .web{margin-top:28px;border-top:1px solid var(--line)}
 .web summary{list-style:none;cursor:pointer;color:var(--mute);font-size:13.5px;padding:14px 2px;display:flex;align-items:center;gap:8px}
@@ -161,7 +168,7 @@ h1{font-family:var(--serif);font-weight:400;font-size:clamp(30px,8.5vw,40px);lin
 @keyframes up{from{transform:translateY(24px);opacity:0}}
 @keyframes fade{from{opacity:0}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-@media print{header.top,.bar,.fab,.notec,.web{display:none!important}.app{max-width:none;padding:0}body{background:#fff}}
+@media print{header.top,.bar,.fab,.notec,.web,.fol{display:none!important}.app{max-width:none;padding:0}body{background:#fff}}
 </style>
 </head>
 <body>
@@ -205,6 +212,7 @@ const ICON = {
   ext: '<path d="M14 5h5v5M19 5l-8 8M11 6H6a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-5"/>',
   cam: '<path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
   clip: '<path d="M9 4h6v3H9z"/><path d="M9 5.5H6V20h12V5.5h-3"/>',
+  mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/>',
 };
 const ic = (n, s = 20, w = 1.7) => `<svg class="i" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[n]}</svg>`;
 
@@ -737,10 +745,12 @@ function vSong(id) {
   if (!s.txt) return head + `<div class="nosong"><p>K téhle písni ještě nemáš text. Na webu ji označ a zkopíruj (klidně celou stránku) – akordy se převezmou přesně nad správná slova.</p>
     <div class="acts"><button class="btn p" data-act="pasteSong" ${i}>${ic('clip', 18)} Vložit zkopírovanou píseň</button><button class="btn" data-act="edit" data-photo="1" ${i}>${ic('cam', 18)} Z fotky</button><button class="btn ghost" data-act="edit" ${i}>Napsat ručně</button></div>
     <p class="hint" style="margin-top:14px">Na počítači to jde i bez kopírování: <button data-act="bm" style="color:var(--acc);text-decoration:underline">uložení jedním klepnutím</button>.</p></div>${web}`;
-  const tv = s.tr > 0 ? '+' + s.tr : s.tr < 0 ? '−' + -s.tr : '0';
+  const tv = s.tr > 0 ? '+' + s.tr : s.tr < 0 ? '−' + -s.tr : '0', fo = FOL.on && FOL.id === id;
   return head + `<div class="song" id="song" style="--fs:${UI.fs}px">${songHtml(s.txt, s.tr)}</div>${web}
   <div class="bar"><div class="grp" role="group" aria-label="Transpozice"><button data-act="tr" data-d="-1" ${i} aria-label="O půltón níž">−</button><button class="val${s.tr ? ' set' : ''}" data-act="tr" data-d="0" ${i} title="Zpět na původní tóninu">tónina<b>${tv}</b></button><button data-act="tr" data-d="1" ${i} aria-label="O půltón výš">+</button></div>
-  <div class="grp" role="group" aria-label="Velikost písma"><button data-act="fs" data-d="-1" aria-label="Menší písmo" style="font-size:13px">A</button><button data-act="fs" data-d="1" aria-label="Větší písmo" style="font-size:19px">A</button></div></div>`;
+  <div class="grp" role="group" aria-label="Velikost písma"><button data-act="fs" data-d="-1" aria-label="Menší písmo" style="font-size:13px">A</button><button data-act="fs" data-d="1" aria-label="Větší písmo" style="font-size:19px">A</button></div>
+  <div class="grp"><button data-act="follow" ${i} class="${fo ? 'fon' : ''}" aria-pressed="${fo}" aria-label="Posun textu podle poslechu" title="Posun textu podle poslechu">${ic('mic', 20)}</button></div></div>
+  <div class="fol" id="fol"${fo ? '' : ' hidden'}><i></i><span></span></div>`;
 }
 function render() {
   const r = route(), list = !['s'].includes(r.v);
@@ -749,6 +759,7 @@ function render() {
   const same = lastHash === location.hash, y = scrollY; lastHash = location.hash;
   scrollTo(0, same ? y : list ? SC[location.hash] || 0 : 0);
   wake(!!(s && s.txt));
+  if (FOL.on) { if (s && s.txt && s.id === FOL.id) folBind(); else followStop(); }
 }
 const soft = () => { const l = $('#list'); if (l && document.activeElement === $('#q')) l.innerHTML = listHtml(l.dataset.tab); else if (!$('#modal .full')) render(); };
 /* při hraní nezhasínat displej */
@@ -813,6 +824,7 @@ const ACT = {
   theme(b) { b.dataset.t ? LS.set(KT, b.dataset.t) : LS.del(KT); applyTheme(); settingsSheet(); },
   async paste() { try { const r = await readClip(); if (!r.txt.trim()) return toast('Schránka je prázdná'); putText(r); } catch { showPreview(false); $('#modal textarea.code')?.focus(); toast('Prohlížeč nepustil schránku – vlož do pole (Ctrl+V nebo podržením).'); } },
   preview() { showPreview($('#pv').hidden); },
+  follow(b) { if (FOL.on) { followStop(); render(); toast('Poslech vypnut'); } else followStart(b.dataset.id); },
   bm() { sheet('Uložení jedním klepnutím', `<p class="kv">Přetáhni tohle tlačítko myší na lištu záložek v prohlížeči:</p>
     <p style="text-align:center;margin:20px 0"><a class="btn p" id="bm" href="${esc(bmHref())}" title="Přetáhni na lištu záložek">+ Do zpěvníku</a></p>
     <p class="kv">Pak na webu otevři stránku s písní a klepni na něj. Píseň se i s akordy, názvem a autorem uloží do zpěvníku – píseň z katalogu se rovnou doplní – a můžeš otevřít další.</p>
@@ -824,7 +836,8 @@ const ACT = {
 document.addEventListener('click', e => {
   if (e.target.classList?.contains('shade')) return void closeSheet();
   if (e.target.closest?.('#bm')) { e.preventDefault(); return toast('Tlačítko přetáhni myší na lištu záložek.'); }
-  const b = e.target.closest('[data-act]'); if (b && ACT[b.dataset.act]) ACT[b.dataset.act](b, e);
+  const b = e.target.closest('[data-act]'); if (b && ACT[b.dataset.act]) return void ACT[b.dataset.act](b, e);
+  const ln = FOL.on && e.target.closest?.('#song > .ln'); if (ln) folJump([...ln.parentNode.children].indexOf(ln));
 });
 document.addEventListener('input', e => { if (e.target.id === 'q') { Q = e.target.value; const l = $('#list'); l.innerHTML = listHtml(l.dataset.tab); } });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#modal').innerHTML) closeSheet(); });
@@ -1146,6 +1159,151 @@ async function importPhotos(files) {
   finally { try { await w?.terminate(); await wc?.terminate(); } catch {} if (pr.isConnected) pr.hidden = true; }
 }
 
+/* ═══ POSUN PODLE POSLECHU ═══
+   Mikrofon → spektrum (Web Audio, vše v zařízení) → síla dvanácti tónů (chroma) → porovnání
+   s akordem, který je právě na řadě, a s několika následujícími. Jakmile zní další akord, posune
+   se ukazatel i text. Neřeší se „jaký akord zní“, jen „zní už ten další?“ – to je spolehlivější.
+   • Transpozice se odhaduje sama (kapodastr, jiná tónina než v zápisu), stejně tak ladění.
+   • Sloky bez akordů převezmou akordy z předchozí sloky stejného druhu; řádky, kde to nejde,
+     se posouvají naučeným tempem. V tichu se čeká.
+   • Klepnutí na řádek ukazatel přesune. */
+const FOL = { on: false };
+const rotSim = (v, c, sh) => { let d = 0, nv = 0, nc = 0; for (let i = 0; i < 12; i++) { const a = v[(i - sh + 12) % 12], b = c[i]; d += a * b; nv += a * a; nc += b * b; } return nv && nc ? d / Math.sqrt(nv * nc) : 0; };
+/* akord → váhy tónů (základ, tercie, kvinta, případně septima a bas) */
+function tplOf(tok) {
+  const p = chordParts(tok); if (!p) return null;
+  const s = p.suf.toLowerCase(), third = /sus2/.test(s) ? 2 : /sus/.test(s) ? 5 : /^m(?!aj)|dim/.test(s) ? 3 : 4, fifth = /dim|b5|-5/.test(s) ? 6 : /aug|\+/.test(s) ? 8 : 7, v = new Float32Array(12);
+  v[p.root] = 1; v[(p.root + third) % 12] = .8; v[(p.root + fifth) % 12] = .8;
+  if (/maj7/.test(s)) v[(p.root + 11) % 12] = .35; else if (/7|9/.test(s)) v[(p.root + 10) % 12] = .35;
+  if (p.bass != null) v[p.bass] = Math.max(v[p.bass], .6);
+  return { v, key: p.root + ':' + third + ':' + fifth };
+}
+/* píseň → řádky a posloupnost akordů ke sledování; stejné akordy jdoucí po sobě tvoří jeden stav s více kroky */
+function followPlan(txt, tr) {
+  const L = []; let sec = 0;
+  parseSong(txt).forEach((segs, i) => {
+    if (!segs) { sec++; return; }
+    const text = segs.map(s => s.t).join(''), ch = []; let bi = 0;
+    for (const s of segs) { if (!s.c) continue; const t = tplOf(trChord(s.c, tr)); if (t) ch.push({ ...t, bi }); bi++; }
+    const lb = LBL.exec(text); L.push({ i, sec, ch, type: lb && /^r/i.test(lb[2]) ? 'R' : 'V', bare: !!lb && text.trim().length <= 12 });
+  });
+  const S = []; for (const l of L) (S[l.sec] ||= []).push(l);
+  const secs = S.filter(Boolean); secs.forEach(s => { s.orig = s.some(l => l.ch.length); });
+  secs.forEach((s, si) => {
+    if (s.orig) return; let T = null; for (let j = si - 1; j >= 0 && !T; j--) if (secs[j].orig && secs[j][0].type === s[0].type) T = secs[j];
+    if (!T) return;
+    if (s.length === 1 && s[0].bare) { s[0].ch = T.flatMap(l => l.ch).map(c => ({ ...c, bi: null })); return; }   // samotné „R:“ = celý refrén
+    s.forEach((l, k) => { l.ch = T[k % T.length].ch.map(c => ({ ...c, bi: null })); });
+  });
+  const st = []; for (const l of L) for (const c of l.ch) { const last = st[st.length - 1], step = { i: l.i, bi: c.bi }; if (last && last.key === c.key) last.steps.push(step); else st.push({ key: c.key, v: c.v, steps: [step] }); }
+  return { lines: L, st };
+}
+/* spektrum v dB → chroma; cestou se z vrcholů odhaduje odchylka ladění */
+function chromaOf(db, sr) {
+  const F = FOL, c = new Float32Array(12), hz = sr / (db.length * 2), b1 = Math.min(db.length - 2, Math.floor(1300 / hz)); let sx = 0, sy = 0;
+  for (let b = Math.max(2, Math.ceil(75 / hz)); b <= b1; b++) {
+    const d = db[b]; if (!(d > -90)) continue;
+    const m = Math.pow(10, d / 40); let fb = b;
+    if (d > db[b - 1] && d >= db[b + 1] && d > -70) { const den = db[b - 1] - 2 * d + db[b + 1]; if (den) fb = b + .5 * (db[b - 1] - db[b + 1]) / den; const pp = 69 + 12 * Math.log2(fb * hz / 440), a = 2 * Math.PI * (pp - Math.round(pp)); sx += m * Math.cos(a); sy += m * Math.sin(a); }
+    const p = 69 + 12 * Math.log2(b * hz / 440) - F.tune, r = Math.round(p), w = Math.cos((p - r) * Math.PI); c[((r % 12) + 12) % 12] += m * w * w;
+  }
+  if (sx || sy) F.tune = F.tune * .97 + (Math.atan2(sy, sx) / (2 * Math.PI)) * .03;
+  let n = 0; for (let i = 0; i < 12; i++) n += c[i] * c[i]; n = Math.sqrt(n) || 1; for (let i = 0; i < 12; i++) c[i] /= n;
+  return c;
+}
+function folMark() {
+  const F = FOL, root = F.root; if (!root || !root.isConnected) return;
+  $$('.cur,.now', root).forEach(e => e.classList.remove('cur', 'now'));
+  root.children[F.line]?.classList.add('cur');
+  const p = F.plan.st[F.k]?.steps[F.step]; if (p && p.bi != null && p.i === F.line) root.children[p.i]?.querySelectorAll('.sg b')[p.bi]?.classList.add('now');
+}
+function folUI() {
+  const F = FOL, el = $('#fol'); if (!el) return;
+  const sh = F.shift ? ` · zní o ${F.shift <= 6 ? '+' + F.shift : '−' + (12 - F.shift)}` : '', t = F.status === 'play' ? 'Sleduji hraní' + (F.plan.st.length ? sh : '') : F.act ? 'Ticho – čekám' : 'Poslouchám – začni hrát';
+  el.className = 'fol ' + F.status; if (el.lastElementChild.textContent !== t) el.lastElementChild.textContent = t;
+}
+function folSetLine(i, learn) {
+  const F = FOL; if (i === F.line) return;
+  const li = F.plan.lines.findIndex(l => l.i === F.line); if (learn && F.plan.lines[li + 1]?.i === i) F.avgLine = F.avgLine * .6 + Math.min(25000, Math.max(1500, F.tLine)) * .4;
+  F.line = i; F.tLine = 0;
+  const el = F.root?.children[i]; if (el) scrollTo({ top: Math.max(0, el.getBoundingClientRect().top + scrollY - innerHeight * .3), behavior: 'smooth' });
+}
+/* skok na řádek (klepnutí, začátek): první akord na tomto řádku nebo za ním */
+function folJump(i) {
+  const F = FOL, st = F.plan.st; let k = st.findIndex(s => s.steps.some(p => p.i >= i)); if (k < 0) k = Math.max(0, st.length - 1);
+  F.k = k; F.step = st.length ? Math.max(0, st[k].steps.findIndex(p => p.i >= i)) : 0; F.line = i; F.tState = F.tStep = F.tLine = 0; F.ev.fill(0); folMark();
+}
+function folTick(dt, chroma) {
+  const F = FOL, P = F.plan, st = P.st;
+  F.act += dt; F.tState += dt; F.tStep += dt; F.tLine += dt;
+  for (let i = 0; i < 12; i++) F.c[i] = F.c[i] * .55 + chroma[i] * .45;
+  if (st.length) {
+    const cur = st[F.k], nx = st[F.k + 1];
+    // odhad posunu tóniny: která z 12 transpozic sedí na akord, který je na řadě, nebo na ten další
+    for (let s = 0; s < 12; s++) F.sh[s] = F.sh[s] * .996 + Math.max(rotSim(cur.v, F.c, s), nx ? rotSim(nx.v, F.c, s) : 0);
+    let b = F.shift; for (let s = 0; s < 12; s++) if (F.sh[s] > F.sh[b] * (F.act > 8000 ? 1.15 : 1.02)) b = s; F.shift = b;
+    const sc = rotSim(cur.v, F.c, F.shift); let jump = 0;
+    for (let d = 1; d <= 3 && F.k + d < st.length; d++) {
+      const sn = rotSim(st[F.k + d].v, F.c, F.shift);
+      if (sn > sc + .05 + .07 * (d - 1) && sn > .5) F.ev[d] += dt; else F.ev[d] = Math.max(0, F.ev[d] - dt * 1.5);
+      if (!jump && F.ev[d] >= 250 + 250 * (d - 1) && F.tState > 300) jump = d;
+    }
+    if (jump) { F.avgChord = F.avgChord * .7 + Math.min(12000, Math.max(400, F.tState / cur.steps.length)) * .3; F.k += jump; F.step = 0; F.tState = F.tStep = 0; F.ev.fill(0); folSetLine(st[F.k].steps[0].i, true); folMark(); return; }
+    if (F.step + 1 < cur.steps.length && F.tStep > F.avgChord) { F.step++; F.tStep = 0; folSetLine(cur.steps[F.step].i, true); folMark(); return; }
+  }
+  // řádek bez akordů: dál naučeným tempem, ale až po odehrání akordů na současném řádku
+  const li = P.lines.findIndex(l => l.i === F.line), nl = P.lines[li + 1];
+  const more = st.length && (st[F.k].steps.slice(F.step + 1).some(p => p.i === F.line) || (st[F.k].steps[F.step].i <= F.line && st[F.k + 1] && st[F.k + 1].steps[0].i === F.line));
+  if (nl && !nl.ch.length && !more && F.tLine > F.avgLine) { folSetLine(nl.i, false); folMark(); }
+}
+/* jeden snímek zvuku: hlasitost rozhodne, jestli se hraje; pak chroma a krok sledování */
+function folProcess(db, sr, rms, dt) {
+  const F = FOL; F.floor = Math.min(Math.max(F.floor * 1.003, 1e-5), .006); if (rms < F.floor) F.floor = Math.max(rms, 1e-5);
+  const st0 = F.status, sh0 = F.shift;
+  if (rms > Math.max(.003, F.floor * 2.5)) { F.quiet = 0; F.status = 'play'; folTick(dt, chromaOf(db, sr)); }
+  else if ((F.quiet += dt) > 1500) F.status = 'wait';
+  if (st0 !== F.status || sh0 !== F.shift) folUI();
+}
+function folFrame() {
+  const F = FOL; if (!F.on || !F.an) return;
+  const now = performance.now(), dt = Math.min(400, now - F.last); F.last = now;
+  F.an.getFloatTimeDomainData(F.td); let e = 0; const n = F.td.length; for (let i = n - 4096; i < n; i++) e += F.td[i] * F.td[i];
+  F.an.getFloatFrequencyData(F.fd); folProcess(F.fd, F.ctx.sampleRate, Math.sqrt(e / 4096), dt);
+}
+/* po každém překreslení písně: nový plán (transpozice mění akordy) a navázání na prvky stránky */
+function folBind() {
+  const F = FOL, s = song(F.id), root = $('#song'); if (!s || !root) return followStop();
+  const old = F.plan; F.plan = followPlan(s.txt, s.tr); F.root = root;
+  if (F.tr !== s.tr) { F.tr = s.tr; F.sh.fill(0); F.sh[0] = 2; F.shift = 0; }
+  if (!old || old.st.length !== F.plan.st.length) { const kids = root.children, l = F.plan.lines.find(l => kids[l.i] && kids[l.i].getBoundingClientRect().bottom > innerHeight * .12) || F.plan.lines[0]; folJump(l ? l.i : 0); }
+  else folMark();
+  folUI();
+}
+function followStop() {
+  const F = FOL; if (!F.on) return;
+  clearInterval(F.timer); try { F.stream?.getTracks().forEach(t => t.stop()); F.ctx?.close(); } catch {}
+  if (F.root) $$('.cur,.now', F.root).forEach(e => e.classList.remove('cur', 'now'));
+  for (const k of Object.keys(F)) delete F[k]; F.on = false;
+}
+async function followStart(id, test) {
+  const s = song(id); if (!s || !s.txt) return;
+  let stream = window.MediaStream && test instanceof MediaStream ? test : null;   // test: hotový zvukový proud, nebo true = bez zvuku
+  if (!test) {
+    if (!navigator.mediaDevices?.getUserMedia) return toast('Tenhle prohlížeč neumí poslouchat mikrofonem.');
+    try { stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } }); } catch { return toast('Bez přístupu k mikrofonu to nejde – povol ho v prohlížeči.'); }
+  }
+  followStop();
+  Object.assign(FOL, { on: true, id, stream, floor: .006, tune: 0, c: new Float32Array(12), sh: new Float32Array(12), shift: 0, ev: [0, 0, 0, 0], avgChord: 2500, avgLine: 7000, quiet: 0, act: 0, status: 'wait', k: 0, step: 0, line: -1, tState: 0, tStep: 0, tLine: 0, tr: s.tr, plan: null });
+  FOL.sh[0] = 2;
+  if (stream) {
+    const ctx = FOL.ctx = new (window.AudioContext || window.webkitAudioContext)(); try { await ctx.resume(); } catch {}
+    const an = FOL.an = ctx.createAnalyser(); an.fftSize = 16384; an.smoothingTimeConstant = 0; ctx.createMediaStreamSource(stream).connect(an);
+    FOL.fd = new Float32Array(an.frequencyBinCount); FOL.td = new Float32Array(an.fftSize); FOL.last = performance.now(); FOL.timer = setInterval(folFrame, 100);
+  }
+  render();   // překreslí lištu a naváže sledování (folBind)
+  toast(FOL.plan.st.length ? 'Poslouchám. Klepnutím na řádek mě přesuneš.' : 'Píseň nemá akordy – posouvám plynule, dokud hraješ.');
+}
+
 /* ═══ SYNCHRONIZACE (Firebase, účet z Posilovny) ═══ */
 let USER = null, unsub = null, authReady = null, pushT = null, pushing = false;
 const FB_V = '10.12.2';
@@ -1197,7 +1355,7 @@ async function syncOn() {
 function loginSheet() { sheet('Přihlášení', `<form data-f="login" autocomplete="on"><p class="kv">Stejný účet jako v <a href="./posilovna.html">Posilovně</a> – tam si ho taky založíš nebo obnovíš heslo.</p><label class="f">Jméno nebo e-mail<input name="login" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" required autofocus></label><label class="f">Heslo<input name="pw" type="password" autocomplete="current-password" required></label><p class="ferr"></p><div class="sheet-b"><button class="btn p">Přihlásit a synchronizovat</button></div></form>`); }
 function bootSync() { if (LS.get(KS) && !authReady) { setSync('pend', 'Připojuji se…'); loadFb().then(bindAuth).catch(e => setSync('err', fbErr(e))); } }
 addEventListener('online', () => { bootSync(); if (USER && !unsub && LS.get(KS)) attach(); push(); });
-document.addEventListener('visibilitychange', () => { if (document.hidden) return; const r = route(), s = r.v === 's' && song(r.id); wake(!!(s && s.txt)); push(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) { if (FOL.on) { followStop(); render(); } return; } const r = route(), s = r.v === 's' && song(r.id); wake(!!(s && s.txt)); push(); });
 
 applyTheme(); render(); bootSync();
 if (location.hash === '#import' && window.opener) toast('Čekám na píseň ze stránky…');
