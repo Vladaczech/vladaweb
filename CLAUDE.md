@@ -31,6 +31,8 @@ Správce (přehled uživatelů, ikona vedle nastavení) = účet, který má dok
 
 Offline režim: `projects/posilovna-sw.js` (scope `./posilovna`, jiné stránky v `projects/` neovlivní). Stránka jde přes síť s 3,5s limitem a pak z mezipaměti, takže změny v `posilovna.html` se projeví bez zásahu do SW. Při přidání/změně ikon, manifestů nebo knihoven z CDN uprav seznam v SW a zvyš `VERSION`. Manifesty a ikony (180/192/512) pro každou barevnou variantu jsou v `projects/posilovna-icons/`.
 
+Motivace (ikona blesku při tréninku a v pauze): fotky sportovců jsou z Wikimedia Commons jen s volnou licencí (public domain / CC) a u každé je uvedený autor, licence a odkaz – konstanta `MOT_PEOPLE`. Nové fotky přidávej jen se stejným ověřením licence; motivační texty (`MOT_TEXTS`) jsou vlastní, nepřisuzuj je skutečným lidem.
+
 Hlášení (zatřesení telefonem / Nastavení → Zpětná vazba) se ukládají do `reports/{id}` (text, náhledy) a `reportPhotos/{id}_{i}` (plné fotky); číst je smí jen správce (Přehled → Hlášení). Hlášení zůstávají jen v aplikaci, nikam se neposílají (žádný e-mail ani jiná služba).
 
 ## Daily (`projects/daily.html`)

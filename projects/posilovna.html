@@ -501,6 +501,39 @@ html[data-vt="back"]{--vtd:-1}
 .sw.on{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--text)}
 .sw-pick{background:conic-gradient(#ff4d6d,#ffd23a,#39ff88,#38c6ff,#b98cff,#ff4d6d)}
 .sw-pick input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;padding:0;border:0}
+/* ── Hlavička tréninku ── */
+.wo-tools{margin-left:auto;display:flex;gap:8px}
+.mot-btn{color:var(--neon);border-color:var(--neon-d);box-shadow:0 0 14px rgba(var(--neon-rgb),.18)}
+.wo-date{display:flex;gap:8px;margin:-4px 0 14px;animation:tin .25s ease-out}.wo-date input{flex:1;font-family:var(--mono);font-size:14px}
+.mot-rb{color:var(--neon);padding:0 10px}
+/* ── Motivace ── */
+.mot{position:fixed;inset:0;z-index:65;background:#000;animation:tin .25s ease-out}
+.mot-feed{position:absolute;inset:0;overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior:contain;scrollbar-width:none}
+.mot-feed::-webkit-scrollbar{display:none}
+.mot-s{position:relative;height:100dvh;scroll-snap-align:start;scroll-snap-stop:always;overflow:hidden;background:radial-gradient(500px 400px at 70% 20%,rgba(var(--neon-rgb),.25),transparent 70%),#050505}
+.mot-s img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.mot-s.noimg img{display:none}
+.mot-s::after{content:'';position:absolute;inset:0;background:linear-gradient(rgba(0,0,0,.55),rgba(0,0,0,0) 22%,rgba(0,0,0,0) 45%,rgba(0,0,0,.88) 78%,#000);pointer-events:none}
+.mot-c{position:absolute;left:0;right:0;bottom:0;z-index:2;padding:0 22px calc(env(safe-area-inset-bottom) + 110px)}
+.mot-n{font-family:var(--display);font-size:30px;font-weight:700;letter-spacing:-.02em;color:#fff;line-height:1.05}
+.mot-t{display:inline-block;margin-top:8px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--on-neon);background:var(--neon);padding:4px 9px;border-radius:7px}
+.mot-q{margin-top:16px;font-family:var(--display);font-size:25px;font-weight:600;line-height:1.25;color:#fff;text-shadow:0 2px 18px rgba(0,0,0,.6)}
+.mot-cr{display:block;margin-top:14px;font-family:var(--mono);font-size:9.5px;color:rgba(255,255,255,.55);text-decoration:none}
+.mot-hint{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 70px);z-index:2;text-align:center;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.6);animation:motb 1.6s ease-in-out infinite}
+@keyframes motb{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.mot-top{position:absolute;left:0;right:0;top:0;z-index:5;display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top) + 12px) 16px 0}
+.mot-x{margin-left:auto;background:rgba(0,0,0,.45);border-color:rgba(255,255,255,.2);color:#fff;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.mot-rest{display:none;position:relative;overflow:hidden;align-items:baseline;gap:10px;padding:9px 16px 11px;border-radius:14px;background:rgba(0,0,0,.55);border:1px solid var(--neon-d);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.mot-rest.on{display:flex}
+.mot-rl{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.7)}
+.mot-rest b{font-family:var(--display);font-size:26px;font-weight:600;color:var(--neon);text-shadow:0 0 14px rgba(var(--neon-rgb),.6)}
+.mot-rest i{position:absolute;left:0;bottom:0;height:3px;background:var(--neon);box-shadow:0 0 8px var(--neon);transition:width 1s linear}
+.mot-go{position:absolute;left:16px;right:16px;bottom:calc(env(safe-area-inset-bottom) + 22px);z-index:5;display:flex;justify-content:center}
+.mot-go .btn{min-height:52px;padding:0 24px}
+.mot-back{background:rgba(0,0,0,.5);border-color:rgba(255,255,255,.25);color:#fff;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.mot-go.on .mot-gob{width:100%;font-size:17px;min-height:60px;animation:motp 1.1s ease-in-out infinite;box-shadow:0 0 30px rgba(var(--neon-rgb),.55)}
+@keyframes motp{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+@media (prefers-reduced-motion: reduce){.mot-hint,.mot-go.on .mot-gob{animation:none}}
 .themes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .th{display:flex;flex-direction:column;align-items:stretch;gap:7px;padding:8px;border-radius:14px;border:1px solid var(--line);background:var(--tb);text-align:left;transition:border-color .2s,box-shadow .2s}
 .th.on{border-color:var(--ta);box-shadow:0 0 0 1px var(--ta),0 0 18px rgba(var(--tr),.25)}
@@ -640,6 +673,7 @@ textarea{min-height:120px;font-family:var(--mono);font-size:12px}
   <div class="bar" id="rest-bar"></div>
   <div class="t" id="rest-t">0:00</div>
   <div class="l" id="rest-l">Pauza</div>
+  <button class="btn sm mot-rb" data-act="mot" aria-label="Motivace během pauzy"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg></button>
   <button class="btn sm" data-rest="-15">−15</button>
   <button class="btn sm" data-rest="15">+15</button>
   <button class="btn sm ghost" data-rest="x" aria-label="Zavřít">✕</button>
@@ -2510,7 +2544,7 @@ function delDlg(id, step) {
   else { openDlg(`${dlgIco}<h3 id="dlg-t">Opravdu smazat?</h3><p>Poslední krok – trénink z ${esc(dLong(w.d))} se smaže.</p>
     <div class="dlg-btns"><button class="btn danger-f wide big" data-act="delwgo" data-id="${esc(id)}" data-countdown="Smazat trénink">…</button><button class="btn wide" data-act="dlgx">Ne, nechat</button></div>`); dlgCountdown(3); }
 }
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#dlg.on')) closeDlg(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#dlg.on')) closeDlg(); else if (e.key === 'Escape' && MOT.open) closeMot(false); });
 
 
 /* ── Odebrání vyplněné série / úseku: potvrzovací okno ── */
@@ -2557,6 +2591,69 @@ function finishDlg(step) {
   else openDlg(`${finIco}<h3 id="dlg-t">Opravdu hotovo?</h3>
     <p>Trénink se uloží do historie a spočítá se doporučení na příště. Upravit ho půjde i potom – v Historii přes <b>Upravit</b>.</p>
     <div class="dlg-btns"><button class="btn p wide big" data-act="fingo">Ano, dokončit trénink</button><button class="btn wide" data-act="dlgx">Ne, pokračovat</button></div>`, 'ok');
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   MOTIVACE – svislý „feed“ jako na TikToku: fotky slavných sportovců (Wikimedia Commons, volné licence
+   s uvedením autora), vlastní motivační texty, během pauzy odpočet a po ní „Jde se makat!“.
+   ═══════════════════════════════════════════════════════════════ */
+const MOT_PEOPLE = [{"n": "Arnold Schwarzenegger", "t": "7× Mr. Olympia", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Arnold_Schwarzenegger_1974.jpg/960px-Arnold_Schwarzenegger_1974.jpg", "page": "https://commons.wikimedia.org/wiki/File:Arnold_Schwarzenegger_1974.jpg", "a": "Madison Square Garden Center", "l": "Public domain", "pos": "50% 30%"}, {"n": "Eugen Sandow", "t": "otec moderní kulturistiky", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Falk%2C_Benjamin_J._%281853-1925%29_-_Eugen_Sandow_%281867-1925%29.jpg/960px-Falk%2C_Benjamin_J._%281853-1925%29_-_Eugen_Sandow_%281867-1925%29.jpg", "page": "https://commons.wikimedia.org/wiki/File:Falk%2C_Benjamin_J._%281853-1925%29_-_Eugen_Sandow_%281867-1925%29.jpg", "a": "Benjamin J. Falk", "l": "Public domain", "pos": "50% 35%"}, {"n": "Franco Columbu", "t": "2× Mr. Olympia", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Franco_Columbu_Sardegna_anni_70.jpg/960px-Franco_Columbu_Sardegna_anni_70.jpg", "page": "https://commons.wikimedia.org/wiki/File:Franco_Columbu_Sardegna_anni_70.jpg", "a": "neznámý autor", "l": "Public domain", "pos": "30% 40%"}, {"n": "Ronnie Coleman", "t": "8× Mr. Olympia", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Ronnie_Coleman_8_x_Mr_Olympia_-_2009_-_3.png/960px-Ronnie_Coleman_8_x_Mr_Olympia_-_2009_-_3.png", "page": "https://commons.wikimedia.org/wiki/File:Ronnie_Coleman_8_x_Mr_Olympia_-_2009_-_3.png", "a": "www.localfitness.com.au", "l": "CC BY-SA 3.0", "pos": "50% 30%"}, {"n": "Reg Park", "t": "3× Mr. Universe, Arnoldův vzor", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/Ercole_alla_conquista_di_Atlantide_%281961%29_Reg_Park_%28cropped%29.png/960px-Ercole_alla_conquista_di_Atlantide_%281961%29_Reg_Park_%28cropped%29.png", "page": "https://commons.wikimedia.org/wiki/File:Ercole_alla_conquista_di_Atlantide_%281961%29_Reg_Park_%28cropped%29.png", "a": "z filmu Ercole alla conquista di Atlantide (1961)", "l": "Public domain", "pos": "50% 40%"}, {"n": "Lou Ferrigno", "t": "2× Mr. Universe, Hulk", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Lou_Ferrigno_%2816432300998%29.jpg/960px-Lou_Ferrigno_%2816432300998%29.jpg", "page": "https://commons.wikimedia.org/wiki/File:Lou_Ferrigno_%2816432300998%29.jpg", "a": "Paula R. Lively", "l": "CC BY 2.0", "pos": "50% 30%"}, {"n": "Muhammad Ali", "t": "3× mistr světa v těžké váze", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Muhammad_Ali_fights_Brian_London_on_August_6%2C_1966_%28cropped%29.jpg/960px-Muhammad_Ali_fights_Brian_London_on_August_6%2C_1966_%28cropped%29.jpg", "page": "https://commons.wikimedia.org/wiki/File:Muhammad_Ali_fights_Brian_London_on_August_6%2C_1966_%28cropped%29.jpg", "a": "PA", "l": "Public domain", "pos": "65% 40%"}, {"n": "Usain Bolt", "t": "8× olympijský vítěz, 9,58 s na stovce", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Usain_Bolt_Rio_100m_final_2016k.jpg/960px-Usain_Bolt_Rio_100m_final_2016k.jpg", "page": "https://commons.wikimedia.org/wiki/File:Usain_Bolt_Rio_100m_final_2016k.jpg", "a": "Fernando Frazão / Agência Brasil", "l": "CC BY 3.0 BR", "pos": "50% 25%"}, {"n": "Serena Williams", "t": "23 grandslamových titulů ve dvouhře", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Serena_Williams_at_2013_US_Open.jpg/960px-Serena_Williams_at_2013_US_Open.jpg", "page": "https://commons.wikimedia.org/wiki/File:Serena_Williams_at_2013_US_Open.jpg", "a": "Edwin Martinez", "l": "CC BY 2.0", "pos": "50% 30%"}, {"n": "Simone Biles", "t": "nejúspěšnější gymnastka historie", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Simone_Biles%2C_na_prova_final_da_trave_nos_Jogos_Ol%C3%ADmpicos_Rio_2016.jpg/960px-Simone_Biles%2C_na_prova_final_da_trave_nos_Jogos_Ol%C3%ADmpicos_Rio_2016.jpg", "page": "https://commons.wikimedia.org/wiki/File:Simone_Biles%2C_na_prova_final_da_trave_nos_Jogos_Ol%C3%ADmpicos_Rio_2016.jpg", "a": "Fernando Frazão / Agência Brasil", "l": "CC BY 2.0", "pos": "28% 50%"}, {"n": "Michael Jordan", "t": "6× mistr NBA", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Michael_Jordan.jpg/960px-Michael_Jordan.jpg", "page": "https://commons.wikimedia.org/wiki/File:Michael_Jordan.jpg", "a": "Joshua Massel", "l": "CC BY-SA 2.0", "pos": "45% 30%"}, {"n": "Jaromír Jágr", "t": "2× Stanley Cup, olympijský vítěz z Nagana", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Jarom%C3%ADr_J%C3%A1gr_2019.jpg/960px-Jarom%C3%ADr_J%C3%A1gr_2019.jpg", "page": "https://commons.wikimedia.org/wiki/File:Jarom%C3%ADr_J%C3%A1gr_2019.jpg", "a": "David Sedlecký", "l": "CC BY-SA 4.0", "pos": "50% 30%"}, {"n": "Ester Ledecká", "t": "olympijské zlato ve dvou sportech na jedněch hrách", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Ester_Ledeck%C3%A1_2018.jpg/960px-Ester_Ledeck%C3%A1_2018.jpg", "page": "https://commons.wikimedia.org/wiki/File:Ester_Ledeck%C3%A1_2018.jpg", "a": "David Sedlecký", "l": "CC BY-SA 4.0", "pos": "50% 25%"}, {"n": "Martina Sáblíková", "t": "3× olympijská vítězka v rychlobruslení", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Martina_S%C3%A1bl%C3%ADkov%C3%A1_2018.jpg/960px-Martina_S%C3%A1bl%C3%ADkov%C3%A1_2018.jpg", "page": "https://commons.wikimedia.org/wiki/File:Martina_S%C3%A1bl%C3%ADkov%C3%A1_2018.jpg", "a": "David Sedlecký", "l": "CC BY-SA 4.0", "pos": "52% 30%"}];
+const MOT_TEXTS = [
+  'Nikdo nezačínal jako mistr. Začínal tím, že přišel – stejně jako ty dnes.',
+  'Tahle série je ta, která tě posune. Ne ta pohodlná.',
+  'Unavené svaly rostou. Pohodlí ne.',
+  'Disciplína je dělat, co máš, i když se ti zrovna nechce.',
+  'Každé opakování je hlas pro člověka, kterým chceš být.',
+  'Pauza je na nádech. Pak zase do toho.',
+  'Za rok budeš rád, že jsi dneska nepřestal.',
+  'Výsledky nedělá motivace, ale zvyk. Ty ho právě stavíš.',
+  'Ještě jedna série. Ta se počítá nejvíc.',
+  'Bolí to teď, nebo to budeš litovat potom. Vyber si.',
+  'Silné tělo, klidná hlava. Obojí se trénuje.',
+  'Malý krok každý týden je za rok obrovský skok.',
+  'Nesrovnávej se s ostatními. Stačí porazit včerejší verzi sebe.',
+  'Těžká váha neříká „ne“. Říká „zatím“.',
+  'Šampioni nejsou ti, kdo nepadají. Jsou to ti, kdo pokaždé vstanou.',
+  'Tvoje budoucí já ti za tuhle sérii poděkuje.',
+  'Konzistence porazí talent, když talent nepřijde trénovat.',
+  'Dýchej. Soustřeď se. Zvedni to.',
+  'Nejtěžší bylo přijít. To už máš za sebou.',
+  'Nečekej na formu. Forma přijde, když budeš chodit.',
+];
+const MOT = { open: false, rest: false };
+function motShuffle(a) { a = [...a]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function openMot() {
+  let el = $('#mot'); if (!el) { el = document.createElement('div'); el.id = 'mot'; el.className = 'mot'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Motivace'); document.body.appendChild(el); }
+  const people = [...motShuffle(MOT_PEOPLE), ...motShuffle(MOT_PEOPLE)], texts = motShuffle(MOT_TEXTS);
+  MOT.open = true; MOT.rest = !!restEnd && !restDone;
+  document.documentElement.classList.add('tour-on');
+  el.innerHTML = `<div class="mot-top"><div class="mot-rest" id="mot-rest"></div><button class="icon-btn mot-x" data-act="motx" aria-label="Zavřít motivaci">✕</button></div>
+    <div class="mot-feed" id="mot-feed">${people.map((p, i) => `<section class="mot-s">
+      <img src="${p.img}" alt="${esc(p.n)}" style="object-position:${p.pos}" ${i > 1 ? 'loading="lazy"' : ''} referrerpolicy="no-referrer" onerror="this.closest('.mot-s').classList.add('noimg')">
+      <div class="mot-c">
+        <div class="mot-n">${esc(p.n)}</div><div class="mot-t">${esc(p.t)}</div>
+        <p class="mot-q">${esc(texts[i % texts.length])}</p>
+        <a class="mot-cr" href="${p.page}" target="_blank" rel="noopener">Foto: ${esc(p.a)} · ${esc(p.l)} · Wikimedia Commons</a>
+      </div>${i === 0 ? '<div class="mot-hint">přejeď nahoru ↑</div>' : ''}</section>`).join('')}</div>
+    <div class="mot-go" id="mot-go"></div>`;
+  motTick();
+}
+function closeMot(toWork) {
+  $('#mot')?.remove(); MOT.open = false; document.documentElement.classList.remove('tour-on');
+  if (toWork) { restEnd = 0; restDone = false; $('#rest').classList.add('hidden'); const nx = $('.exc .set:not(.ok)') || $('.exc .cd-clock'); nx?.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+}
+// voláno z tickTimers: odpočet pauzy nahoře, po jejím konci velké „Jde se makat!“
+function motTick() {
+  if (!MOT.open) return;
+  const r = $('#mot-rest'), go = $('#mot-go'); if (!r || !go) return;
+  const running = !!restEnd && !restDone, left = running ? Math.max(0, (restEnd - now()) / 1000) : 0;
+  if (running) MOT.rest = true;
+  r.innerHTML = running ? `<span class="mot-rl">Pauza</span><b>${mmss(Math.ceil(left))}</b><i style="width:${(100 * left / (restTotal || 1)).toFixed(1)}%"></i>` : '';
+  r.classList.toggle('on', running);
+  const showGo = MOT.rest && !running;
+  if (showGo && !go.classList.contains('on')) { go.innerHTML = '<button class="btn p big mot-gob" data-act="motgo">Jde se makat! →</button>'; go.classList.add('on'); vib([60, 40, 60]); }
+  if (!showGo && !MOT.rest && !go.innerHTML) go.innerHTML = '<button class="btn mot-back" data-act="motgo">Zpět k tréninku</button>';
 }
 
 function weekStats() {
@@ -2610,7 +2707,8 @@ function vTrain() {
   }
   const items = w.it.map((it, i) => exCard(w, it, i)).join('');
   return `<div class="wo-head"><div><div class="kicker">Trénink běží</div><div class="timer" id="wo-timer">0:00</div></div>
-      <input type="datetime-local" data-f="wdate" value="${esc(w.d)}" aria-label="Datum tréninku"></div>
+      <div class="wo-tools"><button class="icon-btn mot-btn" data-act="mot" aria-label="Motivace"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg></button><button class="icon-btn${ui.dateOpen ? ' on' : ''}" data-act="wdate" aria-label="Datum a čas tréninku"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg></button></div></div>
+    ${ui.dateOpen ? `<div class="wo-date"><input type="datetime-local" data-f="wdate" value="${esc(w.d)}" aria-label="Datum a čas začátku tréninku"><button class="btn sm" data-act="wdate">Hotovo</button></div>` : ''}
     ${items || '<div class="empty">Přidej první cvik.</div>'}
     <button class="btn wide big" data-act="pick" style="margin-bottom:10px">＋ Přidat cvik</button>
     <div class="row"><button class="btn p wide big" data-act="finish">✓ Dokončit trénink</button></div>
@@ -3139,6 +3237,7 @@ function tickTimers() {
   if (!S) return;
   const w = openWorkout(), el = $('#wo-timer');
   if (w && el) { const st = new Date(w.d).getTime(); el.textContent = mmss(Math.max(0, (now() - st) / 1000)); }
+  motTick();
   if (w) $$('.cd-t[data-cdi]').forEach(c => { const it = w.it[+c.dataset.cdi]; if (it && it.t0) c.textContent = mmss(cdElapsed(it) / 1000); });
   if (restEnd) {
     const left = Math.max(0, (restEnd - now()) / 1000);
@@ -3361,6 +3460,10 @@ document.addEventListener('click', async e => {
     case 'admwtog': ADM.open = ADM.open === b.dataset.id ? null : b.dataset.id; render(); break;
     case 'theme': { const id = b.dataset.id; if (!THEMES[id] || S.set.theme === id) break; S.set.theme = id; S.setU = now(); dirty.set = true; commit(); render(); vib(8); toast(`Vzhled: ${THEMES[id].n}`); break; }
     case 'report': reportSheet(); break;
+    case 'mot': openMot(); break;
+    case 'motx': closeMot(false); break;
+    case 'motgo': closeMot(true); break;
+    case 'wdate': ui.dateOpen = !ui.dateOpen; render(); if (ui.dateOpen) $('.wo-date input')?.focus(); break;
     case 'gentog': ui.genOpen = !ui.genOpen; render(); if (ui.genOpen) $('.gen-box')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); break;
     case 'mmr': ui.mmRange = b.dataset.k; render(); break;
     case 'mmsel': mmInfo(b.dataset.m); break;

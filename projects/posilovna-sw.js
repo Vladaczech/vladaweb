@@ -3,7 +3,7 @@
    • Ikony, manifesty, Firebase SDK, fonty a knihovny z CDN: uložená kopie, jinak síť (adresy mají v sobě verzi).
    • Firestore a přihlášení jdou mimo – jejich offline režim řeší samotné Firebase.
    Při změně seznamu souborů zvyš VERSION. */
-const VERSION = 'posilovna-v1';
+const VERSION = 'posilovna-v2';
 const THEMES = ['neon', 'ocel', 'lava', 'titan', 'ruze', 'levandule', 'broskev'];
 const SHELL = [
   './posilovna.html',
@@ -17,7 +17,8 @@ const CDN = [
   'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap',
   'https://cdn.jsdelivr.net/npm/body-highlighter@3.0.2/dist/body-highlighter.esm.js',
 ];
-const STATIC_HOSTS = new Set(['fonts.googleapis.com', 'fonts.gstatic.com', 'cdn.jsdelivr.net']);
+// upload.wikimedia.org = fotky v motivaci (ukládají se postupně, jak se prohlížejí)
+const STATIC_HOSTS = new Set(['fonts.googleapis.com', 'fonts.gstatic.com', 'cdn.jsdelivr.net', 'upload.wikimedia.org']);
 
 self.addEventListener('install', e => {
   e.waitUntil((async () => {
