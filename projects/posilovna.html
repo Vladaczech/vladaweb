@@ -2118,18 +2118,19 @@ function workoutPRs(w) {
 }
 function cssVar(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
 async function renderShareCard(w, o = {}) {
-  const W = 1080, H = 1350, c = document.createElement('canvas'); c.width = W; c.height = H;
+  const W = 1080, H = 1350, CH = o.h || H, c = document.createElement('canvas'); c.width = W; c.height = CH;
   const g = c.getContext('2d'), A = cssVar('--neon') || '#39ff88', RGB = cssVar('--neon-rgb') || '57,255,136', BG = cssVar('--bg') || '#050505', P = cssVar('--panel') || '#0b0b0b';
   try { await Promise.race([Promise.all(['600 80px "Space Grotesk"', '500 30px "JetBrains Mono"', '400 30px Inter'].map(f => document.fonts.load(f))), new Promise(r => setTimeout(r, 1500))]); } catch {}
   const DISP = '"Space Grotesk", Inter, sans-serif', MONO = '"JetBrains Mono", Menlo, monospace', SANS = 'Inter, system-ui, sans-serif';
   // pozadí se září
-  g.fillStyle = BG; g.fillRect(0, 0, W, H);
-  let gr = g.createRadialGradient(W * .85, -60, 0, W * .85, -60, 900); gr.addColorStop(0, `rgba(${RGB},.22)`); gr.addColorStop(1, `rgba(${RGB},0)`); g.fillStyle = gr; g.fillRect(0, 0, W, H);
-  gr = g.createRadialGradient(0, H, 0, 0, H, 700); gr.addColorStop(0, `rgba(${RGB},.08)`); gr.addColorStop(1, `rgba(${RGB},0)`); g.fillStyle = gr; g.fillRect(0, 0, W, H);
+  g.fillStyle = BG; g.fillRect(0, 0, W, CH);
+  let gr = g.createRadialGradient(W * .85, -60, 0, W * .85, -60, 900 * CH / H); gr.addColorStop(0, `rgba(${RGB},.22)`); gr.addColorStop(1, `rgba(${RGB},0)`); g.fillStyle = gr; g.fillRect(0, 0, W, CH);
+  gr = g.createRadialGradient(0, CH, 0, 0, CH, 700 * CH / H); gr.addColorStop(0, `rgba(${RGB},.08)`); gr.addColorStop(1, `rgba(${RGB},0)`); g.fillStyle = gr; g.fillRect(0, 0, W, CH);
   const txt = (s, x, y, font, color, align = 'left', glow = 0) => { g.font = font; g.fillStyle = color; g.textAlign = align; g.shadowColor = glow ? A : 'transparent'; g.shadowBlur = glow; g.fillText(s, x, y); g.shadowBlur = 0; };
   const rr = (x, y, w2, h2, r, fill, stroke) => { g.beginPath(); g.roundRect(x, y, w2, h2, r); if (fill) { g.fillStyle = fill; g.fill(); } if (stroke) { g.strokeStyle = stroke; g.lineWidth = 2; g.stroke(); } };
   const fit = (s, max, font) => { g.font = font; if (g.measureText(s).width <= max) return s; while (s.length > 3 && g.measureText(s + '…').width > max) s = s.slice(0, -1); return s + '…'; };
   const M = 80;
+  g.translate(0, Math.round((CH - H) / 2));          // Stories: obsah karty uprostřed vyššího plátna
   // hlavička
   txt('POSILOVNA', M, 130, `700 34px ${MONO}`, A, 'left', 18);
   g.font = `700 34px ${MONO}`; const bw = g.measureText('POSILOVNA').width; txt('.', M + bw + 4, 130, `700 34px ${MONO}`, A);
@@ -2214,18 +2215,21 @@ async function renderShareCard(w, o = {}) {
 }
 // ═══ Vlastní obrázek: editor vrstev nad fotkou (nebo tmavým pozadím) ═══
 // Každá vrstva má polohu (x, y = levý horní roh v podílu šířky/výšky), velikost s, průhlednost a a barvu c ('A' = barva vzhledu).
-const SH_W = 1080, SH_H = 1350;
+const SH_W = 1080, SH_FMT = { story: 1920, post: 1350 };
+let SH_H = SH_FMT[ls.get('posilovna-shfmt')] ? SH_FMT[ls.get('posilovna-shfmt')] : 1920;
 const SH_LAYERS = [['title', 'Nápis'], ['name', 'Název'], ['list', 'Cviky'], ['stats', 'Čísla'], ['pr', 'Rekord'], ['head', 'Logo']];
 const SH_COLORS = ['A', '#ffffff', '#111111', '#39ff88', '#38c6ff', '#ffd23a', '#ff7b2e', '#ff4fa7', '#b98cff'];
 function shDefaults(w) {
-  const pr = workoutPRs(w).length > 0, X = 80 / SH_W, Y = v => v / SH_H;
+  const pr = workoutPRs(w).length > 0, X = 80 / SH_W, Y = v => v / SH_H, st = SH_H > 1500;
+  const P = st ? { head: 250, list: 340, title: pr ? 1170 : 1230, name: pr ? 1366 : 1430, pr: 1418, stats: 1520 }
+               : { head: 66, list: 150, title: pr ? 752 : 800, name: pr ? 948 : 1000, pr: 1000, stats: 1100 };
   return { dark: .75, sel: 'title', ph: { s: 1, ox: 0, oy: 0, rot: 0 }, L: {
-    head: { on: true, x: X, y: Y(66), s: 1, a: 1, c: 'A' },
-    list: { on: false, x: X, y: Y(150), s: 1, a: 1, c: '#ffffff' },
-    title: { on: true, x: X, y: Y(pr ? 752 : 800), s: 1, a: 1, c: 'A' },
-    name: { on: true, x: X, y: Y(pr ? 948 : 1000), s: 1, a: 1, c: '#ffffff' },
-    pr: { on: pr, x: X, y: Y(1000), s: 1, a: 1, c: 'A' },
-    stats: { on: true, x: X, y: Y(1100), s: 1, a: 1, c: '#ffffff' },
+    head: { on: true, x: X, y: Y(P.head), s: 1, a: 1, c: 'A' },
+    list: { on: false, x: X, y: Y(P.list), s: 1, a: 1, c: '#ffffff' },
+    title: { on: true, x: X, y: Y(P.title), s: 1, a: 1, c: 'A' },
+    name: { on: true, x: X, y: Y(P.name), s: 1, a: 1, c: '#ffffff' },
+    pr: { on: pr, x: X, y: Y(P.pr), s: 1, a: 1, c: 'A' },
+    stats: { on: true, x: X, y: Y(P.stats), s: 1, a: 1, c: '#ffffff' },
   } };
 }
 const SHR = { wid: null, mode: 'card', photo: null, title: 'DONE.', custom: '', ed: null, bb: {} };
@@ -2257,7 +2261,7 @@ function shDraw(g, w, edit) {
   const dk = E.dark;
   if (SHR.photo && dk > 0) {
     g.fillStyle = `rgba(0,0,0,${(dk * .22).toFixed(3)})`; g.fillRect(0, 0, W, H);
-    let gr = g.createLinearGradient(0, 0, 0, 300); gr.addColorStop(0, `rgba(0,0,0,${(dk * .7).toFixed(3)})`); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(0, 0, W, 300);
+    let gr = g.createLinearGradient(0, 0, 0, H * .24); gr.addColorStop(0, `rgba(0,0,0,${(dk * .7).toFixed(3)})`); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(0, 0, W, H * .24);
     gr = g.createLinearGradient(0, H * .35, 0, H); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(.55, `rgba(0,0,0,${(dk * .75).toFixed(3)})`); gr.addColorStop(1, `rgba(0,0,0,${Math.min(.95, dk * 1.1).toFixed(3)})`); g.fillStyle = gr; g.fillRect(0, H * .35, W, H * .65);
   }
   g.restore();
@@ -2331,7 +2335,7 @@ function shSetFile(w, blob, ext) {
 async function shareRender() {
   const w = S.w.find(x => x.id === SHR.wid); if (!w) return;
   if (SHR.mode === 'photo') { await shFonts(); shRedraw(); return; }
-  const seq = ++shareSeq, blob = await renderShareCard(w);
+  const seq = ++shareSeq, blob = await renderShareCard(w, { h: SH_H });
   if (seq !== shareSeq || sheetKind !== 'share') return;
   shSetFile(w, blob, 'png');
 }
@@ -2389,7 +2393,8 @@ function shareUI() {
   const ed = SHR.mode === 'photo';
   if (ed && !SHR.ed) SHR.ed = shDefaults(w);
   openSheet(`<div class="kicker">Sdílet</div><h3>Obrázek tréninku</h3>
-    <div class="seg" style="margin-top:12px"><button class="${!ed ? 'on' : ''}" data-act="shmode" data-m="card">Karta</button><button class="${ed ? 'on' : ''}" data-act="shmode" data-m="photo">Vlastní · s fotkou</button></div>
+    <div class="seg sh-fmt" style="margin-top:12px"><button class="${SH_H > 1500 ? 'on' : ''}" data-act="shfmt" data-f="story">Stories 9:16</button><button class="${SH_H <= 1500 ? 'on' : ''}" data-act="shfmt" data-f="post">Příspěvek 4:5</button></div>
+    <div class="seg" style="margin-top:8px"><button class="${!ed ? 'on' : ''}" data-act="shmode" data-m="card">Karta</button><button class="${ed ? 'on' : ''}" data-act="shmode" data-m="photo">Vlastní · s fotkou</button></div>
     ${ed ? `<div class="sh-stage"><canvas id="sh-cv" width="${SH_W}" height="${SH_H}" aria-label="Náhled obrázku – prvky jde posouvat prstem"></canvas></div>
       <p class="note" style="margin:6px 0 0;text-align:center">Prvky i fotku posouvej prstem, dvěma prsty je zvětšíš.</p>
       <div class="row" style="margin-top:10px"><label class="btn sm wide">${SHR.photo ? 'Jiná fotka' : '＋ Fotka z galerie'}<input type="file" accept="image/*" data-shphoto hidden></label>${SHR.photo ? '<button class="btn sm ghost wide" data-act="shnophoto">Bez fotky</button>' : ''}</div>
@@ -3335,6 +3340,13 @@ document.addEventListener('click', async e => {
     case 'share': shareSheet(b.dataset.id); break;
     case 'sharego': if (shareFile) navigator.share({ files: [shareFile] }).catch(() => {}); break;
     case 'shmode': SHR.mode = b.dataset.m; shareUI(); break;
+    case 'shfmt': {
+      const h = SH_FMT[b.dataset.f]; if (!h || h === SH_H) break;
+      SH_H = h; ls.set('posilovna-shfmt', b.dataset.f);
+      // polohy prvků podle nového formátu, ostatní nastavení (zapnuto, barva, velikost…) zůstává
+      if (SHR.ed) { const d = shDefaults(S.w.find(x => x.id === SHR.wid)); for (const k in SHR.ed.L) { SHR.ed.L[k].x = d.L[k].x; SHR.ed.L[k].y = d.L[k].y; } SHR.ed.ph.ox = 0; SHR.ed.ph.oy = 0; }
+      shareUI(); break;
+    }
     case 'shtitle': SHR.title = b.dataset.t; shEdPanel(); shRedraw(); if (SHR.title === '…') $('[data-f=shtext]')?.focus(); break;
     case 'shsel': if (SHR.ed) { SHR.ed.sel = b.dataset.k; shEdPanel(); shRedraw(); } break;
     case 'shtog': {
