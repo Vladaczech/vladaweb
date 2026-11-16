@@ -438,7 +438,10 @@ html.tour-on,html.tour-on body{overflow:hidden}
 .mm-r.ok .mm-s{color:var(--neon)}.mm-r.hi .mm-s{color:var(--warn)}
 /* ── Sdílení ── */
 .share-prev{margin-top:12px;border-radius:16px;overflow:hidden;border:1px solid var(--line2);background:var(--bg);min-height:200px;display:grid;place-items:center}
-.share-prev img{width:100%;display:block}
+.share-prev{position:relative}.share-prev img{width:100%;display:block}.share-prev img:not([src]){display:none}
+.share-prev .empty{display:none}.share-prev.busy .empty{display:block;position:absolute}.share-prev.busy img[src]{opacity:.45}
+.seg-l{flex:1;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:8px 6px;border-radius:9px;font-family:var(--mono);font-size:11px;color:var(--neon)}
+.sh-ctl{display:flex;flex-direction:column;gap:8px;margin-top:12px}.sh-ctl .chips{margin:0}
 a.btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
 /* ── Plynulé přechody ── */
 header.top{view-transition-name:hdr}nav.bottom{view-transition-name:nav}
@@ -957,6 +960,13 @@ const dbN = ex => ex.eq === 'dumbbell' ? (ex.dbn || 2) : 0;
 function incOf(ex) { const b = ex.inc ?? (S.set.inc && S.set.inc[ex.eq]) ?? EQ[ex.eq]?.inc ?? 2.5; return dbN(ex) === 2 ? b * 2 : b; }
 const eqLabel = ex => dbN(ex) === 1 ? 'Jednoručka · váha 1 ks' : dbN(ex) === 2 ? 'Jednoručky · součet obou' : (EQ[ex.eq]?.n || '');
 const isCardio = ex => ex.unit === 't';
+// Název tréninku = 2 partie s nejvíce cviky (při shodě víc sérií, pak ta, která byla v tréninku dřív)
+function wGroups(w, gx = getEx, n = 2) {
+  const m = new Map();
+  w.it.forEach((it, k) => { const ds = doneSets(it); if (!ds.length) return; const g = gx(it.ex).g, o = m.get(g) || { g, ex: 0, sets: 0, first: k }; o.ex++; o.sets += ds.length; m.set(g, o); });
+  return [...m.values()].sort((a, b) => b.ex - a.ex || b.sets - a.sets || a.first - b.first).slice(0, n).map(o => o.g);
+}
+const wName = (w, gx) => wGroups(w, gx).join(' · ');
 const rangeTxt = ex => isCardio(ex) ? `${Math.round(ex.lo / 60)}–${Math.round(ex.hi / 60)} min` : `${ex.lo}–${ex.hi}`;
 function unitOf(ex) { return ex.unit === 's' ? 's' : ex.unit === 'm' ? 'm' : ex.unit === 't' ? 'min' : 'opak.'; }
 const unitHead = ex => ({ s: 'sek.', m: 'metry', t: 'čas' })[ex.unit] || 'opak.';
@@ -1639,7 +1649,7 @@ function vAdminUser(u) {
   }).join('');
   const recent = st.ws.slice(0, 12).map(w => {
     const exs = w.it.filter(i => doneSets(i).length), t = new Date(w.d), open = ADM.open === w.id;
-    const groups = [...new Set(exs.map(i => admEx(u, i.ex).g))].join(' · ');
+    const groups = wName(w, id => admEx(u, id));
     const dur = w.end ? Math.round((w.end - tOf(w)) / 60000) : null;
     return `<div class="hist-it"><button data-act="admwtog" data-id="${esc(w.id)}">
       <div class="dt"><b>${t.getDate()}</b><span>${t.toLocaleDateString('cs-CZ', { month: 'short' })}</span></div>
@@ -2079,7 +2089,7 @@ function workoutPRs(w) {
   return out.sort((a, b) => (b.e / b.pb) - (a.e / a.pb));
 }
 function cssVar(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
-async function renderShareCard(w) {
+async function renderShareCard(w, o = {}) {
   const W = 1080, H = 1350, c = document.createElement('canvas'); c.width = W; c.height = H;
   const g = c.getContext('2d'), A = cssVar('--neon') || '#39ff88', RGB = cssVar('--neon-rgb') || '57,255,136', BG = cssVar('--bg') || '#050505', P = cssVar('--panel') || '#0b0b0b';
   try { await Promise.race([Promise.all(['600 80px "Space Grotesk"', '500 30px "JetBrains Mono"', '400 30px Inter'].map(f => document.fonts.load(f))), new Promise(r => setTimeout(r, 1500))]); } catch {}
@@ -2092,6 +2102,7 @@ async function renderShareCard(w) {
   const rr = (x, y, w2, h2, r, fill, stroke) => { g.beginPath(); g.roundRect(x, y, w2, h2, r); if (fill) { g.fillStyle = fill; g.fill(); } if (stroke) { g.strokeStyle = stroke; g.lineWidth = 2; g.stroke(); } };
   const fit = (s, max, font) => { g.font = font; if (g.measureText(s).width <= max) return s; while (s.length > 3 && g.measureText(s + '…').width > max) s = s.slice(0, -1); return s + '…'; };
   const M = 80;
+  if (o.photo) { drawPhotoCard({ g, W, H, M, A, RGB, DISP, MONO, SANS, txt, rr, fit }, w, o.photo, o.text); return new Promise(r => c.toBlob(r, 'image/jpeg', .92)); }
   // hlavička
   txt('POSILOVNA', M, 130, `700 34px ${MONO}`, A, 'left', 18);
   g.font = `700 34px ${MONO}`; const bw = g.measureText('POSILOVNA').width; txt('.', M + bw + 4, 130, `700 34px ${MONO}`, A);
@@ -2144,7 +2155,7 @@ async function renderShareCard(w) {
     txt(`${p.s.w > 0 ? fmt(p.s.w, 2) + ' kg × ' : ''}${p.s.r}${!(p.s.w > 0) && p.ex.unit ? ' ' + p.ex.unit : ''}`, M, y, `600 128px ${DISP}`, A, 'left', 40);
     y += 64; txt(`odhad 1RM ${fmt(p.e, 1)} kg · +${fmt(pct, 1)} % oproti maximu`, M, y, `500 28px ${MONO}`, '#bdbdbd');
   } else {
-    const F = `600 76px ${DISP}`, groups = [...new Set(exs.map(i => getEx(i.ex).g))];
+    const F = `600 76px ${DISP}`, groups = wGroups(w);
     txt('TRÉNINK HOTOVÝ', M, y, `600 26px ${MONO}`, A, 'left', 14);
     for (const ln of wrap(groups.join(' + ') || 'Trénink', TW, F)) { y += 88; txt(ln, M, y, F, '#ececec'); }
     y += 60; txt(`${pl(exs.length, 'cvik', 'cviky', 'cviků')}${w.rpe ? ` · RPE ${w.rpe}` : ''}`, M, y, `500 28px ${MONO}`, '#bdbdbd');
@@ -2174,18 +2185,73 @@ async function renderShareCard(w) {
   txt('✦', W - M, H - 70, `600 30px ${SANS}`, A, 'right', 12);
   return new Promise(r => c.toBlob(r, 'image/png'));
 }
-let shareFile = null;
-async function shareSheet(wid) {
-  const w = S.w.find(x => x.id === wid); if (!w) return;
-  openSheet(`<div class="kicker">Sdílet</div><h3>Obrázek tréninku</h3><div class="share-prev"><div class="empty">Kreslím…</div></div>`, 'share');
-  const blob = await renderShareCard(w); if (sheetKind !== 'share') return;
-  shareFile = new File([blob], `posilovna-${w.d.slice(0, 10)}.png`, { type: 'image/png' });
-  const url = URL.createObjectURL(blob), canShare = !!(navigator.canShare && navigator.canShare({ files: [shareFile] }));
-  $('#sheet-c').innerHTML = `<div class="kicker">Sdílet</div><h3>Obrázek tréninku</h3>
-    <div class="share-prev"><img src="${url}" alt="Obrázek tréninku ke sdílení"></div>
-    <div class="row" style="margin-top:12px">${canShare ? '<button class="btn p wide big" data-act="sharego">Sdílet…</button>' : ''}<a class="btn ${canShare ? '' : 'p '}wide big" href="${url}" download="${shareFile.name}">Uložit</a></div>
-    <p class="note" style="margin-top:8px">${canShare ? 'Sdílení nabídne Instagram, WhatsApp i uložení do Fotek.' : 'Obrázek ulož, nebo ho podrž prstem a vyber Uložit.'}</p>`;
+// Varianta s vlastní fotkou: fotka přes celou plochu, ztmavení, velký nápis (DONE. apod.) a čísla tréninku
+function drawPhotoCard(K, w, img, title) {
+  const { g, W, H, M, A, RGB, DISP, MONO, txt, rr, fit } = K;
+  const iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height, sc = Math.max(W / iw, H / ih);
+  g.drawImage(img, (W - iw * sc) / 2, (H - ih * sc) / 2, iw * sc, ih * sc);
+  let gr = g.createLinearGradient(0, 0, 0, 300); gr.addColorStop(0, 'rgba(0,0,0,.6)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(0, 0, W, 300);
+  gr = g.createLinearGradient(0, H * .36, 0, H); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(.55, 'rgba(0,0,0,.62)'); gr.addColorStop(1, 'rgba(0,0,0,.9)'); g.fillStyle = gr; g.fillRect(0, H * .36, W, H * .64);
+  // hlavička
+  txt('POSILOVNA', M, 120, `700 32px ${MONO}`, A, 'left', 18);
+  g.font = `700 32px ${MONO}`; txt('.', M + g.measureText('POSILOVNA').width + 4, 120, `700 32px ${MONO}`, A);
+  txt(dLong(w.d).toUpperCase(), W - M, 120, `500 22px ${MONO}`, 'rgba(255,255,255,.8)', 'right');
+  // čísla
+  const exs = w.it.filter(i => doneSets(i).length), prs = workoutPRs(w);
+  const dur = w.end ? Math.round((w.end - new Date(w.d).getTime()) / 60000) : null, sets = exs.reduce((a, i) => a + doneSets(i).length, 0), vol = exs.reduce((a, i) => a + doneSets(i).reduce((b, x) => b + x.w * x.r, 0), 0);
+  const tiles = [[dur && dur > 0 && dur < 600 ? String(dur) : '–', 'MINUT'], [String(sets), 'SÉRIÍ'], [vol >= 10000 ? fmt(vol / 1000, 1) + ' t' : fmtInt(vol), 'KG OBJEM']];
+  const tw = (W - 2 * M - 2 * 20) / 3, ty = H - 250;
+  tiles.forEach(([v, l], k) => { const x = M + k * (tw + 20); rr(x, ty, tw, 128, 24, 'rgba(10,10,10,.55)', 'rgba(255,255,255,.16)'); txt(v, x + 28, ty + 72, `600 52px ${DISP}`, '#fff'); txt(l, x + 28, ty + 106, `500 19px ${MONO}`, 'rgba(255,255,255,.6)'); });
+  let y = ty - 40;
+  // rekord jako štítek
+  if (prs.length) {
+    const p = prs[0], lab = fit(`NOVÝ REKORD · ${p.ex.n} ${p.s.w > 0 ? fmt(p.s.w, 2) + ' kg × ' : ''}${p.s.r}`, W - 2 * M - 48, `600 26px ${MONO}`);
+    g.font = `600 26px ${MONO}`; const lw = g.measureText(lab).width + 48;
+    rr(M, y - 46, lw, 60, 30, A); txt(lab, M + 24, y - 6, `600 26px ${MONO}`, cssVar('--on-neon') || '#03170a');
+    y -= 86;
+  }
+  // název tréninku a velký nápis
+  const name = wName(w) || 'Trénink';
+  txt(fit(name.toUpperCase(), W - 2 * M, `500 30px ${MONO}`), M, y, `500 30px ${MONO}`, 'rgba(255,255,255,.88)');
+  let fs = 210; const T = title || 'DONE.';
+  g.font = `700 ${fs}px ${DISP}`; while (fs > 60 && g.measureText(T).width > W - 2 * M) { fs -= 6; g.font = `700 ${fs}px ${DISP}`; }
+  txt(T, M, y - 62, `700 ${fs}px ${DISP}`, A, 'left', 46);
+  g.shadowColor = 'transparent';
+  txt('Posilovna · tréninkový deník', M, H - 64, `500 22px ${MONO}`, 'rgba(255,255,255,.55)');
+  txt('✦', W - M, H - 64, `600 28px Inter, sans-serif`, A, 'right', 12);
 }
+// Stav okna sdílení: karta, nebo vlastní fotka (zůstává jen v telefonu, nikam se neukládá)
+const SHR = { wid: null, mode: 'card', photo: null, title: 'DONE.', custom: '' };
+let shareFile = null, shareUrl = null, shareSeq = 0;
+function shareTitles(w) { const t = ['DONE.', 'HOTOVO.', 'MAKÁNO.']; if (workoutPRs(w).length) t.push('NOVÝ REKORD'); const n = wName(w); if (n) t.push(n.split(' · ')[0].toUpperCase() + (n.includes(' · ') ? ' + ' + n.split(' · ')[1].toUpperCase() : '')); return t; }
+async function shareRender() {
+  const w = S.w.find(x => x.id === SHR.wid); if (!w) return;
+  const seq = ++shareSeq, photo = SHR.mode === 'photo' && SHR.photo;
+  const blob = await renderShareCard(w, photo ? { photo: SHR.photo, text: (SHR.title === '…' ? SHR.custom : SHR.title) || 'DONE.' } : {});
+  if (seq !== shareSeq || sheetKind !== 'share') return;
+  shareFile = new File([blob], `posilovna-${w.d.slice(0, 10)}.${photo ? 'jpg' : 'png'}`, { type: blob.type });
+  if (shareUrl) URL.revokeObjectURL(shareUrl);
+  shareUrl = URL.createObjectURL(blob);
+  const im = $('#share-img'), dl = $('#share-dl');
+  if (im) { im.src = shareUrl; im.parentElement.classList.remove('busy'); }
+  if (dl) { dl.href = shareUrl; dl.download = shareFile.name; }
+}
+function shareUI() {
+  const w = S.w.find(x => x.id === SHR.wid); if (!w) return;
+  const canShare = !!(navigator.canShare && navigator.canShare({ files: [new File([''], 'x.png', { type: 'image/png' })] }));
+  const photo = SHR.mode === 'photo';
+  openSheet(`<div class="kicker">Sdílet</div><h3>Obrázek tréninku</h3>
+    <div class="seg" style="margin-top:12px"><button class="${!photo ? 'on' : ''}" data-act="shmode" data-m="card">Karta</button>${SHR.photo ? `<button class="${photo ? 'on' : ''}" data-act="shmode" data-m="photo">S fotkou</button>` : `<label class="seg-l">＋ S fotkou<input type="file" accept="image/*" data-shphoto hidden></label>`}</div>
+    <div class="share-prev busy"><img id="share-img" alt="Obrázek tréninku ke sdílení"${shareUrl ? ` src="${shareUrl}"` : ''}><div class="empty">Kreslím…</div></div>
+    ${photo ? `<div class="sh-ctl">
+      <div class="chips wrapc">${shareTitles(w).map(t => `<button class="chip ${SHR.title === t ? 'on' : ''}" data-act="shtitle" data-t="${esc(t)}">${esc(t)}</button>`).join('')}<button class="chip ${SHR.title === '…' ? 'on' : ''}" data-act="shtitle" data-t="…">Vlastní…</button></div>
+      ${SHR.title === '…' ? `<input data-f="shtext" maxlength="22" placeholder="Tvůj text, např. LEG DAY" value="${esc(SHR.custom)}">` : ''}
+      <label class="btn sm ghost wide">Vybrat jinou fotku<input type="file" accept="image/*" data-shphoto hidden></label></div>` : ''}
+    <div class="row" style="margin-top:12px">${canShare ? '<button class="btn p wide big" data-act="sharego">Sdílet…</button>' : ''}<a class="btn ${canShare ? '' : 'p '}wide big" id="share-dl" href="${shareUrl || '#'}" download>Uložit</a></div>
+    <p class="note" style="margin-top:8px">${photo ? 'Fotka zůstává jen v telefonu – nikam se neukládá ani neodesílá. ' : ''}${canShare ? 'Sdílení nabídne Instagram, WhatsApp i uložení do Fotek.' : 'Obrázek ulož, nebo ho podrž prstem a vyber Uložit.'}</p>`, 'share');
+  shareRender();
+}
+function shareSheet(wid) { if (SHR.wid !== wid) Object.assign(SHR, { wid, mode: 'card', photo: null, title: 'DONE.', custom: '' }); shareUI(); }
 
 /* ── Plynulé přechody mezi obrazovkami (View Transitions API, kde je k dispozici) ── */
 const VIEW_ORDER = ['train', 'lib', 'hist', 'prog', 'body', 'set', 'admin'];
@@ -2564,7 +2630,7 @@ function histItem(w, expandable = true) {
   const vol = exs.reduce((a, i) => a + doneSets(i).reduce((b, s) => b + s.w * s.r, 0), 0);
   const dur = w.end ? Math.round((w.end - new Date(w.d).getTime()) / 60000) : null;
   const open = ui.histOpen === w.id;
-  const groups = [...new Set(exs.map(i => getEx(i.ex).g))].join(' · ');
+  const groups = wName(w);
   return `<div class="hist-it"><button data-act="${expandable ? 'histtog' : 'gohist'}" data-id="${w.id}">
       <div class="dt"><b>${t.getDate()}</b><span>${t.toLocaleDateString('cs-CZ', { month: 'short' })}</span></div>
       <div class="sm"><b>${esc(groups || 'Bez cviků')}</b><span>${pl(exs.length, 'cvik', 'cviky', 'cviků')} · ${pl(sets, 'série', 'série', 'sérií')} · ${fmtInt(vol)} kg${dur && dur > 0 && dur < 600 ? ` · ${dur} min` : ''}${w.rpe ? ` · <span style="color:${rpeColor(w.rpe)}">RPE ${w.rpe}</span>` : ''}</span></div>
@@ -3012,6 +3078,8 @@ document.addEventListener('click', async e => {
     case 'mmsel': mmInfo(b.dataset.m); break;
     case 'share': shareSheet(b.dataset.id); break;
     case 'sharego': if (shareFile) navigator.share({ files: [shareFile] }).catch(() => {}); break;
+    case 'shmode': SHR.mode = b.dataset.m; shareUI(); break;
+    case 'shtitle': SHR.title = b.dataset.t; shareUI(); if (SHR.title === '…') $('[data-f=shtext]')?.focus(); break;
     case 'donqr': donateSheet(); break;
     case 'copyacc': navigator.clipboard?.writeText(DONATE.acc).then(() => toast('Číslo účtu zkopírováno')).catch(() => toast(DONATE.acc)); break;
     case 'tour': openTour(); break;
@@ -3069,6 +3137,7 @@ document.addEventListener('input', e => {
     if (f === 'cdt') { x.r = parseDur(e.target.value); x.ok = x.r > 0; seg.classList.toggle('ok', x.ok); }
     else x[f === 'cdv' ? 'v' : 'i'] = num(e.target.value);
     touch(w); commit();
+  } else if (f === 'shtext') { SHR.custom = e.target.value; clearTimeout(SHR.tm); SHR.tm = setTimeout(shareRender, 250);
   } else if (f === 'exnote') { setNote(e.target.dataset.ex, e.target.value); }
   else if (f === 'itnote') { const card = e.target.closest('.exc'); if (!w || !card) return; w.it[+card.dataset.i].note = e.target.value; touch(w); commit(); }
   else if (f === 'wnote') { const x = S.w.find(o => o.id === e.target.dataset.id); if (x) { x.note = e.target.value; touch(x); commit(); } }
@@ -3097,6 +3166,11 @@ document.addEventListener('change', e => {
     S.setU = now(); dirty.set = true; commit(); toast('Uloženo');
   }
   else if (f === 'inc') { const v = num(e.target.value); if (v > 0) { S.set.inc[e.target.dataset.k] = v; S.setU = now(); dirty.set = true; commit(); toast('Uloženo'); } }
+});
+document.addEventListener('change', async e => {
+  if (!e.target.matches || !e.target.matches('[data-shphoto]')) return;
+  const f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f) return;
+  try { SHR.photo = await loadImage(f); SHR.mode = 'photo'; shareUI(); } catch { toast('Fotku se nepodařilo načíst.'); }
 });
 document.addEventListener('change', e => {
   if (!e.target.matches || !e.target.matches('[data-repphoto]')) return;
