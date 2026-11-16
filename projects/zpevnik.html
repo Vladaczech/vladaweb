@@ -1,0 +1,1165 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#faf9f5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1f1e1d" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Zpěvník">
+<meta name="description" content="Zpěvník – vlastní kytarový zpěvník s akordy, transpozicí, poznámkami a složkami.">
+<link rel="apple-touch-icon" href="./zpevnik-icons/zpevnik-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="./zpevnik-icons/zpevnik-192.png">
+<link rel="manifest" href="./zpevnik-icons/zpevnik.webmanifest">
+<title>Zpěvník</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#faf9f5;--card:#fff;--card2:#f0eee6;--line:#e8e6dc;--line2:#d1cfc5;
+  --ink:#141413;--ink2:#3d3d3a;--mute:#87867f;
+  --acc:#c6613f;--acc2:#d97757;--acc-ink:#fff;--acc-soft:rgba(217,119,87,.13);--bad:#b53333;
+  --serif:'Source Serif 4',Georgia,'Times New Roman',serif;--sans:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;--mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+  --ease:cubic-bezier(.2,.8,.2,1);--fs:17px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#1f1e1d;--card:#262624;--card2:#30302e;--line:#35342f;--line2:#4a4945;
+  --ink:#faf9f5;--ink2:#c2c0b6;--mute:#9c9a92;
+  --acc:#e08a6b;--acc2:#d97757;--acc-ink:#1f1e1d;--acc-soft:rgba(217,119,87,.16);--bad:#e87b7b;
+}}
+:root[data-theme="dark"]{
+  --bg:#1f1e1d;--card:#262624;--card2:#30302e;--line:#35342f;--line2:#4a4945;
+  --ink:#faf9f5;--ink2:#c2c0b6;--mute:#9c9a92;
+  --acc:#e08a6b;--acc2:#d97757;--acc-ink:#1f1e1d;--acc-soft:rgba(217,119,87,.16);--bad:#e87b7b;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg);-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.45;min-height:100dvh;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;touch-action:manipulation}
+button:disabled{opacity:.4;cursor:default}
+input,textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--card);border:1px solid var(--line2);border-radius:10px;padding:10px 12px;outline:none;width:100%;min-width:0}
+input:focus,textarea:focus{border-color:var(--acc2);box-shadow:0 0 0 3px var(--acc-soft)}
+:focus-visible{outline:2px solid var(--acc2);outline-offset:2px}
+a{color:var(--acc);text-decoration:none}
+.i{flex:none;display:block}
+[hidden]{display:none!important}
+
+.app{max-width:680px;margin:0 auto;padding:0 18px calc(env(safe-area-inset-bottom) + 110px)}
+header.top{display:flex;align-items:center;gap:2px;padding:calc(env(safe-area-inset-top) + 10px) 0 6px;margin:0 -9px;min-height:54px}
+header.top .sp{flex:1}
+.ib{width:40px;height:40px;display:grid;place-items:center;border-radius:10px;color:var(--ink2);position:relative}
+.ib:hover{background:var(--card2)}
+.ib.on{color:var(--acc)}
+.ib .dot{position:absolute;top:8px;right:7px;width:7px;height:7px;border-radius:50%;border:1.5px solid var(--bg);background:var(--mute)}
+.dot.ok{background:#5a9a6a}.dot.pend{background:#d9a441}.dot.err{background:var(--bad)}
+h1{font-family:var(--serif);font-weight:400;font-size:clamp(30px,8.5vw,40px);line-height:1.08;letter-spacing:-.015em;text-wrap:balance}
+.sub{color:var(--mute);font-size:14px;margin-top:6px}
+.sub a{color:inherit;border-bottom:1px solid var(--line2)}
+
+.search{position:relative;margin:18px 0 14px}
+.search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--mute);pointer-events:none}
+.search input{padding-left:40px;height:46px;border-radius:12px;background:var(--card)}
+.search input::-webkit-search-cancel-button{-webkit-appearance:none}
+.tabs{display:flex;gap:22px;border-bottom:1px solid var(--line);margin-bottom:4px}
+.tabs a{padding:10px 0 9px;color:var(--mute);font-weight:500;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs a.on{color:var(--ink);border-color:var(--acc2)}
+.tabs .sp{flex:1}
+.chip{align-self:center;font-size:12.5px;color:var(--mute);border:1px solid var(--line2);border-radius:99px;padding:4px 11px}
+.chip.on{color:var(--acc);border-color:var(--acc2);background:var(--acc-soft)}
+
+.row{display:flex;align-items:baseline;gap:10px;padding:13px 2px;border-bottom:1px solid var(--line);color:var(--ink);min-height:48px}
+.row .rt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .rs{color:var(--mute);font-size:13px;max-width:42%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .cnt{color:var(--mute);font-size:13px;font-variant-numeric:tabular-nums}
+.row.big .rt{font-family:var(--serif);font-size:20px}
+.row.no .rt{color:var(--mute)}
+.row.no .rt::after{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;border:1.3px solid var(--line2);margin-left:8px;vertical-align:middle}
+.row:hover .rt{color:var(--acc)}
+.letter{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);font-weight:600;padding:22px 2px 6px}
+.empty{color:var(--mute);padding:26px 2px;font-size:14.5px;line-height:1.55}
+.intro{background:var(--card2);border-radius:14px;padding:14px 16px;font-size:14px;color:var(--ink2);margin:6px 0 10px;display:flex;gap:10px;align-items:flex-start;line-height:1.5}
+.intro p{flex:1}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 16px;border-radius:11px;border:1px solid var(--line2);font-weight:500;font-size:14.5px;white-space:nowrap;color:var(--ink);background:var(--card);transition:transform .12s}
+.btn:active:not(:disabled){transform:scale(.97)}
+.btn.p{background:var(--acc2);border-color:var(--acc2);color:#fff;font-weight:600}
+.btn.sm{min-height:36px;padding:0 12px;font-size:13.5px;border-radius:9px}
+.btn.wide{width:100%}
+.btn.danger{color:var(--bad)}
+.btn.ghost{border-color:transparent;background:none;color:var(--mute)}
+.fab{position:fixed;right:max(18px,calc(50vw - 322px));bottom:calc(env(safe-area-inset-bottom) + 20px);height:52px;padding:0 20px 0 16px;border-radius:99px;background:var(--acc2);color:#fff;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 6px 20px rgba(120,60,30,.28);z-index:5}
+.fab:active{transform:scale(.96)}
+
+/* píseň */
+.song-h{margin:6px 0 18px}
+.song-h h1{font-size:clamp(28px,8vw,38px)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chips a{font-size:12.5px;color:var(--ink2);background:var(--card2);border-radius:99px;padding:3px 10px}
+.notec{display:block;width:100%;text-align:left;background:var(--acc-soft);border-left:3px solid var(--acc2);border-radius:0 10px 10px 0;padding:10px 14px;margin:0 0 18px;font-size:14.5px;color:var(--ink2);white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.5}
+.song{font-size:var(--fs);line-height:1.38;padding-bottom:20px}
+.ln{white-space:pre-wrap;overflow-wrap:anywhere;min-height:1.38em}
+.ln.cl{display:flex;flex-wrap:wrap;align-items:flex-end;padding-top:.22em}
+.wd{display:inline-flex;align-items:flex-end;max-width:100%}
+.sg{display:inline-flex;flex-direction:column;justify-content:flex-end;max-width:100%;min-width:0}
+.sg b{color:var(--acc);font-weight:650;font-size:.9em;line-height:1.2;padding-right:.42em;white-space:pre}
+.sg span{white-space:pre-wrap}
+.lb{font-style:normal;font-weight:650;color:var(--ink)}
+.gap{height:.85em}
+.bar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 14px);display:flex;gap:8px;z-index:5;max-width:calc(100vw - 20px)}
+.grp{display:flex;align-items:center;background:var(--card);border:1px solid var(--line2);border-radius:99px;box-shadow:0 6px 22px rgba(20,20,19,.12);padding:3px}
+.grp button{min-width:44px;height:42px;border-radius:99px;font-weight:600;font-size:16px;display:grid;place-items:center;color:var(--ink)}
+.grp button:active{background:var(--card2)}
+.grp .val{min-width:58px;font-size:13px;color:var(--mute);font-weight:500;line-height:1.1;font-variant-numeric:tabular-nums}
+.grp .val b{display:block;font-size:15px;color:var(--ink);font-weight:600}
+.grp .val.set b{color:var(--acc)}
+.nosong{border:1px dashed var(--line2);border-radius:16px;padding:22px 18px;margin-top:8px}
+.web{margin-top:28px;border-top:1px solid var(--line)}
+.web summary{list-style:none;cursor:pointer;color:var(--mute);font-size:13.5px;padding:14px 2px;display:flex;align-items:center;gap:8px}
+.web summary::-webkit-details-marker{display:none}
+.web[open] summary{color:var(--ink2)}
+.pv{flex:1;min-height:200px;overflow:auto;border:1px solid var(--line2);border-radius:10px;padding:12px 14px;background:var(--card);--fs:15px}
+.nosong p{color:var(--ink2);line-height:1.55}
+.nosong h2,.sheet h2{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);font-weight:600;margin:22px 0 8px}
+.nosong .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.links{display:grid;gap:0}
+.links a{display:flex;align-items:center;gap:10px;padding:12px 2px;border-bottom:1px solid var(--line);color:var(--ink)}
+.links a:last-child{border-bottom:0}
+.links a span{flex:1}
+.links a svg{color:var(--mute)}
+
+/* okna */
+.shade{position:fixed;inset:0;background:rgba(20,20,19,.42);z-index:40;display:flex;align-items:flex-end;justify-content:center;animation:fade .2s}
+.sheet{background:var(--bg);width:100%;max-width:680px;max-height:92dvh;overflow:auto;border-radius:20px 20px 0 0;padding:18px 18px calc(env(safe-area-inset-bottom) + 20px);animation:up .28s var(--ease)}
+.sheet.full{height:96dvh;max-height:96dvh;display:flex;flex-direction:column}
+.sheet-h{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.sheet-h b{flex:1;font-family:var(--serif);font-weight:400;font-size:24px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sheet form{display:grid;gap:12px}
+.sheet.full form{flex:1;min-height:0;display:flex;flex-direction:column}
+.sheet label.f{display:grid;gap:5px;font-size:12px;color:var(--mute);font-weight:500;min-width:0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sheet textarea{min-height:120px;line-height:1.5;resize:none}
+.sheet textarea.code{font-family:var(--mono);font-size:16px;white-space:pre;overflow:auto;min-height:200px;flex:1;line-height:1.4;tab-size:4}
+@media (hover:hover){.sheet textarea.code{font-size:14px}}
+.hint{font-size:12.5px;color:var(--mute);line-height:1.5}
+.ferr{color:var(--bad);font-size:13.5px;min-height:0}.ferr:empty{display:none}
+.sheet-b{display:flex;gap:8px;margin-top:4px}.sheet-b .p{flex:1}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.check{display:flex;align-items:center;gap:12px;padding:13px 2px;border-bottom:1px solid var(--line);font-size:15px;cursor:pointer}
+.check input{width:20px;height:20px;accent-color:var(--acc2);flex:none}
+.inl{display:flex;gap:8px;margin-top:14px}.inl input{flex:1}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);background:var(--card2);border-radius:11px;padding:3px}
+.seg button{height:38px;border-radius:9px;font-size:14px;color:var(--mute);font-weight:500}
+.seg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(20,20,19,.12)}
+.kv{font-size:14px;color:var(--ink2);line-height:1.55;margin-bottom:10px}
+.prog{font-size:13px;color:var(--acc);display:flex;align-items:center;gap:10px}
+.prog i{flex:1;height:4px;border-radius:9px;background:var(--line);overflow:hidden;display:block}
+.prog i::after{content:"";display:block;height:100%;width:calc(var(--p,0)*100%);background:var(--acc2);transition:width .3s}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 84px);transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:99px;font-size:13.5px;z-index:60;animation:fade .25s;max-width:calc(100vw - 32px);text-align:center}
+@keyframes up{from{transform:translateY(24px);opacity:0}}
+@keyframes fade{from{opacity:0}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media print{header.top,.bar,.fab,.notec,.web{display:none!important}.app{max-width:none;padding:0}body{background:#fff}}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<div id="modal"></div>
+<datalist id="dl-art"></datalist>
+<script>
+'use strict';
+/* ═══ Zpěvník – vlastní kytarový zpěvník ═════════════════════════════════
+   Data: místně v localStorage (klíč zpevnik:v1), volitelně synchronizace přes Firebase
+   účet z Posilovny → users/{uid}/zpevnik/{koš}, pole r = { id: záznam }.
+   Koše: „cfg“ (složky f:…) a „s0“–„sf“ (písně, rozdělené podle otisku id, aby se dokument
+   vešel do limitu Firestore). Každý záznam má u = čas změny; při slučování vyhrává novější,
+   smazání je záznam { x:1 }.
+   Katalog (CAT) obsahuje jen názvy písní a autory – texty a akordy si uživatel doplňuje sám
+   (vložením textu nebo z fotky), do repa se neukládají.
+   ═════════════════════════════════════════════════════════════════════ */
+const FIREBASE_CONFIG = {
+  apiKey: 'AIzaSyAsd042qIzIAXKIXHO3VY6JXIuvdyKLRtU', authDomain: 'posilovna-59716.firebaseapp.com', projectId: 'posilovna-59716',
+  storageBucket: 'posilovna-59716.firebasestorage.app', messagingSenderId: '1097378144969', appId: '1:1097378144969:web:5d38f8e38157910f18a318',
+};
+const K = 'zpevnik:v1', KS = 'zpevnik:sync', KU = 'zpevnik:uid', KT = 'zpevnik:theme', KUI = 'zpevnik:ui';
+const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const LS = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); return true; } catch { return false; } }, del(k) { try { localStorage.removeItem(k); } catch {} } };
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const clone = o => JSON.parse(JSON.stringify(o));
+const norm = s => String(s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const slug = s => norm(s).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const cmp = (a, b) => a.localeCompare(b, 'cs', { sensitivity: 'base', numeric: true });
+const pisni = n => n === 1 ? 'píseň' : n >= 2 && n <= 4 ? 'písně' : 'písní';
+
+const ICON = {
+  back: '<path d="m15 5-7 7 7 7"/>', r: '<path d="m9 5 7 7-7 7"/>', x: '<path d="M6 6l12 12M18 6 6 18"/>', plus: '<path d="M12 5v14M5 12h14"/>',
+  set: '<path d="M4 7h9M19 7h1M4 17h1M11 17h9"/><circle cx="16" cy="7" r="2.5"/><circle cx="8" cy="17" r="2.5"/>',
+  folder: '<path d="M3 7.5a2 2 0 0 1 2-2h4l2 2.5h8a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+  note: '<path d="M5 4h14v11l-5 5H5z"/><path d="M14 20v-5h5M8.5 9h7M8.5 12.5h4"/>',
+  edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>',
+  more: '<circle cx="5" cy="12" r="1.1"/><circle cx="12" cy="12" r="1.1"/><circle cx="19" cy="12" r="1.1"/>',
+  search: '<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/>',
+  ext: '<path d="M14 5h5v5M19 5l-8 8M11 6H6a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-5"/>',
+  cam: '<path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
+  clip: '<path d="M9 4h6v3H9z"/><path d="M9 5.5H6V20h12V5.5h-3"/>',
+};
+const ic = (n, s = 20, w = 1.7) => `<svg class="i" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[n]}</svg>`;
+
+/* ═══ KATALOG – jen názvy a autoři, bez textů ═══ */
+const CAT = [
+  ['Žalman & spol.', ['Divokej horskej tymián', 'Ho ho Watanay', 'Jdem zpátky do lesů', 'Rána v trávě', 'Jantarová země', 'Nezacházej slunce', 'Kdyby tady byla taková panenka', 'Kytky stále ještě voní', 'Píseň malých pěšáků', 'Tři přání']],
+  ['COP', ['Bílým koním', 'Pár minut', 'Harley', 'Myslím na Colorado', 'Tajný přání', 'Tvá máma ví', 'Tennessee Waltz']],
+  ['Nezmaři', ['Bodláky ve vlasech', 'Písek', 'Ráno bylo stejný', 'Růže', 'Hallelujah', 'Kdosi pro mě říkal', 'Zpověď', 'Přítel', 'Čtvero ročních období', 'Pramen lásky']],
+  ['Nedvědi', ['Stánky', 'Podvod', 'Růže z papíru', 'Kočovní herci', 'Na kameni kámen', 'Skládanka', 'Sedmikráska', 'Tulácký ráno', 'Frankie Dlouhán', 'Valčíček', 'Igelit', 'Zahrádky']],
+  ['Hop Trop', ['Tři kříže', 'Amazonka', 'Betty', 'Jonatán', 'Švorcák', 'Louisiana', 'Kláda', 'Škrábej', 'Vodácká holka', 'Podběl', 'Dlouho nejel žádnej vlak']],
+  ['David Stypka', ['Dobré ráno, milá', 'Farmářům', 'Jericho', 'Kříž', 'Neboj', 'Nebreč', 'Dýchej', 'Hrdinové', 'Vrány taky', 'Láska není']],
+  ['Waldemar Matuška', ['Slavíci z Madridu', 'Sbohem, lásko', 'Růže z Texasu', 'Jó, třešně zrály', 'Tisíc mil', 'Eldorádo', 'Sedm dostavníků', 'Mám malý stan', 'Ó Zuzano', 'Když máš v chalupě orchestrion']],
+  ['Michal Tučný', ['Báječná ženská', 'Všichni jsou už v Mexiku', 'Pověste ho vejš', 'Poslední kovboj', 'Blízko Little Big Hornu', 'Prodavač', 'Snídaně v trávě', 'Abych tu žil', 'Tam u nebeských bran', 'Cesty toulavý']],
+  ['Wabi Daněk', ['Rosa na kolejích', 'Hudsonský šífy', 'Nevadí', 'Ročník 47', 'Píseň, co mě učil listopad', 'Fotky', 'Outsider waltz', 'Vítr', 'Tak už mi má holka mává', 'Franta má péra']],
+  ['Hoboes', ['Bedna vod whisky', 'Tereza', 'Zemský ráj to napohled', 'Jarní kurýr', 'Tunel jménem čas', 'Mrtvej vlak', 'Hejno vran', 'Všech vandráků múza', 'Island']],
+  ['Jaromír Nohavica', ['Kometa', 'Když mě brali za vojáka', 'Sarajevo', 'Zatímco se koupeš', 'Darmoděj', 'Petěrburg', 'Mikymauz', 'Těšínská', 'Hlídač krav', 'Ladovská zima']],
+  ['Karel Kryl', ['Bratříčku, zavírej vrátka', 'Anděl', 'Morituri te salutant', 'Salome', 'Karavana mraků', 'Děkuji', 'Lásko', 'Pasážová revolta', 'Veličenstvo Kat', 'Nevidomá dívka']],
+  ['Spirituál kvintet', ['Batalion', 'Jednou budem dál', 'Zelené pláně', 'Širý proud', 'Dvě báby', 'Starý příběh', 'Za svou pravdou stát', 'Kocábka']],
+  ['Greenhorns', ['Oranžový expres', 'Blues Folsomské věznice', 'Rovnou, tady rovnou', 'Zatracenej život', 'El Paso', 'Když náš táta hrál']],
+  ['Trampské klasiky', ['Okoř', 'Červená řeka', 'Niagara', 'Vlajka', 'Buráky', 'Montgomery', 'Ascalona']],
+  ['Pacifik', ['Velrybářská výprava']], ['Kamelot', ['Zachraňte koně', 'Honky tonky blues']], ['Fleret', ['Zafúkané']],
+  ['Druhá tráva', ['Ještě jedno kafe', 'Odpočiň si, Sáro']], ['Poutníci', ['Panenka', 'Pojďme se napít']],
+  ['Karel Plíhal', ['Námořnická', 'Nagasaki, Hirošima']], ['Vlasta Redl', ['Sbohem, galánečko', 'Husličky']], ['AG Flek', ['Carpe diem']],
+  ['Čechomor', ['Mezi horami', 'Proměny']], ['Olympic', ['Dej mi víc své lásky', 'Jasná zpráva', 'Želva']], ['Ivan Mládek', ['Jožin z bažin']],
+  ['Pavel Dobeš', ['Jarmila', 'Něco o lásce']], ['Rangers', ['Pole s bavlnou', 'Zvedněte kotvy']], ['Katapult', ['Až']],
+  ['Kabát', ['Colorado', 'Pohoda']], ['Traband', ['Sára']], ['Buty', ['František']], ['Jelen', ['Magdaléna']],
+];
+/* ═══ HOTOVÉ PÍSNĚ – jen volná díla (lidové písně a koledy), akordy v základní harmonizaci ═══ */
+const LIB = [
+  ['Lidové písně', [
+    ['Ach synku, synku', `1. [D]Ach synku, synku, [A7]doma-li [D]jsi?
+[D]Ach synku, synku, [A7]doma-li [D]jsi?
+[G]Tatíček se [D]ptá, [A7]oral-li [D]jsi?
+[G]Tatíček se [D]ptá, [A7]oral-li [D]jsi?
+
+2. Oral jsem, oral, ale málo,
+oral jsem, oral, ale málo,
+kolečko se mi polámalo,
+kolečko se mi polámalo.
+
+3. Když se ti zlámalo, dej ho spravit,
+když se ti zlámalo, dej ho spravit,
+nauč se, synečku, hospodařit,
+nauč se, synečku, hospodařit.`],
+    ['Skákal pes', `1. [C]Skákal pes [G7]přes o[C]ves,
+přes ze[G7]lenou lou[C]ku.
+[C]Šel za ním [G7]mysli[C]vec,
+péro [G7]na klobou[C]ku.
+
+2. Pejsku náš, co děláš,
+žes tak vesel stále?
+Řek bych vám, nevím sám,
+hop a skákal dále.`],
+    ['Kočka leze dírou', `1. [D]Kočka leze dírou, [G]pes ok[D]nem, [G]pes ok[D]nem,
+[G]nebude-li [D]pršet, [A7]nezmoknem, nezmok[D]nem.
+
+2. A když bude pršet, zmokneme, zmokneme,
+na sluníčku zase uschneme, uschneme.`],
+    ['Pec nám spadla', `1. [C]Pec nám spadla, pec nám spadla,
+[G7]kdopak nám ji posta[C]ví?
+[C]Starý pecař není doma
+[G7]a mladý to neu[C]mí.
+
+2. Zavoláme na dědečka,
+ten má velké kladivo,
+dá do pece čtyři rány,
+už je zase hotovo.`],
+    ['Holka modrooká', `1. [D]Holka modrooká, nesedávej u potoka,
+[A7]holka modrooká, nesedávej [D]tam.
+[D]V potoce se voda točí, [A7]podemele tvoje oči.
+[D]Holka modrooká, [A7]nesedávej [D]tam.
+
+2. Holka modrooká, nesedávej u potoka,
+holka modrooká, nesedávej tam.
+V potoce je hastrmánek, zatahá tě za copánek.
+Holka modrooká, nesedávej tam.
+
+3. Holka modrooká, nesedávej u potoka,
+holka modrooká, nesedávej tam.
+V potoce je velká voda, vezme-li tě, bude škoda.
+Holka modrooká, nesedávej tam.`],
+    ['Já do lesa nepojedu', `1. [G]Já do lesa nepojedu, [D7]já do lesa nepů[G]jdu,
+[G]kdyby na mě hajný přišel, [D7]on by mně vzal seke[G]ru.
+
+2. Sekera je za dva zlatý a topůrko za tolar,
+kdyby na mě hajný přišel, on by mně to všechno vzal.`],
+    ['Černé oči, jděte spát', `1. [G]Černé oči, jděte [D7]spát, černé oči, jděte [G]spát,
+však mu[C]síte [G]ráno [D7]vstát, [G]však mu[C]síte [D7]ráno [G]vstát.
+
+2. Ráno, ráno, raníčko, ráno, ráno, raníčko,
+dřív než vyjde sluníčko, dřív než vyjde sluníčko.
+
+3. Sluníčko už vychází, sluníčko už vychází,
+má milá se prochází, má milá se prochází.
+
+4. Prochází se po rynku, prochází se po rynku,
+nese pivo v žejdlíku, nese pivo v žejdlíku.`],
+    ['Když jsem já sloužil', `1. [G]Když jsem já sloužil to první léto,
+[D7]vysloužil jsem si [G]kuřátko za to.
+[G]A to kuře krákoře, [D7]běhá po dvo[G]ře,
+[G]má panenka pláče [D7]doma v komo[G]ře.
+
+2. Když jsem já sloužil to druhé léto,
+vysloužil jsem si kachničku za to.
+A ta kachna bláto tlachá, a to kuře krákoře,
+běhá po dvoře, má panenka pláče doma v komoře.
+
+3. Když jsem já sloužil to třetí léto,
+vysloužil jsem si husičku za to.
+A ta husa chodí bosa, a ta kachna bláto tlachá…
+
+4. Když jsem já sloužil to čtvrté léto,
+vysloužil jsem si vepříka za to.
+A ten vepř jako pepř, a ta husa chodí bosa…
+
+5. Když jsem já sloužil to páté léto,
+vysloužil jsem si telátko za to.
+A to tele hubou mele, a ten vepř jako pepř…
+
+6. Když jsem já sloužil to šesté léto,
+vysloužil jsem si kravičku za to.
+A ta kráva mléko dává, a to tele hubou mele…
+
+7. Když jsem já sloužil to sedmé léto,
+vysloužil jsem si volečka za to.
+A ten vůl jako kůl, a ta kráva mléko dává…`],
+    ['Tancuj, tancuj, vykrúcaj', `1. [G]Tancuj, tancuj, [D7]vykrúcaj, vykrú[G]caj,
+[G]len mi piecku [D7]nezrúcaj, nezrú[G]caj.
+[G]Dobrá piecka [C]na zimu, na zi[G]mu,
+[G]nemá každý [D7]perinu, peri[G]nu.
+
+R: [G]Tralala, [D7]tralala, tralala[G]la,
+[G]tralala, [D7]tralala, tralala[G]la.`],
+    ['Šla Nanynka do zelí', `1. [C]Šla Nanynka do zelí, [G7]do zelí, [C]do zelí,
+[C]natrhala lupení, [G7]lupeníč[C]ka.
+
+2. Přišel za ní Pepíček, Pepíček, Pepíček,
+rozšlapal jí košíček, košíček.
+
+R: [C]Ty, ty, ty, [G7]ty, ty, ty, [C]ty to budeš [G7]plati[C]ti.`],
+    ['Pásla ovečky', `[G]Pásla ovečky [D7]v zeleném há[G]ječku,
+[G]pásla ovečky [D7]v černém le[G]se.
+
+R: [G]Já na ni dupy, dupy, dup, [D7]ona zas cupy, cupy, [G]cup.
+[G]Houfem, ovečky, [D7]seberte se [G]všecky,
+[G]houfem, ovečky, [D7]seberte [G]se.`],
+    ['Travička zelená', `[D]Travička zelená, [A7]to je moje potě[D]šení,
+[D]travička zelená, [A7]to je moje peři[D]na.
+[D]Když si smyslím, [G]na ni lehnu,
+[A7]když si smyslím, [D]na ni sednu,
+[D]travička zelená, [A7]to je moje peři[D]na.`],
+    ['Prší, prší', `1. [C]Prší, prší, [G7]jen se le[C]je,
+[C]kam, koníčci, [G7]pojede[C]me?
+[C]Pojedeme [F]na lu[C]ka,
+[C]až kukačka [G7]zaku[C]ká.
+
+2. Kukačka už zakukala,
+má panenka zaplakala.
+Kukačko, už nekukej,
+má panenko, neplakej.`],
+    ['Já mám koně', `1. [D]Já mám koně, [A7]vraný koně, [D]to jsou [A7]koně [D]mí.
+[D]Když já jim dám ovsa, [A7]oni skáčou hop[D]sa.
+[D]Já mám koně, [A7]vraný koně, [D]to jsou [A7]koně [D]mí.
+
+2. Já mám koně, vraný koně, to jsou koně mí.
+Když já jim dám obroku, oni skáčou do skoku.
+Já mám koně, vraný koně, to jsou koně mí.
+
+3. Já mám koně, vraný koně, to jsou koně mí.
+Když já jim dám jetele, oni skáčou vesele.
+Já mám koně, vraný koně, to jsou koně mí.`],
+    ['Na tý louce zelený', `1. [G]Na tý louce zelený [D7]pasou se tam jele[G]ni,
+[G]pase je tam mysli[C]veček [D7]v kamizolce zele[G]ný.
+
+2. Počkej na mě, má milá, zastřelím ti jelena,
+aby se ti zalíbila kamizolka zelená.
+
+3. Počkej na mě, mé srdce, zastřelím ti zajíce,
+aby se ti zalíbila myslivecká čepice.`],
+    ['Jede, jede poštovský panáček', `[C]Jede, jede poštovský pa[G7]náček,
+jede, jede poštovský [C]pán.
+[C]Má vraný ko[F]níčky [C]jako dvě ry[G7]bičky,
+[C]jede, jede [G7]do Roky[C]can.`],
+    ['Horo, horo, vysoká jsi', `1. [D]Horo, horo, [A7]vysoká [D]jsi,
+[D]má panenko, [A7]vzdálená [D]jsi,
+[G]vzdálená jsi [D]za horama,
+[A7]vadne láska mezi [D]náma.
+
+2. Vadne, vadne, až uvadne,
+není v světě pro mě žádné,
+není žádné potěšení
+pro mě více k nalezení.`],
+    ['Ach, není tu, není', `1. [G]Ach, není tu, [D7]není, [G]co by mě tě[D7]šilo,
+[G]ach, není tu, [C]není, [D7]co mě tě[G]ší.
+
+2. Co mě těšívalo, vodou uplynulo,
+ach, není tu, není, co mě těší.`],
+    ['Červený šátečku', `[G]Červený šátečku, kolem se toč,
+[D7]kolem se toč, [G]kolem se toč.
+[G]Má milá se hněvá, já nevím proč,
+[D7]já nevím proč, [G]já nevím proč.
+
+R: [G]Tralala, červená fiala,
+[D7]tralala, fialo mod[G]rá.`],
+    ['Čížečku, čížečku', `1. [C]Čížečku, čížečku, [G7]ptáčku malič[C]ký,
+[C]pověz mi, čížečku, [G7]jak sejou [C]mák?
+
+R: [C]Aj, tak, tak sejou mák,
+[G7]aj, tak, tak sejou [C]mák.
+
+2. … jak roste mák?
+3. … jak kvete mák?
+4. … jak trhají mák?
+5. … jak jedí mák?`],
+    ['Teče voda, teče', `1. [Ami]Teče voda, [E7]teče [Ami]přes veli[E7]cký ma[Ami]jír.
+[C]Nechal si ma, [G7]nechal, [Ami]starodáv[E7]ny fra[Ami]jír.
+
+2. Nechal si ma, nechal, dobre ty vieš komu,
+čo ty reči nosí do našeho domu.
+
+3. Do našeho domu, pod naše okénka,
+čo som sa naplakala, sivá holubienka.`],
+    ['Ej, lásko, lásko', `1. [Ami]Ej, lásko, lásko, [Dmi]ty nejsi [Ami]stálá,
+[Ami]jako voděnka [E7]mezi břeha[Ami]ma.
+
+2. Voda uplyne, láska pomine,
+jako lísteček na rozmarýně.`],
+    ['Lásko, Bože, lásko', `1. [G]Lásko, Bože, [C]lás[G]ko, [D7]kde tě lidé [G]berou?
+[G]Na hoře ne[C]ros[G]teš, [D7]v poli tě ne[G]sejou.
+
+2. Kdyby se ty, lásko, na hoře rodila,
+nejedna panenka byla by zbloudila.`],
+    ['Sil jsem proso', `[G]Sil jsem proso na souvrati, [D7]nebudu ho [G]žíti.
+[G]Miloval jsem jedno děvče, [D7]nebudu ho [G]míti.
+
+R: [C]Sít a ne[G]žít, [D7]milovat a ne[G]mít!
+[G]Sil jsem proso na souvrati, [D7]nebudu ho [G]žít.`],
+    ['Šly panenky silnicí', `1. [C]Šly panenky silnicí, [G7]silnicí, silni[C]cí,
+[C]potkali je myslivci, [G7]myslivci [C]dva.
+
+2. Kam, panenky, kam jdete, kam jdete, kam jdete,
+která moje budete, budete má?
+
+3. Ta maličká, ta je má, ta je má, ta je má,
+ta má oči jako já, jako já mám.`],
+    ['Kdyby byl Bavorov', `[G]Kdyby byl Bavorov, [D7]co jsou Vodňa[G]ny,
+[G]dal bych ti hubiček [D7]na obě stra[G]ny.
+[G]Ale že je [C]za vodou, za vodou, [D7]za vodou,
+[G]nedám ti, má [D7]milá, ani jed[G]nou.`],
+    ['Dobrú noc, má milá', `[G]Dobrú noc, má [D7]milá, dobrú [G]noc,
+[G]nech ti je sám [D7]Pán Boh na po[G]moc.
+
+R: [C]Dobrú [G]noc, [D7]dobre [G]spi,
+[C]nech sa [G]ti sní[D7]vajú o mne [G]sny.`],
+  ]],
+  ['Koledy', [
+    ['Nesem vám noviny', `1. [G]Nesem vám noviny, [D7]poslouchej[G]te,
+[G]z betlémské krajiny, [D7]pozor dej[G]te.
+[G]Slyšte je [D7]pilně a [G]neomyl[D7]ně,
+[G]slyšte je [D7]pilně a [G]neomyl[D7]ně,
+[G]rozjí[D7]mej[G]te.
+
+2. Synáčka zrodila čistá Panna,
+v jesličky vložila Krista Pána.
+Jej ovinula a zavinula,
+jej ovinula a zavinula
+plenčičkama.
+
+3. K němužto andělé z nebe přišli,
+i také pastýři jsou se sešli.
+Jeho vítali, jeho chválili,
+jeho vítali, jeho chválili,
+dary nesli.`],
+    ['Narodil se Kristus Pán', `1. [D]Narodil se [G]Kristus [D]Pán, [A7]vesel[D]me se,
+[D]z růže kvítek [G]vykvet [D]nám, [A7]raduj[D]me se.
+
+R: [D]Z života [A7]čistého, [D]z rodu krá[A7]lovského,
+[D]nám, [G]nám [D]naro[A7]dil [D]se.
+
+2. Jenž prorokován jest, veselme se,
+ten na svět poslán jest, radujme se.`],
+    ['Půjdem spolu do Betléma', `1. [C]Půjdem spolu do Betléma,
+[G7]dujdaj, dujdaj, dujdaj [C]dá!
+
+R: [C]Ježíšku, [F]panáčku, [G7]já tě budu kolé[C]bati,
+[C]Ježíšku, [F]panáčku, [G7]já tě budu kolí[C]bat.
+
+2. Začni, Kubo, na ty dudy,
+dujdaj, dujdaj, dujdaj dá!
+
+3. A ty, Janku, na píšťalku,
+dudli, tudli, dudli dá!
+
+4. A ty, Mikši, na housličky,
+hudli, tydli, hudli dá!
+
+5. A ty, Vávro, na tu basu,
+rumrum, rumrum, rumrum dá!`],
+    ['Pásli ovce valaši', `1. [D]Pásli ovce [A7]vala[D]ši [D]při betlémské [A7]sala[D]ši.
+
+R: [D]Hajdom, hajdom, tydlidom,
+[A7]hajdom, hajdom, tydli[D]dom.
+
+2. Anděl se jim ukázal, do Betléma jít kázal.
+
+3. Jděte, jděte, pospěšte, Ježíška tam najdete.
+
+4. On tam leží v jesličkách, zavinutý v plenčičkách.`],
+    ['Štědrej večer nastal', `1. [G]Štědrej večer [D7]na[G]stal, [G]štědrej večer [D7]na[G]stal,
+[G]koledy při[C]chys[G]tal, [G]koledy [D7]přichys[G]tal.
+
+2. Paní mámo, vstaňte, paní mámo, vstaňte,
+koledy nám dejte, koledy nám dejte.
+
+3. Panímáma vstala, panímáma vstala,
+koledy nám dala, koledy nám dala.`],
+    ['Dej Bůh štěstí', `[D]Dej Bůh štěstí [A7]tomu do[D]mu,
+[D]my zpíváme, [A7]víme ko[D]mu.
+[D]Malému [G]děťátku, [D]Kristu Jezu[A7]látku,
+[D]dnes v Betlémě [A7]narozené[D]mu.`],
+    ['Jak jsi krásné, neviňátko', `1. [G]Jak jsi krásné, [C]nevi[G]ňátko,
+[G]vprostřed bídy, [D7]ubo[G]hé.
+[G]Před tebou [D7]padáme, [G]dary své [D7]sklá[G]dáme.
+
+2. Já ti nesu dvě kožičky,
+by zahřály tvé údičky.
+Já zas trochu mlíčka, by zčervenala líčka.`],
+    ['Veselé vánoční hody', `[G]Veselé vánoční hody, [D7]zpívejte, dítky, kole[G]dy,
+[G]o tom, co se [C]vskutku stalo,
+[G]že se lidem [D7]narodilo dě[G]ťátko.`],
+    ['Já bych rád k Betlému', `[G]Já bych rád k Betlému, [D7]k Ježíšku malé[G]mu.
+[G]Mám doma [C]křepelku [G]a pěknou [D7]žežulku,
+[G]ty mu [D7]odve[G]du.`],
+  ]],
+];
+const BIG = 4;                       // autor s aspoň tolika písněmi má vlastní sekci, ostatní jsou v „Další autoři“
+const NOART = new Set(['trampske klasiky', 'lidove pisne', 'koledy', 'neznamy autor']);
+
+/* ═══ ÚLOŽIŠTĚ ═══ */
+let DB = (() => { try { const d = JSON.parse(LS.get(K) || 'null'); if (d && d.b) return { b: d.b, dirty: d.dirty || {} }; } catch {} return { b: {}, dirty: {} }; })();
+let UI = (() => { try { return Object.assign({ fs: 17, only: 1, intro: 1 }, JSON.parse(LS.get(KUI) || '{}')); } catch { return { fs: 17, only: 1, intro: 1 }; } })();
+let Q = '', SYNC = { st: 'local', msg: '' }, _songs = null, toastT = 0;
+const saveUI = () => LS.set(KUI, JSON.stringify(UI));
+function save() { if (!LS.set(K, JSON.stringify(DB))) toast('Úložiště prohlížeče je plné – změna se neuložila.'); }
+function put(b, id, rec) { rec.u = Date.now(); (DB.b[b] ??= {})[id] = rec; (DB.dirty[b] ??= {})[id] = 1; _songs = null; save(); schedulePush(); }
+const sb = id => { let h = 0; for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0; return 's' + (h % 16).toString(16); };
+const isSB = b => /^s[0-9a-f]$/.test(b);
+const catId = (a, t) => 'k:' + slug(a) + '--' + slug(t);
+/* vestavěné písně: katalog (jen názvy) + knihovna volných děl (s textem); uživatelův záznam je překrývá */
+const BASE = new Map();
+for (const [a, ts] of CAT) for (const t of ts) BASE.set(catId(a, t), { t, a, txt: '' });
+for (const [a, l] of LIB) for (const [t, x] of l) BASE.set(catId(a, t), { t, a, txt: x });
+
+function songs() {
+  if (_songs) return _songs;
+  const m = new Map();
+  for (const [id, b] of BASE) m.set(id, { id, ...b, n: '', tr: 0, f: [], cat: 1 });
+  for (const b in DB.b) if (isSB(b)) for (const id in DB.b[b]) {
+    const r = DB.b[b][id]; if (!r || r.x) { m.delete(id); continue; }
+    const base = m.get(id) || { id };
+    m.set(id, { ...base, t: r.t || base.t || 'Bez názvu', a: r.a || base.a || 'Neznámý autor', txt: r.txt || base.txt || '', n: r.n || '', tr: r.tr || 0, f: Array.isArray(r.f) ? r.f : [] });
+  }
+  return _songs = [...m.values()].sort((x, y) => cmp(x.t, y.t) || cmp(x.a, y.a));
+}
+const song = id => songs().find(s => s.id === id);
+function upd(id, patch) { const r = DB.b[sb(id)]?.[id], rec = r && !r.x ? { ...r } : {}; Object.assign(rec, patch); for (const k in rec) if (rec[k] === '' || rec[k] == null || rec[k] === 0 && k === 'tr') delete rec[k]; put(sb(id), id, rec); }
+function artists() {
+  const m = new Map();
+  for (const s of songs()) { const k = norm(s.a); if (!m.has(k)) m.set(k, { k, n: s.a, l: [] }); m.get(k).l.push(s); }
+  return [...m.values()].sort((a, b) => cmp(a.n, b.n));
+}
+const folders = () => Object.entries(DB.b.cfg || {}).filter(([id, r]) => id.startsWith('f:') && r && !r.x).map(([id, r]) => ({ id: id.slice(2), n: r.n || 'Složka' })).sort((a, b) => cmp(a.n, b.n));
+const inFolder = id => songs().filter(s => s.f.includes(id));
+const hidden = () => [...BASE.keys()].filter(id => DB.b[sb(id)]?.[id]?.x);
+
+/* ═══ AKORDY ═══ */
+const NOTE = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 10, H: 11 };
+const OUT = ['C', 'C#', 'D', 'Es', 'E', 'F', 'F#', 'G', 'G#', 'A', 'B', 'H'];   // české značení: B = hes, H = h
+const CH_RE = /^([A-H])(#|b|is|es|s(?!us))?(.*?)(?:\/([A-H])(#|b|is|es|s)?)?$/;
+const SUF_RE = /^(?:maj|mi|min|m|dim|aug|sus|add|[0-9]|\+|-|#|b|°)*$/i;
+const NEUTRAL = /^(?:\d{1,2}[.:)]|R\d*[.:]|Ref\.?:?|Rec\.?:?|\*:?|\/?:\/?|\|+:?|:?\|+|[x×]\d|\d[x×]|\(\d[x×]\)|-+|–)$/i;
+const pc = (l, acc) => !acc ? NOTE[l] : acc === '#' || acc === 'is' ? (NOTE[l] + 1) % 12 : l === 'B' ? 10 : (NOTE[l] + 11) % 12;
+function chordParts(tok) {
+  const w = /^([([|]*)(.*?)([)\]|,.;]*)$/.exec(tok); if (!w || !w[2]) return null;
+  const m = CH_RE.exec(w[2]); if (!m || !SUF_RE.test(m[3])) return null;
+  return { pre: w[1], post: w[3], root: pc(m[1], m[2]), suf: m[3], bass: m[4] ? pc(m[4], m[5]) : null };
+}
+const isChord = tok => !!chordParts(tok);
+function trChord(tok, n) {
+  if (!n) return tok; const p = chordParts(tok); if (!p) return tok;
+  const sh = x => OUT[((x + n) % 12 + 12) % 12];
+  return p.pre + sh(p.root) + p.suf + (p.bass == null ? '' : '/' + sh(p.bass)) + p.post;
+}
+function isChordLine(ln) {
+  const t = ln.trim().split(/\s+/).filter(Boolean); let c = 0;
+  for (const x of t) { if (isChord(x)) c++; else if (!NEUTRAL.test(x)) return false; }
+  return c > 0;
+}
+const BR = /\[([^\]\s]{1,14})\]/g;
+const hasBr = ln => { BR.lastIndex = 0; let m; while ((m = BR.exec(ln))) if (isChord(m[1])) return true; return false; };
+const LBL = /^(\s*)(R\d*[.:]|Ref\.?:|Rec\.?:|\*:|\d{1,2}[.:])(?=\s|$)/i;
+/* text písně → řádky; řádek = null (mezera) nebo pole úseků { c: akord, t: text } */
+function parseSong(txt) {
+  const L = String(txt || '').replace(/\r/g, '').replace(/\t/g, '    ').split('\n'), out = [];
+  for (let i = 0; i < L.length; i++) {
+    const ln = L[i].replace(/\s+$/, '');
+    if (!ln.trim()) { if (out.length && out[out.length - 1]) out.push(null); continue; }
+    if (hasBr(ln)) {
+      const segs = []; let last = 0, cur = '', m; BR.lastIndex = 0;
+      while ((m = BR.exec(ln))) { if (!isChord(m[1])) continue; const t = ln.slice(last, m.index); if (t || cur) segs.push({ c: cur, t }); cur = m[1]; last = m.index + m[0].length; }
+      segs.push({ c: cur, t: ln.slice(last) }); out.push(segs); continue;
+    }
+    if (isChordLine(ln)) {
+      let ch = [...ln.matchAll(/\S+/g)].map(m => ({ c: m[0], i: m.index })); const nx = L[i + 1], lb = LBL.exec(ln), le = lb ? lb[0].length : 0;
+      if (nx != null && nx.trim() && !isChordLine(nx) && !hasBr(nx)) {
+        let ly = nx.replace(/\s+$/, ''); const segs = [];
+        // označení sloky („1.“, „R:“) na řádku akordů patří do textu, ne mezi akordy
+        if (lb && !ly.slice(0, le).trim()) { ly = lb[0] + ly.slice(le); ch = ch.filter(c => c.i >= le); }
+        if (ch[0].i > 0 && ly.slice(0, ch[0].i)) segs.push({ c: '', t: ly.slice(0, ch[0].i) });
+        ch.forEach((c, k) => segs.push({ c: c.c, t: ly.slice(c.i, k + 1 < ch.length ? ch[k + 1].i : undefined) }));
+        out.push(segs); i++;
+      } else out.push([...(lb ? [{ c: '', t: lb[0] + ' ' }] : []), ...ch.filter(c => c.i >= le).map(c => ({ c: c.c, t: '' }))]);
+      continue;
+    }
+    out.push([{ c: '', t: ln }]);
+  }
+  while (out.length && !out[out.length - 1]) out.pop();
+  return out;
+}
+const txtHtml = (t, first) => { const m = first && LBL.exec(t); return m ? esc(m[1]) + `<i class="lb">${esc(m[2])}</i>` + esc(t.slice(m[0].length)) : esc(t); };
+function songHtml(txt, n) {
+  return parseSong(txt).map(segs => {
+    if (!segs) return '<div class="gap"></div>';
+    if (segs.every(s => !s.c)) return `<div class="ln">${txtHtml(segs.map(s => s.t).join(''), true)}</div>`;
+    // úseky → slova, aby se řádek lámal v mezerách a akord zůstal nad svou slabikou
+    const at = [];
+    segs.forEach(s => { const p = s.t.match(/\s*\S+\s*|\s+/g) || ['']; p.forEach((t, i) => at.push({ c: i ? '' : s.c, t, j: i > 0 })); });
+    let h = '', open = false; const bare = segs.every(s => !s.t.trim());   // řádek jen s akordy nepotřebuje prázdný řádek textu pod sebou
+    at.forEach((a, i) => {
+      const nx = at[i + 1], glue = nx && !nx.j && a.t && nx.t && !/\s$/.test(a.t) && !/^\s/.test(nx.t);
+      const sg = `<span class="sg">${a.c ? `<b>${esc(trChord(a.c, n))}</b>` : ''}<span>${a.t ? txtHtml(a.t, i === 0) : bare ? '' : '&#8203;'}</span></span>`;
+      if (glue && !open) { h += '<span class="wd">'; open = true; }
+      h += sg;
+      if (!glue && open) { h += '</span>'; open = false; }
+    });
+    return `<div class="ln cl">${h}</div>`;
+  }).join('');
+}
+const cleanTxt = t => String(t || '').replace(/\r/g, '').replace(/\t/g, '    ').replace(/[ \u00a0]+$/gm, '').replace(/\n{3,}/g, '\n\n').replace(/^\n+|\n+$/g, '');
+
+/* ═══ SMĚROVÁNÍ ═══ */
+const route = () => { let h = location.hash.slice(1); try { h = decodeURIComponent(h); } catch {} const i = h.indexOf('/'); return i < 0 ? { v: h || 'home' } : { v: h.slice(0, i), id: h.slice(i + 1) }; };
+const href = (v, id) => '#' + v + '/' + encodeURIComponent(id);
+const artHref = a => { const k = norm(a), g = artists().find(x => x.k === k); return href('a', g && g.l.length >= BIG ? k : '~'); };
+const SC = {}, ST = [location.hash]; let curHash = location.hash, lastHash = null, replacing = false;
+addEventListener('scroll', () => { SC[curHash] = scrollY; }, { passive: true });
+addEventListener('hashchange', () => {
+  const h = location.hash; if (replacing) { ST[ST.length - 1] = h; replacing = false; } else if (ST.length > 1 && ST[ST.length - 2] === h) ST.pop(); else ST.push(h);
+  curHash = h; closeSheet(true); render();
+});
+/* zpět: v rámci aplikace krok v historii, po otevření přímým odkazem o úroveň výš (bez nového záznamu v historii) */
+function goBack(to) { if (ST.length > 1) history.back(); else { replacing = true; location.replace(to); } }
+
+/* ═══ POHLEDY ═══ */
+const rowSong = (s, art = true) => `<a class="row${s.txt ? '' : ' no'}" href="${href('s', s.id)}"><span class="rt">${esc(s.t)}</span>${art ? `<span class="rs">${esc(s.a)}</span>` : ''}</a>`;
+const hdr = (back, right = '') => `<header class="top"><a class="ib" href="${back}" data-act="back" aria-label="Zpět">${ic('back', 22)}</a><span class="sp"></span>${right}</header>`;
+
+function listHtml(tab) {
+  const all = songs();
+  if (Q.trim()) {
+    const q = norm(Q.trim()), a = [], b = [], c = [];
+    for (const s of all) { const t = norm(s.t); if (t.startsWith(q)) a.push(s); else if (t.includes(q) || norm(s.a).includes(q)) b.push(s); else if (s.txt && norm(s.txt.replace(BR, '')).includes(q)) c.push(s); }
+    const res = [...a, ...b, ...c].slice(0, 80);
+    return (res.length ? res.map(s => rowSong(s)).join('') : `<p class="empty">Nic jsem nenašel.</p>`) + `<p style="margin-top:16px"><button class="btn sm" data-act="add" data-t="${esc(Q.trim())}">${ic('plus', 16)} Přidat píseň „${esc(Q.trim())}“</button></p>`;
+  }
+  if (tab === 'songs') {
+    const l = UI.only ? all.filter(s => s.txt) : all; if (!l.length) return `<p class="empty">Tady zatím nic není.</p>`;
+    let h = '', cur = '';
+    for (const s of l) { const n0 = norm(s.t), ch = /^ch/.test(n0) ? 'CH' : /^[a-z]/.test(n0) ? s.t[0].toLocaleUpperCase('cs') : '#'; if (ch !== cur) { cur = ch; h += `<div class="letter">${esc(ch)}</div>`; } h += rowSong(s); }
+    return h;
+  }
+  if (tab === 'folders') {
+    const f = folders();
+    return (f.length ? f.map(x => `<a class="row big" href="${href('f', x.id)}"><span class="rt">${esc(x.n)}</span><span class="cnt">${inFolder(x.id).length}</span></a>`).join('') : `<p class="empty">Složky si tvoříš sám – třeba „K ohni“, „Nacvičit“ nebo „Vánoce“. Píseň do složky přidáš ikonou složky přímo u písně.</p>`)
+      + `<p style="margin-top:18px"><button class="btn" data-act="folderNew">${ic('plus', 18)} Nová složka</button></p>`;
+  }
+  const ar = artists(), big = ar.filter(a => a.l.length >= BIG), small = ar.filter(a => a.l.length < BIG);
+  const cnt = l => { const w = l.filter(s => s.txt).length; return `<span class="cnt" title="s textem / celkem">${w ? w + ' / ' : ''}${l.length}</span>`; };
+  return big.map(a => `<a class="row big" href="${href('a', a.k)}"><span class="rt">${esc(a.n)}</span>${cnt(a.l)}</a>`).join('')
+    + (small.length ? `<a class="row big" href="${href('a', '~')}"><span class="rt">Další autoři</span>${cnt(small.flatMap(a => a.l))}</a>` : '');
+}
+function vHome(tab) {
+  if (!['home', 'songs', 'folders'].includes(tab)) tab = 'home';
+  const t = (v, n) => `<a href="#${v}" class="${tab === v ? 'on' : ''}">${n}</a>`;
+  return `<header class="top"><a class="ib" href="../aplikace.html" aria-label="Zpět na rozcestník">${ic('back', 22)}</a><span class="sp"></span>
+    <button class="ib" data-act="settings" aria-label="Nastavení">${ic('set')}<i class="dot ${SYNC.st === 'local' ? '' : SYNC.st}" id="sync"${SYNC.st === 'local' ? ' hidden' : ''}></i></button></header>
+  <h1>Zpěvník</h1>
+  <div class="search">${ic('search', 18)}<input id="q" type="search" placeholder="Hledat píseň, autora nebo kus textu" value="${esc(Q)}" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search"></div>
+  ${UI.intro ? `<div class="intro"><p>Lidové písně a koledy jsou hotové i s akordy. Ostatní autoři mají zatím jen názvy – píseň si zkopíruj z webu a vlož, akordy se převezmou přesně nad správná slova.</p><button class="ib" data-act="introOff" aria-label="Skrýt" style="margin:-8px -8px 0 0">${ic('x', 18)}</button></div>` : ''}
+  <nav class="tabs">${t('home', 'Autoři')}${t('songs', 'Písně')}${t('folders', 'Složky')}<span class="sp"></span>${tab === 'songs' ? `<button class="chip${UI.only ? ' on' : ''}" data-act="only">Jen s textem</button>` : ''}</nav>
+  <div id="list" data-tab="${tab}">${listHtml(tab)}</div>
+  <button class="fab" data-act="add">${ic('plus', 20, 2.2)} Přidat píseň</button>`;
+}
+function vArtist(k) {
+  const ar = artists(), other = k === '~', g = other ? null : ar.find(a => a.k === k);
+  const l = other ? ar.filter(a => a.l.length < BIG).flatMap(a => a.l).sort((x, y) => cmp(x.a, y.a) || cmp(x.t, y.t)) : g ? g.l : [];
+  const name = other ? 'Další autoři' : g ? g.n : 'Autor';
+  let h = '';
+  if (other) { let cur = ''; for (const s of l) { if (s.a !== cur) { cur = s.a; h += `<div class="letter">${esc(cur)}</div>`; } h += rowSong(s, false); } }
+  else h = l.map(s => rowSong(s, false)).join('');
+  return hdr('#home') + `<h1>${esc(name)}</h1><p class="sub">${l.length} ${pisni(l.length)}${l.some(s => s.txt) ? ` · ${l.filter(s => s.txt).length} s textem` : ''}</p>
+  <div style="margin-top:14px">${h || '<p class="empty">Tady nic není.</p>'}</div>
+  <p style="margin-top:20px"><button class="btn" data-act="add" data-a="${other ? '' : esc(name)}">${ic('plus', 18)} Přidat píseň</button></p>`;
+}
+function vFolder(id) {
+  const f = folders().find(x => x.id === id); if (!f) return hdr('#folders') + `<p class="empty">Složka neexistuje.</p>`;
+  const l = inFolder(id);
+  return hdr('#folders', `<button class="ib" data-act="folderMenu" data-id="${esc(id)}" aria-label="Upravit složku">${ic('more')}</button>`)
+    + `<h1>${esc(f.n)}</h1><p class="sub">${l.length} ${pisni(l.length)}</p><div style="margin-top:14px">${l.length ? l.map(s => rowSong(s)).join('') : '<p class="empty">Složka je prázdná. Otevři píseň a klepni na ikonu složky.</p>'}</div>`;
+}
+const webLinks = s => { const q = encodeURIComponent(s.t), qa = encodeURIComponent(NOART.has(norm(s.a)) ? s.t + ' akordy' : s.t + ' ' + s.a); return [['Akordy Kytary.cz', `https://akordy.kytary.cz/songs?query=${q}`], ['Písničky s akordy', `https://www.google.com/search?q=${qa}+site%3Apisnicky-akordy.cz`], ['Kytaristka.cz', `https://www.google.com/search?q=${qa}+site%3Akytaristka.cz`]]; };
+const linksHtml = s => `<div class="links">${webLinks(s).map(([n, u]) => `<a href="${esc(u)}" target="_blank" rel="noopener"><span>${n}</span>${ic('ext', 17)}</a>`).join('')}</div>`;
+function vSong(id) {
+  const s = song(id); if (!s) return hdr('#home') + `<p class="empty">Píseň neexistuje.</p>`;
+  const fl = folders().filter(f => s.f.includes(f.id)), i = `data-id="${esc(id)}"`;
+  const head = hdr(artHref(s.a), `<button class="ib${fl.length ? ' on' : ''}" data-act="songFolders" ${i} aria-label="Složky">${ic('folder')}</button><button class="ib${s.n ? ' on' : ''}" data-act="note" ${i} aria-label="Poznámka">${ic('note')}</button><button class="ib" data-act="edit" ${i} aria-label="Upravit text">${ic('edit')}</button><button class="ib" data-act="more" ${i} aria-label="Další">${ic('more')}</button>`)
+    + `<div class="song-h"><h1>${esc(s.t)}</h1><p class="sub"><a href="${artHref(s.a)}">${esc(s.a)}</a></p>${fl.length ? `<div class="chips">${fl.map(f => `<a href="${href('f', f.id)}">${esc(f.n)}</a>`).join('')}</div>` : ''}</div>`
+    + (s.n ? `<button class="notec" data-act="note" ${i}>${esc(s.n)}</button>` : '');
+  const web = `<details class="web"${s.txt ? '' : ' open'}><summary>${ic('search', 16)} Najít tuhle píseň na webu</summary>${linksHtml(s)}</details>`;
+  if (!s.txt) return head + `<div class="nosong"><p>K téhle písni ještě nemáš text. Na webu ji označ a zkopíruj (klidně celou stránku) – akordy se převezmou přesně nad správná slova.</p>
+    <div class="acts"><button class="btn p" data-act="pasteSong" ${i}>${ic('clip', 18)} Vložit zkopírovanou píseň</button><button class="btn" data-act="edit" data-photo="1" ${i}>${ic('cam', 18)} Z fotky</button><button class="btn ghost" data-act="edit" ${i}>Napsat ručně</button></div></div>${web}`;
+  const tv = s.tr > 0 ? '+' + s.tr : s.tr < 0 ? '−' + -s.tr : '0';
+  return head + `<div class="song" id="song" style="--fs:${UI.fs}px">${songHtml(s.txt, s.tr)}</div>${web}
+  <div class="bar"><div class="grp" role="group" aria-label="Transpozice"><button data-act="tr" data-d="-1" ${i} aria-label="O půltón níž">−</button><button class="val${s.tr ? ' set' : ''}" data-act="tr" data-d="0" ${i} title="Zpět na původní tóninu">tónina<b>${tv}</b></button><button data-act="tr" data-d="1" ${i} aria-label="O půltón výš">+</button></div>
+  <div class="grp" role="group" aria-label="Velikost písma"><button data-act="fs" data-d="-1" aria-label="Menší písmo" style="font-size:13px">A</button><button data-act="fs" data-d="1" aria-label="Větší písmo" style="font-size:19px">A</button></div></div>`;
+}
+function render() {
+  const r = route(), list = !['s'].includes(r.v);
+  $('#app').innerHTML = r.v === 's' ? vSong(r.id) : r.v === 'a' ? vArtist(r.id) : r.v === 'f' ? vFolder(r.id) : vHome(r.v);
+  const s = r.v === 's' ? song(r.id) : null; document.title = s ? `${s.t} – Zpěvník` : 'Zpěvník';
+  const same = lastHash === location.hash, y = scrollY; lastHash = location.hash;
+  scrollTo(0, same ? y : list ? SC[location.hash] || 0 : 0);
+  wake(!!(s && s.txt));
+}
+const soft = () => { const l = $('#list'); if (l && document.activeElement === $('#q')) l.innerHTML = listHtml(l.dataset.tab); else if (!$('#modal .full')) render(); };
+/* při hraní nezhasínat displej */
+let wl = null;
+async function wake(on) { try { if (on && !wl && navigator.wakeLock && !document.hidden) { wl = await navigator.wakeLock.request('screen'); wl.addEventListener('release', () => { wl = null; }); } else if (!on && wl) { const w = wl; wl = null; await w.release(); } } catch { wl = null; } }
+
+/* ═══ OKNA ═══ */
+function toast(msg) { $('.toast')?.remove(); const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.append(t); clearTimeout(toastT); toastT = setTimeout(() => t.remove(), 2800); }
+function sheet(title, html, full) { $('#modal').innerHTML = `<div class="shade"><div class="sheet${full ? ' full' : ''}" role="dialog" aria-label="${esc(title)}"><div class="sheet-h"><b>${esc(title)}</b><button class="ib" data-act="close" aria-label="Zavřít">${ic('x')}</button></div>${html}</div></div>`; const f = $('#modal [autofocus]'); if (f) setTimeout(() => f.focus(), 60); }
+function closeSheet(force) { const ta = $('#modal textarea.code'); if (!force && ta && ta.value !== ta.defaultValue && !confirm('Zahodit neuložený text?')) return false; $('#modal').innerHTML = ''; return true; }
+
+function editSheet(id, pre = {}) {
+  const s = id ? song(id) : null, v = { t: s?.t ?? pre.t ?? '', a: s?.a ?? pre.a ?? '', txt: s?.txt ?? '' };
+  $('#dl-art').innerHTML = artists().map(a => `<option value="${esc(a.n)}">`).join('');
+  sheet(s ? (s.txt ? 'Upravit píseň' : 'Doplnit text') : 'Nová píseň', `<form data-f="song" data-id="${esc(id || '')}">
+    <div class="two"><label class="f">Název<input name="t" value="${esc(v.t)}" required autocomplete="off"${v.t ? '' : ' autofocus'}></label><label class="f">Autor<input name="a" value="${esc(v.a)}" list="dl-art" autocomplete="off"></label></div>
+    <div class="acts"><button type="button" class="btn sm" data-act="paste">${ic('clip', 16)} Vložit zkopírované</button><label class="btn sm">${ic('cam', 16)} Z fotky<input type="file" id="photo" accept="image/*" multiple hidden></label><span style="flex:1"></span><button type="button" class="btn sm ghost" data-act="preview" id="pv-btn">Náhled</button></div>
+    <p class="prog" id="prog" hidden><span></span><i></i></p><p class="ferr"></p>
+    <textarea class="code" name="txt" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="   Ami        C&#10;Text písně s akordy nad slovy&#10;&#10;nebo s [Ami]akordy v [C]závorkách">${esc(v.txt)}</textarea><div class="song pv" id="pv" hidden></div>
+    <div><p class="hint" style="margin-bottom:10px">Nejpřesnější je píseň na webu označit, zkopírovat a vložit sem – akordy se převezmou na znak přesně. Fotku ořízni jen na píseň. Ručně se akordy píšou do hranatých závorek: [Ami]text.</p><div class="sheet-b"><button class="btn p">Uložit</button></div></div>
+  </form>`, true);
+  if (pre.photo) setTimeout(() => $('#photo')?.click(), 120);
+}
+function settingsSheet() {
+  const th = LS.get(KT) || '', on = !!LS.get(KS), hid = hidden().length, withTxt = songs().filter(s => s.txt).length;
+  const tb = (v, n) => `<button data-act="theme" data-t="${v}" class="${th === v ? 'on' : ''}">${n}</button>`;
+  sheet('Nastavení', `<h2 style="margin-top:0">Synchronizace</h2>
+    <p class="kv">${on ? `Zapnuto${USER?.email ? ' – ' + esc(USER.email) : ''}. ${esc({ ok: 'Vše je uložené.', pend: 'Ukládám…', err: SYNC.msg || 'Nedaří se spojit.', local: '' }[SYNC.st] || '')}` : 'Písně jsou zatím jen v tomhle zařízení. Po přihlášení účtem z Posilovny je uvidíš v telefonu i v počítači.'}</p>
+    <div class="acts">${on ? `<button class="btn sm" data-act="syncOff">Vypnout</button>` : `<button class="btn sm p" data-act="syncOn">Zapnout synchronizaci</button>`}</div>
+    <h2>Vzhled</h2><div class="seg">${tb('', 'Podle systému')}${tb('light', 'Světlý')}${tb('dark', 'Tmavý')}</div>
+    <h2>Záloha</h2><p class="kv">${withTxt} ${pisni(withTxt)} s textem · složek: ${folders().length}</p>
+    <div class="acts"><button class="btn sm" data-act="export">Stáhnout zálohu</button><label class="btn sm">Obnovit ze zálohy<input type="file" id="restore" accept="application/json,.json" hidden></label>${hid ? `<button class="btn sm" data-act="unhide">Vrátit skryté písně (${hid})</button>` : ''}</div>
+    <h2>O zpěvníku</h2><p class="hint">Katalog obsahuje jen názvy písní a autory. Texty a akordy patří jejich autorům – doplňuješ si je pro vlastní potřebu a ukládají se jen do tvého zařízení (a tvého účtu, když zapneš synchronizaci). Fotky se čtou přímo v prohlížeči, nikam se neposílají.</p>`);
+}
+const ACT = {
+  close() { closeSheet(); },
+  back(b, e) { e.preventDefault(); goBack(b.getAttribute('href')); },
+  settings: settingsSheet,
+  introOff() { UI.intro = 0; saveUI(); render(); },
+  only() { UI.only = UI.only ? 0 : 1; saveUI(); render(); },
+  add(b) { editSheet('', { t: b.dataset.t || '', a: b.dataset.a || '' }); },
+  edit(b) { editSheet(b.dataset.id, { photo: b.dataset.photo }); },
+  tr(b) { const s = song(b.dataset.id), d = +b.dataset.d; if (!s) return; let n = d ? s.tr + d : 0; if (n > 11 || n < -11) n = 0; upd(s.id, { tr: n }); render(); },
+  fs(b) { UI.fs = Math.max(11, Math.min(34, UI.fs + (+b.dataset.d) * 1.5)); saveUI(); $('#song')?.style.setProperty('--fs', UI.fs + 'px'); },
+  note(b) { const s = song(b.dataset.id); if (!s) return; sheet('Poznámka', `<form data-f="note" data-id="${esc(s.id)}"><textarea name="n" rows="6" placeholder="Kapodastr, rytmus, kdo zpívá druhý hlas…" autofocus>${esc(s.n)}</textarea><div class="sheet-b"><button class="btn p">Uložit</button></div></form>`); },
+  songFolders(b) {
+    const s = song(b.dataset.id); if (!s) return; const f = folders();
+    sheet('Složky', `${f.length ? f.map(x => `<label class="check"><input type="checkbox" data-fold="${esc(x.id)}" data-id="${esc(s.id)}"${s.f.includes(x.id) ? ' checked' : ''}>${esc(x.n)}</label>`).join('') : `<p class="kv">Zatím nemáš žádnou složku. Založ první:</p>`}
+      <form data-f="folder" data-song="${esc(s.id)}" class="inl" style="display:flex"><input name="n" placeholder="Nová složka" required maxlength="40"${f.length ? '' : ' autofocus'}><button class="btn p">Přidat</button></form>`);
+  },
+  more(b) {
+    const s = song(b.dataset.id); if (!s) return;
+    sheet(s.t, `<div class="acts">${s.txt ? `<button class="btn sm" data-act="print">Vytisknout</button>` : ''}<button class="btn sm danger" data-act="del" data-id="${esc(s.id)}">${s.cat ? 'Skrýt z katalogu' : 'Smazat píseň'}</button></div>`);
+  },
+  print() { closeSheet(true); setTimeout(() => print(), 50); },
+  del(b) { const s = song(b.dataset.id); if (!s || !confirm(s.cat ? `Skrýt „${s.t}“ z katalogu? Text i poznámka se smažou.` : `Smazat „${s.t}“?`)) return; const back = artHref(s.a); put(sb(s.id), s.id, { x: 1 }); closeSheet(true); toast(s.cat ? 'Píseň je skrytá – vrátíš ji v Nastavení' : 'Píseň smazána'); goBack(back); },
+  unhide() { hidden().forEach(id => put(sb(id), id, {})); closeSheet(true); render(); toast('Skryté písně jsou zpět'); },
+  folderNew() { sheet('Nová složka', `<form data-f="folder"><input name="n" placeholder="Název složky" required maxlength="40" autofocus><div class="sheet-b"><button class="btn p">Vytvořit</button></div></form>`); },
+  folderMenu(b) { const f = folders().find(x => x.id === b.dataset.id); if (!f) return; sheet('Složka', `<form data-f="folder" data-id="${esc(f.id)}"><label class="f">Název<input name="n" value="${esc(f.n)}" required maxlength="40"></label><div class="sheet-b"><button type="button" class="btn danger" data-act="folderDel" data-id="${esc(f.id)}">Smazat složku</button><button class="btn p">Uložit</button></div></form>`); },
+  folderDel(b) { if (!confirm('Smazat složku? Písně zůstanou ve zpěvníku.')) return; put('cfg', 'f:' + b.dataset.id, { x: 1 }); closeSheet(true); location.hash = '#folders'; },
+  theme(b) { b.dataset.t ? LS.set(KT, b.dataset.t) : LS.del(KT); applyTheme(); settingsSheet(); },
+  async paste() { try { const r = await readClip(); if (!r.txt.trim()) return toast('Schránka je prázdná'); putText(r); } catch { showPreview(false); $('#modal textarea.code')?.focus(); toast('Prohlížeč nepustil schránku – vlož do pole (Ctrl+V nebo podržením).'); } },
+  preview() { showPreview($('#pv').hidden); },
+  async pasteSong(b) { let r = null; try { r = await readClip(); } catch {} editSheet(b.dataset.id); if (r && r.txt.trim()) putText(r); else { $('#modal textarea.code')?.focus(); toast('Schránku se nepodařilo přečíst – vlož do pole (Ctrl+V nebo podržením).'); } },
+  syncOn, syncOff() { try { firebase.auth().signOut(); } catch {} LS.del(KS); detach(); USER = null; setSync('local'); settingsSheet(); toast('Synchronizace vypnuta – písně zůstávají v zařízení'); },
+  export() { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ app: 'zpevnik', v: 1, b: DB.b })], { type: 'application/json' })); a.download = `zpevnik-zaloha-${new Date().toISOString().slice(0, 10)}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); },
+};
+document.addEventListener('click', e => {
+  if (e.target.classList?.contains('shade')) return void closeSheet();
+  const b = e.target.closest('[data-act]'); if (b && ACT[b.dataset.act]) ACT[b.dataset.act](b, e);
+});
+document.addEventListener('input', e => { if (e.target.id === 'q') { Q = e.target.value; const l = $('#list'); l.innerHTML = listHtml(l.dataset.tab); } });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#modal').innerHTML) closeSheet(); });
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.dataset.fold) { const s = song(t.dataset.id); if (!s) return; const f = s.f.filter(x => x !== t.dataset.fold && folders().some(y => y.id === x)); if (t.checked) f.push(t.dataset.fold); upd(s.id, { f: f.length ? f : null }); render(); }
+  else if (t.id === 'photo' && t.files.length) { importPhotos([...t.files]); t.value = ''; }
+  else if (t.id === 'restore' && t.files[0]) { t.files[0].text().then(restore).catch(() => toast('Soubor se nepodařilo přečíst')); t.value = ''; }
+});
+const FORMS = {
+  song(f, fm) {
+    const t = f.t.trim(), a = f.a.trim() || 'Neznámý autor', txt = cleanTxt(f.txt); if (!t) return 'Zadej název.';
+    let id = fm.dataset.id;
+    if (!id) { const k = songs().find(s => norm(s.t) === norm(t) && norm(s.a) === norm(a)); if (k && k.txt) return 'Tuhle píseň už ve zpěvníku máš.'; id = k ? k.id : 'u:' + uid(); }
+    const s = song(id), bs = BASE.get(id) || {};
+    upd(id, { t: bs.t === t ? null : t, a: bs.a === a ? null : a, txt: bs.txt === txt ? null : txt }); $('#modal').innerHTML = '';
+    if (route().v === 's' && route().id === id) render(); else location.hash = href('s', id);
+    toast(s?.txt || !txt ? 'Uloženo' : 'Píseň je ve zpěvníku'); return false;
+  },
+  note(f, fm) { upd(fm.dataset.id, { n: f.n.trim() }); },
+  folder(f, fm) {
+    const n = f.n.trim(); if (!n) return 'Zadej název.';
+    const id = fm.dataset.id || uid(); put('cfg', 'f:' + id, { n });
+    if (fm.dataset.song) { const s = song(fm.dataset.song); upd(s.id, { f: [...s.f, id] }); render(); ACT.songFolders({ dataset: { id: s.id } }); return false; }
+  },
+  login(f, fm) {
+    const er = $('.ferr', fm), bt = $('button.p', fm); bt.disabled = true; er.textContent = '';
+    (async () => {
+      try {
+        await loadFb(); let email = f.login.trim();
+        if (!email.includes('@')) { const d = await firebase.firestore().collection('usernames').doc(email.toLowerCase()).get(); if (!d.exists) throw new Error('Uživatel s tímto jménem neexistuje.'); email = d.data().email; }
+        const cred = await firebase.auth().signInWithEmailAndPassword(email, f.pw); USER = cred.user; LS.set(KS, '1'); bindAuth(); attach(); closeSheet(true); toast('Synchronizace zapnuta'); render();
+      } catch (e) { er.textContent = fbErr(e); bt.disabled = false; }
+    })(); return false;
+  },
+};
+document.addEventListener('submit', e => {
+  const fm = e.target.closest('form[data-f]'); if (!fm) return; e.preventDefault();
+  const err = FORMS[fm.dataset.f](Object.fromEntries(new FormData(fm)), fm);
+  if (err) { const el = $('.ferr', fm); el ? el.textContent = err : toast(err); return; }
+  if (err !== false) { closeSheet(true); render(); }
+});
+function restore(text) {
+  let d; try { d = JSON.parse(text); } catch { return toast('Tohle není záloha zpěvníku.'); } if (!d || d.app !== 'zpevnik' || !d.b) return toast('Tohle není záloha zpěvníku.');
+  let n = 0;
+  for (const b of Object.keys(d.b)) if (b === 'cfg' || isSB(b)) for (const id of Object.keys(d.b[b] || {})) { const r = d.b[b][id], loc = DB.b[b]?.[id]; if (r && typeof r === 'object' && (!loc || (r.u || 0) > (loc.u || 0))) { (DB.b[b] ??= {})[id] = r; (DB.dirty[b] ??= {})[id] = 1; n++; } }
+  _songs = null; save(); schedulePush(); closeSheet(true); render(); toast(n ? `Obnoveno ${n} záznamů` : 'Záloha neobsahuje nic novějšího');
+}
+function applyTheme() { const t = LS.get(KT); if (t) document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme; }
+
+/* ═══ IMPORT ZE ZKOPÍROVANÉ STRÁNKY ═══
+   Weby se zpěvníky vkládají akordy do textu jako prvky nulové šířky vysunuté nad řádek
+   (akordy.kytary.cz: .scs-chord, kytaristka.cz: span.chord). V prostém textu ze schránky
+   proto akordy splynou se slovy; z HTML ve schránce se ale dají převzít přesně na znak. */
+const CHSEL = '[class*="chord" i],[class*="akord" i],el';
+const chordText = e => { let t = e.textContent.replace(/\s+/g, ''); const b = e.querySelector('[class*="chb" i],[class*="bass" i]'), bt = b ? b.textContent.replace(/\s+/g, '') : ''; if (bt && !t.includes('/') && t.endsWith(bt) && t.length > bt.length) t = t.slice(0, -bt.length) + '/' + bt; return t; };
+function htmlToSong(html) {
+  const doc = new DOMParser().parseFromString(html, 'text/html'), BL = 'div,p,li,pre,td,section,article,blockquote';
+  let ch = $$(CHSEL, doc.body).filter(e => { const t = chordText(e); return t.length <= 14 && isChord(t); });
+  const all = new Set(ch); ch = ch.filter(e => { for (let p = e.parentElement; p; p = p.parentElement) if (all.has(p)) return false; return true; });
+  const set = new Set(ch);
+  // akord „v písni“ = v bloku, kde je kromě akordů i text (tabulka hmatů apod. se tím vyřadí)
+  const real = ch.filter(e => { const b = e.closest(BL) || doc.body; let n = b.textContent.replace(/\s+/g, '').length; for (const c of $$(CHSEL, b)) if (set.has(c)) n -= chordText(c).length; return n > 3; });
+  if (real.length < 3) return null;
+  let root = real[0].parentElement || doc.body; while (root !== doc.body && !real.every(e => root.contains(e))) root = root.parentElement || doc.body;
+  for (;;) { const c = [...root.children].find(c => !set.has(c) && real.filter(e => c.contains(e)).length >= real.length * .8); if (!c) break; root = c; }
+  const lines = []; let cur = '', blk = root, pendR = false;
+  const flush = force => { const t = cur.replace(/\s+$/, ''); cur = ''; if (!t.trim() && !force) return; lines.push({ t: t.trim() ? t : '', b: blk, r: pendR && !!t.trim() }); if (t.trim()) pendR = false; };
+  (function walk(n, pre) {
+    if (n.nodeType === 3) { if (pre) n.nodeValue.split('\n').forEach((s, i) => { if (i) flush(true); cur += s; }); else { const s = n.nodeValue.replace(/\s+/g, ' '); cur += cur ? s : s.replace(/^ /, ''); } return; }
+    if (n.nodeType !== 1 || /^(SCRIPT|STYLE|NOSCRIPT|BUTTON|SVG|IMG|IFRAME|SELECT|INPUT|TEXTAREA|VIDEO|FIGURE)$/i.test(n.tagName)) return;
+    if (set.has(n)) { const t = chordText(n); cur += pre ? t : '[' + t + ']'; return; }
+    if (n.tagName === 'BR') return flush(true);
+    const isB = n.matches(BL + ',ul,ol,table,tr,h1,h2,h3,h4,h5,h6'), outer = blk;
+    if (isB) { flush(); blk = n; if (/chorus|refr/i.test((n.getAttribute('data-type') || '') + ' ' + n.className)) pendR = true; }
+    for (const c of n.childNodes) walk(c, pre || n.tagName === 'PRE');
+    if (isB) { flush(); blk = outer; }
+  })(root, root.tagName === 'PRE');
+  flush();
+  // prázdný řádek mezi slokami: tam, kde řádky nepatří do stejného bloku ani nejsou sourozenci
+  const out = []; lines.forEach((l, i) => { const p = lines[i - 1]; if (p && l.t && p.t && l.b !== p.b && l.b.parentElement !== p.b.parentElement) out.push(''); out.push(l.r && !LBL.test(l.t) ? 'R: ' + l.t : l.t); });
+  // samostatné označení sloky („1.“, „R:“) připojit k následujícímu řádku
+  for (let i = 0; i < out.length; i++) if (/^(R\d*|Ref|\d{1,2}|\*)[.:]?$/i.test(out[i].trim())) { let j = i + 1; while (j < out.length && !out[j].trim()) j++; if (j < out.length) { const lb = out[i].trim(); out[j] = (/[.:]$/.test(lb) ? lb : lb + (/^\d/.test(lb) ? '.' : ':')) + ' ' + out[j]; out.splice(i, j - i); i--; } }
+  const txt = cleanTxt(out.join('\n')); BR.lastIndex = 0;
+  if ((txt.match(BR) || []).length < 3 && !txt.split('\n').some(isChordLine)) return null;
+  // nadpis stránky → název (a autor, když je ve tvaru „Autor - Název akordy“)
+  let h1 = (doc.querySelector('h1')?.textContent || '').replace(/\s+/g, ' ').replace(/\s*[-–|]?\s*(akordy( a text)?|text( písně)?( a akordy)?)\s*$/i, '').trim(), artist = '';
+  if (h1.length > 70) h1 = ''; const sp = h1.split(/\s+[-–]\s+/); if (sp.length === 2) [artist, h1] = sp;
+  return { txt, title: h1, artist, exact: 1 };
+}
+/* prostý text zkopírovaný z celé stránky: nechat jen úsek kolem řádků s akordy */
+function trimPlain(t) {
+  const L = cleanTxt(t).split('\n'), idx = []; L.forEach((l, i) => { if (isChordLine(l) || hasBr(l)) idx.push(i); });
+  if (idx.length < 4 || L.length < 30) return L.join('\n');
+  let a = idx[0], b = idx[idx.length - 1], blank = 0;
+  if (a > 0 && LBL.test(L[a - 1]) && L[a - 1].trim().length < 6) a--;
+  while (b + 1 < L.length) { const l = L[b + 1]; if (!l.trim()) { if (++blank > 1) break; } else { if (l.length > 80) break; blank = 0; } b++; }
+  return cleanTxt(L.slice(a, b + 1).join('\n'));
+}
+async function readClip() {
+  if (navigator.clipboard?.read) try {
+    const items = await navigator.clipboard.read();
+    for (const it of items) if (it.types.includes('text/html')) { const r = htmlToSong(await (await it.getType('text/html')).text()); if (r) return r; }
+    for (const it of items) if (it.types.includes('text/plain')) return { txt: trimPlain(await (await it.getType('text/plain')).text()) };
+  } catch {}
+  return { txt: trimPlain(await navigator.clipboard.readText()) };
+}
+/* vloží importovaný text do editoru a rovnou ukáže náhled s akordy nad slovy */
+function putText(r, note) {
+  const fm = $('#modal form[data-f=song]'); if (!fm) return;
+  const ta = fm.txt; ta.value = ta.value.trim() ? ta.value.replace(/\s+$/, '') + '\n\n' + r.txt : r.txt;
+  if (r.title && !fm.t.value.trim()) { fm.t.value = r.title; if (r.artist && !fm.a.value.trim()) fm.a.value = r.artist; }
+  showPreview(true); toast(note || (r.exact ? 'Akordy převzaty přesně ze stránky' : 'Vloženo – zkontroluj náhled'));
+}
+function showPreview(on) { const ta = $('#modal textarea.code'), pv = $('#pv'), bt = $('#pv-btn'); if (!ta || !pv) return; if (on) pv.innerHTML = songHtml(ta.value, 0) || '<p class="empty">Zatím žádný text.</p>'; ta.hidden = on; pv.hidden = !on; bt.textContent = on ? 'Upravit text' : 'Náhled'; }
+document.addEventListener('paste', e => { const ta = e.target.closest?.('textarea.code'); if (!ta) return; const h = e.clipboardData?.getData('text/html'), r = h && htmlToSong(h); if (!r) return; e.preventDefault(); putText(r); });
+
+/* ═══ IMPORT Z FOTKY (čtení přímo v prohlížeči, Tesseract.js) ═══
+   Akordy bývají jinou barvou a těsně nad textem, takže běžné čtení po řádcích je míchá se slovy.
+   Postup: 1) obraz se rozdělí na vrstvu akordů (barevné písmo) a vrstvu textu, 2) text se čte
+   bez akordů, 3) akordy se vyříznou, srovnají do jednoho řádku a čtou se zvlášť jen ze znaků,
+   které se v akordech vyskytují, 4) každý akord se vloží před znak, nad kterým začíná.
+   Když akordy barvou odlišit nejdou, hledají se řádky složené jen z akordů. */
+const TESS = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+const WL = 'ABCDEFGHabdegijmsu0123456789#/+-';
+const loadScript = src => new Promise((ok, no) => { if ($(`script[src="${src}"]`)) return ok(); const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = () => { s.remove(); no(new Error('offline')); }; document.head.append(s); });
+const mk = (w, h) => { const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(w)); c.height = Math.max(1, Math.round(h)); return c; };
+const med = a => { const s = [...a].sort((x, y) => x - y); return s.length ? s[s.length >> 1] : 0; };
+const fixChord = t => {
+  let a = t.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); if (!a) return a;
+  a = a.replace(/^[^A-H]+(?=[A-H])/, '').replace(/\/(?![A-H])/g, '#').replace(/(\d)#$/, '$1').replace(/^([A-H](?:#|b|is|es)?(?:maj|mi|m|dim|aug|sus|add|\d)*)([A-H](?:#|b|is|es)?)$/, '$1/$2');   // „#“ se čte jako „/“ a lomítko basu se ztrácí
+  if (isChord(a)) return a; for (const b of [a.replace(/rn/g, 'm'), a.replace(/^[|!lI]+|[|!]+$/g, ''), a.replace(/l$/, 'i'), a.replace(/^0/, 'D').replace(/^6/, 'G'), a.replace(/mj/, 'maj'), a.length < 8 ? a[0].toUpperCase() + a.slice(1) : '']) if (b && isChord(b)) return b; return t; };
+async function loadCanvas(file) { const bmp = await createImageBitmap(file), k = Math.min(1, 4200 / Math.max(bmp.width, bmp.height)), c = mk(bmp.width * k, bmp.height * k); c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height); return c; }
+/* pozadí, „inkoust“ (vzdálenost od pozadí) a třída každého bodu: 1 = neutrální písmo, 2 = barevné, 3 = nejasné */
+function analyze(cv) {
+  const W = cv.width, H = cv.height, d = cv.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, W, H).data, N = W * H, hist = new Map();
+  for (let i = 0; i < N; i += 23) { const o = i * 4, k = (d[o] >> 3) << 10 | (d[o + 1] >> 3) << 5 | d[o + 2] >> 3; hist.set(k, (hist.get(k) || 0) + 1); }
+  let bk = 0, bn = -1; for (const [k, n] of hist) if (n > bn) { bn = n; bk = k; }
+  const bg = [(bk >> 10 & 31) * 8 + 4, (bk >> 5 & 31) * 8 + 4, (bk & 31) * 8 + 4], cls = new Uint8Array(N), hue = new Uint8Array(N), ink = new Uint8Array(N), hh = new Float64Array(36);
+  for (let i = 0, o = 0; i < N; i++, o += 4) {
+    const r = d[o], g = d[o + 1], b = d[o + 2], dist = Math.max(Math.abs(r - bg[0]), Math.abs(g - bg[1]), Math.abs(b - bg[2])); ink[i] = dist;
+    if (dist < 60) continue;
+    const mx = Math.max(r, g, b), c = mx - Math.min(r, g, b);
+    if (c < 40) { cls[i] = 1; continue; } if (c < 70) { cls[i] = 3; continue; }
+    const h = mx === r ? ((g - b) / c + 6) % 6 : mx === g ? (b - r) / c + 2 : (r - g) / c + 4, hb = Math.floor(h * 6) % 36;
+    cls[i] = 2; hue[i] = hb; hh[hb]++;
+  }
+  // dlouhé svislé čáry (okraje sekcí, rámečky) pryč – jinak slijí řádky dohromady
+  const LIM = Math.max(60, W * .11);
+  for (let x = 0; x < W; x++) for (let y = 0; y < H; y++) { if (!cls[y * W + x]) continue; let e = y; while (e + 1 < H && cls[(e + 1) * W + x]) e++; if (e - y > LIM) for (let k = y; k <= e; k++) { const i = k * W + x; if (cls[i] === 2) hh[hue[i]]--; cls[i] = 0; ink[i] = 0; } y = e; }
+  return { W, H, cls, hue, ink, hh };
+}
+function huePeaks(hh) {
+  const sm = i => hh[(i + 35) % 36] + hh[i] + hh[(i + 1) % 36], o = [...Array(36).keys()].sort((a, b) => sm(b) - sm(a)), p = [o[0]];
+  const q = o.find(i => Math.min((i - o[0] + 36) % 36, (o[0] - i + 36) % 36) >= 6 && sm(i) > sm(o[0]) * .12); if (q != null) p.push(q);
+  return p.filter(i => sm(i) > 60);
+}
+function hueMask(A, p) {
+  const { W, H, cls, hue, ink } = A, m = new Uint8Array(W * H), dark = i => cls[i] === 1 && ink[i] > 140;
+  for (let y = 0, i = 0; y < H; y++) for (let x = 0; x < W; x++, i++) {
+    if (cls[i] !== 2) continue; const dh = Math.abs(hue[i] - p); if (Math.min(dh, 36 - dh) > 3) continue;
+    if ((x > 0 && dark(i - 1)) || (x > 1 && dark(i - 2)) || (x < W - 1 && dark(i + 1)) || (x < W - 2 && dark(i + 2))) continue;   // barevné lemy černého písma (vyhlazování na LCD)
+    m[i] = 1;
+  }
+  return m;
+}
+/* řádkové pásy masky (průmět do svislé osy) */
+function bandsOf(m, W, H, minRow = 1) {
+  const rows = new Uint32Array(H); for (let y = 0, i = 0; y < H; y++) { let n = 0; for (let x = 0; x < W; x++, i++) n += m[i] ? 1 : 0; rows[y] = n; }
+  const out = []; for (let y = 0; y < H; y++) { if (rows[y] < minRow) continue; let e = y; while (e + 1 < H && (rows[e + 1] >= minRow || (e + 2 < H && rows[e + 2] >= minRow))) e++; if (e - y >= 5) out.push([y, e + 1]); y = e; }
+  return out;
+}
+/* jednotlivé akordy (slova) v pásech masky */
+function findBoxes(m, W, H) {
+  const out = [];
+  for (const [y0, y1] of bandsOf(m, W, H)) {
+    const bh = y1 - y0, cols = new Uint16Array(W); for (let y = y0; y < y1; y++) for (let x = 0, i = y * W; x < W; x++, i++) cols[x] += m[i];
+    const gap = Math.max(3, bh * .42); let x = 0;
+    while (x < W) { if (!cols[x]) { x++; continue; } let e = x, z = 0, n = 0; for (let k = x; k < W; k++) { if (cols[k]) { e = k; z = 0; n += cols[k]; } else if (++z > gap) break; }
+      if (e - x + 1 >= bh * .3 && e - x + 1 <= bh * 9 && n >= bh * 1.5) out.push({ x0: x, x1: e + 1, y0, y1 }); x = e + 1; }
+  }
+  const mh = med(out.map(b => b.y1 - b.y0)); return out.filter(b => b.y1 - b.y0 >= mh * .5 && b.y1 - b.y0 <= mh * 2.2);
+}
+/* šedá vrstva: tmavé písmo na bílé (funguje i pro tmavý režim), volitelně jen body z masky */
+function layer(A, m) {
+  const { W, H, ink, cls } = A, c = mk(W, H), x = c.getContext('2d'), im = x.createImageData(W, H), d = im.data;
+  for (let i = 0, o = 0; i < W * H; i++, o += 4) { const on = !m || m[i] || (cls[i] >= 2 && (m[i - 1] || m[i + 1] || m[i - W] || m[i + W])); d[o] = d[o + 1] = d[o + 2] = on ? 255 - Math.min(255, ink[i] * 1.5) : 255; d[o + 3] = 255; }
+  x.putImageData(im, 0, 0); return c;
+}
+/* vyříznuté akordy srovnané vedle sebe do jednoho řádku → čtení jen ze znaků akordů */
+async function readTokens(w, lay, boxes) {
+  const res = boxes.map(() => ''), TH = 46, PAD = 18;
+  await w.setParameters({ tessedit_pageseg_mode: '7', tessedit_char_whitelist: WL, preserve_interword_spaces: '0' });
+  for (let s = 0; s < boxes.length; s += 10) {
+    const part = boxes.slice(s, s + 10), slots = []; let X = PAD * 2;
+    for (const b of part) { const wd = Math.max(8, Math.round((b.x1 - b.x0) * TH / (b.y1 - b.y0))); slots.push({ x: X, w: wd }); X += wd + TH * 1.7; }
+    const c = mk(X + PAD, TH + PAD * 2), x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.imageSmoothingQuality = 'high';
+    part.forEach((b, i) => x.drawImage(lay, b.x0, b.y0, b.x1 - b.x0, b.y1 - b.y0, slots[i].x, PAD, slots[i].w, TH));
+    const { data } = await w.recognize(c);
+    // po znacích: při omezené sadě znaků Tesseract nevrací mezery, takže slova splývají
+    const sy = (data.words || []).flatMap(q => q.symbols && q.symbols.length ? q.symbols : [q]).sort((a, b) => a.bbox.x0 - b.bbox.x0);
+    for (const z of sy) { const cx = (z.bbox.x0 + z.bbox.x1) / 2, i = slots.findIndex(q => cx >= q.x - TH * .8 && cx <= q.x + q.w + TH * .8); if (i >= 0 && z.text.trim()) res[s + i] += z.text.trim(); }
+  }
+  return res;
+}
+/* přečtené slovo → akordy s polohou (v jednom výřezu můžou být dva těsně vedle sebe) */
+function toChords(boxes, toks) {
+  const out = []; boxes.forEach((b, i) => { const p = (toks[i] || '').split(/\s+/).filter(Boolean).map(fixChord), ok = p.filter(isChord); if (!ok.length) { const j = fixChord(p.join('')); if (isChord(j)) out.push({ c: j, x: b.x0, y0: b.y0, y1: b.y1 }); return; } ok.forEach((c, k) => out.push({ c, x: b.x0 + (b.x1 - b.x0) * k / ok.length, y0: b.y0, y1: b.y1 })); });
+  return out;
+}
+async function readLyrics(w, cv, s) {
+  let c = cv; if (s !== 1) { c = mk(cv.width * s, cv.height * s); const x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(cv, 0, 0, c.width, c.height); }
+  await w.setParameters({ tessedit_pageseg_mode: '6', tessedit_char_whitelist: '', preserve_interword_spaces: '1' });
+  const { data } = await w.recognize(c), rows = [];
+  for (const l of data.lines || []) {
+    const ws = (l.words || []).filter(q => q.text.trim() && q.confidence > 15); if (!ws.length) continue;
+    let t = ''; const cx = [];
+    ws.forEach((q, k) => { if (k) { t += ' '; cx.push((ws[k - 1].bbox.x1 + q.bbox.x0) / 2 / s); } const tx = q.text.trim(), sy = (q.symbols || []).filter(z => z.text.trim()); if (sy.length === tx.length) sy.forEach(z => cx.push((z.bbox.x0 + z.bbox.x1) / 2 / s)); else for (let i = 0; i < tx.length; i++) cx.push((q.bbox.x0 + (i + .5) / tx.length * (q.bbox.x1 - q.bbox.x0)) / s); t += tx; });
+    rows.push({ t, cx, ws: ws.map(q => ({ t: q.text.trim(), x0: q.bbox.x0 / s, x1: q.bbox.x1 / s, y0: q.bbox.y0 / s, y1: q.bbox.y1 / s })), y0: Math.min(...ws.map(q => q.bbox.y0)) / s, y1: Math.max(...ws.map(q => q.bbox.y1)) / s });
+  }
+  return rows;
+}
+/* akordy + řádky textu → text písně s akordy v závorkách */
+function weave(rows, chords) {
+  rows = rows.filter(r => /[\p{L}\d]{2}/u.test(r.t) || r.t.length > 3);
+  const RH = med(rows.map(r => r.y1 - r.y0)) || med(chords.map(c => c.y1 - c.y0)) || 20, mid = r => (r.y0 + r.y1) / 2;
+  const items = rows.map(r => ({ ...r, ch: [], top: r.y0 })), orph = [];
+  for (const c of chords) { let best = null, bd = 1e9; for (const r of items) { if (mid(r) <= mid(c)) continue; const dd = r.y0 - c.y1; if (dd < -RH * .7 || dd > RH * 1.2) continue; if (Math.abs(dd) < bd) { bd = Math.abs(dd); best = r; } } if (best) { best.ch.push(c); best.top = Math.min(best.top, c.y0); } else orph.push(c); }
+  orph.sort((a, b) => a.y0 - b.y0); for (const c of orph) { const g = items.find(r => r.orph && Math.abs(mid(r) - mid(c)) < RH * .6); if (g) g.ch.push(c); else items.push({ t: '', cx: [], orph: 1, ch: [c], y0: c.y0, y1: c.y1, top: c.y0 }); }
+  items.sort((a, b) => mid(a) - mid(b));
+  const text = r => { const cs = [...r.ch].sort((a, b) => a.x - b.x); if (r.orph) return cs.map(c => '[' + c.c + ']').join(' '); let t = r.t.replace(/^[|¦_—~]+\s*/, m => ' '.repeat(m.length)), tail = ''; for (const c of [...cs].reverse()) { const i = r.cx.findIndex(v => v > c.x); if (i < 0) tail = ' [' + c.c + ']' + tail; else t = t.slice(0, i) + '[' + c.c + ']' + t.slice(i); } return (t + tail).trim(); };
+  const P = items.slice(1).map((r, i) => mid(r) - mid(items[i])), G = items.slice(1).map((r, i) => r.top - items[i].y1), Pm = med(P) || RH * 2, Gm = Math.max(1, med(G));
+  const brk = i => P[i] > Pm * 1.4 && G[i] > Gm * 1.5 && G[i] > RH * .9;      // mezera před položkou i+1 = nová sloka
+  let a = items.findIndex(r => r.ch.length), b = items.length - 1; if (a < 0) a = 0; else { while (a > 0 && !brk(a - 1)) a--; let l = items.length - 1; while (l > 0 && !items[l].ch.length) l--; for (b = l; b + 1 < items.length && P[b] < Pm * 2.3; b++); }
+  const out = []; for (let i = a; i <= b; i++) { if (i > a && brk(i - 1)) out.push(''); out.push(text(items[i])); }
+  return out.join('\n');
+}
+/* dva sloupce vedle sebe (zpěvníky na širokém monitoru) → levý, pak pravý */
+function splitCols(cv, A) {
+  const { W, H, cls } = A, cols = new Uint32Array(W); for (let y = 0, i = 0; y < H; y++) for (let x = 0; x < W; x++, i++) if (cls[i]) cols[x]++;
+  let best = null; for (let x = Math.round(W * .25); x < W * .75; x++) { if (cols[x]) continue; let e = x; while (e + 1 < W && !cols[e + 1]) e++; if (!best || e - x > best[1] - best[0]) best = [x, e]; x = e; }
+  if (!best || best[1] - best[0] < Math.max(40, W * .05)) return null;
+  let l = 0, r = 0; for (let x = 0; x < W; x++) x < best[0] ? l += cols[x] : r += cols[x]; if (Math.min(l, r) < (l + r) * .2) return null;
+  const cut = (best[0] + best[1]) >> 1, a = mk(cut, H), b = mk(W - cut, H); a.getContext('2d').drawImage(cv, 0, 0); b.getContext('2d').drawImage(cv, -cut, 0); return [a, b];
+}
+async function readPart(w, wc, cv, A) {
+  const { W, H, cls } = A;
+  // výška písma → zvětšení, při kterém čte Tesseract nejlíp
+  const tb = bandsOf(cls, W, H, Math.max(2, W * .004)).map(b => b[1] - b[0]).filter(h => h >= 7 && h <= 140), th = med(tb), s = th ? Math.max(.5, Math.min(3.5, 42 / th)) : Math.min(2.5, Math.max(1, 1800 / W));
+  let chords = [], boxes = [];
+  for (const p of huePeaks(A.hh)) {
+    const m = hueMask(A, p), bx = findBoxes(m, W, H); if (bx.length < 2 || bx.length > 260) continue;
+    const got = toChords(bx, await readTokens(wc, layer(A, m), bx));
+    if (got.length >= 2 && got.length >= bx.length * .5 && got.length > chords.length) { chords = got; boxes = bx; }
+  }
+  const full = layer(A);
+  if (!chords.length) {
+    // akordy nejsou barevně odlišené: řádky složené jen z akordů
+    const rows = await readLyrics(w, full, s);
+    for (const r of rows) if (r.ws.length && r.ws.filter(q => isChord(fixChord(q.t))).length >= Math.max(1, r.ws.length * .6) && r.ws.every(q => q.t.length <= 9)) boxes.push(...r.ws.map(q => ({ x0: Math.floor(q.x0), x1: Math.ceil(q.x1), y0: Math.floor(q.y0), y1: Math.ceil(q.y1) })));
+    if (!boxes.length) return weave(rows, []);
+    chords = toChords(boxes, await readTokens(wc, full, boxes));
+  }
+  const x = full.getContext('2d'); x.fillStyle = '#fff'; for (const b of boxes) x.fillRect(b.x0 - 2, b.y0 - 2, b.x1 - b.x0 + 4, b.y1 - b.y0 + 4);
+  return weave(await readLyrics(w, full, s), chords);
+}
+async function readPhoto(w, wc, file) {
+  const cv = await loadCanvas(file), A = analyze(cv), sp = splitCols(cv, A), out = [];
+  if (sp) for (const c of sp) out.push(await readPart(w, wc, c, analyze(c))); else out.push(await readPart(w, wc, cv, A));
+  return out.filter(t => t.trim()).join('\n\n');
+}
+async function importPhotos(files) {
+  const ta = $('#modal textarea.code'), pr = $('#prog'); if (!ta) return;
+  const say = (t, p) => { if (!pr.isConnected) return; pr.hidden = false; pr.firstElementChild.textContent = t; pr.lastElementChild.style.setProperty('--p', p); };
+  let w, wc, k = 0;
+  try {
+    say('Načítám čtečku textu…', .05); await loadScript(TESS);
+    // dva modely: čeština na text, angličtina na akordy (křížky a lomítka čte spolehlivěji)
+    [w, wc] = await Promise.all([Tesseract.createWorker('ces', 1, { logger: m => { if (m.status === 'recognizing text') say(files.length > 1 ? `Čtu fotku ${k + 1} z ${files.length}…` : 'Čtu text a akordy…', .2 + (k + m.progress) / files.length * .8); else if (/load|init/.test(m.status)) say('Připravuji čtečku…', .12); } }), Tesseract.createWorker('eng', 1).catch(() => null)]);
+    const parts = []; for (const f of files) { parts.push(await readPhoto(w, wc || w, f)); k++; }
+    const txt = cleanTxt(parts.filter(Boolean).join('\n\n'));
+    if (!ta.isConnected) return;
+    if (!txt.trim()) toast('Na fotce jsem nenašel žádný text.'); else { BR.lastIndex = 0; const n = (txt.match(BR) || []).length; putText({ txt }, n ? `Přečteno, akordů: ${n} – zkontroluj náhled` : 'Text přečten, akordy jsem na fotce nenašel'); }
+  } catch (e) { toast(e && e.message === 'offline' ? 'Čtení z fotky potřebuje připojení.' : 'Fotku se nepodařilo přečíst.'); console.error(e); }
+  finally { try { await w?.terminate(); await wc?.terminate(); } catch {} if (pr.isConnected) pr.hidden = true; }
+}
+
+/* ═══ SYNCHRONIZACE (Firebase, účet z Posilovny) ═══ */
+let USER = null, unsub = null, authReady = null, pushT = null, pushing = false;
+const FB_V = '10.12.2';
+async function loadFb() {
+  if (!window.firebase?.firestore) for (const m of ['app', 'auth', 'firestore']) await new Promise((ok, no) => { const s = document.createElement('script'); s.src = `https://www.gstatic.com/firebasejs/${FB_V}/firebase-${m}-compat.js`; s.onload = ok; s.onerror = () => { s.remove(); no(new Error('Nejsi online – zkus to znovu se signálem.')); }; document.head.append(s); });
+  if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+}
+function fbErr(e) {
+  const c = (e && e.code) || '';
+  return ({ 'auth/invalid-credential': 'Špatné jméno nebo heslo.', 'auth/wrong-password': 'Špatné jméno nebo heslo.', 'auth/invalid-login-credentials': 'Špatné jméno nebo heslo.', 'auth/user-not-found': 'Účet s tímto e-mailem neexistuje.', 'auth/too-many-requests': 'Moc pokusů – chvíli počkej.', 'auth/network-request-failed': 'Nejsi online.', 'auth/invalid-email': 'Neplatný e-mail.', 'auth/unauthorized-domain': 'Tahle doména není ve Firebase povolená.', 'permission-denied': 'Databáze odmítla přístup.', 'unavailable': 'Nejsi online – uloží se, až bude signál.' })[c] || (e && e.message) || 'Něco se pokazilo.';
+}
+function setSync(st, msg = '') { SYNC = { st, msg }; const el = $('#sync'); if (el) { el.className = 'dot ' + (st === 'local' ? '' : st); el.hidden = st === 'local'; el.title = msg; } }
+function bindAuth() { return authReady ||= new Promise(res => firebase.auth().onAuthStateChanged(u => { USER = u; detach(); if (u && LS.get(KS)) attach(); else if (LS.get(KS)) setSync('err', 'Přihlášení vypršelo – přihlas se znovu.'); res(); })); }
+const coll = () => firebase.firestore().collection('users').doc(USER.uid).collection('zpevnik');
+function detach() { if (unsub) { unsub(); unsub = null; } }
+function attach() {
+  if (unsub || !USER) return;
+  const prev = LS.get(KU);
+  if (prev && prev !== USER.uid && Object.keys(DB.b).length && !confirm('V tomto zařízení jsou písně jiného účtu. Sloučit je s účtem ' + (USER.email || '') + '?')) { LS.del(KS); setSync('local'); return; }
+  LS.set(KU, USER.uid); setSync('pend');
+  unsub = coll().onSnapshot({ includeMetadataChanges: true }, q => {
+    let ch = false;
+    q.docChanges().forEach(c => { if (c.type === 'removed') return; const b = c.doc.id, rs = c.doc.data().r || {}; for (const id in rs) { const loc = DB.b[b]?.[id]; if (!loc || (rs[id].u || 0) > (loc.u || 0)) { (DB.b[b] ??= {})[id] = rs[id]; if (DB.dirty[b]) delete DB.dirty[b][id]; ch = true; } } });
+    if (ch) { _songs = null; save(); if (!$('#modal').innerHTML) soft(); }
+    if (!pushing && !isDirty()) setSync(q.metadata.fromCache ? 'pend' : 'ok', q.metadata.fromCache ? 'Čekám na připojení.' : '');
+    push();
+  }, e => { setSync('err', fbErr(e)); unsub = null; });
+}
+const isDirty = () => Object.values(DB.dirty).some(o => Object.keys(o).length);
+function schedulePush() { if (!unsub) return; clearTimeout(pushT); pushT = setTimeout(push, 1200); }
+async function push() {
+  if (!USER || !unsub || pushing || !isDirty()) return;
+  pushing = true; setSync('pend', 'Odesílám změny.');
+  try {
+    for (const b of Object.keys(DB.dirty)) {
+      const ids = Object.keys(DB.dirty[b]).filter(id => DB.b[b]?.[id]); if (!ids.length) { delete DB.dirty[b]; continue; }
+      const data = { r: {} }, sent = ids.map(id => [id, DB.b[b][id].u]);
+      for (const id of ids) data.r[id] = clone(DB.b[b][id]);
+      await coll().doc(b).set(data, { mergeFields: ids.map(id => new firebase.firestore.FieldPath('r', id)) });
+      for (const [id, u] of sent) if (DB.b[b]?.[id]?.u === u) delete DB.dirty[b][id];
+    }
+    save(); setSync('ok');
+  } catch (e) { setSync('err', fbErr(e)); }
+  pushing = false; if (isDirty() && SYNC.st !== 'err') schedulePush();
+}
+async function syncOn() {
+  try { toast('Připojuji…'); await loadFb(); await bindAuth(); if (firebase.auth().currentUser) { USER = firebase.auth().currentUser; LS.set(KS, '1'); attach(); closeSheet(true); toast('Synchronizace zapnuta'); } else loginSheet(); } catch (e) { toast(fbErr(e)); }
+}
+function loginSheet() { sheet('Přihlášení', `<form data-f="login" autocomplete="on"><p class="kv">Stejný účet jako v <a href="./posilovna.html">Posilovně</a> – tam si ho taky založíš nebo obnovíš heslo.</p><label class="f">Jméno nebo e-mail<input name="login" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" required autofocus></label><label class="f">Heslo<input name="pw" type="password" autocomplete="current-password" required></label><p class="ferr"></p><div class="sheet-b"><button class="btn p">Přihlásit a synchronizovat</button></div></form>`); }
+function bootSync() { if (LS.get(KS) && !authReady) { setSync('pend', 'Připojuji se…'); loadFb().then(bindAuth).catch(e => setSync('err', fbErr(e))); } }
+addEventListener('online', () => { bootSync(); if (USER && !unsub && LS.get(KS)) attach(); push(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) return; const r = route(), s = r.v === 's' && song(r.id); wake(!!(s && s.txt)); push(); });
+
+applyTheme(); render(); bootSync();
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('./zpevnik-sw.js', { scope: './zpevnik' }).catch(() => {});
+</script>
+</body>
+</html>

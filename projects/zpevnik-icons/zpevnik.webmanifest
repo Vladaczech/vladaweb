@@ -1,0 +1,17 @@
+{
+ "name": "Zpěvník",
+ "short_name": "Zpěvník",
+ "description": "Vlastní kytarový zpěvník s akordy, transpozicí, poznámkami a složkami.",
+ "lang": "cs",
+ "id": "../zpevnik.html",
+ "start_url": "../zpevnik.html",
+ "scope": "../zpevnik",
+ "display": "standalone",
+ "background_color": "#faf9f5",
+ "theme_color": "#faf9f5",
+ "icons": [
+  { "src": "zpevnik-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+  { "src": "zpevnik-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+  { "src": "zpevnik-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+ ]
+}

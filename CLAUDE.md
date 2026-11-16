@@ -40,3 +40,22 @@ Osobní deník dne (voda, škály, návyky, priority, poznámka; spánek ani vá
 Koše: `cfg` (metriky `m:…`, auta `car:…`, připomínky `rem:…`), `car` (záznamy aut) a `RRRR-MM` (dny). Dokument má pole `r = { id: záznam }`; každý záznam nese `u` (čas změny, vyhrává novější) a smazání je `{ x: 1 }`. Výchozí metriky jsou v konstantě `DEF`, uživatelské úpravy je jen překrývají.
 
 Offline režim: `projects/daily-sw.js` (scope `./daily`), ikony a manifest v `projects/daily-icons/`. Při změně seznamu souborů nebo knihoven zvyš `VERSION`. Ukázková data (`demoDB`) žijí jen v paměti, nikdy se neukládají ani neodesílají.
+
+## Zpěvník (`projects/zpevnik.html`)
+
+Kytarový zpěvník: sekce podle autorů, hledání, složky, poznámka k písni, transpozice (české značení, B = hes, H = h) a velikost písma.
+
+Písně jsou dvojího druhu:
+- `LIB` – hotové písně s textem a akordy přímo v kódu. **Jen volná díla** (lidové písně, koledy); akordy jsou základní harmonizace.
+- `CAT` – katalog jen s názvy a autory. Texty chráněných písní do repa ani do žádné databáze nepřidávej a nestahuj je hromadně z webů (repo je veřejné, weby to zakazují) – uživatel si je doplňuje sám.
+
+Import (pořadí podle přesnosti):
+1. **Zkopírovaná stránka** (`htmlToSong`) – ze schránky se čte HTML, ne prostý text. Weby vkládají akordy jako prvky nulové šířky nad řádek (akordy.kytary.cz `.scs-chord`, kytaristka.cz `span.chord`), takže v prostém textu splývají se slovy; z HTML se převezmou přesně. Funguje i na celou zkopírovanou stránku (vybere se blok s akordy).
+2. **Z fotky** (`readPhoto`, Tesseract.js z CDN, čte se v prohlížeči) – obraz se rozdělí na vrstvu akordů (barevné písmo) a textu; text čte český model, vyříznuté akordy anglický (křížky, lomítka); akord se vloží před znak, nad kterým začíná. Bez barevného odlišení se hledají řádky složené jen z akordů.
+3. Ručně – akordy v hranatých závorkách (`[Ami]`), nebo na řádku nad textem; obojí zvládá `parseSong`.
+
+Odkazy „Najít na webu“ (akordy.kytary.cz, pisnicky-akordy.cz, kytaristka.cz) jsou až pod písní; weby nemají veřejné API ani CORS.
+
+Data jsou v `localStorage` (`zpevnik:v1`), synchronizace je volitelná přes účet z Posilovny (`users/{uid}/zpevnik/{koš}`, stejný vzor jako Daily – pole `r`, `u` = čas změny, smazání `{ x: 1 }`). Koše: `cfg` (složky `f:…`) a `s0`–`sf` (písně podle otisku id). Vestavěné písně (`BASE` = `CAT` + `LIB`) mají id `k:autor--nazev`, vlastní `u:…`; záznam uživatele vestavěnou píseň překrývá a `{ x: 1 }` u ní znamená „skrytá“.
+
+Offline režim: `projects/zpevnik-sw.js` (scope `./zpevnik`), ikony a manifest v `projects/zpevnik-icons/`. Při změně seznamu souborů nebo knihoven zvyš `VERSION`.
