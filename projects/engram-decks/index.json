@@ -9,6 +9,26 @@
    "color": "#d9732b",
    "count": 179,
    "updated": "2026-11-27"
+  },
+  {
+   "id": "pvs02",
+   "file": "pvs02.json",
+   "name": "PVS 02 – Produkt a produktový management",
+   "group": "Projektování výrobních systémů",
+   "desc": "Lekce 2: produkt, výrobek, služba, servitizace, produktové řady a portfolio, DFX, životní cyklus, produktový management.",
+   "color": "#2c9465",
+   "count": 161,
+   "updated": "2026-11-27"
+  },
+  {
+   "id": "pvs05",
+   "file": "pvs05.json",
+   "name": "PVS 05 – Podpůrné procesy",
+   "group": "Projektování výrobních systémů",
+   "desc": "Lekce 5: podpůrné procesy, facility management, údržba (reaktivní až chytrá), TPM, CMMS, externí spolupráce a outsourcing.",
+   "color": "#8e4ec6",
+   "count": 115,
+   "updated": "2026-11-27"
   }
  ],
  "tests": [
@@ -22,6 +42,30 @@
    "abcd": 47,
    "open": 14,
    "count": 61,
+   "updated": "2026-11-27"
+  },
+  {
+   "id": "pvs02-test",
+   "file": "pvs02-test.json",
+   "name": "Test PVS 02 – Produkt a produktový management",
+   "group": "Projektování výrobních systémů",
+   "desc": "Otázky ABCD i otevřené k lekci 2 – Produkt a produktový management.",
+   "deck": "pvs02",
+   "abcd": 50,
+   "open": 12,
+   "count": 62,
+   "updated": "2026-11-27"
+  },
+  {
+   "id": "pvs05-test",
+   "file": "pvs05-test.json",
+   "name": "Test PVS 05 – Podpůrné procesy",
+   "group": "Projektování výrobních systémů",
+   "desc": "Otázky ABCD i otevřené k lekci 5 – Podpůrné procesy.",
+   "deck": "pvs05",
+   "abcd": 50,
+   "open": 12,
+   "count": 62,
    "updated": "2026-11-27"
   }
  ]
