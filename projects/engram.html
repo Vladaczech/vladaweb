@@ -131,6 +131,25 @@ nav.tabs .in{max-width:600px;margin:0 auto;display:grid;grid-template-columns:re
 .cnts{display:flex;gap:2px;font-size:14px;font-weight:600}
 .cnts span{min-width:28px;text-align:right}
 .cnts .z{color:var(--line-2);font-weight:500}
+.fold{margin-bottom:10px}
+.fhd{display:flex;align-items:center}
+.fold.open .fhd{border-bottom:1px solid var(--line)}
+.fbt{flex:1;min-width:0;display:flex;align-items:center;gap:12px;padding:14px 2px 14px 14px;text-align:left}
+.fbt:active,.fmore:active{background:var(--surface-2)}
+.fbt>.i:first-child{color:var(--accent);flex:none}
+.fbt .chv{color:var(--muted);transition:transform .2s}
+.fold.open .fbt .chv{transform:rotate(90deg)}
+.fbt .nm{flex:1;min-width:0}
+.fbt .nm b{display:block;font-weight:650;line-height:1.3;overflow-wrap:anywhere}
+.fbt .nm small{display:block;color:var(--muted);font-size:12.5px}
+.fmore{align-self:stretch;padding:0 14px;color:var(--muted);flex:none}
+.fold .deck{padding-left:22px}
+.fempty{padding:14px 16px;color:var(--muted);font-size:13.5px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:8px 13px;border-radius:999px;background:var(--surface-2);font-size:14px;font-weight:500;text-align:left}
+.chip:active{background:var(--line)}
+.sec-b{display:flex;gap:16px;align-items:center}
+.sec-b button{display:inline-flex;align-items:center;gap:4px}
 .c-new{color:var(--new)}.c-learn{color:var(--learn)}.c-rev{color:var(--review)}
 .banner{display:flex;gap:12px;align-items:center;padding:12px 14px;margin-top:12px;border-radius:14px;background:var(--accent-soft);color:var(--text);font-size:13.5px}
 .banner .btn{margin-left:auto}
@@ -451,6 +470,7 @@ const IC={
   logo:'<path d="M7 6h10M7 12h7.5M7 18h10M7 6v12"/>',
   search:'<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/>',
   test:'<rect x="5.5" y="4.5" width="13" height="16" rx="2.5"/><path d="M9.5 4.5v-1h5v1"/><path d="m9 13 2 2 4-4.5"/>',
+  folder:'<path d="M3.5 7.5a2 2 0 0 1 2-2h4l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/>',
   shield:'<path d="M12 3.5 5 6v5.5c0 4.4 3 7.7 7 9 4-1.3 7-4.6 7-9V6z"/><path d="m9 12 2 2 4-4"/>'
 };
 const icon=(n,s=20,w=1.8)=>`<svg class="i" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n]||''}</svg>`;
@@ -460,7 +480,7 @@ const DEF_SET={theme:'system',retention:0.9,learnSteps:[1,10],relearnSteps:[10],
   leechThreshold:8,leechAction:'tag',haptics:true,gestures:true,autoTTS:false,showIvl:true,fuzz:true,learnAhead:20,reminder:'19:00',w:null};
 const COLORS=['#4f5bd5','#2c9465','#d94848','#d9732b','#8e4ec6','#0e9fb3','#d6409f','#6b7280'];
 let S=null, LOGS=[], MEDIA={};
-const freshCore=()=>({v:1,decks:{},notes:{},cards:{},testRuns:{},settings:{...DEF_SET},meta:{created:Date.now(),lastBackup:0,lastDeck:null,lastType:'basic',extra:{day:-1,n:{}}}});
+const freshCore=()=>({v:1,decks:{},notes:{},cards:{},testRuns:{},folders:{},testFolders:{},settings:{...DEF_SET},meta:{created:Date.now(),lastBackup:0,lastDeck:null,lastType:'basic',extra:{day:-1,n:{}}}});
 
 const Store={
   db:null,
@@ -760,6 +780,77 @@ function render(){
 }
 function go(v){VIEW=v;window.scrollTo(0,0);render()}
 
+/* ---------- složky (podle předmětů) ---------- */
+// S.folders = {id: {id, name, created}}; balíček má d.folder (id složky, '' = výslovně bez složky), test S.testFolders[id].
+// Bez výslovného zařazení patří balíček/test do složky, která se jmenuje stejně jako jeho skupina v knihovně (d.group / group v index.json).
+const fNorm=s=>String(s||'').trim().toLocaleLowerCase('cs');
+const foldersSorted=()=>Object.values(S.folders).sort((a,b)=>a.name.localeCompare(b.name,'cs'));
+function folderByName(n){const k=fNorm(n);return k?Object.values(S.folders).find(f=>fNorm(f.name)===k):null}
+function deckFolder(d){if(d.folder!==undefined)return S.folders[d.folder]?d.folder:'';return folderByName(d.group)?.id||''}
+function testFolder(e){const f=S.testFolders[e.id];if(f!==undefined)return S.folders[f]?f:'';return folderByName(e.group)?.id||''}
+const FOLD_KEY='engram:foldClosed';
+const FOLD=(()=>{try{return new Set(JSON.parse(localStorage.getItem(FOLD_KEY)||'[]'))}catch(e){return new Set()}})();
+function foldToggle(k){FOLD.has(k)?FOLD.delete(k):FOLD.add(k);try{localStorage.setItem(FOLD_KEY,JSON.stringify([...FOLD]))}catch(e){}render()}
+function foldCard(f,k,meta,right,body){const open=!FOLD.has(k);
+  return `<div class="card list fold ${open?'open':''}"><div class="fhd"><button class="fbt" data-act="fold" data-k="${k}" aria-expanded="${open}">${icon('folder',20)}<span class="nm"><b>${esc(f.name)}</b><small>${meta}</small></span>${right}${icon('chev',18).replace('class="i"','class="i chv"')}</button><button class="fmore" data-act="fold-menu" data-id="${f.id}" aria-label="Možnosti složky">${icon('more',20)}</button></div>${open?body:''}</div>`}
+function editFolder(id,onDone){
+  const f=id?S.folders[id]:null;
+  const sug=f?[]:[...new Set([...Object.values(S.decks).map(d=>d.group),...(TIDX||[]).map(e=>e.group)].filter(g=>g&&!folderByName(g)))];
+  const w=sheet(`<h3 class="t">${f?'Přejmenovat složku':'Nová složka'}</h3>
+    <div class="form" style="margin-top:16px">
+      <label class="field"><span>Název</span><input id="fName" value="${esc(f?.name||'')}" placeholder="např. název předmětu" maxlength="80"></label>
+      ${sug.length?`<div class="field"><span>Předměty z knihovny <em>balíčky a testy se zařadí samy</em></span><div class="chips">${sug.map(g=>`<button type="button" class="chip" data-g="${esc(g)}">${esc(g)}</button>`).join('')}</div></div>`:''}
+      <button class="btn primary lg block" id="fSave">${f?'Uložit':'Vytvořit složku'}</button>
+    </div>`);
+  const name=$('#fName',w);setTimeout(()=>name.focus(),320);
+  w.querySelector('.chips')?.addEventListener('click',e=>{const b=e.target.closest('[data-g]');if(b){name.value=b.dataset.g;name.focus()}});
+  $('#fSave',w).onclick=()=>{
+    const nm=name.value.trim();if(!nm){name.focus();toast('Zadejte název složky');return}
+    const dup=folderByName(nm);if(dup&&dup.id!==id){toast('Složka s tímto názvem už existuje');return}
+    let fid=id;if(f)f.name=nm;else{fid=uid();S.folders[fid]={id:fid,name:nm,created:Date.now()}}
+    save();w.close();if(onDone)onDone(fid);else{render();toast(f?'Složka přejmenována':'Složka vytvořena')}
+  };
+}
+// Výběr složky pro balíček nebo test; onPick(id složky | '')
+function pickFolder(cur,title,onPick){
+  const w=sheet(`<h3 class="t">${esc(title)}</h3><div class="menu">
+    ${foldersSorted().map(f=>`<button data-f="${f.id}">${icon('folder')}<span style="flex:1">${esc(f.name)}</span>${f.id===cur?icon('check',18):''}</button>`).join('')}
+    <button data-f="">${icon('ban')}<span style="flex:1">Bez složky</span>${cur?'':icon('check',18)}</button>
+    <hr><button data-new>${icon('plus')}Nová složka…</button></div>`);
+  w.addEventListener('click',e=>{const b=e.target.closest('.menu button');if(!b)return;
+    if(b.hasAttribute('data-new')){w.close();editFolder(null,onPick);return}
+    w.close();onPick(b.dataset.f)});
+}
+const fMsg=f=>f?`Přesunuto do složky „${S.folders[f].name}“`:'Přesunuto mimo složky';
+function moveDeck(id){const d=S.decks[id];pickFolder(deckFolder(d),'Přesunout balíček do složky',f=>{d.folder=f;save();render();toast(fMsg(f))})}
+function moveTest(id){const e=TIDX?.find(x=>x.id===id);if(!e)return;pickFolder(testFolder(e),'Přesunout test do složky',f=>{S.testFolders[id]=f;save();render();toast(fMsg(f))})}
+function openFolder(id){
+  const f=S.folders[id];if(!f)return;
+  const ids=Object.values(S.decks).filter(d=>deckFolder(d)===id).map(d=>d.id),nt=(TIDX||[]).filter(e=>testFolder(e)===id).length;
+  const C=deckCounts();let tot=0;for(const k of ids)tot+=C[k].new+C[k].learn+C[k].rev;
+  const rs=ids.length?roundStats(ids):{tot:0};
+  const w=sheet(`<div style="display:flex;gap:12px;align-items:center;color:var(--accent)">${icon('folder',22)}<h3 class="t" style="flex:1;color:var(--text)">${esc(f.name)}</h3></div>
+    <p class="d">${ids.length} ${pl(ids.length,'balíček','balíčky','balíčků')} · ${nt} ${pl(nt,'test','testy','testů')}</p>
+    ${rs.tot?`<div class="card rnd-prog" style="box-shadow:none;margin-top:14px"><div class="hd"><span>Naučeno <b class="num">${rs.known}</b> z ${rs.tot}</span><span class="num">zvládnutí ${rs.pct} %</span></div>${roundBar(rs)}</div>`:''}
+    <button class="btn primary lg block" style="margin-top:14px" data-x="rounds" ${rs.tot?'':'disabled'}>${icon('play',18)}Učit se po kolech (celá složka)</button>
+    <div class="menu">
+      <button data-x="study" ${tot?'':'disabled'}>${icon('clock')}${tot?`Opakovat podle plánu (${tot})`:'Podle plánu je dnes hotovo'}</button>
+      <button data-x="new">${icon('plus')}Nový balíček v této složce</button>
+      <button data-x="ren">${icon('edit')}Přejmenovat složku</button>
+      <hr><button data-x="del" class="danger">${icon('trash')}Smazat složku</button>
+    </div>`);
+  w.addEventListener('click',async e=>{const b=e.target.closest('[data-x]');if(!b||b.disabled)return;const x=b.dataset.x;
+    if(x==='rounds'){w.close();Study.start(ids,{rounds:true})}
+    if(x==='study'){w.close();Study.start(ids)}
+    if(x==='new'){w.close();editDeck(null,id)}
+    if(x==='ren'){w.close();editFolder(id)}
+    if(x==='del'&&await confirmDlg(`Smazat složku „${f.name}“?`,'Balíčky a testy ve složce zůstanou, jen už nebudou v žádné složce.','Smazat složku',true)){
+      for(const d of Object.values(S.decks))if(d.folder===id)delete d.folder;
+      for(const k in S.testFolders)if(S.testFolders[k]===id)delete S.testFolders[k];
+      delete S.folders[id];save();w.close();render();toast('Složka smazána')}
+  });
+}
+
 /* ---------- HOME ---------- */
 function vHome(){
   const now=new Date(),date=now.toLocaleDateString('cs-CZ',{weekday:'long',day:'numeric',month:'long'});
@@ -794,12 +885,19 @@ function vHome(){
   const banner=SY.on&&SY.st==='err'?`<div class="banner">${icon('shield',20)}<div>Synchronizace nefunguje: ${esc(SY.msg||'nedaří se spojit')}</div><button class="btn sm primary" data-act="sync-fix">Opravit</button></div>`
     :!SY.on&&nCards?`<div class="banner">${icon('shield',20)}<div>Data máte jen v tomto zařízení. Přihlaste se účtem z Posilovny a budou i v telefonu a tabletu.</div><button class="btn sm primary" data-act="sync-on">Synchronizovat</button></div>`
     :!SY.on&&nCards>=30&&Date.now()-lb>14*DAY?`<div class="banner">${icon('shield',20)}<div>${lb?'Poslední záloha je starší než 14 dní.':'Data máte jen v tomto zařízení.'} Zálohujte je.</div><button class="btn sm primary" data-act="backup">Zálohovat</button></div>`:'';
-  const rows=decks.map(d=>{const c=C[d.id];const z=(v,cl)=>`<span class="${v?cl:'z'}">${v}</span>`;
-    return `<button class="deck" data-act="deck" data-id="${d.id}"><span class="dot" style="background:${d.color}"></span><span class="nm"><b>${esc(d.name)}</b><small>${c.total} ${pl(c.total,'karta','karty','karet')}${c.susp?` · ${c.susp} pozastaveno`:''}</small></span><span class="cnts num">${z(c.new,'c-new')}${z(c.learn,'c-learn')}${z(c.rev,'c-rev')}</span>${icon('chev',18)}</button>`}).join('');
+  const z=(v,cl)=>`<span class="${v?cl:'z'}">${v}</span>`,cnts=c=>`<span class="cnts num">${z(c.new,'c-new')}${z(c.learn,'c-learn')}${z(c.rev,'c-rev')}</span>`;
+  const row=d=>{const c=C[d.id];
+    return `<button class="deck" data-act="deck" data-id="${d.id}"><span class="dot" style="background:${d.color}"></span><span class="nm"><b>${esc(d.name)}</b><small>${c.total} ${pl(c.total,'karta','karty','karet')}${c.susp?` · ${c.susp} pozastaveno`:''}</small></span>${cnts(c)}${icon('chev',18)}</button>`};
+  const byF={};for(const d of decks)(byF[deckFolder(d)]??=[]).push(d);
+  const tIn=new Set((TIDX||[]).map(testFolder));
+  const folds=foldersSorted().filter(f=>byF[f.id]||!tIn.has(f.id)).map(f=>{const ds=byF[f.id]||[],s={new:0,learn:0,rev:0},nc=ds.reduce((a,d)=>a+C[d.id].total,0);
+    for(const d of ds)for(const k in s)s[k]+=C[d.id][k];
+    return foldCard(f,'d'+f.id,`${ds.length} ${pl(ds.length,'balíček','balíčky','balíčků')}${nc?` · ${nc} ${pl(nc,'karta','karty','karet')}`:''}`,cnts(s),ds.length?ds.map(row).join(''):'<div class="fempty">Prázdná složka. Balíček sem přesunete v jeho nabídce (Přesunout do složky).</div>')}).join('');
+  const rest=byF['']||[];
   return `<h1 class="page">Dnes</h1><div class="sub">${date}</div>${hero}${tiles}${banner}
-    <h2 class="sec">Balíčky<button data-act="deck-new">${icon('plus',16)}</button></h2>
-    <div class="card list">${rows}</div>
-    <div class="btns" style="margin-top:12px"><button class="btn outline sm" data-act="deck-new">${icon('plus',16)}Nový balíček</button><button class="btn outline sm" data-act="library">${icon('download',16)}Knihovna</button><button class="btn outline sm" data-act="import">${icon('upload',16)}Import</button></div>`;
+    <h2 class="sec">Balíčky<span class="sec-b"><button data-act="folder-new" aria-label="Nová složka">${icon('folder',16)}Složka</button><button data-act="deck-new" aria-label="Nový balíček">${icon('plus',16)}</button></span></h2>
+    ${folds}${rest.length?`<div class="card list">${rest.map(row).join('')}</div>`:''}
+    <div class="btns" style="margin-top:12px"><button class="btn outline sm" data-act="deck-new">${icon('plus',16)}Nový balíček</button><button class="btn outline sm" data-act="folder-new">${icon('folder',16)}Nová složka</button><button class="btn outline sm" data-act="library">${icon('download',16)}Knihovna</button><button class="btn outline sm" data-act="import">${icon('upload',16)}Import</button></div>`;
 }
 function nextDueInfo(){
   const now=Date.now(),tom=addDays(dayStart(now),1),tom2=addDays(tom,1);let first=Infinity,cnt=0,learnNext=Infinity;
@@ -816,7 +914,7 @@ function nextDueInfo(){
 /* ---------- DECK sheet / editor ---------- */
 function openDeck(id){
   const d=S.decks[id],c=deckCounts()[id],tot=c.new+c.learn+c.rev;
-  const moreNew=c.newRaw>c.new,rs=roundStats([id]),tst=d.lib&&TIDX?TIDX.find(t=>t.deck===d.lib.id):null;
+  const fd=deckFolder(d),moreNew=c.newRaw>c.new,rs=roundStats([id]),tst=d.lib&&TIDX?TIDX.find(t=>t.deck===d.lib.id):null;
   const w=sheet(`<div style="display:flex;gap:12px;align-items:center"><span class="dot" style="background:${d.color};width:14px;height:14px"></span><h3 class="t" style="flex:1">${esc(d.name)}</h3></div>
     ${d.desc?`<p class="d">${esc(d.desc)}</p>`:''}
     <div class="legend num" style="margin:14px 0 14px"><span style="--c:var(--new)">${c.new} nových</span><span style="--c:var(--learn)">${c.learn} v učení</span><span style="--c:var(--review)">${c.rev} k opakování</span></div>
@@ -829,6 +927,7 @@ function openDeck(id){
       <button data-x="cram" ${c.total-c.susp?'':'disabled'}>${icon('reset')}Procvičit bez vlivu na plán</button>
       <button data-x="browse">${icon('cards')}Procházet karty (${c.total})</button>
       <button data-x="edit">${icon('settings')}Nastavení balíčku</button>
+      <button data-x="folder">${icon('folder')}${fd?`Složka: ${esc(S.folders[fd].name)}`:'Přesunout do složky'}</button>
       ${tst?`<button data-x="test">${icon('test')}Test k balíčku (${tst.count} otázek)</button>`:''}
       ${d.lib?`<button data-x="libsync">${icon('reset')}Aktualizovat z knihovny</button>`:''}
       <button data-x="export">${icon('download')}Exportovat do CSV</button>
@@ -843,13 +942,14 @@ function openDeck(id){
     if(x==='cram'){w.close();Study.start([id],{cram:true})}
     if(x==='browse'){w.close();BR.deck=id;BR.q='';BR.state='';go('browse')}
     if(x==='edit'){w.close();editDeck(id)}
+    if(x==='folder'){w.close();moveDeck(id)}
     if(x==='export'){exportCSV(id)}
     if(x==='libsync'){b.disabled=true;try{const m=libMsg(await libSync(id));w.close();render();toast(m||'Balíček je aktuální')}catch(err){b.disabled=false;toast(err.message||'Aktualizace se nezdařila')}}
     if(x==='del'){if(await confirmDlg(`Smazat „${d.name}“?`,`Smaže se ${c.total} ${pl(c.total,'karta','karty','karet')} včetně historie plánování. Akci nelze vrátit.`,'Smazat balíček',true)){
       const gone=new Set(Object.values(S.notes).filter(n=>n.deck===id).map(n=>n.id));for(const c of Object.values(S.cards))if(gone.has(c.nid))delete S.cards[c.id];for(const k of gone)delete S.notes[k];delete S.decks[id];gcMedia();save();w.close();render();toast('Balíček smazán')}}
   });
 }
-function editDeck(id){
+function editDeck(id,folder){
   const isNew=!id,d=isNew?{name:'',desc:'',color:COLORS[Object.keys(S.decks).length%COLORS.length],newPerDay:20,revPerDay:200,ttsF:'',ttsB:''}:S.decks[id];
   let color=d.color;
   const lo=sel=>LANGS.map(([v,l])=>`<option value="${v}" ${v===sel?'selected':''}>${l}</option>`).join('');
@@ -870,7 +970,7 @@ function editDeck(id){
   $('#dSave',w).onclick=()=>{
     const nm=name.value.trim();if(!nm){name.focus();toast('Zadejte název balíčku');return}
     const o={name:nm,desc:$('#dDesc',w).value.trim(),color,newPerDay:clamp(parseInt($('#dNew',w).value)||0,0,9999),revPerDay:clamp(parseInt($('#dRev',w).value)||0,0,99999),ttsF:$('#dTF',w).value,ttsB:$('#dTB',w).value};
-    if(isNew){const nid=newDeck(nm,o);S.meta.lastDeck=nid}else Object.assign(S.decks[id],o);
+    if(isNew){if(folder&&S.folders[folder])o.folder=folder;const nid=newDeck(nm,o);S.meta.lastDeck=nid}else Object.assign(S.decks[id],o);
     save();w.close();render();toast(isNew?'Balíček vytvořen':'Uloženo');
   };
 }
@@ -1533,7 +1633,7 @@ async function doRestore(){
   if(d?.app!=='engram'||!d.core?.cards){toast('Soubor není záloha Engramu');return}
   const nc=Object.keys(d.core.cards).length;
   if(!await confirmDlg('Obnovit ze zálohy?',`Záloha z ${fmtDate(d.exported,{day:'numeric',month:'long',year:'numeric'})} obsahuje ${nc} ${pl(nc,'kartu','karty','karet')}. Současná data budou nahrazena.`,'Obnovit',true))return;
-  S=d.core;S.settings={...DEF_SET,...S.settings};S.meta={...freshCore().meta,...S.meta};S.testRuns||={};LOGS=d.logs||[];MEDIA=d.media||{};
+  S=d.core;S.settings={...DEF_SET,...S.settings};S.meta={...freshCore().meta,...S.meta};S.testRuns||={};S.folders||={};S.testFolders||={};LOGS=d.logs||[];MEDIA=d.media||{};
   save('core','logs','media');await flush();applyTheme();render();toast('Data obnovena');
 }
 function csvField(s){s=String(s??'');return /[",\n\r]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}
@@ -1637,7 +1737,7 @@ function libApply(deckId,data){
     seen.add(c.id);
   });
   for(const [k,n] of Object.entries(have))if(!up.has(k)){deleteNote(n.id);del++}
-  L.seen=[...seen].filter(k=>up.has(k));L.ver=data.updated||'';L.synced=Date.now();save();
+  if(data.group)d.group=data.group;L.seen=[...seen].filter(k=>up.has(k));L.ver=data.updated||'';L.synced=Date.now();save();
   return {add,upd,del};
 }
 function libMsg(r){const p=[];if(r.add)p.push(`+${r.add} ${pl(r.add,'nová karta','nové karty','nových karet')}`);if(r.upd)p.push(`${r.upd} ${pl(r.upd,'upravená','upravené','upravených')}`);if(r.del)p.push(`${r.del} ${pl(r.del,'odebraná','odebrané','odebraných')}`);return p.join(' · ')}
@@ -1647,7 +1747,7 @@ async function libSyncAll(){
   const subs=Object.values(S.decks).filter(d=>d.lib&&Date.now()-(d.lib.synced||0)>6e5);if(!subs.length)return;
   let idx;try{idx=await libGet('index.json')}catch(e){return}
   const msgs=[];
-  for(const d of subs){const e=(idx.decks||[]).find(x=>x.id===d.lib.id);if(!e)continue;
+  for(const d of subs){const e=(idx.decks||[]).find(x=>x.id===d.lib.id);if(!e)continue;if(e.group)d.group=e.group;
     if(e.updated&&e.updated===d.lib.ver){d.lib.synced=Date.now();continue}
     try{const m=libMsg(libApply(d.id,await libGet(e.file)));if(m)msgs.push(`${d.name}: ${m}`)}catch(err){}}
   save();if(msgs.length){if(!Study.open&&!Layers.stack.length)render();toast(msgs.join(' · '))}
@@ -1670,7 +1770,7 @@ async function openLibrary(){
     try{
       if(b.dataset.lib==='add'){
         const data=await libGet(e.file);
-        if(!libDeckOf(e.id)){const id=newDeck(data.name||e.name,{id:'lib-'+e.id,desc:data.desc||e.desc||'',color:data.color||e.color||COLORS[0],lib:{id:e.id,ver:'',seen:[],synced:0}});
+        if(!libDeckOf(e.id)){const id=newDeck(data.name||e.name,{id:'lib-'+e.id,group:data.group||e.group||'',desc:data.desc||e.desc||'',color:data.color||e.color||COLORS[0],lib:{id:e.id,ver:'',seen:[],synced:0}});
           const r=libApply(id,data);S.meta.lastDeck=id;persistStorage();toast(`Balíček přidán · ${r.add} ${pl(r.add,'karta','karty','karet')}`)}
       }else{const d=libDeckOf(e.id);const m=libMsg(await libSync(d.id));toast(m||'Balíček je aktuální')}
       render();draw();
@@ -1685,7 +1785,7 @@ let TIDX=null,TIDX_ERR=false;
 async function testsLoad(){
   try{const idx=await libGet('index.json');TIDX=idx.tests||[];Store.set('tests:index',TIDX)}
   catch(e){TIDX=(await Store.get('tests:index'))||null;TIDX_ERR=!TIDX}
-  if(VIEW==='tests'&&!Test.open&&!Layers.stack.length)render();return TIDX;
+  if((VIEW==='tests'||VIEW==='home'&&Object.keys(S.folders).length)&&!Test.open&&!Study.open&&!Layers.stack.length)render();return TIDX;
 }
 async function testGet(e){try{const d=await libGet(e.file);Store.set('test:'+e.id,d);return d}catch(err){const d=await Store.get('test:'+e.id);if(d)return d;throw err}}
 function testRuns(id){return Object.values(S.testRuns||{}).filter(r=>!id||r.test===id).sort((a,b)=>b.at-a.at)}
@@ -1694,9 +1794,14 @@ function vTests(){
   const head=`<h1 class="page">Testy</h1><div class="sub">Otázky ABCD i otevřené k látce z balíčků</div>`;
   if(!TIDX){if(!TIDX_ERR)testsLoad();return head+`<div class="card pad"><div class="hint">${TIDX_ERR?'Testy se nepodařilo načíst. Zkontrolujte připojení k internetu.':'Načítám…'}</div>${TIDX_ERR?`<button class="btn outline sm" style="margin-top:12px" data-act="tests-reload">Zkusit znovu</button>`:''}</div>`}
   if(!TIDX.length)return head+`<div class="card pad"><div class="hint">Zatím tu nejsou žádné testy.</div></div>`;
-  const groups={};for(const e of TIDX)(groups[e.group||'Ostatní']??=[]).push(e);
-  let h=head+Object.entries(groups).map(([g,es])=>`<h2 class="sec">${esc(g)}</h2><div class="card list">${es.map(e=>{const rs=testRuns(e.id),best=rs.length?Math.max(...rs.map(runPct)):null;
-    return `<button class="deck" data-act="test" data-id="${esc(e.id)}"><span class="dot" style="background:var(--accent)"></span><span class="nm"><b>${esc(e.name)}</b><small>${e.abcd||0} ABCD · ${e.open||0} otevřených${rs.length?` · naposledy ${runPct(rs[0])} % · nejlépe ${best} %`:''}</small></span>${icon('chev',18)}</button>`}).join('')}</div>`).join('');
+  const row=e=>{const rs=testRuns(e.id),best=rs.length?Math.max(...rs.map(runPct)):null;
+    return `<button class="deck" data-act="test" data-id="${esc(e.id)}"><span class="dot" style="background:var(--accent)"></span><span class="nm"><b>${esc(e.name)}</b><small>${e.abcd||0} ABCD · ${e.open||0} otevřených${rs.length?` · naposledy ${runPct(rs[0])} % · nejlépe ${best} %`:''}</small></span>${icon('chev',18)}</button>`};
+  const byF={},dIn=new Set(Object.values(S.decks).map(deckFolder));for(const e of TIDX)(byF[testFolder(e)]??=[]).push(e);
+  const folds=foldersSorted().filter(f=>byF[f.id]||!dIn.has(f.id)).map(f=>{const es=byF[f.id]||[],done=es.filter(e=>testRuns(e.id).length).length;
+    return foldCard(f,'t'+f.id,`${es.length} ${pl(es.length,'test','testy','testů')}${done?` · ${done} ${pl(done,'vyzkoušený','vyzkoušené','vyzkoušených')}`:''}`,'',es.length?es.map(row).join(''):'<div class="fempty">Prázdná složka. Test sem přesunete po klepnutí na něj (Přesunout do složky).</div>')}).join('');
+  const groups={};for(const e of byF['']||[])(groups[e.group||'Ostatní']??=[]).push(e);
+  let h=head+`<h2 class="sec">Složky<span class="sec-b"><button data-act="folder-new">${icon('folder',16)}Nová složka</button></span></h2>`+folds
+    +Object.entries(groups).map(([g,es])=>`<h2 class="sec">${esc(g)}</h2><div class="card list">${es.map(row).join('')}</div>`).join('');
   const recent=testRuns().slice(0,6);
   if(recent.length)h+=`<h2 class="sec">Poslední výsledky</h2><div class="card list">${recent.map(r=>{const e=TIDX.find(x=>x.id===r.test),p=runPct(r);
     return `<div class="trow" style="--c:var(--${p>=75?'good':p>=50?'hard':'again'})"><i>${p}</i><div style="flex:1"><b style="font-weight:550">${esc(e?.name||r.test)}</b><small>${fmtDate(r.at,{day:'numeric',month:'numeric',year:'numeric'})} · ${r.n} ${pl(r.n,'otázka','otázky','otázek')} · ${Math.max(1,Math.round(r.dur/60000))} min</small></div></div>`}).join('')}</div>`;
@@ -1704,19 +1809,21 @@ function vTests(){
 }
 async function openTestSheet(id){
   if(!TIDX)await testsLoad();const e=TIDX?.find(x=>x.id===id);if(!e){toast('Test se nepodařilo načíst');return}
-  const runs=testRuns(id),last=runs[0];
+  const runs=testRuns(id),last=runs[0],tf=testFolder(e);
   const w=sheet(`<h3 class="t">${esc(e.name)}</h3>${e.desc?`<p class="d">${esc(e.desc)}</p>`:''}
     <div class="form" style="margin-top:16px">
       <div class="field"><span>Počet otázek</span><div class="seg" id="tN"><button data-v="10" class="on">10</button><button data-v="20">20</button><button data-v="0">Všechny</button></div></div>
       <div class="field"><span>Druh otázek</span><div class="seg" id="tK"><button data-v="mix" class="on">Obojí</button><button data-v="abcd">ABCD (${e.abcd||0})</button><button data-v="open">Otevřené (${e.open||0})</button></div></div>
       <button class="btn primary lg block" id="tGo">${icon('play',18)}Spustit test</button>
       ${last&&last.wrong?.length?`<button class="btn outline block" id="tWrong">Zopakovat chybné z minula (${last.wrong.length})</button>`:''}
+      <button class="btn ghost block" id="tFold">${icon('folder',18)}${tf?`Složka: ${esc(S.folders[tf].name)}`:'Přesunout do složky'}</button>
     </div>
     ${runs.length?`<h2 class="sec">Výsledky</h2><div class="card list">${runs.slice(0,5).map(r=>{const p=runPct(r);return `<div class="trow" style="--c:var(--${p>=75?'good':p>=50?'hard':'again'})"><i>${p}</i><div><b style="font-weight:550">${p} %</b><small>${fmtDate(r.at,{day:'numeric',month:'numeric',year:'numeric'})} · ${r.n} ${pl(r.n,'otázka','otázky','otázek')}</small></div></div>`}).join('')}</div>`:''}`);
   w.querySelectorAll('.seg').forEach(sg=>sg.onclick=ev=>{const b=ev.target.closest('[data-v]');if(!b)return;sg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b))});
   const go=async(o,btn)=>{btn.disabled=true;try{const data=await testGet(e);w.close();Test.start(e,data,o)}catch(err){btn.disabled=false;toast('Test se nepodařilo stáhnout')}};
   $('#tGo',w).onclick=ev=>go({n:+$('#tN .on',w).dataset.v,kind:$('#tK .on',w).dataset.v},ev.currentTarget);
   const tw=$('#tWrong',w);if(tw)tw.onclick=ev=>go({ids:last.wrong},ev.currentTarget);
+  $('#tFold',w).onclick=()=>{w.close();moveTest(id)};
 }
 const tNorm=s=>' '+String(s).toLocaleLowerCase('cs').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ')+' ';
 const Test={
@@ -1789,7 +1896,7 @@ const Test={
 /* ---------- synchronizace (Firebase, účet z Posilovny) ---------- */
 // Data jsou v users/{uid}/engram/{koš}, každý dokument má pole r = { klíč: {v: hodnota, u: čas změny} | {x: 1, u} }.
 // Klíče: 'set' (nastavení), 'd:<id>' balíček, 'n:<id>' poznámka, 'c:<id>' karta (stav FSRS), 'l:<čas>_<karta>' záznam
-// opakování, 'm:<id>' obrázek. Koše: cfg, n0–nf, c0–cf, lRRRRMM, m-<id>. Vyhrává novější u. Změny se nehlídají
+// opakování, 'm:<id>' obrázek, 'r:<id>' výsledek testu, 'f:<id>' složka, 't:<id testu>' složka testu. Koše: cfg, n0–nf, c0–cf, lRRRRMM, m-<id>. Vyhrává novější u. Změny se nehlídají
 // v jednotlivých místech kódu – syDiff po každém uložení porovná otisky záznamů s posledním známým stavem (SY.h).
 const FIREBASE_CONFIG={apiKey:'AIzaSyAsd042qIzIAXKIXHO3VY6JXIuvdyKLRtU',authDomain:'posilovna-59716.firebaseapp.com',projectId:'posilovna-59716',
   storageBucket:'posilovna-59716.firebasestorage.app',messagingSenderId:'1097378144969',appId:'1:1097378144969:web:5d38f8e38157910f18a318'};
@@ -1801,23 +1908,24 @@ function syRecords(){
   const m=new Map();m.set('set',S.settings);
   for(const k in S.decks)m.set('d:'+k,S.decks[k]);for(const k in S.notes)m.set('n:'+k,S.notes[k]);for(const k in S.cards)m.set('c:'+k,S.cards[k]);
   for(const l of LOGS)m.set(syLogKey(l),l);for(const k in MEDIA)m.set('m:'+k,MEDIA[k]);for(const k in S.testRuns||{})m.set('r:'+k,S.testRuns[k]);
+  for(const k in S.folders)m.set('f:'+k,S.folders[k]);for(const k in S.testFolders)m.set('t:'+k,S.testFolders[k]);
   return m;
 }
 function syHash(k,v){return k[0]==='l'||k[0]==='m'?'1':hstr(JSON.stringify(v))}
 // Čas změny pro záznam, který synchronizace vidí poprvé: vlastní čas záznamu, aby nově přidaná (nestudovaná) kopie
 // nepřepsala kartu s historií z jiného zařízení
-function syFirstU(k,v){const t=k[0];return t==='r'?(v.at||0):t==='c'?(v.last||0):t==='n'?(v.modified||v.created||0):t==='d'?(v.created||0):t==='l'?v[0]:1}
+function syFirstU(k,v){const t=k[0];return t==='r'?(v.at||0):t==='c'?(v.last||0):t==='n'?(v.modified||v.created||0):t==='d'||t==='f'?(v.created||0):t==='l'?v[0]:1}
 function syDiff(){
   const now=Date.now(),cur=syRecords();
   for(const [k,v] of cur){const h=syHash(k,v);if(SY.h[k]!==h){SY.u[k]=k in SY.h?now:syFirstU(k,v);SY.h[k]=h;SY.dirty[k]=1}}
   for(const k in SY.h)if(SY.h[k]!=='x'&&!cur.has(k)){SY.h[k]='x';SY.u[k]=now;SY.dirty[k]=1}
 }
-function syBucket(k){const t=k[0];if(k==='set'||t==='d')return 'cfg';
+function syBucket(k){const t=k[0];if(k==='set'||t==='d'||t==='f'||t==='t')return 'cfg';
   if(t==='l'){const d=new Date(+k.slice(2,k.indexOf('_')));return 'l'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')}
   if(t==='m')return 'm-'+k.slice(2);
   return t+(hstr(k.slice(2)).charCodeAt(0)%16).toString(16)}
 function syVal(k,lm){const t=k[0],id=k.slice(2);
-  if(k==='set')return S.settings;if(t==='d')return S.decks[id];if(t==='n')return S.notes[id];if(t==='c')return S.cards[id];if(t==='m')return MEDIA[id];if(t==='r')return S.testRuns?.[id];
+  if(k==='set')return S.settings;if(t==='d')return S.decks[id];if(t==='n')return S.notes[id];if(t==='c')return S.cards[id];if(t==='m')return MEDIA[id];if(t==='r')return S.testRuns?.[id];if(t==='f')return S.folders[id];if(t==='t')return S.testFolders[id];
   if(t==='l')return lm?lm.get(k):LOGS.find(l=>syLogKey(l)===k)}
 // Přijme záznamy z databáze; vrací true, když se něco změnilo
 function syApply(recs){
@@ -1832,6 +1940,8 @@ function syApply(recs){
     else if(t==='c'){if(del)delete S.cards[id];else S.cards[id]=v}
     else if(t==='m'){if(del)delete MEDIA[id];else MEDIA[id]=v}
     else if(t==='r'){S.testRuns||={};if(del)delete S.testRuns[id];else S.testRuns[id]=v}
+    else if(t==='f'){if(del)delete S.folders[id];else S.folders[id]=v}
+    else if(t==='t'){if(del)delete S.testFolders[id];else S.testFolders[id]=v}
     else if(t==='l'){if(!logIdx.size)LOGS.forEach((l,i)=>logIdx.set(syLogKey(l),i));const i=logIdx.get(k);
       if(del){if(i!==undefined){LOGS[i]=null;logIdx.delete(k)}}else if(i===undefined){LOGS.push(v);logIdx.set(k,LOGS.length-1)}logs=true}
     else continue;
@@ -1968,6 +2078,9 @@ const ACT={
   study:()=>{const ids=Object.keys(S.decks);Study.start(ids)},
   deck:el=>openDeck(el.dataset.id),
   'deck-new':()=>editDeck(null),
+  'folder-new':()=>editFolder(null),
+  fold:el=>foldToggle(el.dataset.k),
+  'fold-menu':el=>openFolder(el.dataset.id),
   sample:createSamples,
   library:openLibrary,
   test:el=>openTestSheet(el.dataset.id),
@@ -2011,7 +2124,7 @@ document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if
   await Store.open();
   let core=await Store.get('core');
   S=core&&core.v?core:freshCore();
-  S.settings={...DEF_SET,...S.settings};S.meta={...freshCore().meta,...S.meta};S.testRuns||={};
+  S.settings={...DEF_SET,...S.settings};S.meta={...freshCore().meta,...S.meta};S.testRuns||={};S.folders||={};S.testFolders||={};
   LOGS=(await Store.get('logs'))||[];MEDIA=(await Store.get('media'))||{};
   migrateLibIds();
   const sy=await Store.get('sync');if(sy&&sy.on)Object.assign(SY,{on:true,uid:sy.uid||null,email:sy.email||'',h:sy.h||{},u:sy.u||{},dirty:sy.dirty||{}});
