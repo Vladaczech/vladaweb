@@ -79,7 +79,7 @@ h2.sec button{color:var(--accent);font-weight:600;font-size:13px}
 .pad{padding:16px}
 
 nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;background:color-mix(in srgb,var(--surface) 86%,transparent);backdrop-filter:saturate(1.6) blur(18px);-webkit-backdrop-filter:saturate(1.6) blur(18px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
-nav.tabs .in{max-width:600px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);height:var(--tab)}
+nav.tabs .in{max-width:600px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);height:var(--tab)}
 .tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;font-weight:500;color:var(--muted)}
 .tab.on{color:var(--accent)}
 
@@ -314,6 +314,34 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .rate:active{transform:scale(.96)}
 .rate small{font-size:12px;font-weight:550;opacity:.85;font-variant-numeric:tabular-nums}
 .kbd-hint{text-align:center;font-size:11.5px;color:var(--muted);margin-top:8px}
+/* ---------- testy ---------- */
+.tq{max-width:620px;width:100%;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:18px 18px 20px}
+.tq.anim{animation:cardIn .28s cubic-bezier(.2,.85,.25,1)}
+.tq .kind{font-size:12.5px;color:var(--muted);font-weight:500;margin-bottom:10px;display:flex;justify-content:space-between;gap:8px}
+.tq .qq{font-size:19px;line-height:1.42;font-weight:500;letter-spacing:-.005em}
+.opts{display:grid;gap:10px;margin-top:18px}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;padding:12px 13px;border-radius:14px;border:1.5px solid var(--line);background:var(--surface);font-size:16px;line-height:1.4;width:100%;transition:border-color .15s,background .15s}
+.opt b{flex:none;width:26px;height:26px;border-radius:8px;display:grid;place-items:center;background:var(--surface-2);font-size:13.5px;margin-top:-1px}
+.opt span{flex:1;min-width:0}
+.opt.ok{border-color:var(--good);background:color-mix(in srgb,var(--good) 12%,var(--surface))}.opt.ok b{background:var(--good);color:#fff}
+.opt.bad{border-color:var(--again);background:color-mix(in srgb,var(--again) 12%,var(--surface))}.opt.bad b{background:var(--again);color:#fff}
+.opts.done .opt:not(.ok):not(.bad){opacity:.5}
+.tq textarea{margin-top:16px;min-height:150px}
+.tx{margin-top:14px;padding:12px 14px;border-radius:14px;background:var(--surface-2);font-size:15px;line-height:1.45;color:var(--text-2)}
+.tx h4{font-size:12.5px;color:var(--muted);font-weight:600;margin-bottom:4px}
+.tx.mine{white-space:pre-wrap;word-break:break-word}
+.kp{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:6px}
+.kp li{display:flex;gap:8px;align-items:flex-start}
+.kp li i{flex:none;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:11px;font-weight:700;margin-top:1px;background:var(--surface-3);color:var(--muted)}
+.kp li.hit i{background:var(--good);color:#fff}
+.rates.r3{grid-template-columns:repeat(3,1fr)}
+.rate.sug{box-shadow:0 0 0 2px var(--c) inset}
+.trow{display:flex;gap:10px;align-items:flex-start;padding:11px 14px;border-bottom:1px solid var(--line);text-align:left;font-size:14px;line-height:1.4}
+.trow:last-child{border-bottom:0}
+.trow i{flex:none;width:22px;height:22px;border-radius:7px;display:grid;place-items:center;font-style:normal;font-weight:700;font-size:12px;color:#fff;background:var(--c)}
+.trow small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+.tres{max-width:620px;margin:0 auto;width:100%}
+.tres .st-done{padding-bottom:8px}
 @media (hover:none){.kbd-hint{display:none}}
 .st-done{max-width:520px;width:100%;margin:auto;text-align:center;padding:20px 8px}
 .st-done .big{width:72px;height:72px;border-radius:22px;background:color-mix(in srgb,var(--good) 14%,transparent);color:var(--good);display:grid;place-items:center;margin:0 auto 18px}
@@ -357,6 +385,16 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   <div class="st-prog"><i id="stProg"></i></div>
   <div class="st-stage" id="stStage"></div>
   <div class="st-bottom" id="stBottom"></div>
+</section>
+<section id="test" class="study hidden" aria-label="Test">
+  <div class="st-top">
+    <button class="hbtn" data-act="test-close" aria-label="Ukončit test" id="tsClose"></button>
+    <div class="st-counts num" id="tsCounts"></div>
+    <span class="hbtn" aria-hidden="true"></span>
+  </div>
+  <div class="st-prog"><i id="tsProg"></i></div>
+  <div class="st-stage" id="tsStage"></div>
+  <div class="st-bottom" id="tsBottom"></div>
 </section>
 <div id="toast" role="status" aria-live="polite"></div>
 <input type="file" id="fileImg" accept="image/*" class="hidden">
@@ -412,6 +450,7 @@ const IC={
   deck:'<rect x="4" y="4" width="16" height="16" rx="3.5"/><path d="M8 9h8M8 13h5"/>',
   logo:'<path d="M7 6h10M7 12h7.5M7 18h10M7 6v12"/>',
   search:'<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/>',
+  test:'<rect x="5.5" y="4.5" width="13" height="16" rx="2.5"/><path d="M9.5 4.5v-1h5v1"/><path d="m9 13 2 2 4-4.5"/>',
   shield:'<path d="M12 3.5 5 6v5.5c0 4.4 3 7.7 7 9 4-1.3 7-4.6 7-9V6z"/><path d="m9 12 2 2 4-4"/>'
 };
 const icon=(n,s=20,w=1.8)=>`<svg class="i" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n]||''}</svg>`;
@@ -421,7 +460,7 @@ const DEF_SET={theme:'system',retention:0.9,learnSteps:[1,10],relearnSteps:[10],
   leechThreshold:8,leechAction:'tag',haptics:true,gestures:true,autoTTS:false,showIvl:true,fuzz:true,learnAhead:20,reminder:'19:00',w:null};
 const COLORS=['#4f5bd5','#2c9465','#d94848','#d9732b','#8e4ec6','#0e9fb3','#d6409f','#6b7280'];
 let S=null, LOGS=[], MEDIA={};
-const freshCore=()=>({v:1,decks:{},notes:{},cards:{},settings:{...DEF_SET},meta:{created:Date.now(),lastBackup:0,lastDeck:null,lastType:'basic',extra:{day:-1,n:{}}}});
+const freshCore=()=>({v:1,decks:{},notes:{},cards:{},testRuns:{},settings:{...DEF_SET},meta:{created:Date.now(),lastBackup:0,lastDeck:null,lastType:'basic',extra:{day:-1,n:{}}}});
 
 const Store={
   db:null,
@@ -710,10 +749,10 @@ function speak(text,lang){
 
 /* ---------- router ---------- */
 let VIEW='home';
-const TABS=[['home','Dnes','home'],['browse','Karty','cards'],['stats','Statistiky','stats'],['settings','Nastavení','settings']];
+const TABS=[['home','Dnes','home'],['browse','Karty','cards'],['tests','Testy','test'],['stats','Statistiky','stats'],['settings','Nastavení','settings']];
 function render(){
   const v=$('#view');
-  v.innerHTML=({home:vHome,browse:vBrowse,stats:vStats,settings:vSettings})[VIEW]();
+  v.innerHTML=({home:vHome,browse:vBrowse,tests:vTests,stats:vStats,settings:vSettings})[VIEW]();
   $('#tabs').innerHTML=TABS.map(([k,l,i])=>`<button class="tab ${k===VIEW?'on':''}" data-act="tab" data-v="${k}" aria-current="${k===VIEW?'page':'false'}">${icon(i,22,k===VIEW?2:1.8)}<span>${l}</span></button>`).join('');
   if(VIEW==='browse')bindBrowse();
   if(VIEW==='settings')bindSettings();
@@ -775,7 +814,7 @@ function nextDueInfo(){
 /* ---------- DECK sheet / editor ---------- */
 function openDeck(id){
   const d=S.decks[id],c=deckCounts()[id],tot=c.new+c.learn+c.rev;
-  const moreNew=c.newRaw>c.new,rs=roundStats([id]);
+  const moreNew=c.newRaw>c.new,rs=roundStats([id]),tst=d.lib&&TIDX?TIDX.find(t=>t.deck===d.lib.id):null;
   const w=sheet(`<div style="display:flex;gap:12px;align-items:center"><span class="dot" style="background:${d.color};width:14px;height:14px"></span><h3 class="t" style="flex:1">${esc(d.name)}</h3></div>
     ${d.desc?`<p class="d">${esc(d.desc)}</p>`:''}
     <div class="legend num" style="margin:14px 0 14px"><span style="--c:var(--new)">${c.new} nových</span><span style="--c:var(--learn)">${c.learn} v učení</span><span style="--c:var(--review)">${c.rev} k opakování</span></div>
@@ -788,6 +827,7 @@ function openDeck(id){
       <button data-x="cram" ${c.total-c.susp?'':'disabled'}>${icon('reset')}Procvičit bez vlivu na plán</button>
       <button data-x="browse">${icon('cards')}Procházet karty (${c.total})</button>
       <button data-x="edit">${icon('settings')}Nastavení balíčku</button>
+      ${tst?`<button data-x="test">${icon('test')}Test k balíčku (${tst.count} otázek)</button>`:''}
       ${d.lib?`<button data-x="libsync">${icon('reset')}Aktualizovat z knihovny</button>`:''}
       <button data-x="export">${icon('download')}Exportovat do CSV</button>
       <hr><button data-x="del" class="danger">${icon('trash')}Smazat balíček</button>
@@ -795,6 +835,7 @@ function openDeck(id){
   w.addEventListener('click',async e=>{const b=e.target.closest('[data-x]');if(!b||b.disabled)return;const x=b.dataset.x;
     if(x==='study'){w.close();Study.start([id])}
     if(x==='rounds'){w.close();Study.start([id],{rounds:true})}
+    if(x==='test'){w.close();openTestSheet(tst.id)}
     if(x==='add'){w.close();openEditor(null,{deck:id})}
     if(x==='more'){addExtraNew([id],10);w.close();render();toast('Limit nových karet navýšen o 10')}
     if(x==='cram'){w.close();Study.start([id],{cram:true})}
@@ -1217,6 +1258,13 @@ function bindSwipe(el){
   el.addEventListener('pointerup',end);el.addEventListener('pointercancel',end);
 }
 document.addEventListener('keydown',e=>{
+  if(!Test.open||Layers.stack[Layers.stack.length-1]!==Test.closeFn)return;
+  const k=e.key.toLowerCase(),q=Test.qs[Test.i];
+  if(e.target.matches('textarea,input')){if(k==='enter'&&(e.metaKey||e.ctrlKey)){e.preventDefault();Test.evalOpen()}return}
+  if(q&&q.t==='abcd'&&!Test.state){const j='abcd1234'.indexOf(k);if(j>=0){e.preventDefault();const b=$$('#tsStage .opt')[j%4];if(b)Test.pick(b.dataset.o)}return}
+  if(k==='enter'||k===' '){const b=$('#tsBottom [data-act="test-next"]');if(b){e.preventDefault();Test.next()}}
+});
+document.addEventListener('keydown',e=>{
   if(!Study.open||Layers.stack[Layers.stack.length-1]!==Study.closeFn)return;
   if(e.target.matches('input,textarea,select')&&e.key!=='Enter')return;
   if(e.target.id==='tiInput')return;
@@ -1483,7 +1531,7 @@ async function doRestore(){
   if(d?.app!=='engram'||!d.core?.cards){toast('Soubor není záloha Engramu');return}
   const nc=Object.keys(d.core.cards).length;
   if(!await confirmDlg('Obnovit ze zálohy?',`Záloha z ${fmtDate(d.exported,{day:'numeric',month:'long',year:'numeric'})} obsahuje ${nc} ${pl(nc,'kartu','karty','karet')}. Současná data budou nahrazena.`,'Obnovit',true))return;
-  S=d.core;S.settings={...DEF_SET,...S.settings};S.meta={...freshCore().meta,...S.meta};LOGS=d.logs||[];MEDIA=d.media||{};
+  S=d.core;S.settings={...DEF_SET,...S.settings};S.meta={...freshCore().meta,...S.meta};S.testRuns||={};LOGS=d.logs||[];MEDIA=d.media||{};
   save('core','logs','media');await flush();applyTheme();render();toast('Data obnovena');
 }
 function csvField(s){s=String(s??'');return /[",\n\r]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}
@@ -1628,6 +1676,114 @@ async function openLibrary(){
   });
 }
 
+/* ---------- testy (soubory v knihovně, index.json → tests) ---------- */
+// Test: {id, name, group, desc, deck, questions: [{id, t: 'abcd', q, o: [možnosti], a: index správné, x} | {id, t: 'open', q, a: vzorová odpověď, k: [[klíčový bod, [kmeny slov]]], x}]}
+// Výsledky jsou v S.testRuns (synchronizují se jako r:<id>).
+let TIDX=null,TIDX_ERR=false;
+async function testsLoad(){
+  try{const idx=await libGet('index.json');TIDX=idx.tests||[];Store.set('tests:index',TIDX)}
+  catch(e){TIDX=(await Store.get('tests:index'))||null;TIDX_ERR=!TIDX}
+  if(VIEW==='tests'&&!Test.open&&!Layers.stack.length)render();return TIDX;
+}
+async function testGet(e){try{const d=await libGet(e.file);Store.set('test:'+e.id,d);return d}catch(err){const d=await Store.get('test:'+e.id);if(d)return d;throw err}}
+function testRuns(id){return Object.values(S.testRuns||{}).filter(r=>!id||r.test===id).sort((a,b)=>b.at-a.at)}
+const runPct=r=>r.max?Math.round(r.score/r.max*100):0;
+function vTests(){
+  const head=`<h1 class="page">Testy</h1><div class="sub">Otázky ABCD i otevřené k látce z balíčků</div>`;
+  if(!TIDX){if(!TIDX_ERR)testsLoad();return head+`<div class="card pad"><div class="hint">${TIDX_ERR?'Testy se nepodařilo načíst. Zkontrolujte připojení k internetu.':'Načítám…'}</div>${TIDX_ERR?`<button class="btn outline sm" style="margin-top:12px" data-act="tests-reload">Zkusit znovu</button>`:''}</div>`}
+  if(!TIDX.length)return head+`<div class="card pad"><div class="hint">Zatím tu nejsou žádné testy.</div></div>`;
+  const groups={};for(const e of TIDX)(groups[e.group||'Ostatní']??=[]).push(e);
+  let h=head+Object.entries(groups).map(([g,es])=>`<h2 class="sec">${esc(g)}</h2><div class="card list">${es.map(e=>{const rs=testRuns(e.id),best=rs.length?Math.max(...rs.map(runPct)):null;
+    return `<button class="deck" data-act="test" data-id="${esc(e.id)}"><span class="dot" style="background:var(--accent)"></span><span class="nm"><b>${esc(e.name)}</b><small>${e.abcd||0} ABCD · ${e.open||0} otevřených${rs.length?` · naposledy ${runPct(rs[0])} % · nejlépe ${best} %`:''}</small></span>${icon('chev',18)}</button>`}).join('')}</div>`).join('');
+  const recent=testRuns().slice(0,6);
+  if(recent.length)h+=`<h2 class="sec">Poslední výsledky</h2><div class="card list">${recent.map(r=>{const e=TIDX.find(x=>x.id===r.test),p=runPct(r);
+    return `<div class="trow" style="--c:var(--${p>=75?'good':p>=50?'hard':'again'})"><i>${p}</i><div style="flex:1"><b style="font-weight:550">${esc(e?.name||r.test)}</b><small>${fmtDate(r.at,{day:'numeric',month:'numeric',year:'numeric'})} · ${r.n} ${pl(r.n,'otázka','otázky','otázek')} · ${Math.max(1,Math.round(r.dur/60000))} min</small></div></div>`}).join('')}</div>`;
+  return h;
+}
+async function openTestSheet(id){
+  if(!TIDX)await testsLoad();const e=TIDX?.find(x=>x.id===id);if(!e){toast('Test se nepodařilo načíst');return}
+  const runs=testRuns(id),last=runs[0];
+  const w=sheet(`<h3 class="t">${esc(e.name)}</h3>${e.desc?`<p class="d">${esc(e.desc)}</p>`:''}
+    <div class="form" style="margin-top:16px">
+      <div class="field"><span>Počet otázek</span><div class="seg" id="tN"><button data-v="10" class="on">10</button><button data-v="20">20</button><button data-v="0">Všechny</button></div></div>
+      <div class="field"><span>Druh otázek</span><div class="seg" id="tK"><button data-v="mix" class="on">Obojí</button><button data-v="abcd">ABCD (${e.abcd||0})</button><button data-v="open">Otevřené (${e.open||0})</button></div></div>
+      <button class="btn primary lg block" id="tGo">${icon('play',18)}Spustit test</button>
+      ${last&&last.wrong?.length?`<button class="btn outline block" id="tWrong">Zopakovat chybné z minula (${last.wrong.length})</button>`:''}
+    </div>
+    ${runs.length?`<h2 class="sec">Výsledky</h2><div class="card list">${runs.slice(0,5).map(r=>{const p=runPct(r);return `<div class="trow" style="--c:var(--${p>=75?'good':p>=50?'hard':'again'})"><i>${p}</i><div><b style="font-weight:550">${p} %</b><small>${fmtDate(r.at,{day:'numeric',month:'numeric',year:'numeric'})} · ${r.n} ${pl(r.n,'otázka','otázky','otázek')}</small></div></div>`}).join('')}</div>`:''}`);
+  w.querySelectorAll('.seg').forEach(sg=>sg.onclick=ev=>{const b=ev.target.closest('[data-v]');if(!b)return;sg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b))});
+  const go=async(o,btn)=>{btn.disabled=true;try{const data=await testGet(e);w.close();Test.start(e,data,o)}catch(err){btn.disabled=false;toast('Test se nepodařilo stáhnout')}};
+  $('#tGo',w).onclick=ev=>go({n:+$('#tN .on',w).dataset.v,kind:$('#tK .on',w).dataset.v},ev.currentTarget);
+  const tw=$('#tWrong',w);if(tw)tw.onclick=ev=>go({ids:last.wrong},ev.currentTarget);
+}
+const tNorm=s=>' '+String(s).toLocaleLowerCase('cs').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ')+' ';
+const Test={
+  open:false,e:null,data:null,qs:[],i:0,res:[],state:null,cur:null,t0:0,
+  start(e,data,o={}){
+    let qs=(data.questions||[]).filter(q=>q&&q.id&&q.q&&(q.t==='abcd'?Array.isArray(q.o)&&q.o.length>1:q.t==='open'));
+    if(o.ids){const s=new Set(o.ids);qs=qs.filter(q=>s.has(q.id))}else if(o.kind&&o.kind!=='mix')qs=qs.filter(q=>q.t===o.kind);
+    qs=shuffle([...qs]);if(o.n)qs=qs.slice(0,o.n);
+    if(!qs.length){toast('Pro tento výběr nejsou v testu žádné otázky');return}
+    this.e=e;this.data=data;this.qs=qs.map(q=>q.t==='abcd'?{...q,ord:shuffle(q.o.map((_,j)=>j))}:q);this.i=0;this.res=[];this.t0=Date.now();
+    const el=$('#test');el.classList.remove('hidden');void el.offsetHeight;el.classList.add('open');document.body.style.overflow='hidden';
+    if(!this.open){this.open=true;Layers.push(this.closeFn)}
+    this.show();
+  },
+  closeFn:()=>Test.close(),
+  close(){Layers.remove(this.closeFn);this.open=false;const el=$('#test');el.classList.remove('open');setTimeout(()=>el.classList.add('hidden'),220);document.body.style.overflow='';render()},
+  head(){const n=this.qs.length;$('#tsCounts').innerHTML=this.i<n?`<span class="cur">Otázka ${this.i+1}/${n}</span>`:'<span>Výsledek</span>';$('#tsProg').style.width=(this.res.length/n*100)+'%'},
+  show(){
+    const q=this.qs[this.i];this.state=null;this.cur=null;this.head();
+    let h=`<div class="tq anim"><div class="kind"><span>${q.t==='abcd'?'Výběr z možností':'Otevřená otázka'}</span></div><div class="qq content">${fmt(q.q)}</div>`;
+    if(q.t==='abcd')h+=`<div class="opts">${q.ord.map((oi,j)=>`<button class="opt" data-act="test-pick" data-o="${oi}"><b>${'ABCDEFGH'[j]}</b><span class="content">${fmt(q.o[oi])}</span></button>`).join('')}</div>`;
+    else h+=`<textarea id="tsAns" placeholder="Napište odpověď vlastními slovy…" rows="6"></textarea>`;
+    $('#tsStage').innerHTML=h+'<div id="tsFb"></div></div>';$('#tsStage').scrollTop=0;
+    $('#tsBottom').innerHTML=q.t==='abcd'?'<div class="kbd-hint">Vyberte jednu odpověď · klávesy A–D</div>':'<button class="btn primary lg block" data-act="test-eval">Vyhodnotit</button><div class="kbd-hint">Pak porovnáte svou odpověď se vzorovou · Ctrl+Enter</div>';
+  },
+  pick(oi){
+    const q=this.qs[this.i];if(this.state||!q||q.t!=='abcd')return;oi=+oi;const ok=oi===q.a;this.state='done';
+    $$('#tsStage .opt').forEach(b=>{const v=+b.dataset.o;b.disabled=true;if(v===q.a)b.classList.add('ok');else if(v===oi)b.classList.add('bad')});
+    $('#tsStage .opts').classList.add('done');
+    $('#tsFb').innerHTML=`<div class="tx"><h4 style="color:var(--${ok?'good':'again'})">${ok?'Správně':'Špatně'}</h4>${q.x?fmt(q.x):''}</div>`;
+    this.res.push({id:q.id,sc:ok?1:0,pick:oi});haptic(ok?8:[12,40,12]);this.head();this.nextBtn();
+  },
+  nextBtn(){$('#tsBottom').innerHTML=`<button class="btn primary lg block" data-act="test-next">${this.i+1<this.qs.length?'Další otázka':'Zobrazit výsledek'}</button>`},
+  // Otevřená otázka: porovná odpověď s klíčovými body (kmeny slov bez diakritiky) a navrhne hodnocení, rozhoduje uživatel
+  evalOpen(){
+    const q=this.qs[this.i];if(this.state||!q||q.t!=='open')return;
+    const ans=($('#tsAns')?.value||'').trim(),A=tNorm(ans);
+    const ks=(q.k||[]).map(([p,w])=>({p,hit:!!ans&&(w||[]).some(x=>A.includes(String(x).toLowerCase()))})),hits=ks.filter(x=>x.hit).length;
+    const r=ks.length?hits/ks.length:0,sug=!ans?0:!ks.length?null:r>=.75?1:r>=.35?.5:0;
+    this.state='eval';this.cur={ans};
+    $('#tsAns').outerHTML=`<div class="tx mine"><h4>Vaše odpověď</h4>${ans?esc(ans):'<i>(bez odpovědi)</i>'}</div>`;
+    $('#tsFb').innerHTML=`<div class="tx"><h4>Vzorová odpověď</h4><div class="content">${fmt(q.a||'')}</div></div>
+      ${ks.length?`<div class="tx"><h4>Klíčové body · ve vaší odpovědi ${hits} z ${ks.length}</h4><ul class="kp">${ks.map(k=>`<li class="${k.hit?'hit':''}"><i>${k.hit?'✓':''}</i><span>${esc(k.p)}</span></li>`).join('')}</ul></div>`:''}
+      ${q.x?`<div class="kbd-hint" style="text-align:left">${fmt(q.x)}</div>`:''}`;
+    const L=[[0,'Špatně','again'],[.5,'Částečně','hard'],[1,'Správně','good']];
+    $('#tsBottom').innerHTML=`<div class="rates r3">${L.map(([v,l,c])=>`<button class="rate ${sug===v?'sug':''}" style="--c:var(--${c})" data-act="test-self" data-s="${v}">${l}${sug===v?'<small>návrh</small>':''}</button>`).join('')}</div><div class="kbd-hint">Ohodnoťte se sami – návrh vychází z nalezených klíčových bodů</div>`;
+  },
+  self(v){const q=this.qs[this.i];if(this.state!=='eval')return;this.state='done';this.res.push({id:q.id,sc:+v,ans:this.cur.ans});this.next()},
+  next(){if(this.state!=='done')return;this.i++;if(this.i<this.qs.length)this.show();else this.finish()},
+  finish(){
+    const n=this.qs.length,sc=this.res.reduce((a,r)=>a+r.sc,0),p=Math.round(sc/n*100),dur=Date.now()-this.t0;
+    const wrong=this.res.filter(r=>r.sc<1).map(r=>r.id),id=uid();
+    S.testRuns[id]={id,test:this.e.id,at:Date.now(),dur,score:sc,max:n,n,wrong};save();
+    this.wrong=wrong;this.head();
+    const good=this.res.filter(r=>r.sc===1).length,half=this.res.filter(r=>r.sc===.5).length,bad=n-good-half,mins=Math.round(dur/60000);
+    const by=Object.fromEntries(this.res.map(r=>[r.id,r]));
+    const rows=this.qs.map(q=>{const r=by[q.id],c=r.sc===1?'good':r.sc?'hard':'again',m=r.sc===1?'✓':r.sc?'½':'✗';
+      const det=q.t==='abcd'&&r.sc<1?`<small>Vaše: ${esc(plain(q.o[r.pick]))} · správně: ${esc(plain(q.o[q.a]))}</small>`:'';
+      return `<div class="trow" style="--c:var(--${c})"><i>${m}</i><div>${esc(plain(q.q))}${det}</div></div>`}).join('');
+    $('#tsStage').innerHTML=`<div class="tres"><div class="st-done"><div class="big" style="${p<50?'background:color-mix(in srgb,var(--again) 14%,transparent);color:var(--again)':''}">${icon(p>=50?'check':'reset',34,2.2)}</div>
+      <h2 class="num">${p} %</h2><p>${p>=90?'Výborně!':p>=75?'Velmi dobře.':p>=50?'Dobře, ale je co zlepšovat.':'Tohle chce ještě zopakovat.'}</p>
+      <div class="kpis num"><div class="card kpi"><div class="k">Správně</div><div class="v" style="color:var(--good)">${good}</div></div><div class="card kpi"><div class="k">Částečně</div><div class="v" style="color:var(--hard)">${half}</div></div><div class="card kpi"><div class="k">Chybně</div><div class="v" style="color:var(--again)">${bad}</div></div><div class="card kpi"><div class="k">Čas</div><div class="v">${mins<1?'<1':mins}<small>min</small></div></div></div>
+      <div class="btns">${wrong.length?`<button class="btn primary lg" data-act="test-retry">${icon('reset',18)}Zopakovat chybné (${wrong.length})</button>`:''}<button class="btn ${wrong.length?'ghost':'primary lg'}" data-act="test-close">Zavřít</button></div></div>
+      <h2 class="sec">Přehled otázek</h2><div class="card list">${rows}</div></div>`;
+    $('#tsStage').scrollTop=0;$('#tsBottom').innerHTML='';
+  },
+  retry(){if(this.wrong?.length)this.start(this.e,this.data,{ids:this.wrong})}
+};
+
 /* ---------- synchronizace (Firebase, účet z Posilovny) ---------- */
 // Data jsou v users/{uid}/engram/{koš}, každý dokument má pole r = { klíč: {v: hodnota, u: čas změny} | {x: 1, u} }.
 // Klíče: 'set' (nastavení), 'd:<id>' balíček, 'n:<id>' poznámka, 'c:<id>' karta (stav FSRS), 'l:<čas>_<karta>' záznam
@@ -1642,13 +1798,13 @@ const syLogKey=l=>'l:'+l[0]+'_'+l[1];
 function syRecords(){
   const m=new Map();m.set('set',S.settings);
   for(const k in S.decks)m.set('d:'+k,S.decks[k]);for(const k in S.notes)m.set('n:'+k,S.notes[k]);for(const k in S.cards)m.set('c:'+k,S.cards[k]);
-  for(const l of LOGS)m.set(syLogKey(l),l);for(const k in MEDIA)m.set('m:'+k,MEDIA[k]);
+  for(const l of LOGS)m.set(syLogKey(l),l);for(const k in MEDIA)m.set('m:'+k,MEDIA[k]);for(const k in S.testRuns||{})m.set('r:'+k,S.testRuns[k]);
   return m;
 }
 function syHash(k,v){return k[0]==='l'||k[0]==='m'?'1':hstr(JSON.stringify(v))}
 // Čas změny pro záznam, který synchronizace vidí poprvé: vlastní čas záznamu, aby nově přidaná (nestudovaná) kopie
 // nepřepsala kartu s historií z jiného zařízení
-function syFirstU(k,v){const t=k[0];return t==='c'?(v.last||0):t==='n'?(v.modified||v.created||0):t==='d'?(v.created||0):t==='l'?v[0]:1}
+function syFirstU(k,v){const t=k[0];return t==='r'?(v.at||0):t==='c'?(v.last||0):t==='n'?(v.modified||v.created||0):t==='d'?(v.created||0):t==='l'?v[0]:1}
 function syDiff(){
   const now=Date.now(),cur=syRecords();
   for(const [k,v] of cur){const h=syHash(k,v);if(SY.h[k]!==h){SY.u[k]=k in SY.h?now:syFirstU(k,v);SY.h[k]=h;SY.dirty[k]=1}}
@@ -1659,7 +1815,7 @@ function syBucket(k){const t=k[0];if(k==='set'||t==='d')return 'cfg';
   if(t==='m')return 'm-'+k.slice(2);
   return t+(hstr(k.slice(2)).charCodeAt(0)%16).toString(16)}
 function syVal(k,lm){const t=k[0],id=k.slice(2);
-  if(k==='set')return S.settings;if(t==='d')return S.decks[id];if(t==='n')return S.notes[id];if(t==='c')return S.cards[id];if(t==='m')return MEDIA[id];
+  if(k==='set')return S.settings;if(t==='d')return S.decks[id];if(t==='n')return S.notes[id];if(t==='c')return S.cards[id];if(t==='m')return MEDIA[id];if(t==='r')return S.testRuns?.[id];
   if(t==='l')return lm?lm.get(k):LOGS.find(l=>syLogKey(l)===k)}
 // Přijme záznamy z databáze; vrací true, když se něco změnilo
 function syApply(recs){
@@ -1673,6 +1829,7 @@ function syApply(recs){
     else if(t==='n'){if(del)delete S.notes[id];else S.notes[id]=v}
     else if(t==='c'){if(del)delete S.cards[id];else S.cards[id]=v}
     else if(t==='m'){if(del)delete MEDIA[id];else MEDIA[id]=v}
+    else if(t==='r'){S.testRuns||={};if(del)delete S.testRuns[id];else S.testRuns[id]=v}
     else if(t==='l'){if(!logIdx.size)LOGS.forEach((l,i)=>logIdx.set(syLogKey(l),i));const i=logIdx.get(k);
       if(del){if(i!==undefined){LOGS[i]=null;logIdx.delete(k)}}else if(i===undefined){LOGS.push(v);logIdx.set(k,LOGS.length-1)}logs=true}
     else continue;
@@ -1798,6 +1955,14 @@ const ACT={
   'deck-new':()=>editDeck(null),
   sample:createSamples,
   library:openLibrary,
+  test:el=>openTestSheet(el.dataset.id),
+  'tests-reload':()=>{TIDX_ERR=false;TIDX=null;render()},
+  'test-close':()=>Test.close(),
+  'test-pick':el=>Test.pick(el.dataset.o),
+  'test-eval':()=>Test.evalOpen(),
+  'test-self':el=>Test.self(el.dataset.s),
+  'test-next':()=>Test.next(),
+  'test-retry':()=>Test.retry(),
   'sync-on':()=>syOn(),
   'sync-off':()=>syOff(),
   'sync-now':async()=>{await flush();if(!SY.unsub)syAttach();else syPush();toast('Synchronizuji…')},
@@ -1826,15 +1991,15 @@ document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if
 /* ---------- init ---------- */
 (async function init(){
   $('#backLink').innerHTML=icon('back',22);$('#addBtn').innerHTML=icon('plus',22,2.2);$('#logo').innerHTML=icon('logo',16,2.6);
-  $('#stClose').innerHTML=icon('x',22);$('#stUndo').innerHTML=icon('undo',21);$('#stMenu').innerHTML=icon('more',22,2.4);
+  $('#stClose').innerHTML=icon('x',22);$('#tsClose').innerHTML=icon('x',22);$('#stUndo').innerHTML=icon('undo',21);$('#stMenu').innerHTML=icon('more',22,2.4);
   await Store.open();
   let core=await Store.get('core');
   S=core&&core.v?core:freshCore();
-  S.settings={...DEF_SET,...S.settings};S.meta={...freshCore().meta,...S.meta};
+  S.settings={...DEF_SET,...S.settings};S.meta={...freshCore().meta,...S.meta};S.testRuns||={};
   LOGS=(await Store.get('logs'))||[];MEDIA=(await Store.get('media'))||{};
   migrateLibIds();
   const sy=await Store.get('sync');if(sy&&sy.on)Object.assign(SY,{on:true,uid:sy.uid||null,email:sy.email||'',h:sy.h||{},u:sy.u||{},dirty:sy.dirty||{}});
-  applyTheme();render();libSyncAll();syBoot();
+  applyTheme();render();libSyncAll();syBoot();testsLoad();
   if('speechSynthesis' in window)speechSynthesis.getVoices();
   let lastDay=dayIdx();setInterval(()=>{const d=dayIdx();if(d!==lastDay){lastDay=d;if(!Study.open&&!Layers.stack.length)render()}},60000);
 })();

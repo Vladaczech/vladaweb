@@ -10,5 +10,19 @@
    "count": 179,
    "updated": "2026-11-27"
   }
+ ],
+ "tests": [
+  {
+   "id": "pvs01-test",
+   "file": "pvs01-test.json",
+   "name": "Test PVS 01 – Úvod do výrobního managementu",
+   "group": "Projektování výrobních systémů",
+   "desc": "Otázky ABCD i otevřené k lekci 1.",
+   "deck": "pvs01",
+   "abcd": 47,
+   "open": 14,
+   "count": 61,
+   "updated": "2026-11-27"
+  }
  ]
 }
