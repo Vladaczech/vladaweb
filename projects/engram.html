@@ -791,7 +791,9 @@ function vHome(){
     <div class="card tile"><div class="v">${succ}</div><div class="k">Úspěšnost</div></div>
     <div class="card tile"><div class="v" style="color:${stk?'var(--learn)':'inherit'}">${stk?icon('flame',17,2):''}${stk}</div><div class="k">${pl(stk,'Den v řadě','Dny v řadě','Dní v řadě')}</div></div></div>`;
   const nCards=Object.keys(S.cards).length,lb=S.meta.lastBackup;
-  const banner=nCards>=30&&!SY.on&&Date.now()-lb>14*DAY?`<div class="banner">${icon('shield',20)}<div>${lb?'Poslední záloha je starší než 14 dní.':'Data máte jen v tomto zařízení.'} Zálohujte je.</div><button class="btn sm primary" data-act="backup">Zálohovat</button></div>`:'';
+  const banner=SY.on&&SY.st==='err'?`<div class="banner">${icon('shield',20)}<div>Synchronizace nefunguje: ${esc(SY.msg||'nedaří se spojit')}</div><button class="btn sm primary" data-act="sync-fix">Opravit</button></div>`
+    :!SY.on&&nCards?`<div class="banner">${icon('shield',20)}<div>Data máte jen v tomto zařízení. Přihlaste se účtem z Posilovny a budou i v telefonu a tabletu.</div><button class="btn sm primary" data-act="sync-on">Synchronizovat</button></div>`
+    :!SY.on&&nCards>=30&&Date.now()-lb>14*DAY?`<div class="banner">${icon('shield',20)}<div>${lb?'Poslední záloha je starší než 14 dní.':'Data máte jen v tomto zařízení.'} Zálohujte je.</div><button class="btn sm primary" data-act="backup">Zálohovat</button></div>`:'';
   const rows=decks.map(d=>{const c=C[d.id];const z=(v,cl)=>`<span class="${v?cl:'z'}">${v}</span>`;
     return `<button class="deck" data-act="deck" data-id="${d.id}"><span class="dot" style="background:${d.color}"></span><span class="nm"><b>${esc(d.name)}</b><small>${c.total} ${pl(c.total,'karta','karty','karet')}${c.susp?` · ${c.susp} pozastaveno`:''}</small></span><span class="cnts num">${z(c.new,'c-new')}${z(c.learn,'c-learn')}${z(c.rev,'c-rev')}</span>${icon('chev',18)}</button>`}).join('');
   return `<h1 class="page">Dnes</h1><div class="sub">${date}</div>${hero}${tiles}${banner}
@@ -1841,7 +1843,7 @@ function syApply(recs){
 }
 function syPersist(){Store.set('sync',SY.on?{on:true,uid:SY.uid,email:SY.email,h:SY.h,u:SY.u,dirty:SY.dirty}:null)}
 function syStText(){return {ok:'Vše je uložené.',pend:SY.msg||'Ukládám…',err:SY.msg||'Nedaří se spojit.',local:''}[SY.st]||''}
-function sySet(st,msg=''){SY.st=st;SY.msg=msg;const el=$('#sySt');if(el){el.textContent=syStText();const d=el.closest('.srow')?.querySelector('.sy-dot');if(d)d.className='sy-dot '+st}}
+function sySet(st,msg=''){const was=SY.st;SY.st=st;SY.msg=msg;if((st==='err')!==(was==='err')&&VIEW==='home'&&!Study.open&&!Test.open&&!Layers.stack.length)render();const el=$('#sySt');if(el){el.textContent=syStText();const d=el.closest('.srow')?.querySelector('.sy-dot');if(d)d.className='sy-dot '+st}}
 async function syLoadFb(){
   if(!window.firebase?.firestore)for(const m of ['app','auth','firestore'])await new Promise((ok,no)=>{const s=document.createElement('script');s.src=`https://www.gstatic.com/firebasejs/${FB_V}/firebase-${m}-compat.js`;s.onload=ok;s.onerror=()=>{s.remove();no(new Error('Nejste online – zkuste to znovu se signálem.'))};document.head.append(s)});
   if(!firebase.apps.length)firebase.initializeApp(FIREBASE_CONFIG);
@@ -1885,6 +1887,7 @@ async function syPush(){
 }
 function syBoot(){if(SY.on&&!SY.auth){sySet('pend','Připojuji se…');syLoadFb().then(syBindAuth).catch(e=>sySet('err',syErr(e)))}}
 async function syOn(){
+  try{localStorage.removeItem('engram:syncOff')}catch(e){}
   try{toast('Připojuji…');await syLoadFb();await syBindAuth();
     if(firebase.auth().currentUser){SY.user=firebase.auth().currentUser;syStart();}else syLogin();
   }catch(e){toast(syErr(e))}
@@ -1907,7 +1910,19 @@ function syLogin(){
 async function syOff(silent){
   try{firebase.auth().signOut()}catch(e){}
   syDetach();clearTimeout(SY.t);Object.assign(SY,{on:false,uid:null,email:'',user:null,auth:null,h:{},u:{},dirty:{}});sySet('local');syPersist();render();
-  if(!silent)toast('Synchronizace vypnuta – data zůstávají v zařízení');
+  if(!silent){try{localStorage.setItem('engram:syncOff','1')}catch(e){}toast('Synchronizace vypnuta – data zůstávají v zařízení')}
+}
+// Je v tomto prohlížeči přihlášený účet Firebase (Posilovna, Daily, Zpěvník)? Zjistí se bez stahování knihovny Firebase.
+function fbHasUser(){return new Promise(res=>{try{const r=indexedDB.open('firebaseLocalStorageDb');
+  r.onupgradeneeded=()=>{try{r.transaction.abort()}catch(e){}res(false)};r.onerror=()=>res(false);r.onblocked=()=>res(false);
+  r.onsuccess=()=>{const db=r.result;try{if(!db.objectStoreNames.contains('firebaseLocalStorage')){db.close();return res(false)}
+    const q=db.transaction('firebaseLocalStorage','readonly').objectStore('firebaseLocalStorage').getAllKeys();
+    q.onsuccess=()=>{db.close();res((q.result||[]).some(k=>String(k).startsWith('firebase:authUser:')))};q.onerror=()=>{db.close();res(false)}}catch(e){db.close();res(false)}}}catch(e){res(false)}})}
+// Synchronizace se zapne sama, pokud ji uživatel v tomto zařízení výslovně nevypnul a je přihlášený účtem z Posilovny
+async function syAuto(){
+  if(SY.on)return;try{if(localStorage.getItem('engram:syncOff'))return}catch(e){}
+  if(!await fbHasUser())return;
+  try{await syLoadFb();await syBindAuth();const u=firebase.auth().currentUser;if(u&&!SY.on){SY.user=u;syStart()}}catch(e){}
 }
 addEventListener('online',()=>{syBoot();if(SY.user&&!SY.unsub&&SY.on)syAttach();syPush()});
 
@@ -1964,6 +1979,7 @@ const ACT={
   'test-next':()=>Test.next(),
   'test-retry':()=>Test.retry(),
   'sync-on':()=>syOn(),
+  'sync-fix':async()=>{try{await syLoadFb();await syBindAuth()}catch(e){toast(syErr(e));return}if(firebase.auth().currentUser){SY.user=firebase.auth().currentUser;syDetach();syAttach()}else syLogin()},
   'sync-off':()=>syOff(),
   'sync-now':async()=>{await flush();if(!SY.unsub)syAttach();else syPush();toast('Synchronizuji…')},
   import:openImport,
@@ -1999,7 +2015,7 @@ document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if
   LOGS=(await Store.get('logs'))||[];MEDIA=(await Store.get('media'))||{};
   migrateLibIds();
   const sy=await Store.get('sync');if(sy&&sy.on)Object.assign(SY,{on:true,uid:sy.uid||null,email:sy.email||'',h:sy.h||{},u:sy.u||{},dirty:sy.dirty||{}});
-  applyTheme();render();libSyncAll();syBoot();testsLoad();
+  applyTheme();render();libSyncAll();syBoot();syAuto();testsLoad();
   if('speechSynthesis' in window)speechSynthesis.getVoices();
   let lastDay=dayIdx();setInterval(()=>{const d=dayIdx();if(d!==lastDay){lastDay=d;if(!Study.open&&!Layers.stack.length)render()}},60000);
 })();
