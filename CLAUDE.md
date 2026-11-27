@@ -45,7 +45,10 @@ Offline režim: `projects/daily-sw.js` (scope `./daily`), ikony a manifest v `pr
 
 ## Engram (`projects/engram.html`)
 
-Kartičky s opakováním (FSRS). Karty, balíčky i průběh učení jsou jen v zařízení (IndexedDB `engram`, záloha do .json), synchronizace mezi zařízeními není.
+Kartičky s opakováním (FSRS). Karty, balíčky i průběh učení jsou v zařízení (IndexedDB `engram`, záloha do .json); synchronizace je volitelná a používá účet z Posilovny (Nastavení → Synchronizace).
+
+**Synchronizace** (`SY`, `syDiff`, `syApply`, `syPush`): Firestore `users/{uid}/engram/{koš}` – stávající pravidla to pokrývají, správce tahle data nečte. Dokument má pole `r = { klíč: {v, u} | {x: 1, u} }`, vyhrává novější `u`. Klíče: `set` (nastavení), `d:<id>` balíček, `n:<id>` poznámka, `c:<id>` karta, `l:<čas>_<karta>` záznam opakování, `m:<id>` obrázek; koše `cfg`, `n0`–`nf`, `c0`–`cf`, `lRRRRMM`, `m-<id>`. Změny se v kódu jednotlivě nehlásí – `flush` po každém uložení zavolá `syDiff`, který porovná otisky záznamů s posledním známým stavem (`SY.h`) a smazané označí `{x: 1}`. Záznam, který synchronizace vidí poprvé, dostane jako `u` svůj vlastní čas (karta `last`, poznámka `modified`), aby nestudovaná kopie nepřepsala kartu s historií z jiného zařízení. `S.meta` (poslední balíček, záloha, extra nové karty) se nesynchronizuje.
+- Id musí být stejná ve všech zařízeních: balíček z knihovny `lib-<id balíčku>`, jeho poznámky `lib-<id karty>`, karty `<id poznámky>_<pořadí>` (`newCard`). `migrateLibIds` při spuštění převádí starší balíčky přidané s náhodnými id.
 
 **Učení po kolech** (hlavní tlačítko balíčku, `Study.start(ids, {rounds: true})`): kola po `ROUND` (10) kartách bez ohledu na plán a denní limity, po každém kole přehled (`renderRound`: hodnocení v kole, naučeno = poslední hodnocení Dobře/Snadné, zvládnutí %, odhad zbývajícího času) a tlačítko Další kolo. `buildRound` bere nejdřív slabé karty (Znovu, Těžké), pak nové, pak naučené od nejdéle neviděných; karty z předchozího kola a sourozence téže poznámky až nakonec. Hodnocení se zapisuje do FSRS a `LOGS` stejně jako při běžném opakování (plán se tím posouvá). Stav karty se počítá z posledního záznamu v `LOGS` (`roundStats`, stejně jako podbarvení karty `lastGrade`). Opakování podle plánu (FSRS) je v nabídce balíčku a na hlavní stránce.
 

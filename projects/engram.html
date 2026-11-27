@@ -182,6 +182,7 @@ nav.tabs .in{max-width:600px;margin:0 auto;display:grid;grid-template-columns:re
 .group{overflow:hidden}
 .srow{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 16px;min-height:54px;border-bottom:1px solid var(--line);width:100%;text-align:left}
 .srow:last-child{border-bottom:0}
+.sy-dot{width:10px;height:10px;border-radius:50%;flex:none;background:var(--muted)}.sy-dot.ok{background:var(--good)}.sy-dot.pend{background:var(--hard)}.sy-dot.err{background:var(--again)}
 button.srow:active{background:var(--surface-2)}
 .srow .l{flex:1;min-width:0}
 .srow .l b{display:block;font-weight:500}
@@ -447,8 +448,9 @@ function save(...keys){(keys.length?keys:['core']).forEach(k=>dirty.add(k));clea
 async function flush(){
   clearTimeout(saveT);const ks=[...dirty];dirty.clear();
   for(const k of ks){const ok=await Store.set(k,k==='core'?S:k==='logs'?LOGS:MEDIA);if(!ok)toast('Uložení se nezdařilo – v zařízení může docházet místo')}
+  if(SY.on&&ks.length){syDiff();syPersist();sySchedule()}
 }
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flush();else if(!Study.open&&!Layers.stack.length)render()});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){flush().then(syPush)}else if(!Study.open&&!Layers.stack.length)render()});
 window.addEventListener('pagehide',flush);
 async function persistStorage(){try{if(navigator.storage?.persist&&!(await navigator.storage.persisted()))await navigator.storage.persist()}catch(e){}}
 
@@ -576,7 +578,7 @@ function faces(c){
 }
 
 /* ---------- data ops ---------- */
-function newDeck(name,o={}){const id=uid();S.decks[id]={id,name,desc:'',color:COLORS[Object.keys(S.decks).length%COLORS.length],newPerDay:20,revPerDay:200,ttsF:'',ttsB:'',created:Date.now(),...o};save();return id}
+function newDeck(name,o={}){const id=o.id||uid();S.decks[id]={id,name,desc:'',color:COLORS[Object.keys(S.decks).length%COLORS.length],newPerDay:20,revPerDay:200,ttsF:'',ttsB:'',created:Date.now(),...o};save();return id}
 function ordsFor(n){
   if(n.type==='cloze'){const s=new Set();for(const m of String(n.fields.front).matchAll(CLOZE_RE))s.add(+m[1]);return [...s].sort((a,b)=>a-b)}
   return n.type==='reverse'?[0,1]:[0];
@@ -598,7 +600,7 @@ function roundBar(s){
 }
 function lastGrade(cid){for(let i=LOGS.length-1;i>=0;i--)if(LOGS[i][1]===cid)return LOGS[i][2];return 0}
 function cardsOf(nid){return Object.values(S.cards).filter(c=>c.nid===nid).sort((a,b)=>a.ord-b.ord)}
-function newCard(nid,ord){const id=uid();S.cards[id]={id,nid,ord,state:0,due:0,s:0,d:0,reps:0,lapses:0,step:0,last:null,ivl:0,susp:false,buried:-1};return id}
+function newCard(nid,ord){const id=S.cards[nid+'_'+ord]?uid():nid+'_'+ord;S.cards[id]={id,nid,ord,state:0,due:0,s:0,d:0,reps:0,lapses:0,step:0,last:null,ivl:0,susp:false,buried:-1};return id}
 function saveNote(n){
   n.modified=Date.now();S.notes[n.id]=n;
   const want=ordsFor(n),have=cardsOf(n.id);
@@ -750,7 +752,7 @@ function vHome(){
     <div class="card tile"><div class="v">${succ}</div><div class="k">Úspěšnost</div></div>
     <div class="card tile"><div class="v" style="color:${stk?'var(--learn)':'inherit'}">${stk?icon('flame',17,2):''}${stk}</div><div class="k">${pl(stk,'Den v řadě','Dny v řadě','Dní v řadě')}</div></div></div>`;
   const nCards=Object.keys(S.cards).length,lb=S.meta.lastBackup;
-  const banner=nCards>=30&&Date.now()-lb>14*DAY?`<div class="banner">${icon('shield',20)}<div>${lb?'Poslední záloha je starší než 14 dní.':'Data máte jen v tomto zařízení.'} Zálohujte je.</div><button class="btn sm primary" data-act="backup">Zálohovat</button></div>`:'';
+  const banner=nCards>=30&&!SY.on&&Date.now()-lb>14*DAY?`<div class="banner">${icon('shield',20)}<div>${lb?'Poslední záloha je starší než 14 dní.':'Data máte jen v tomto zařízení.'} Zálohujte je.</div><button class="btn sm primary" data-act="backup">Zálohovat</button></div>`:'';
   const rows=decks.map(d=>{const c=C[d.id];const z=(v,cl)=>`<span class="${v?cl:'z'}">${v}</span>`;
     return `<button class="deck" data-act="deck" data-id="${d.id}"><span class="dot" style="background:${d.color}"></span><span class="nm"><b>${esc(d.name)}</b><small>${c.total} ${pl(c.total,'karta','karty','karet')}${c.susp?` · ${c.susp} pozastaveno`:''}</small></span><span class="cnts num">${z(c.new,'c-new')}${z(c.learn,'c-learn')}${z(c.rev,'c-rev')}</span>${icon('chev',18)}</button>`}).join('');
   return `<h1 class="page">Dnes</h1><div class="sub">${date}</div>${hero}${tiles}${banner}
@@ -1380,7 +1382,7 @@ function vSettings(){
   const s=S.settings,lb=S.meta.lastBackup;
   const seg=(key,opts)=>`<div class="seg" data-seg="${key}">${opts.map(([v,l])=>`<button data-v="${v}" class="${String(s[key])===String(v)?'on':''}">${l}</button>`).join('')}</div>`;
   const sw=(key,l,h)=>`<label class="srow"><span class="l"><b>${l}</b>${h?`<small>${h}</small>`:''}</span><input type="checkbox" class="sw" data-set="${key}" ${s[key]?'checked':''}></label>`;
-  return `<h1 class="page">Nastavení</h1><div class="sub">Plánovač FSRS-5 · data uložená v tomto zařízení</div>
+  return `<h1 class="page">Nastavení</h1><div class="sub">Plánovač FSRS-5 · ${SY.on?'data synchronizovaná přes účet':'data uložená v tomto zařízení'}</div>
   <h2 class="sec">Vzhled</h2><div class="card group"><div class="srow col"><span class="l"><b>Motiv</b></span><div style="margin-top:8px">${seg('theme',[['system','Systém'],['light','Světlý'],['dark','Tmavý']])}</div></div></div>
 
   <h2 class="sec">Plánování</h2><div class="card group">
@@ -1411,6 +1413,13 @@ function vSettings(){
   <h2 class="sec">Připomínka</h2><div class="card group">
     <label class="srow"><span class="l"><b>Čas denního opakování</b></span><input type="time" data-set="reminder" value="${esc(s.reminder)}"></label>
     <button class="srow" data-act="ics"><span class="l"><b>Přidat do kalendáře</b><small>Opakující se událost s upozorněním – funguje i bez otevřené aplikace.</small></span>${icon('calendar',20)}</button>
+  </div>
+
+  <h2 class="sec">Synchronizace</h2><div class="card group">
+    ${SY.on?`<div class="srow"><span class="l"><b>Zapnuto${SY.email?' – '+esc(SY.email):''}</b><small id="sySt">${esc(syStText())}</small></span><span class="sy-dot ${SY.st}"></span></div>
+    <button class="srow" data-act="sync-now"><span class="l"><b>Synchronizovat teď</b></span>${icon('reset',20)}</button>
+    <button class="srow" data-act="sync-off"><span class="l"><b>Vypnout synchronizaci</b><small>Data zůstanou v tomto zařízení</small></span>${icon('x',20)}</button>`
+    :`<button class="srow" data-act="sync-on"><span class="l"><b>Přihlásit a synchronizovat</b><small>Balíčky, karty i průběh učení uvidíš v telefonu, tabletu i počítači. Účet je stejný jako v Posilovně.</small></span>${icon('shield',20)}</button>`}
   </div>
 
   <h2 class="sec">Data</h2><div class="card group">
@@ -1574,7 +1583,7 @@ function libApply(deckId,data){
     up.add(c.id);const h=libHash(c),n=have[c.id],cz=c.t==='cloze';
     const fields={front:c.f,back:cz?'':(c.b||''),extra:c.x||''};
     if(n){if(n.libH!==h){Object.assign(n,{type:c.t,fields,tags:[...(c.g||[])],libH:h});saveNote(n);upd++}}
-    else if(!seen.has(c.id)){saveNote({id:uid(),deck:deckId,type:c.t,fields,tags:[...(c.g||[])],typein:false,marked:false,created:base+i,lib:c.id,libH:h});add++}
+    else if(!seen.has(c.id)){saveNote({id:'lib-'+c.id,deck:deckId,type:c.t,fields,tags:[...(c.g||[])],typein:false,marked:false,created:base+i,lib:c.id,libH:h});add++}
     seen.add(c.id);
   });
   for(const [k,n] of Object.entries(have))if(!up.has(k)){deleteNote(n.id);del++}
@@ -1611,12 +1620,154 @@ async function openLibrary(){
     try{
       if(b.dataset.lib==='add'){
         const data=await libGet(e.file);
-        if(!libDeckOf(e.id)){const id=newDeck(data.name||e.name,{desc:data.desc||e.desc||'',color:data.color||e.color||COLORS[0],lib:{id:e.id,ver:'',seen:[],synced:0}});
+        if(!libDeckOf(e.id)){const id=newDeck(data.name||e.name,{id:'lib-'+e.id,desc:data.desc||e.desc||'',color:data.color||e.color||COLORS[0],lib:{id:e.id,ver:'',seen:[],synced:0}});
           const r=libApply(id,data);S.meta.lastDeck=id;persistStorage();toast(`Balíček přidán · ${r.add} ${pl(r.add,'karta','karty','karet')}`)}
       }else{const d=libDeckOf(e.id);const m=libMsg(await libSync(d.id));toast(m||'Balíček je aktuální')}
       render();draw();
     }catch(err){b.disabled=false;b.innerHTML=was;toast(err.message||'Stažení se nezdařilo')}
   });
+}
+
+/* ---------- synchronizace (Firebase, účet z Posilovny) ---------- */
+// Data jsou v users/{uid}/engram/{koš}, každý dokument má pole r = { klíč: {v: hodnota, u: čas změny} | {x: 1, u} }.
+// Klíče: 'set' (nastavení), 'd:<id>' balíček, 'n:<id>' poznámka, 'c:<id>' karta (stav FSRS), 'l:<čas>_<karta>' záznam
+// opakování, 'm:<id>' obrázek. Koše: cfg, n0–nf, c0–cf, lRRRRMM, m-<id>. Vyhrává novější u. Změny se nehlídají
+// v jednotlivých místech kódu – syDiff po každém uložení porovná otisky záznamů s posledním známým stavem (SY.h).
+const FIREBASE_CONFIG={apiKey:'AIzaSyAsd042qIzIAXKIXHO3VY6JXIuvdyKLRtU',authDomain:'posilovna-59716.firebaseapp.com',projectId:'posilovna-59716',
+  storageBucket:'posilovna-59716.firebasestorage.app',messagingSenderId:'1097378144969',appId:'1:1097378144969:web:5d38f8e38157910f18a318'};
+const FB_V='10.12.2';
+const SY={on:false,st:'local',msg:'',uid:null,email:'',user:null,unsub:null,auth:null,h:{},u:{},dirty:{},pushing:false,t:null};
+function hstr(s){let h=5381;for(let i=0;i<s.length;i++)h=(h*33^s.charCodeAt(i))>>>0;return h.toString(36)+s.length.toString(36)}
+const syLogKey=l=>'l:'+l[0]+'_'+l[1];
+function syRecords(){
+  const m=new Map();m.set('set',S.settings);
+  for(const k in S.decks)m.set('d:'+k,S.decks[k]);for(const k in S.notes)m.set('n:'+k,S.notes[k]);for(const k in S.cards)m.set('c:'+k,S.cards[k]);
+  for(const l of LOGS)m.set(syLogKey(l),l);for(const k in MEDIA)m.set('m:'+k,MEDIA[k]);
+  return m;
+}
+function syHash(k,v){return k[0]==='l'||k[0]==='m'?'1':hstr(JSON.stringify(v))}
+// Čas změny pro záznam, který synchronizace vidí poprvé: vlastní čas záznamu, aby nově přidaná (nestudovaná) kopie
+// nepřepsala kartu s historií z jiného zařízení
+function syFirstU(k,v){const t=k[0];return t==='c'?(v.last||0):t==='n'?(v.modified||v.created||0):t==='d'?(v.created||0):t==='l'?v[0]:1}
+function syDiff(){
+  const now=Date.now(),cur=syRecords();
+  for(const [k,v] of cur){const h=syHash(k,v);if(SY.h[k]!==h){SY.u[k]=k in SY.h?now:syFirstU(k,v);SY.h[k]=h;SY.dirty[k]=1}}
+  for(const k in SY.h)if(SY.h[k]!=='x'&&!cur.has(k)){SY.h[k]='x';SY.u[k]=now;SY.dirty[k]=1}
+}
+function syBucket(k){const t=k[0];if(k==='set'||t==='d')return 'cfg';
+  if(t==='l'){const d=new Date(+k.slice(2,k.indexOf('_')));return 'l'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')}
+  if(t==='m')return 'm-'+k.slice(2);
+  return t+(hstr(k.slice(2)).charCodeAt(0)%16).toString(16)}
+function syVal(k,lm){const t=k[0],id=k.slice(2);
+  if(k==='set')return S.settings;if(t==='d')return S.decks[id];if(t==='n')return S.notes[id];if(t==='c')return S.cards[id];if(t==='m')return MEDIA[id];
+  if(t==='l')return lm?lm.get(k):LOGS.find(l=>syLogKey(l)===k)}
+// Přijme záznamy z databáze; vrací true, když se něco změnilo
+function syApply(recs){
+  let ch=false,logs=false;const logIdx=new Map();
+  for(const [k,rec] of recs){
+    if(!rec||typeof rec!=='object'||(rec.u||0)<=(SY.u[k]??-1))continue;
+    const t=k[0],id=k.slice(2),del=!!rec.x,v=rec.v;
+    if(!del&&v===undefined)continue;
+    if(k==='set'){if(!del)S.settings={...DEF_SET,...v}}
+    else if(t==='d'){if(del)delete S.decks[id];else S.decks[id]=v}
+    else if(t==='n'){if(del)delete S.notes[id];else S.notes[id]=v}
+    else if(t==='c'){if(del)delete S.cards[id];else S.cards[id]=v}
+    else if(t==='m'){if(del)delete MEDIA[id];else MEDIA[id]=v}
+    else if(t==='l'){if(!logIdx.size)LOGS.forEach((l,i)=>logIdx.set(syLogKey(l),i));const i=logIdx.get(k);
+      if(del){if(i!==undefined){LOGS[i]=null;logIdx.delete(k)}}else if(i===undefined){LOGS.push(v);logIdx.set(k,LOGS.length-1)}logs=true}
+    else continue;
+    SY.h[k]=del?'x':syHash(k,k==='set'?S.settings:v);SY.u[k]=rec.u;delete SY.dirty[k];ch=true;
+  }
+  if(logs){LOGS=LOGS.filter(Boolean).sort((a,b)=>a[0]-b[0])}
+  if(ch){S.meta.lastDeck=S.decks[S.meta.lastDeck]?S.meta.lastDeck:null;save('core','logs','media')}
+  return ch;
+}
+function syPersist(){Store.set('sync',SY.on?{on:true,uid:SY.uid,email:SY.email,h:SY.h,u:SY.u,dirty:SY.dirty}:null)}
+function syStText(){return {ok:'Vše je uložené.',pend:SY.msg||'Ukládám…',err:SY.msg||'Nedaří se spojit.',local:''}[SY.st]||''}
+function sySet(st,msg=''){SY.st=st;SY.msg=msg;const el=$('#sySt');if(el){el.textContent=syStText();const d=el.closest('.srow')?.querySelector('.sy-dot');if(d)d.className='sy-dot '+st}}
+async function syLoadFb(){
+  if(!window.firebase?.firestore)for(const m of ['app','auth','firestore'])await new Promise((ok,no)=>{const s=document.createElement('script');s.src=`https://www.gstatic.com/firebasejs/${FB_V}/firebase-${m}-compat.js`;s.onload=ok;s.onerror=()=>{s.remove();no(new Error('Nejste online – zkuste to znovu se signálem.'))};document.head.append(s)});
+  if(!firebase.apps.length)firebase.initializeApp(FIREBASE_CONFIG);
+}
+function syErr(e){const c=(e&&e.code)||'';
+  return ({'auth/invalid-credential':'Špatné jméno nebo heslo.','auth/wrong-password':'Špatné jméno nebo heslo.','auth/invalid-login-credentials':'Špatné jméno nebo heslo.','auth/user-not-found':'Účet s tímto e-mailem neexistuje.','auth/too-many-requests':'Moc pokusů – chvíli počkejte.','auth/network-request-failed':'Nejste online.','auth/invalid-email':'Neplatný e-mail.','auth/unauthorized-domain':'Tahle doména není ve Firebase povolená.','permission-denied':'Databáze odmítla přístup.','unavailable':'Nejste online – uloží se, až bude signál.'})[c]||(e&&e.message)||'Něco se pokazilo.'}
+const syColl=()=>firebase.firestore().collection('users').doc(SY.user.uid).collection('engram');
+function syBindAuth(){return SY.auth||=new Promise(res=>firebase.auth().onAuthStateChanged(u=>{SY.user=u;syDetach();if(u&&SY.on)syAttach();else if(SY.on)sySet('err','Přihlášení vypršelo – přihlaste se znovu.');res()}))}
+function syDetach(){if(SY.unsub){SY.unsub();SY.unsub=null}}
+async function syAttach(){
+  if(SY.unsub||!SY.user||!SY.on)return;
+  if(SY.uid&&SY.uid!==SY.user.uid){
+    if(Object.keys(S.cards).length&&!await confirmDlg('Data jiného účtu',`V tomto zařízení jsou data jiného účtu. Sloučit je s účtem ${SY.user.email||''}?`,'Sloučit')){syOff(true);return}
+    SY.h={};SY.u={};SY.dirty={};
+  }
+  SY.uid=SY.user.uid;SY.email=SY.user.email||SY.email;await flush();syDiff();syPersist();sySet('pend','Načítám data z účtu…');
+  SY.unsub=syColl().onSnapshot({includeMetadataChanges:true},q=>{
+    const recs=[];q.docChanges().forEach(c=>{if(c.type==='removed')return;const r=c.doc.data().r||{};for(const k in r)recs.push([k,r[k]])});
+    if(recs.length&&syApply(recs)){syPersist();applyTheme();if(!Study.open&&!Layers.stack.length)render()}
+    if(!SY.pushing&&!Object.keys(SY.dirty).length)sySet(q.metadata.fromCache?'pend':'ok',q.metadata.fromCache?'Čekám na připojení.':'');
+    syPush();
+  },e=>{sySet('err',syErr(e));SY.unsub=null});
+}
+function sySchedule(){if(!SY.unsub)return;clearTimeout(SY.t);SY.t=setTimeout(syPush,1500)}
+async function syPush(){
+  if(!SY.user||!SY.unsub||SY.pushing)return;const keys=Object.keys(SY.dirty);if(!keys.length)return;
+  SY.pushing=true;sySet('pend','Odesílám změny…');
+  try{
+    const by={};for(const k of keys)(by[syBucket(k)]??=[]).push(k);
+    const lm=keys.some(k=>k[0]==='l')?new Map(LOGS.map(l=>[syLogKey(l),l])):null;
+    for(const [b,ks] of Object.entries(by))for(let i=0;i<ks.length;i+=400){
+      const part=ks.slice(i,i+400),data={r:{}},sent=[];
+      for(const k of part){const u=SY.u[k]||0;if(SY.h[k]==='x')data.r[k]={x:1,u};else{const v=syVal(k,lm);if(v===undefined){delete SY.dirty[k];continue}data.r[k]={v:JSON.parse(JSON.stringify(v)),u}}sent.push([k,u])}
+      if(!sent.length)continue;
+      await syColl().doc(b).set(data,{mergeFields:sent.map(([k])=>new firebase.firestore.FieldPath('r',k))});
+      for(const [k,u] of sent)if(SY.u[k]===u)delete SY.dirty[k];
+    }
+    syPersist();sySet('ok');
+  }catch(e){sySet('err',syErr(e))}
+  SY.pushing=false;if(Object.keys(SY.dirty).length&&SY.st!=='err')sySchedule();
+}
+function syBoot(){if(SY.on&&!SY.auth){sySet('pend','Připojuji se…');syLoadFb().then(syBindAuth).catch(e=>sySet('err',syErr(e)))}}
+async function syOn(){
+  try{toast('Připojuji…');await syLoadFb();await syBindAuth();
+    if(firebase.auth().currentUser){SY.user=firebase.auth().currentUser;syStart();}else syLogin();
+  }catch(e){toast(syErr(e))}
+}
+function syStart(){SY.on=true;syPersist();syAttach();render();toast('Synchronizace zapnuta')}
+function syLogin(){
+  const w=sheet(`<h3 class="t">Přihlášení</h3><p class="d">Stejný účet jako v <a href="./posilovna.html" style="color:var(--accent)">Posilovně</a> – tam si ho taky založíte nebo obnovíte heslo.</p>
+    <form class="form" id="syF" style="margin-top:16px" autocomplete="on">
+      <label class="field"><span>Jméno nebo e-mail</span><input name="login" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" required></label>
+      <label class="field"><span>Heslo</span><input name="pw" type="password" autocomplete="current-password" required></label>
+      <div class="hint warn" id="syE"></div>
+      <button class="btn primary lg block">Přihlásit a synchronizovat</button></form>`);
+  const f=$('#syF',w);setTimeout(()=>f.login.focus(),300);
+  f.onsubmit=async e=>{e.preventDefault();const bt=f.querySelector('button'),er=$('#syE',w);bt.disabled=true;er.textContent='';
+    try{await syLoadFb();let email=f.login.value.trim();
+      if(!email.includes('@')){const d=await firebase.firestore().collection('usernames').doc(email.toLowerCase()).get();if(!d.exists)throw new Error('Uživatel s tímto jménem neexistuje.');email=d.data().email}
+      const cred=await firebase.auth().signInWithEmailAndPassword(email,f.pw.value);SY.user=cred.user;syBindAuth();w.close();syStart();
+    }catch(err){er.textContent=syErr(err);bt.disabled=false}};
+}
+async function syOff(silent){
+  try{firebase.auth().signOut()}catch(e){}
+  syDetach();clearTimeout(SY.t);Object.assign(SY,{on:false,uid:null,email:'',user:null,auth:null,h:{},u:{},dirty:{}});sySet('local');syPersist();render();
+  if(!silent)toast('Synchronizace vypnuta – data zůstávají v zařízení');
+}
+addEventListener('online',()=>{syBoot();if(SY.user&&!SY.unsub&&SY.on)syAttach();syPush()});
+
+// Balíčky z knihovny dostanou stálá id (lib-<balíček>, lib-<karta>, <poznámka>_<pořadí>), aby se při synchronizaci
+// stejný balíček přidaný ve dvou zařízeních spojil a nezdvojil. Převádí starší balíčky přidané s náhodnými id.
+function migrateLibIds(){
+  const cmap={};let ch=false;
+  for(const d of Object.values(S.decks)){if(!d.lib)continue;const nd='lib-'+d.lib.id;
+    if(d.id!==nd){if(S.decks[nd])continue;delete S.decks[d.id];if(S.meta.lastDeck===d.id)S.meta.lastDeck=nd;
+      for(const n of Object.values(S.notes))if(n.deck===d.id)n.deck=nd;d.id=nd;S.decks[nd]=d;ch=true}
+    for(const n of Object.values(S.notes)){if(n.deck!==nd||!n.lib||n.id==='lib-'+n.lib||S.notes['lib-'+n.lib])continue;
+      const nn='lib-'+n.lib;delete S.notes[n.id];
+      for(const c of Object.values(S.cards))if(c.nid===n.id){const nc=nn+'_'+c.ord;delete S.cards[c.id];cmap[c.id]=nc;c.id=nc;c.nid=nn;S.cards[nc]=c}
+      n.id=nn;S.notes[nn]=n;ch=true}
+  }
+  if(Object.keys(cmap).length){for(const l of LOGS)if(cmap[l[1]])l[1]=cmap[l[1]];save('logs')}
+  if(ch)save();
 }
 
 /* ---------- sample decks ---------- */
@@ -1647,13 +1798,16 @@ const ACT={
   'deck-new':()=>editDeck(null),
   sample:createSamples,
   library:openLibrary,
+  'sync-on':()=>syOn(),
+  'sync-off':()=>syOff(),
+  'sync-now':async()=>{await flush();if(!SY.unsub)syAttach();else syPush();toast('Synchronizuji…')},
   import:openImport,
   backup:doBackup,
   restore:doRestore,
   ics:downloadICS,
   note:el=>openEditor(el.dataset.id),
   more:()=>{BR.limit+=100;browseList()},
-  wipe:async()=>{if(!await confirmDlg('Smazat všechna data?','Všechny balíčky, karty a historie budou nenávratně odstraněny. Doporučujeme nejdřív zálohovat.','Smazat vše',true))return;
+  wipe:async()=>{if(!await confirmDlg('Smazat všechna data?',`Všechny balíčky, karty a historie budou nenávratně odstraněny${SY.on?' – i ve všech synchronizovaných zařízeních':''}. Doporučujeme nejdřív zálohovat.`,'Smazat vše',true))return;
     S=freshCore();LOGS=[];MEDIA={};save('core','logs','media');await flush();applyTheme();go('home');toast('Data smazána')},
   reveal:()=>Study.reveal(),
   rate:el=>Study.answer(+el.dataset.g),
@@ -1678,7 +1832,9 @@ document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if
   S=core&&core.v?core:freshCore();
   S.settings={...DEF_SET,...S.settings};S.meta={...freshCore().meta,...S.meta};
   LOGS=(await Store.get('logs'))||[];MEDIA=(await Store.get('media'))||{};
-  applyTheme();render();libSyncAll();
+  migrateLibIds();
+  const sy=await Store.get('sync');if(sy&&sy.on)Object.assign(SY,{on:true,uid:sy.uid||null,email:sy.email||'',h:sy.h||{},u:sy.u||{},dirty:sy.dirty||{}});
+  applyTheme();render();libSyncAll();syBoot();
   if('speechSynthesis' in window)speechSynthesis.getVoices();
   let lastDay=dayIdx();setInterval(()=>{const d=dayIdx();if(d!==lastDay){lastDay=d;if(!Study.open&&!Layers.stack.length)render()}},60000);
 })();
