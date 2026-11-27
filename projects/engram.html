@@ -131,6 +131,7 @@ nav.tabs .in{max-width:600px;margin:0 auto;display:grid;grid-template-columns:re
 .cnts{display:flex;gap:2px;font-size:14px;font-weight:600}
 .cnts span{min-width:28px;text-align:right}
 .cnts .z{color:var(--line-2);font-weight:500}
+.tpb{display:block;margin-top:7px;max-width:220px}.tpb .split{height:4px}
 .fold{margin-bottom:10px}
 .fhd{display:flex;align-items:center}
 .fold.open .fhd{border-bottom:1px solid var(--line)}
@@ -1790,12 +1791,19 @@ async function testsLoad(){
 async function testGet(e){try{const d=await libGet(e.file);Store.set('test:'+e.id,d);return d}catch(err){const d=await Store.get('test:'+e.id);if(d)return d;throw err}}
 function testRuns(id){return Object.values(S.testRuns||{}).filter(r=>!id||r.test===id).sort((a,b)=>b.at-a.at)}
 const runPct=r=>r.max?Math.round(r.score/r.max*100):0;
+// Kolik různých otázek testu už bylo zodpovězeno (r.ids; u starších výsledků jsou známé jen chybné) a kolik naposledy správně
+function testProgress(e){
+  const last={};for(const r of testRuns(e.id).reverse()){const w=new Set(r.wrong||[]);for(const q of r.ids||r.wrong||[])last[q]=w.has(q)?0:1}
+  const ids=Object.keys(last),tot=e.count||((e.abcd||0)+(e.open||0));
+  return {ids,done:Math.min(ids.length,tot),ok:Math.min(ids.filter(q=>last[q]).length,tot),tot};
+}
+const progBar=p=>`<div class="split" style="margin:0">${p.ok?`<i style="flex:${p.ok};background:var(--good)"></i>`:''}${p.done-p.ok?`<i style="flex:${p.done-p.ok};background:var(--again)"></i>`:''}${p.tot-p.done>0?`<i style="flex:${p.tot-p.done}"></i>`:''}</div>`;
 function vTests(){
   const head=`<h1 class="page">Testy</h1><div class="sub">Otázky ABCD i otevřené k látce z balíčků</div>`;
   if(!TIDX){if(!TIDX_ERR)testsLoad();return head+`<div class="card pad"><div class="hint">${TIDX_ERR?'Testy se nepodařilo načíst. Zkontrolujte připojení k internetu.':'Načítám…'}</div>${TIDX_ERR?`<button class="btn outline sm" style="margin-top:12px" data-act="tests-reload">Zkusit znovu</button>`:''}</div>`}
   if(!TIDX.length)return head+`<div class="card pad"><div class="hint">Zatím tu nejsou žádné testy.</div></div>`;
-  const row=e=>{const rs=testRuns(e.id),best=rs.length?Math.max(...rs.map(runPct)):null;
-    return `<button class="deck" data-act="test" data-id="${esc(e.id)}"><span class="dot" style="background:var(--accent)"></span><span class="nm"><b>${esc(e.name)}</b><small>${e.abcd||0} ABCD · ${e.open||0} otevřených${rs.length?` · naposledy ${runPct(rs[0])} % · nejlépe ${best} %`:''}</small></span>${icon('chev',18)}</button>`};
+  const row=e=>{const rs=testRuns(e.id),fr=rs.filter(r=>!r.part),best=fr.length?Math.max(...fr.map(runPct)):null,p=testProgress(e);
+    return `<button class="deck" data-act="test" data-id="${esc(e.id)}"><span class="dot" style="background:var(--accent)"></span><span class="nm"><b>${esc(e.name)}</b><small>${rs.length?`Zodpovězeno <b class="num" style="display:inline;font-weight:600;color:var(--text-2)">${p.done} z ${p.tot}</b>${fr.length?` · naposledy ${runPct(fr[0])} % · nejlépe ${best} %`:''}`:`Zodpovězeno 0 z ${p.tot} · ${e.abcd||0} ABCD, ${e.open||0} otevřených`}</small>${rs.length?`<span class="tpb">${progBar(p)}</span>`:''}</span>${icon('chev',18)}</button>`};
   const byF={},dIn=new Set(Object.values(S.decks).map(deckFolder));for(const e of TIDX)(byF[testFolder(e)]??=[]).push(e);
   const folds=foldersSorted().filter(f=>byF[f.id]||!dIn.has(f.id)).map(f=>{const es=byF[f.id]||[],done=es.filter(e=>testRuns(e.id).length).length;
     return foldCard(f,'t'+f.id,`${es.length} ${pl(es.length,'test','testy','testů')}${done?` · ${done} ${pl(done,'vyzkoušený','vyzkoušené','vyzkoušených')}`:''}`,'',es.length?es.map(row).join(''):'<div class="fempty">Prázdná složka. Test sem přesunete po klepnutí na něj (Přesunout do složky).</div>')}).join('');
@@ -1804,24 +1812,26 @@ function vTests(){
     +Object.entries(groups).map(([g,es])=>`<h2 class="sec">${esc(g)}</h2><div class="card list">${es.map(row).join('')}</div>`).join('');
   const recent=testRuns().slice(0,6);
   if(recent.length)h+=`<h2 class="sec">Poslední výsledky</h2><div class="card list">${recent.map(r=>{const e=TIDX.find(x=>x.id===r.test),p=runPct(r);
-    return `<div class="trow" style="--c:var(--${p>=75?'good':p>=50?'hard':'again'})"><i>${p}</i><div style="flex:1"><b style="font-weight:550">${esc(e?.name||r.test)}</b><small>${fmtDate(r.at,{day:'numeric',month:'numeric',year:'numeric'})} · ${r.n} ${pl(r.n,'otázka','otázky','otázek')} · ${Math.max(1,Math.round(r.dur/60000))} min</small></div></div>`}).join('')}</div>`;
+    return `<div class="trow" style="--c:var(--${p>=75?'good':p>=50?'hard':'again'})"><i>${p}</i><div style="flex:1"><b style="font-weight:550">${esc(e?.name||r.test)}</b><small>${fmtDate(r.at,{day:'numeric',month:'numeric',year:'numeric'})} · ${r.n} ${pl(r.n,'otázka','otázky','otázek')}${r.part?' (nedokončeno)':''} · ${Math.max(1,Math.round(r.dur/60000))} min</small></div></div>`}).join('')}</div>`;
   return h;
 }
 async function openTestSheet(id){
   if(!TIDX)await testsLoad();const e=TIDX?.find(x=>x.id===id);if(!e){toast('Test se nepodařilo načíst');return}
-  const runs=testRuns(id),last=runs[0],tf=testFolder(e);
+  const runs=testRuns(id),last=runs[0],tf=testFolder(e),pg=testProgress(e),left=pg.tot-pg.done;
   const w=sheet(`<h3 class="t">${esc(e.name)}</h3>${e.desc?`<p class="d">${esc(e.desc)}</p>`:''}
+    <div class="card pad" style="box-shadow:none;margin-top:14px"><div style="display:flex;justify-content:space-between;gap:10px;margin-bottom:8px;font-size:14px"><span>Zodpovězeno <b class="num">${pg.done}</b> z ${pg.tot}</span><span class="num" style="color:var(--muted)">${pg.done?`naposledy správně ${pg.ok}`:'zatím nic'}</span></div>${progBar(pg)}</div>
     <div class="form" style="margin-top:16px">
+      ${pg.done&&left>0?`<div class="field"><span>Otázky</span><div class="seg" id="tS"><button data-v="all" class="on">Všechny</button><button data-v="new">Nezodpovězené (${left})</button></div></div>`:''}
       <div class="field"><span>Počet otázek</span><div class="seg" id="tN"><button data-v="10" class="on">10</button><button data-v="20">20</button><button data-v="0">Všechny</button></div></div>
       <div class="field"><span>Druh otázek</span><div class="seg" id="tK"><button data-v="mix" class="on">Obojí</button><button data-v="abcd">ABCD (${e.abcd||0})</button><button data-v="open">Otevřené (${e.open||0})</button></div></div>
       <button class="btn primary lg block" id="tGo">${icon('play',18)}Spustit test</button>
       ${last&&last.wrong?.length?`<button class="btn outline block" id="tWrong">Zopakovat chybné z minula (${last.wrong.length})</button>`:''}
       <button class="btn ghost block" id="tFold">${icon('folder',18)}${tf?`Složka: ${esc(S.folders[tf].name)}`:'Přesunout do složky'}</button>
     </div>
-    ${runs.length?`<h2 class="sec">Výsledky</h2><div class="card list">${runs.slice(0,5).map(r=>{const p=runPct(r);return `<div class="trow" style="--c:var(--${p>=75?'good':p>=50?'hard':'again'})"><i>${p}</i><div><b style="font-weight:550">${p} %</b><small>${fmtDate(r.at,{day:'numeric',month:'numeric',year:'numeric'})} · ${r.n} ${pl(r.n,'otázka','otázky','otázek')}</small></div></div>`}).join('')}</div>`:''}`);
+    ${runs.length?`<h2 class="sec">Výsledky</h2><div class="card list">${runs.slice(0,5).map(r=>{const p=runPct(r);return `<div class="trow" style="--c:var(--${p>=75?'good':p>=50?'hard':'again'})"><i>${p}</i><div><b style="font-weight:550">${p} %</b><small>${fmtDate(r.at,{day:'numeric',month:'numeric',year:'numeric'})} · ${r.n} ${pl(r.n,'otázka','otázky','otázek')}${r.part?' (nedokončeno)':''}</small></div></div>`}).join('')}</div>`:''}`);
   w.querySelectorAll('.seg').forEach(sg=>sg.onclick=ev=>{const b=ev.target.closest('[data-v]');if(!b)return;sg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b))});
   const go=async(o,btn)=>{btn.disabled=true;try{const data=await testGet(e);w.close();Test.start(e,data,o)}catch(err){btn.disabled=false;toast('Test se nepodařilo stáhnout')}};
-  $('#tGo',w).onclick=ev=>go({n:+$('#tN .on',w).dataset.v,kind:$('#tK .on',w).dataset.v},ev.currentTarget);
+  $('#tGo',w).onclick=ev=>go({n:+$('#tN .on',w).dataset.v,kind:$('#tK .on',w).dataset.v,skip:$('#tS .on',w)?.dataset.v==='new'?pg.ids:null},ev.currentTarget);
   const tw=$('#tWrong',w);if(tw)tw.onclick=ev=>go({ids:last.wrong},ev.currentTarget);
   $('#tFold',w).onclick=()=>{w.close();moveTest(id)};
 }
@@ -1830,16 +1840,20 @@ const Test={
   open:false,e:null,data:null,qs:[],i:0,res:[],state:null,cur:null,t0:0,
   start(e,data,o={}){
     let qs=(data.questions||[]).filter(q=>q&&q.id&&q.q&&(q.t==='abcd'?Array.isArray(q.o)&&q.o.length>1:q.t==='open'));
-    if(o.ids){const s=new Set(o.ids);qs=qs.filter(q=>s.has(q.id))}else if(o.kind&&o.kind!=='mix')qs=qs.filter(q=>q.t===o.kind);
+    if(o.ids){const s=new Set(o.ids);qs=qs.filter(q=>s.has(q.id))}
+    else{if(o.skip){const s=new Set(o.skip);qs=qs.filter(q=>!s.has(q.id))}if(o.kind&&o.kind!=='mix')qs=qs.filter(q=>q.t===o.kind)}
     qs=shuffle([...qs]);if(o.n)qs=qs.slice(0,o.n);
     if(!qs.length){toast('Pro tento výběr nejsou v testu žádné otázky');return}
-    this.e=e;this.data=data;this.qs=qs.map(q=>q.t==='abcd'?{...q,ord:shuffle(q.o.map((_,j)=>j))}:q);this.i=0;this.res=[];this.t0=Date.now();
+    this.e=e;this.data=data;this.qs=qs.map(q=>q.t==='abcd'?{...q,ord:shuffle(q.o.map((_,j)=>j))}:q);this.i=0;this.res=[];this.done=false;this.t0=Date.now();
     const el=$('#test');el.classList.remove('hidden');void el.offsetHeight;el.classList.add('open');document.body.style.overflow='hidden';
     if(!this.open){this.open=true;Layers.push(this.closeFn)}
     this.show();
   },
   closeFn:()=>Test.close(),
-  close(){Layers.remove(this.closeFn);this.open=false;const el=$('#test');el.classList.remove('open');setTimeout(()=>el.classList.add('hidden'),220);document.body.style.overflow='';render()},
+  // Výsledek s ids zodpovězených otázek; nedokončený test se uloží s part: 1 (počítá se jen z odpovězených otázek)
+  saveRun(part){const res=this.res,n=res.length,id=uid(),wrong=res.filter(r=>r.sc<1).map(r=>r.id);
+    S.testRuns[id]={id,test:this.e.id,at:Date.now(),dur:Date.now()-this.t0,score:res.reduce((a,r)=>a+r.sc,0),max:n,n,wrong,ids:res.map(r=>r.id),...(part?{part:1}:{})};save();return wrong},
+  close(){if(this.open&&!this.done&&this.res.length)this.saveRun(true);this.done=true;Layers.remove(this.closeFn);this.open=false;const el=$('#test');el.classList.remove('open');setTimeout(()=>el.classList.add('hidden'),220);document.body.style.overflow='';render()},
   head(){const n=this.qs.length;$('#tsCounts').innerHTML=this.i<n?`<span class="cur">Otázka ${this.i+1}/${n}</span>`:'<span>Výsledek</span>';$('#tsProg').style.width=(this.res.length/n*100)+'%'},
   show(){
     const q=this.qs[this.i];this.state=null;this.cur=null;this.head();
@@ -1875,8 +1889,7 @@ const Test={
   next(){if(this.state!=='done')return;this.i++;if(this.i<this.qs.length)this.show();else this.finish()},
   finish(){
     const n=this.qs.length,sc=this.res.reduce((a,r)=>a+r.sc,0),p=Math.round(sc/n*100),dur=Date.now()-this.t0;
-    const wrong=this.res.filter(r=>r.sc<1).map(r=>r.id),id=uid();
-    S.testRuns[id]={id,test:this.e.id,at:Date.now(),dur,score:sc,max:n,n,wrong};save();
+    const wrong=this.saveRun(false);this.done=true;
     this.wrong=wrong;this.head();
     const good=this.res.filter(r=>r.sc===1).length,half=this.res.filter(r=>r.sc===.5).length,bad=n-good-half,mins=Math.round(dur/60000);
     const by=Object.fromEntries(this.res.map(r=>[r.id,r]));
