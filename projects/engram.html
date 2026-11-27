@@ -270,6 +270,8 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .st-prog i{display:block;height:100%;background:var(--accent);width:0;transition:width .35s}
 .st-stage{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px 20px;display:flex;flex-direction:column}
 .st-card{max-width:620px;width:100%;margin:0 auto;flex:1;background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:16px 20px 26px;display:flex;flex-direction:column;touch-action:pan-y;position:relative;user-select:none;-webkit-user-select:none;will-change:transform}
+.st-card.tint{background:color-mix(in srgb,var(--tint) 9%,var(--surface));border-color:color-mix(in srgb,var(--tint) 32%,var(--line))}
+.st-meta .lg{color:var(--tint);font-weight:500}
 .st-card.anim{animation:cardIn .28s cubic-bezier(.2,.85,.25,1)}
 @keyframes cardIn{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
 .st-meta{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);min-height:32px}
@@ -572,6 +574,8 @@ function ordsFor(n){
   if(n.type==='cloze'){const s=new Set();for(const m of String(n.fields.front).matchAll(CLOZE_RE))s.add(+m[1]);return [...s].sort((a,b)=>a-b)}
   return n.type==='reverse'?[0,1]:[0];
 }
+const GRADE={1:['Znovu','var(--again)'],2:['Těžké','var(--hard)'],3:['Dobře','var(--good)'],4:['Snadné','var(--easy)']};
+function lastGrade(cid){for(let i=LOGS.length-1;i>=0;i--)if(LOGS[i][1]===cid)return LOGS[i][2];return 0}
 function cardsOf(nid){return Object.values(S.cards).filter(c=>c.nid===nid).sort((a,b)=>a.ord-b.ord)}
 function newCard(nid,ord){const id=uid();S.cards[id]={id,nid,ord,state:0,due:0,s:0,d:0,reps:0,lapses:0,step:0,last:null,ivl:0,susp:false,buried:-1};return id}
 function saveNote(n){
@@ -1010,7 +1014,9 @@ const Study={
     const c=S.cards[this.cur],n=S.notes[c.nid],f=faces(c),dk=S.decks[n.deck];
     const badge=this.cram?'Procvičování':c.state===0?'Nová':c.state===2?'Opakování':c.state===3?'Přeučování':'Učení';
     const ti=n.typein&&!f.cloze&&!this.cram;
-    let body=`<div class="st-meta"><span class="dk"><span class="dot" style="background:${dk.color}"></span>${esc(dk.name)} · ${badge}</span>
+    // Karta, která už byla hodnocená, se lehce podbarví barvou posledního hodnocení
+    const lg=lastGrade(c.id),tint=lg?GRADE[lg]:null;
+    let body=`<div class="st-meta"><span class="dk"><span class="dot" style="background:${dk.color}"></span>${esc(dk.name)} · ${badge}${tint?` · <span class="lg">naposledy ${tint[0]}</span>`:''}</span>
       ${f.lq||f.la?`<button class="mini" data-act="speak" aria-label="Přečíst nahlas">${icon('volume',19)}</button>`:''}
       <button class="mini ${n.marked?'on':''}" data-act="study-mark" aria-label="Označit hvězdičkou">${icon('star',19)}</button>
       <button class="mini" data-act="study-edit" aria-label="Upravit kartu">${icon('edit',19)}</button></div>
@@ -1025,7 +1031,7 @@ const Study={
     if(this.revealed)body+='<div class="st-end"></div>';
     body+=`<span class="sw-lbl l">ZNOVU</span><span class="sw-lbl r">DOBŘE</span>`;
     const stage=$('#stStage');
-    stage.innerHTML=`<article class="st-card ${anim?'anim':''} ${this.revealed?'rev':''} ${f.cloze?'cz':''}" id="stCard">${body}</article>`;
+    stage.innerHTML=`<article class="st-card ${anim?'anim':''} ${this.revealed?'rev':''} ${f.cloze?'cz':''} ${tint?'tint':''}" id="stCard"${tint?` style="--tint:${tint[1]}"`:''}>${body}</article>`;
     const card=$('#stCard');
     card.addEventListener('click',e=>{if(e.target.closest('button,input,a'))return;if(!this.revealed)this.reveal()});
     bindSwipe(card);
