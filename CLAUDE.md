@@ -43,6 +43,16 @@ Koše: `cfg` (metriky `m:…`, auta `car:…`, připomínky `rem:…`), `car` (z
 
 Offline režim: `projects/daily-sw.js` (scope `./daily`), ikony a manifest v `projects/daily-icons/`. Při změně seznamu souborů nebo knihoven zvyš `VERSION`. Ukázková data (`demoDB`) žijí jen v paměti, nikdy se neukládají ani neodesílají.
 
+## Engram (`projects/engram.html`)
+
+Kartičky s opakováním (FSRS). Karty, balíčky i průběh učení jsou jen v zařízení (IndexedDB `engram`, záloha do .json), synchronizace mezi zařízeními není.
+
+**Knihovna balíčků** (`openLibrary`, tlačítko na hlavní stránce i v Nastavení → Data): obsah karet leží v repu v `projects/engram-decks/` – `index.json` (seznam: `id`, `file`, `name`, `group`, `desc`, `color`, `count`, `updated`) a jeden soubor na balíček (`{id, name, group, desc, color, updated, cards: [{id, t: basic|reverse|cloze, f, b, x, g: [štítky]}]}`, formátování jako v editoru: `**tučně**`, `==zvýraznění==`, řádky `- `, mezery `{{c1::…}}`). Čte se z raw.githubusercontent.com (hned po pushi na `main`), záložně z Pages.
+- Přidaný balíček má `d.lib`, jeho poznámky `n.lib` (id karty) a `n.libH` (otisk obsahu). `libApply` při synchronizaci přidá nové karty, přepíše ty změněné v knihovně (stav učení zůstává), smaže odebrané z knihovny; kartu, kterou si uživatel smazal sám, znovu nepřidá.
+- Při spuštění se odebírané balíčky doplní samy, ale jen když se změnilo `updated` v `index.json` – **při každé úpravě balíčku ho zvyš** (a přepočítej `count`).
+- `id` karet se nesmí měnit (jinak se karta smaže a vznikne nová bez historie). Nová karta = nové unikátní `id` (`<balíček>-<8 hex>`).
+- Kartičky z prezentací: jen látka (ne informace o předmětu), česky, jedna věc na kartu, do `x` číslo slidu. Repo je veřejné – žádné osobní údaje ani kontakty z prezentací. Pracovní soubory patří do `karticky/` (v `.gitignore`).
+
 ## Zpěvník (`projects/zpevnik.html`)
 
 Kytarový zpěvník: sekce podle autorů, hledání, složky, poznámka k písni, transpozice (české značení, B = hes, H = h) a velikost písma.

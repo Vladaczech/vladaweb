@@ -702,6 +702,7 @@ function vHome(){
     <div class="card empty"><div class="big">${icon('logo',28,2.2)}</div><h3>Učte se chytřeji, ne déle</h3>
     <p>Engram plánuje každou kartu algoritmem FSRS přesně ve chvíli, kdy byste ji začali zapomínat. Stačí pár minut denně.</p>
     <div class="btns"><button class="btn primary lg" data-act="deck-new">${icon('plus')}Vytvořit balíček</button>
+    <button class="btn outline" data-act="library">${icon('download')}Knihovna balíčků</button>
     <button class="btn outline" data-act="sample">${icon('eye')}Vyzkoušet ukázkové balíčky</button>
     <button class="btn ghost" data-act="import">${icon('upload')}Importovat karty</button></div></div>`;
   const C=deckCounts();let n=0,l=0,r=0;for(const d of decks){n+=C[d.id].new;l+=C[d.id].learn;r+=C[d.id].rev}
@@ -730,7 +731,7 @@ function vHome(){
   return `<h1 class="page">Dnes</h1><div class="sub">${date}</div>${hero}${tiles}${banner}
     <h2 class="sec">Balíčky<button data-act="deck-new">${icon('plus',16)}</button></h2>
     <div class="card list">${rows}</div>
-    <div class="btns" style="margin-top:12px"><button class="btn outline sm" data-act="deck-new">${icon('plus',16)}Nový balíček</button><button class="btn outline sm" data-act="import">${icon('upload',16)}Import</button></div>`;
+    <div class="btns" style="margin-top:12px"><button class="btn outline sm" data-act="deck-new">${icon('plus',16)}Nový balíček</button><button class="btn outline sm" data-act="library">${icon('download',16)}Knihovna</button><button class="btn outline sm" data-act="import">${icon('upload',16)}Import</button></div>`;
 }
 function nextDueInfo(){
   const now=Date.now(),tom=addDays(dayStart(now),1),tom2=addDays(tom,1);let first=Infinity,cnt=0,learnNext=Infinity;
@@ -758,6 +759,7 @@ function openDeck(id){
       <button data-x="cram" ${c.total-c.susp?'':'disabled'}>${icon('reset')}Procvičit bez vlivu na plán</button>
       <button data-x="browse">${icon('cards')}Procházet karty (${c.total})</button>
       <button data-x="edit">${icon('settings')}Nastavení balíčku</button>
+      ${d.lib?`<button data-x="libsync">${icon('reset')}Aktualizovat z knihovny</button>`:''}
       <button data-x="export">${icon('download')}Exportovat do CSV</button>
       <hr><button data-x="del" class="danger">${icon('trash')}Smazat balíček</button>
     </div>`);
@@ -769,6 +771,7 @@ function openDeck(id){
     if(x==='browse'){w.close();BR.deck=id;BR.q='';BR.state='';go('browse')}
     if(x==='edit'){w.close();editDeck(id)}
     if(x==='export'){exportCSV(id)}
+    if(x==='libsync'){b.disabled=true;try{const m=libMsg(await libSync(id));w.close();render();toast(m||'Balíček je aktuální')}catch(err){b.disabled=false;toast(err.message||'Aktualizace se nezdařila')}}
     if(x==='del'){if(await confirmDlg(`Smazat „${d.name}“?`,`Smaže se ${c.total} ${pl(c.total,'karta','karty','karet')} včetně historie plánování. Akci nelze vrátit.`,'Smazat balíček',true)){
       const gone=new Set(Object.values(S.notes).filter(n=>n.deck===id).map(n=>n.id));for(const c of Object.values(S.cards))if(gone.has(c.nid))delete S.cards[c.id];for(const k of gone)delete S.notes[k];delete S.decks[id];gcMedia();save();w.close();render();toast('Balíček smazán')}}
   });
@@ -1342,6 +1345,7 @@ function vSettings(){
   <h2 class="sec">Data</h2><div class="card group">
     <button class="srow" data-act="backup"><span class="l"><b>Zálohovat</b><small>${lb?'Poslední záloha '+fmtDate(lb,{day:'numeric',month:'long',year:'numeric'}):'Zatím nezálohováno'}</small></span>${icon('download',20)}</button>
     <button class="srow" data-act="restore"><span class="l"><b>Obnovit ze zálohy</b><small>Nahradí současná data souborem .json</small></span>${icon('upload',20)}</button>
+    <button class="srow" data-act="library"><span class="l"><b>Knihovna balíčků</b><small>Balíčky uložené na GitHubu, samy se doplňují</small></span>${icon('download',20)}</button>
     <button class="srow" data-act="import"><span class="l"><b>Importovat karty</b><small>CSV, TSV nebo textový export z Anki</small></span>${icon('upload',20)}</button>
     <div class="srow"><span class="l"><b>Úložiště</b><small id="sStore">Zjišťuji…</small></span></div>
     <button class="srow" data-act="wipe"><span class="l"><b style="color:var(--again)">Smazat všechna data</b></span>${icon('trash',20)}</button>
@@ -1479,6 +1483,71 @@ function downloadICS(){
   download('engram-pripominka.ics',ics,'text/calendar;charset=utf-8');
 }
 
+/* ---------- knihovna balíčků (soubory v repu na GitHubu) ---------- */
+// Obsah karet je v projects/engram-decks/ (index.json + jeden soubor na balíček), průběh učení zůstává v zařízení.
+// Balíček přidaný z knihovny má d.lib = {id, ver, seen, synced}; jeho poznámky n.lib (id karty) a n.libH (otisk obsahu).
+const LIB_SRC=['https://raw.githubusercontent.com/Vladaczech/vladaweb/main/projects/engram-decks/','./engram-decks/'];
+async function libGet(file){
+  for(const base of LIB_SRC){try{const r=await fetch(base+file+'?_='+Date.now(),{cache:'no-store'});if(r.ok)return await r.json()}catch(e){}}
+  throw new Error('Knihovna není dostupná');
+}
+function libHash(c){const s=JSON.stringify([c.t,c.f,c.b||'',c.x||'',c.g||[]]);let h=5381;for(let i=0;i<s.length;i++)h=(h*33^s.charCodeAt(i))>>>0;return h.toString(36)}
+function libDeckOf(libId){return Object.values(S.decks).find(d=>d.lib?.id===libId)}
+// Sloučí stažený balíček do lokálního: nové karty přidá, změněné v knihovně přepíše (stav učení zůstává),
+// odebrané z knihovny smaže. Karta, kterou uživatel smazal sám, se znovu nepřidá (je v seen).
+function libApply(deckId,data){
+  const d=S.decks[deckId],L=d.lib,seen=new Set(L.seen||[]),have={},up=new Set();let add=0,upd=0,del=0;const base=Date.now();
+  for(const n of Object.values(S.notes))if(n.deck===deckId&&n.lib)have[n.lib]=n;
+  (data.cards||[]).forEach((c,i)=>{
+    if(!c||!c.id||!c.f||!['basic','reverse','cloze'].includes(c.t))return;
+    up.add(c.id);const h=libHash(c),n=have[c.id],cz=c.t==='cloze';
+    const fields={front:c.f,back:cz?'':(c.b||''),extra:c.x||''};
+    if(n){if(n.libH!==h){Object.assign(n,{type:c.t,fields,tags:[...(c.g||[])],libH:h});saveNote(n);upd++}}
+    else if(!seen.has(c.id)){saveNote({id:uid(),deck:deckId,type:c.t,fields,tags:[...(c.g||[])],typein:false,marked:false,created:base+i,lib:c.id,libH:h});add++}
+    seen.add(c.id);
+  });
+  for(const [k,n] of Object.entries(have))if(!up.has(k)){deleteNote(n.id);del++}
+  L.seen=[...seen].filter(k=>up.has(k));L.ver=data.updated||'';L.synced=Date.now();save();
+  return {add,upd,del};
+}
+function libMsg(r){const p=[];if(r.add)p.push(`+${r.add} ${pl(r.add,'nová karta','nové karty','nových karet')}`);if(r.upd)p.push(`${r.upd} ${pl(r.upd,'upravená','upravené','upravených')}`);if(r.del)p.push(`${r.del} ${pl(r.del,'odebraná','odebrané','odebraných')}`);return p.join(' · ')}
+async function libSync(deckId){const d=S.decks[deckId];const idx=await libGet('index.json');const e=(idx.decks||[]).find(x=>x.id===d.lib.id);if(!e)throw new Error('Balíček už v knihovně není');return libApply(deckId,await libGet(e.file))}
+// Při spuštění tiše doplní odebírané balíčky (nejvýš jednou za 10 minut).
+async function libSyncAll(){
+  const subs=Object.values(S.decks).filter(d=>d.lib&&Date.now()-(d.lib.synced||0)>6e5);if(!subs.length)return;
+  let idx;try{idx=await libGet('index.json')}catch(e){return}
+  const msgs=[];
+  for(const d of subs){const e=(idx.decks||[]).find(x=>x.id===d.lib.id);if(!e)continue;
+    if(e.updated&&e.updated===d.lib.ver){d.lib.synced=Date.now();continue}
+    try{const m=libMsg(libApply(d.id,await libGet(e.file)));if(m)msgs.push(`${d.name}: ${m}`)}catch(err){}}
+  save();if(msgs.length){if(!Study.open&&!Layers.stack.length)render();toast(msgs.join(' · '))}
+}
+async function openLibrary(){
+  const w=sheet(`<h3 class="t">Knihovna balíčků</h3><p class="d">Balíčky uložené na GitHubu. Přidaný balíček se sám doplňuje o nové a upravené karty; průběh učení zůstává v tomto zařízení.</p><div id="libBox" style="margin-top:16px"><div class="hint">Načítám…</div></div>`);
+  const box=$('#libBox',w);let idx;
+  try{idx=await libGet('index.json')}catch(e){box.innerHTML='<div class="hint">Knihovnu se nepodařilo načíst. Zkontrolujte připojení k internetu.</div>';return}
+  const list=idx.decks||[];
+  const draw=()=>{
+    if(!list.length){box.innerHTML='<div class="hint">Knihovna je zatím prázdná.</div>';return}
+    const groups={};for(const e of list)(groups[e.group||'Ostatní']??=[]).push(e);
+    box.innerHTML=Object.entries(groups).map(([g,es])=>`<h2 class="sec" style="margin-top:8px">${esc(g)}</h2><div class="card group">${es.map(e=>{const d=libDeckOf(e.id);
+      return `<div class="srow"><span class="dot" style="background:${esc(e.color||COLORS[0])};width:10px;height:10px;border-radius:3px;flex:none"></span><span class="l"><b>${esc(e.name)}</b><small>${e.count||0} ${pl(e.count||0,'karta','karty','karet')}${e.desc?' · '+esc(e.desc):''}</small></span>
+        ${d?`<button class="btn outline sm" data-lib="sync" data-id="${esc(e.id)}">${icon('reset',16)}Aktualizovat</button>`:`<button class="btn primary sm" data-lib="add" data-id="${esc(e.id)}">${icon('plus',16)}Přidat</button>`}</div>`}).join('')}</div>`).join('');
+  };
+  draw();
+  box.addEventListener('click',async ev=>{const b=ev.target.closest('[data-lib]');if(!b||b.disabled)return;const e=list.find(x=>x.id===b.dataset.id);if(!e)return;
+    b.disabled=true;const was=b.innerHTML;b.textContent='Stahuji…';
+    try{
+      if(b.dataset.lib==='add'){
+        const data=await libGet(e.file);
+        if(!libDeckOf(e.id)){const id=newDeck(data.name||e.name,{desc:data.desc||e.desc||'',color:data.color||e.color||COLORS[0],lib:{id:e.id,ver:'',seen:[],synced:0}});
+          const r=libApply(id,data);S.meta.lastDeck=id;persistStorage();toast(`Balíček přidán · ${r.add} ${pl(r.add,'karta','karty','karet')}`)}
+      }else{const d=libDeckOf(e.id);const m=libMsg(await libSync(d.id));toast(m||'Balíček je aktuální')}
+      render();draw();
+    }catch(err){b.disabled=false;b.innerHTML=was;toast(err.message||'Stažení se nezdařilo')}
+  });
+}
+
 /* ---------- sample decks ---------- */
 function createSamples(){
   const a=newDeck('Hlavní města Evropy',{desc:'Ukázkový balíček',color:COLORS[0],newPerDay:10});
@@ -1506,6 +1575,7 @@ const ACT={
   deck:el=>openDeck(el.dataset.id),
   'deck-new':()=>editDeck(null),
   sample:createSamples,
+  library:openLibrary,
   import:openImport,
   backup:doBackup,
   restore:doRestore,
@@ -1536,7 +1606,7 @@ document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if
   S=core&&core.v?core:freshCore();
   S.settings={...DEF_SET,...S.settings};S.meta={...freshCore().meta,...S.meta};
   LOGS=(await Store.get('logs'))||[];MEDIA=(await Store.get('media'))||{};
-  applyTheme();render();
+  applyTheme();render();libSyncAll();
   if('speechSynthesis' in window)speechSynthesis.getVoices();
   let lastDay=dayIdx();setInterval(()=>{const d=dayIdx();if(d!==lastDay){lastDay=d;if(!Study.open&&!Layers.stack.length)render()}},60000);
 })();

@@ -1,0 +1,14 @@
+{
+ "decks": [
+  {
+   "id": "pvs01",
+   "file": "pvs01.json",
+   "name": "PVS 01 – Úvod do výrobního managementu",
+   "group": "Projektování výrobních systémů",
+   "desc": "Lekce 1: inovace, průmyslové revoluce, organizace výroby, automatizace, robotizace, digitalizace, udržitelnost.",
+   "color": "#d9732b",
+   "count": 179,
+   "updated": "2026-11-27"
+  }
+ ]
+}
