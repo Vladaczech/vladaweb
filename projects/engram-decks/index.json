@@ -29,6 +29,76 @@
    "color": "#8e4ec6",
    "count": 115,
    "updated": "2026-11-27"
+  },
+  {
+   "id": "pvs06",
+   "file": "pvs06.json",
+   "name": "PVS 06 – Výrobní technologie",
+   "group": "Projektování výrobních systémů",
+   "desc": "Lekce 6: moderní výrobní technologie – automatizace, digitální technologie, AI, aditivní výroba, pokročilé obrábění, udržitelnost, materiály, CPPS, modulární výroba, lidský faktor.",
+   "color": "#d94848",
+   "count": 86,
+   "updated": "2026-11-27"
+  },
+  {
+   "id": "pvs08",
+   "file": "pvs08.json",
+   "name": "PVS 08 – Systémy řízení výroby",
+   "group": "Projektování výrobních systémů",
+   "desc": "Lekce 8: MES/MOM, hierarchie ISA-95 (PLC, SCADA, MES, ERP), komponenty, integrace a protokoly, implementace, přínosy, rizika a trendy.",
+   "color": "#0e9fb3",
+   "count": 71,
+   "updated": "2026-11-27"
+  },
+  {
+   "id": "pvs09",
+   "file": "pvs09.json",
+   "name": "PVS 09 – Umělá inteligence",
+   "group": "Projektování výrobních systémů",
+   "desc": "Lekce 9: definice AI, humánní vs. umělá inteligence, Gardnerovy inteligence, ANI/AGI/ASI, neuronové sítě, strojové a hluboké učení, nástroje AI, velká data, AI ve firmě a výrobě.",
+   "color": "#d6409f",
+   "count": 71,
+   "updated": "2026-11-27"
+  },
+  {
+   "id": "pvs10",
+   "file": "pvs10.json",
+   "name": "PVS 10 – Ekonomika a kontroling ve výrobě",
+   "group": "Projektování výrobních systémů",
+   "desc": "Lekce 10: ekonomika a kontroling, klasifikace a alokace nákladů (ABC), kalkulace, rozpočty, KPI a OEE, analýza odchylek, benchmarking, standardní náklady, Lean, TQM.",
+   "color": "#6b7280",
+   "count": 106,
+   "updated": "2026-11-27"
+  },
+  {
+   "id": "pvs11",
+   "file": "pvs11.json",
+   "name": "PVS 11 – Manažerské výrobní systémy",
+   "group": "Projektování výrobních systémů",
+   "desc": "Lekce 11: fordismus, Toyota Production System, Just-in-Time vs. Just-in-Case, Toyota Way, Lean Management, Six Sigma (DMAIC, DMADV), Lean Six Sigma, Kanban.",
+   "color": "#c98417",
+   "count": 82,
+   "updated": "2026-11-27"
+  },
+  {
+   "id": "pvs12",
+   "file": "pvs12.json",
+   "name": "PVS 12 – Společenské hodnoty ve výrobě",
+   "group": "Projektování výrobních systémů",
+   "desc": "Lekce 12: CSR a ESG, podnikatelská etika, kvalita a spolehlivost (ISO 9000, TQM), plánované stárnutí, BOZP (ISO 45001), životní prostředí (ISO 14001, Green Deal), materiálová, energetická, dopravní a prostorová udržitelnost, ISO 26000.",
+   "color": "#2c9465",
+   "count": 80,
+   "updated": "2026-11-27"
+  },
+  {
+   "id": "pvs14",
+   "file": "pvs14.json",
+   "name": "PVS 14 – Projektování výrobních a provozních systémů",
+   "group": "Projektování výrobních systémů",
+   "desc": "Lekce 14: životní cyklus výrobních systémů, projektová dokumentace, inženýring, re-inženýring a změnový management, proces projektování, vodopádová/agilní/hybridní technika, BIM, 17 kroků re-inženýringu.",
+   "color": "#3b7ff2",
+   "count": 58,
+   "updated": "2026-11-27"
   }
  ],
  "tests": [
@@ -66,6 +136,90 @@
    "abcd": 50,
    "open": 12,
    "count": 62,
+   "updated": "2026-11-27"
+  },
+  {
+   "id": "pvs06-test",
+   "file": "pvs06-test.json",
+   "name": "Test PVS 06 – Výrobní technologie",
+   "group": "Projektování výrobních systémů",
+   "desc": "Otázky ABCD i otevřené k lekci 6 – Výrobní technologie.",
+   "deck": "pvs06",
+   "abcd": 37,
+   "open": 9,
+   "count": 46,
+   "updated": "2026-11-27"
+  },
+  {
+   "id": "pvs08-test",
+   "file": "pvs08-test.json",
+   "name": "Test PVS 08 – Systémy řízení výroby",
+   "group": "Projektování výrobních systémů",
+   "desc": "Otázky ABCD i otevřené k lekci 8 – Systémy řízení výroby.",
+   "deck": "pvs08",
+   "abcd": 35,
+   "open": 8,
+   "count": 43,
+   "updated": "2026-11-27"
+  },
+  {
+   "id": "pvs09-test",
+   "file": "pvs09-test.json",
+   "name": "Test PVS 09 – Umělá inteligence",
+   "group": "Projektování výrobních systémů",
+   "desc": "Otázky ABCD i otevřené k lekci 9 – Umělá inteligence.",
+   "deck": "pvs09",
+   "abcd": 30,
+   "open": 8,
+   "count": 38,
+   "updated": "2026-11-27"
+  },
+  {
+   "id": "pvs10-test",
+   "file": "pvs10-test.json",
+   "name": "Test PVS 10 – Ekonomika a kontroling ve výrobě",
+   "group": "Projektování výrobních systémů",
+   "desc": "Otázky ABCD i otevřené k lekci 10 – Ekonomika a kontroling ve výrobě.",
+   "deck": "pvs10",
+   "abcd": 38,
+   "open": 8,
+   "count": 46,
+   "updated": "2026-11-27"
+  },
+  {
+   "id": "pvs11-test",
+   "file": "pvs11-test.json",
+   "name": "Test PVS 11 – Manažerské výrobní systémy",
+   "group": "Projektování výrobních systémů",
+   "desc": "Otázky ABCD i otevřené k lekci 11 – Manažerské výrobní systémy.",
+   "deck": "pvs11",
+   "abcd": 37,
+   "open": 7,
+   "count": 44,
+   "updated": "2026-11-27"
+  },
+  {
+   "id": "pvs12-test",
+   "file": "pvs12-test.json",
+   "name": "Test PVS 12 – Společenské hodnoty ve výrobě",
+   "group": "Projektování výrobních systémů",
+   "desc": "Otázky ABCD i otevřené k lekci 12 – Společenské hodnoty ve výrobě.",
+   "deck": "pvs12",
+   "abcd": 32,
+   "open": 7,
+   "count": 39,
+   "updated": "2026-11-27"
+  },
+  {
+   "id": "pvs14-test",
+   "file": "pvs14-test.json",
+   "name": "Test PVS 14 – Projektování výrobních a provozních systémů",
+   "group": "Projektování výrobních systémů",
+   "desc": "Otázky ABCD i otevřené k lekci 14 – Projektování výrobních a provozních systémů.",
+   "deck": "pvs14",
+   "abcd": 30,
+   "open": 6,
+   "count": 36,
    "updated": "2026-11-27"
   }
  ]
