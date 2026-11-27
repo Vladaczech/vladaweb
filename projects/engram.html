@@ -320,6 +320,13 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .st-done p{color:var(--muted);margin:6px 0 20px}
 .st-done .kpis{margin-bottom:20px;text-align:left}
 .st-done .btns{flex-direction:column}
+.rnd-prog{padding:14px 16px;text-align:left;margin-bottom:12px}
+.rnd-prog .hd{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px;font-size:14px;color:var(--text-2)}
+.rnd-prog .hd b{font-size:22px;font-weight:650;color:var(--text);letter-spacing:-.02em}
+.rnd-prog .split{height:10px;margin-bottom:10px}
+.rnd-prog .legend{margin-bottom:0;font-size:12.5px;gap:10px}
+.rnd-this{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:4px 0 18px}
+.rnd-this span{font-size:13px;font-weight:600;padding:5px 10px;border-radius:999px;color:var(--c);background:color-mix(in srgb,var(--c) 12%,transparent)}
 
 #toast{position:fixed;left:0;right:0;margin:0 auto;width:max-content;bottom:calc(var(--tab) + env(safe-area-inset-bottom) + 14px);transform:translateY(20px);z-index:90;background:#1c1d22;color:#f2f2f4;border-radius:14px;padding:11px 16px;font-size:14px;display:flex;gap:14px;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .2s,transform .25s;max-width:calc(100% - 32px)}
 #toast.show{opacity:1;transform:none;pointer-events:auto}
@@ -575,6 +582,20 @@ function ordsFor(n){
   return n.type==='reverse'?[0,1]:[0];
 }
 const GRADE={1:['Znovu','var(--again)'],2:['Těžké','var(--hard)'],3:['Dobře','var(--good)'],4:['Snadné','var(--easy)']};
+const ROUND=10;
+// Stav balíčku pro učení po kolech: poslední hodnocení každé karty (0 = ještě neviděná), naučeno = Dobře/Snadné
+function roundStats(deckIds){
+  const scope=new Set(deckIds),last={};for(const l of LOGS)last[l[1]]=l;
+  const s={tot:0,g:[0,0,0,0,0],cards:[]};
+  for(const c of Object.values(S.cards)){if(c.susp||!scope.has(deckOf(c)))continue;const L=last[c.id],g=L?L[2]:0;s.tot++;s.g[g]++;s.cards.push({c,g,t:L?L[0]:0})}
+  s.known=s.g[3]+s.g[4];s.left=s.tot-s.known;s.pct=s.tot?Math.round((s.g[2]/3+s.g[3]*2/3+s.g[4])/s.tot*100):0;
+  return s;
+}
+function roundBar(s){
+  const seg=(v,c)=>v?`<i style="flex:${v};background:${c}"></i>`:'';
+  return `<div class="split">${seg(s.g[4],'var(--easy)')}${seg(s.g[3],'var(--good)')}${seg(s.g[2],'var(--hard)')}${seg(s.g[1],'var(--again)')}</div>
+    <div class="legend num"><span style="--c:var(--easy)">${s.g[4]} Snadné</span><span style="--c:var(--good)">${s.g[3]} Dobře</span><span style="--c:var(--hard)">${s.g[2]} Těžké</span><span style="--c:var(--again)">${s.g[1]} Znovu</span><span style="--c:var(--surface-3)">${s.g[0]} nové</span></div>`;
+}
 function lastGrade(cid){for(let i=LOGS.length-1;i>=0;i--)if(LOGS[i][1]===cid)return LOGS[i][2];return 0}
 function cardsOf(nid){return Object.values(S.cards).filter(c=>c.nid===nid).sort((a,b)=>a.ord-b.ord)}
 function newCard(nid,ord){const id=uid();S.cards[id]={id,nid,ord,state:0,due:0,s:0,d:0,reps:0,lapses:0,step:0,last:null,ivl:0,susp:false,buried:-1};return id}
@@ -752,12 +773,14 @@ function nextDueInfo(){
 /* ---------- DECK sheet / editor ---------- */
 function openDeck(id){
   const d=S.decks[id],c=deckCounts()[id],tot=c.new+c.learn+c.rev;
-  const moreNew=c.newRaw>c.new;
+  const moreNew=c.newRaw>c.new,rs=roundStats([id]);
   const w=sheet(`<div style="display:flex;gap:12px;align-items:center"><span class="dot" style="background:${d.color};width:14px;height:14px"></span><h3 class="t" style="flex:1">${esc(d.name)}</h3></div>
     ${d.desc?`<p class="d">${esc(d.desc)}</p>`:''}
     <div class="legend num" style="margin:14px 0 14px"><span style="--c:var(--new)">${c.new} nových</span><span style="--c:var(--learn)">${c.learn} v učení</span><span style="--c:var(--review)">${c.rev} k opakování</span></div>
-    <button class="btn primary lg block" data-x="study" ${tot?'':'disabled'}>${icon('play',18)}${tot?'Studovat':'Dnes hotovo'}</button>
+    ${rs.tot?`<div class="card rnd-prog" style="box-shadow:none"><div class="hd"><span>Naučeno <b class="num">${rs.known}</b> z ${rs.tot}</span><span class="num">zvládnutí ${rs.pct} %</span></div>${roundBar(rs)}</div>`:''}
+    <button class="btn primary lg block" data-x="rounds" ${rs.tot?'':'disabled'}>${icon('play',18)}Učit se po kolech (${ROUND} karet)</button>
     <div class="menu">
+      <button data-x="study" ${tot?'':'disabled'}>${icon('clock')}${tot?`Opakovat podle plánu (${tot})`:'Podle plánu je dnes hotovo'}</button>
       <button data-x="add">${icon('plus')}Přidat kartu</button>
       ${moreNew?`<button data-x="more">${icon('bolt')}Dnes přidat 10 nových karet navíc</button>`:''}
       <button data-x="cram" ${c.total-c.susp?'':'disabled'}>${icon('reset')}Procvičit bez vlivu na plán</button>
@@ -769,6 +792,7 @@ function openDeck(id){
     </div>`);
   w.addEventListener('click',async e=>{const b=e.target.closest('[data-x]');if(!b||b.disabled)return;const x=b.dataset.x;
     if(x==='study'){w.close();Study.start([id])}
+    if(x==='rounds'){w.close();Study.start([id],{rounds:true})}
     if(x==='add'){w.close();openEditor(null,{deck:id})}
     if(x==='more'){addExtraNew([id],10);w.close();render();toast('Limit nových karet navýšen o 10')}
     if(x==='cram'){w.close();Study.start([id],{cram:true})}
@@ -936,10 +960,10 @@ async function compressImage(file,max=1280,q=.82){
 /* ---------- STUDY ---------- */
 const Study={
   open:false,decks:[],queue:[],cur:null,revealed:false,shownAt:0,undo:[],seen:new Set(),cram:false,
-  st:{done:0,time:0,again:0,start:0},total:0,typed:'',
+  st:{done:0,time:0,again:0,start:0},total:0,typed:'',rounds:false,round:0,prevRound:[],rst:null,
   start(decks,o={}){
-    this.decks=decks;this.cram=!!o.cram;this.undo=[];this.seen=new Set();this.st={done:0,time:0,again:0,start:Date.now()};
-    this.queue=this.cram?this.buildCram():this.build();
+    this.decks=decks;this.cram=!!o.cram;this.rounds=!!o.rounds;this.round=0;this.prevRound=[];this.undo=[];this.seen=new Set();this.st={done:0,time:0,again:0,start:Date.now()};
+    this.queue=this.rounds?this.buildRound():this.cram?this.buildCram():this.build();
     this.total=this.remaining();
     const el=$('#study');el.classList.remove('hidden');void el.offsetHeight;el.classList.add('open');
     document.body.style.overflow='hidden';
@@ -974,12 +998,26 @@ const Study={
     all.sort((a,b)=>(a.state===0)-(b.state===0)||(FSRS.R(Math.max(0,dayIdx()-dayIdx(a.last||Date.now())),a.s||1)-FSRS.R(Math.max(0,dayIdx()-dayIdx(b.last||Date.now())),b.s||1)));
     return shuffle(all.slice(0,60)).slice(0,40).map(c=>c.id);
   },
+  // Kolo = ROUND karet bez ohledu na plán: nejdřív slabé (Znovu, Těžké), pak nové, pak naučené od nejdéle neviděných.
+  // Karty z předchozího kola a sourozence téže poznámky bere až nakonec, aby se slabé karty prokládaly.
+  buildRound(){
+    const s=roundStats(this.decks),prev=new Set(this.prevRound),by=g=>s.cards.filter(x=>x.g===g),old=(a,b)=>a.t-b.t;
+    const weak=[...by(1).sort(old),...by(2).sort(old)];
+    const fresh=by(0).sort((a,b)=>(S.notes[a.c.nid].created-S.notes[b.c.nid].created)||a.c.ord-b.c.ord);
+    const rest=[...by(3).sort(old),...by(4).sort(old)];
+    const pick=[],notes=new Set();
+    const take=(arr,max,strict)=>{for(const x of arr){if(pick.length>=ROUND||max<=0)return;if(pick.includes(x.c.id))continue;if(strict&&(prev.has(x.c.id)||notes.has(x.c.nid)))continue;pick.push(x.c.id);notes.add(x.c.nid);max--}};
+    take(weak,Math.ceil(ROUND/2),true);take(fresh,ROUND,true);take(weak,ROUND,true);take(rest,ROUND,true);
+    take(weak,ROUND,false);take(fresh,ROUND,false);take(rest,ROUND,false);
+    this.round++;this.prevRound=pick;this.rst={g:[0,0,0,0,0],time:0,n:pick.length};
+    return shuffle([...pick]);
+  },
   learnCards(now=Date.now()){
-    if(this.cram)return [];
+    if(this.cram||this.rounds)return [];
     const tom=addDays(dayStart(now),1),scope=new Set(this.decks),today=dayIdx(now);
     return Object.values(S.cards).filter(c=>(c.state===1||c.state===3)&&!c.susp&&c.buried!==today&&c.due<tom&&scope.has(deckOf(c))).sort((a,b)=>a.due-b.due);
   },
-  valid(id){const c=S.cards[id];if(!c||c.susp||c.buried===dayIdx())return false;if(this.cram)return true;if(this.seen.has(c.nid))return false;return c.state===0||c.state===2},
+  valid(id){const c=S.cards[id];if(!c||c.susp)return false;if(this.rounds)return true;if(c.buried===dayIdx())return false;if(this.cram)return true;if(this.seen.has(c.nid))return false;return c.state===0||c.state===2},
   counts(){
     const now=Date.now();let n=0,r=0;for(const id of this.queue){if(!this.valid(id))continue;const c=S.cards[id];if(this.cram||c.state===2)r++;else n++}
     return {n,l:this.learnCards(now).length,r};
@@ -994,7 +1032,7 @@ const Study={
   },
   next(){
     this.cur=this.pick();this.revealed=false;this.typed='';
-    if(!this.cur)return this.renderDone();
+    if(!this.cur)return this.rounds?this.renderRound():this.renderDone();
     const qi=this.queue.indexOf(this.cur);if(qi===0)this.queue.shift();
     this.shownAt=Date.now();this.renderCard(true);
     const f=faces(S.cards[this.cur]);if(S.settings.autoTTS&&f.lq)speak(f.qT,f.lq);
@@ -1004,6 +1042,10 @@ const Study={
   header(){
     const c=this.counts(),cur=this.cur&&S.cards[this.cur];
     const k=!cur?'':this.cram?'r':cur.state===0?'n':cur.state===2?'r':'l';
+    if(this.rounds){const left=this.queue.filter(id=>this.valid(id)).length,n=this.rst.n,done=n-left-(cur?1:0);
+      $('#stCounts').innerHTML=`<span class="${cur?'cur':''}">Kolo ${this.round} · ${Math.min(n,done+(cur?1:0))}/${n}</span>`;
+      $('#stProg').style.width=(n?done/n*100:100)+'%';
+      $('#stUndo').disabled=!this.undo.length;$('#stUndo').style.opacity=this.undo.length?1:.35;$('#stMenu').style.visibility=cur?'visible':'hidden';return}
     $('#stCounts').innerHTML=this.cram?`<span class="c-rev cur">${c.r+(cur?1:0)}</span>`:`<span class="c-new ${k==='n'?'cur':''}">${c.n+(k==='n'?1:0)}</span><span class="c-learn ${k==='l'?'cur':''}">${c.l}</span><span class="c-rev ${k==='r'?'cur':''}">${c.r+(k==='r'?1:0)}</span>`;
     const rem=this.remaining()+(cur&&k!=='l'?1:0);const tot=this.st.done+rem;
     $('#stProg').style.width=(tot?this.st.done/tot*100:100)+'%';
@@ -1042,7 +1084,7 @@ const Study={
   renderBottom(){
     const b=$('#stBottom');
     if(!this.revealed){b.innerHTML=`<button class="btn primary lg block" data-act="reveal" style="min-height:62px">Zobrazit odpověď</button><div class="kbd-hint">Mezerník – odkrýt · 1–4 – hodnocení · Z – zpět · E – upravit</div>`;return}
-    const c=S.cards[this.cur],p=this.cram?null:preview(c);
+    const c=S.cards[this.cur],p=this.cram||this.rounds?null:preview(c);
     const L=[[1,'Znovu','again'],[2,'Těžké','hard'],[3,'Dobře','good'],[4,'Snadné','easy']];
     b.innerHTML=`<div class="rates">${L.map(([g,l,k])=>`<button class="rate" style="--c:var(--${k})" data-act="rate" data-g="${g}">${S.settings.showIvl&&p?`<small>${p[g].lbl}</small>`:''}${l}</button>`).join('')}</div>`;
   },
@@ -1055,8 +1097,10 @@ const Study={
   answer(g){
     if(!this.revealed||!this.cur)return;
     const now=Date.now(),c=S.cards[this.cur],n=S.notes[c.nid],dur=Math.min(now-this.shownAt,60000);
-    const sibs=this.cram?[]:Object.values(S.cards).filter(x=>x.nid===c.nid&&x.id!==c.id&&(x.state===0||x.state===2));
-    this.undo.push({card:{...c},sibs:sibs.map(x=>[x.id,x.buried]),tags:[...(n.tags||[])],logLen:LOGS.length,queue:[...this.queue],seen:[...this.seen],st:{...this.st},cur:this.cur});
+    const sibs=this.cram||this.rounds?[]:Object.values(S.cards).filter(x=>x.nid===c.nid&&x.id!==c.id&&(x.state===0||x.state===2));
+    this.undo.push({card:{...c},sibs:sibs.map(x=>[x.id,x.buried]),tags:[...(n.tags||[])],logLen:LOGS.length,queue:[...this.queue],seen:[...this.seen],st:{...this.st},cur:this.cur,
+      rnd:this.rounds?{round:this.round,prev:[...this.prevRound],rst:{...this.rst,g:[...this.rst.g]}}:null});
+    if(this.rounds){this.rst.g[g]++;this.rst.time+=dur}
     if(this.undo.length>30)this.undo.shift();
     this.st.done++;this.st.time+=dur;if(g===1)this.st.again++;
     if(this.cram){
@@ -1083,8 +1127,29 @@ const Study={
     const u=this.undo.pop();if(!u)return;
     S.cards[u.card.id]=u.card;for(const [id,b] of u.sibs||[])if(S.cards[id])S.cards[id].buried=b;const n=S.notes[u.card.nid];if(n)n.tags=u.tags;
     if(!this.cram){LOGS.length=u.logLen;save('core','logs')}
+    if(u.rnd){this.round=u.rnd.round;this.prevRound=u.rnd.prev;this.rst=u.rnd.rst}
     this.queue=u.queue;this.seen=new Set(u.seen);this.st=u.st;this.cur=u.cur;this.revealed=false;this.typed='';this.shownAt=Date.now();
     this.renderCard(true);toast('Hodnocení vráceno');
+  },
+  // Přehled po kole: co bylo v kole, kolik zbývá naučit, odhad času, pak další kolo
+  renderRound(){
+    this.cur=null;this.header();
+    const s=roundStats(this.decks),r=this.rst,per=Math.max(3,this.st.done>=5?this.st.time/this.st.done/1000:avgSec());
+    const views=s.g[0]*2+s.g[1]*2+s.g[2],est=views?Math.max(1,Math.round(views*per/60)):0,mins=Math.round(this.st.time/60000);
+    const L=[[1,'Znovu','again'],[2,'Těžké','hard'],[3,'Dobře','good'],[4,'Snadné','easy']];
+    const all=s.tot&&!s.left;
+    $('#stStage').innerHTML=`<div class="st-done"><div class="big">${icon(all?'check':'bolt',34,2.2)}</div>
+      <h2>${all?'Celý balíček umíš':`Kolo ${this.round} hotové`}</h2>
+      ${r.n?`<div class="rnd-this num">${L.map(([g,l,k])=>r.g[g]?`<span style="--c:var(--${k})">${r.g[g]}× ${l}</span>`:'').join('')}</div>`:'<p>V balíčku nejsou žádné karty.</p>'}
+      <div class="card rnd-prog"><div class="hd"><span>Naučeno <b class="num">${s.known}</b> z ${s.tot}</span><span class="num">zvládnutí ${s.pct} %</span></div>${roundBar(s)}</div>
+      <div class="kpis num">
+        <div class="card kpi"><div class="k">Zbývá naučit</div><div class="v">${s.left}</div><div class="h">${pl(s.left,'karta','karty','karet')}</div></div>
+        <div class="card kpi"><div class="k">Zbývá času</div><div class="v">${est?'~'+est:'0'}<small>min</small></div><div class="h">${views?'asi '+Math.ceil(views/ROUND)+' '+pl(Math.ceil(views/ROUND),'kolo','kola','kol'):'vše naučeno'}</div></div>
+        <div class="card kpi"><div class="k">Odehraná kola</div><div class="v">${this.round}</div><div class="h">${this.st.done} ${pl(this.st.done,'karta','karty','karet')}</div></div>
+        <div class="card kpi"><div class="k">Čas učení</div><div class="v">${mins<1?'<1':mins}<small>min</small></div><div class="h">${Math.round(per)} s na kartu</div></div></div>
+      <div class="btns">${s.tot?`<button class="btn primary lg" data-act="study-round">${icon('play',18)}${all?'Další kolo – opakování':'Další kolo'}</button>`:''}
+      <button class="btn ghost" data-act="study-close">Konec</button></div></div>`;
+    $('#stBottom').innerHTML='';
   },
   renderDone(){
     this.cur=null;this.header();
@@ -1104,7 +1169,7 @@ const Study={
       <button data-m="edit">${icon('edit')}Upravit kartu</button>
       <button data-m="info">${icon('info')}Informace o kartě</button>
       <button data-m="mark">${icon('star')}${n.marked?'Zrušit označení':'Označit hvězdičkou'}</button>
-      ${this.cram?'':`<button data-m="bury">${icon('later')}Odložit na zítra</button>`}
+      ${this.cram||this.rounds?'':`<button data-m="bury">${icon('later')}Odložit na zítra</button>`}
       <button data-m="susp">${icon('ban')}Pozastavit kartu</button>
       <hr><button data-m="del" class="danger">${icon('trash')}Smazat kartu</button></div>`);
     w.addEventListener('click',async e=>{const b=e.target.closest('[data-m]');if(!b)return;const m=b.dataset.m;
@@ -1154,7 +1219,7 @@ document.addEventListener('keydown',e=>{
   if(e.target.matches('input,textarea,select')&&e.key!=='Enter')return;
   if(e.target.id==='tiInput')return;
   const k=e.key.toLowerCase();
-  if(k===' '||k==='enter'){e.preventDefault();if(!Study.cur)return;Study.revealed?Study.answer(3):Study.reveal()}
+  if(k===' '||k==='enter'){e.preventDefault();if(!Study.cur){if(Study.rounds&&$('[data-act=study-round]'))ACT['study-round']();return}Study.revealed?Study.answer(3):Study.reveal()}
   else if(['1','2','3','4'].includes(k)&&Study.revealed){e.preventDefault();Study.answer(+k)}
   else if(k==='z'||k==='u'){Study.doUndo()}
   else if(k==='e'&&Study.cur){openEditor(S.cards[Study.cur].nid)}
@@ -1593,6 +1658,7 @@ const ACT={
   reveal:()=>Study.reveal(),
   rate:el=>Study.answer(+el.dataset.g),
   'study-close':()=>Study.close(),
+  'study-round':()=>{Study.queue=Study.buildRound();Study.next()},
   'study-undo':()=>Study.doUndo(),
   'study-menu':()=>Study.menu(),
   'study-edit':()=>{if(Study.cur)openEditor(S.cards[Study.cur].nid)},
