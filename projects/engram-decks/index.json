@@ -99,6 +99,76 @@
    "color": "#3b7ff2",
    "count": 58,
    "updated": "2026-11-27"
+  },
+  {
+   "id": "zur01",
+   "file": "zur01.json",
+   "name": "ZUR 01 – Pojem, vznik a principy udržitelného rozvoje",
+   "group": "Základy udržitelného rozvoje",
+   "desc": "Definice UR, Římský klub a Meze růstu, Stockholm 1972, Brundtlandová zpráva, pilíře UR, kritéria činností UR, 15 principů UR, UR v ČR (zákon 17/1992 Sb., strategie a strategické rámce).",
+   "color": "#2c9465",
+   "count": 72,
+   "updated": "2026-11-28"
+  },
+  {
+   "id": "zur02",
+   "file": "zur02.json",
+   "name": "ZUR 02 – Summity Země a klimatické konference",
+   "group": "Základy udržitelného rozvoje",
+   "desc": "Summit Země v Riu 1992 a jeho dokumenty, Berlín 1995, Kjóto 1997, Summit milénia 2000, Rio+10 Johannesburg 2002, Kodaň 2009, Rio+20 2012, Varšava 2013, Paříž 2015, COP30 Belém 2025.",
+   "color": "#2c9465",
+   "count": 29,
+   "updated": "2026-11-28"
+  },
+  {
+   "id": "zur03",
+   "file": "zur03.json",
+   "name": "ZUR 03 – Agenda 21 a místní Agenda 21",
+   "group": "Základy udržitelného rozvoje",
+   "desc": "Agenda 21 (Rio 1992) – principy a čtyři části, místní Agenda 21, kapitola 28, kulatý stůl, koordinátor, Akce 21, MA21 ve světě a v ČR, kritéria MA21 (Zájemci, D–A), přechod k Agendě 2030.",
+   "color": "#2c9465",
+   "count": 45,
+   "updated": "2026-11-28"
+  },
+  {
+   "id": "zur04",
+   "file": "zur04.json",
+   "name": "ZUR 04 – Měření udržitelnosti a indikátory",
+   "group": "Základy udržitelného rozvoje",
+   "desc": "Indikátory UR – definice, využití, druhy, základní prvky pro jejich výběr; cíle milénia MDG; indikátory v ČR; sada ECI (A1–A5, B6–B10), TIMUR, sada CIVITAS; ekologická, uhlíková a vodní stopa; Eurostat.",
+   "color": "#2c9465",
+   "count": 46,
+   "updated": "2026-11-28"
+  },
+  {
+   "id": "zur05",
+   "file": "zur05.json",
+   "name": "ZUR 05 – Nové trendy v udržitelném rozvoji",
+   "group": "Základy udržitelného rozvoje",
+   "desc": "Mitigace, adaptace, resilience, ESG a CSRD, DNSH, dekarbonizace, Agenda 2030 a 17 SDG, Strategický rámec ČR 2030, environmentální reporting, Pakt starostů, Green Procurement, Fahrradakademie, udržitelná turistika, zelené budovy, oběhové hospodářství, emise a výroba elektřiny.",
+   "color": "#2c9465",
+   "count": 50,
+   "updated": "2026-11-28"
+  },
+  {
+   "id": "zur06",
+   "file": "zur06.json",
+   "name": "ZUR 06 – Resilience a adaptace na změnu klimatu",
+   "group": "Základy udržitelného rozvoje",
+   "desc": "Resilience (definice, v ekologii a společnosti), projevy změny klimatu, udržitelná bezpečnost, Resilient Cities, ICLEI, Compact of Mayors, C40, Pakt starostů (SEAP → SECAP, Mayors Adapt), adaptace, cestovní mapy, národní adaptační strategie ČR a její sektory.",
+   "color": "#2c9465",
+   "count": 41,
+   "updated": "2026-11-28"
+  },
+  {
+   "id": "zur07",
+   "file": "zur07.json",
+   "name": "ZUR 07 – Smart City",
+   "group": "Základy udržitelného rozvoje",
+   "desc": "Koncept Smart City a jeho šest oblastí: chytrá ekonomika, doprava, životní prostředí, lidé, bydlení a vláda – s příklady opatření.",
+   "color": "#2c9465",
+   "count": 17,
+   "updated": "2026-11-28"
   }
  ],
  "tests": [
@@ -221,6 +291,90 @@
    "open": 6,
    "count": 36,
    "updated": "2026-11-27"
+  },
+  {
+   "id": "zur01-test",
+   "file": "zur01-test.json",
+   "name": "Test ZUR 01 – Pojem, vznik a principy udržitelného rozvoje",
+   "group": "Základy udržitelného rozvoje",
+   "desc": "Otázky ABCD i otevřené k tématu Pojem, vznik a principy udržitelného rozvoje.",
+   "deck": "zur01",
+   "abcd": 38,
+   "open": 10,
+   "count": 48,
+   "updated": "2026-11-28"
+  },
+  {
+   "id": "zur02-test",
+   "file": "zur02-test.json",
+   "name": "Test ZUR 02 – Summity Země a klimatické konference",
+   "group": "Základy udržitelného rozvoje",
+   "desc": "Otázky ABCD i otevřené k tématu Summity Země a klimatické konference.",
+   "deck": "zur02",
+   "abcd": 23,
+   "open": 6,
+   "count": 29,
+   "updated": "2026-11-28"
+  },
+  {
+   "id": "zur03-test",
+   "file": "zur03-test.json",
+   "name": "Test ZUR 03 – Agenda 21 a místní Agenda 21",
+   "group": "Základy udržitelného rozvoje",
+   "desc": "Otázky ABCD i otevřené k tématu Agenda 21 a místní Agenda 21.",
+   "deck": "zur03",
+   "abcd": 27,
+   "open": 8,
+   "count": 35,
+   "updated": "2026-11-28"
+  },
+  {
+   "id": "zur04-test",
+   "file": "zur04-test.json",
+   "name": "Test ZUR 04 – Měření udržitelnosti a indikátory",
+   "group": "Základy udržitelného rozvoje",
+   "desc": "Otázky ABCD i otevřené k tématu Měření udržitelnosti a indikátory.",
+   "deck": "zur04",
+   "abcd": 23,
+   "open": 7,
+   "count": 30,
+   "updated": "2026-11-28"
+  },
+  {
+   "id": "zur05-test",
+   "file": "zur05-test.json",
+   "name": "Test ZUR 05 – Nové trendy v udržitelném rozvoji",
+   "group": "Základy udržitelného rozvoje",
+   "desc": "Otázky ABCD i otevřené k tématu Nové trendy v udržitelném rozvoji.",
+   "deck": "zur05",
+   "abcd": 29,
+   "open": 8,
+   "count": 37,
+   "updated": "2026-11-28"
+  },
+  {
+   "id": "zur06-test",
+   "file": "zur06-test.json",
+   "name": "Test ZUR 06 – Resilience a adaptace na změnu klimatu",
+   "group": "Základy udržitelného rozvoje",
+   "desc": "Otázky ABCD i otevřené k tématu Resilience a adaptace na změnu klimatu.",
+   "deck": "zur06",
+   "abcd": 22,
+   "open": 6,
+   "count": 28,
+   "updated": "2026-11-28"
+  },
+  {
+   "id": "zur07-test",
+   "file": "zur07-test.json",
+   "name": "Test ZUR 07 – Smart City",
+   "group": "Základy udržitelného rozvoje",
+   "desc": "Otázky ABCD i otevřené k tématu Smart City.",
+   "deck": "zur07",
+   "abcd": 13,
+   "open": 4,
+   "count": 17,
+   "updated": "2026-11-28"
   }
  ]
 }
